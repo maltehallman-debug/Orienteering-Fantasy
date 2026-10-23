@@ -74,6 +74,21 @@ nav.tabs button[aria-selected="true"]{color:var(--ink);background:var(--panel2);
   .tick path{stroke-dasharray:60;stroke-dashoffset:60;animation:draw .45s var(--ease) .55s forwards}
   .welcome h2,.welcome p,.welcome .row{animation:rise .6s var(--ease) both}.welcome p{animation-delay:.1s}.welcome .row{animation-delay:.2s}
 }
+.phbox{margin-top:16px;padding:16px;border-radius:18px;background:var(--panel2);box-shadow:0 0 0 1px var(--line) inset;display:grid;gap:12px}
+.phbox h3{margin:0}
+.phprev{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.phprev img,.phprev .ph0{width:112px;height:112px;border-radius:30px;object-fit:cover;background:var(--chip);box-shadow:0 0 0 1px var(--line2) inset}
+.phbox label{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted);cursor:pointer}
+.phbox input[type=radio],.phbox input[type=checkbox]{accent-color:var(--accent);width:17px;height:17px;margin-top:2px;flex:none}
+.phbox input[type=file]{font:inherit;font-size:13.5px;color:var(--muted);max-width:100%}
+.mine{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
+.st{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--chip)}
+.st.approved{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)}.st.pending{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.review{display:grid;gap:10px}
+.review .it{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:12px;border-radius:16px;background:var(--panel2);box-shadow:0 0 0 1px var(--line) inset}
+.review .it img{width:76px;height:76px;border-radius:20px;object-fit:cover}
+.review .it .row{margin-left:auto}
+#mgr .badge{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--warn);color:#1a1200;font:700 10.5px var(--mono);display:grid;place-items:center}
 .codebox{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
 .codebox code{font-family:var(--mono);font-weight:600;font-size:14px;letter-spacing:.04em;padding:8px 12px;border-radius:10px;background:var(--bg2);box-shadow:0 0 0 1px var(--line2) inset}
 /* hero */
@@ -358,7 +373,8 @@ const FINE=(()=>{try{return matchMedia("(hover: hover) and (pointer: fine)").mat
 const hsh=s=>{let h=2166136261;for(let k=0;k<s.length;k++){h^=s.charCodeAt(k);h=Math.imul(h,16777619)}return h>>>0};
 /* drawn runner portrait: club colours, a contour map behind, the runner with a map in hand, pose varied per runner */
 function avatar(i,cls){
-  if(D.runners[i].ph)return `<div class="av ph ${cls||""}" aria-hidden="true"><img src="${D.runners[i].ph}" alt="" loading="lazy" decoding="async"></div>`;
+  const ph=photoUrl.get(D.runners[i].id)||D.runners[i].ph;
+  if(ph)return `<div class="av ph ${cls||""}" aria-hidden="true"><img src="${esc(ph)}" alt="" loading="lazy" decoding="async"></div>`;
   const r=D.runners[i],h=hsh(r.id),hc=hsh(r.c),h1=hc%360,h2=(h1+40+(h>>>3)%140)%360,flip=h&1,lean=((h>>>5)%9)-4;
   const ini=r.n.split(/\s+/).filter(Boolean).map(w=>w[0]).slice(0,2).join("").toUpperCase();
   const fig=`<g transform="${flip?"translate(64 0) scale(-1 1) ":""}rotate(${lean} 32 34)" stroke="rgba(8,9,8,.82)" stroke-linecap="round" stroke-linejoin="round" fill="none">
@@ -372,6 +388,11 @@ function avatar(i,cls){
    ${fig}<rect x="5" y="49" width="10" height="10" fill="#fff"/><path d="M5 49 L15 49 L5 59 Z" fill="#ff5b1f"/>
    <text x="59" y="59" text-anchor="end" font-family="Geist Mono,monospace" font-weight="700" font-size="9" fill="rgba(255,255,255,.9)">${esc(ini)}</text></svg></div>`;
 }
+/* photos runners sent themselves (or a parent did), shown once approved */
+const photoUrl=new Map();
+let myPhotos=[],pendingPhotos=[],phForm=null,phMsg="",phBusy=false;
+const photoPublic=path=>SB_URL+"/storage/v1/object/public/runner-photos/"+path.split("/").map(encodeURIComponent).join("/");
+const youthCls=i=>/^[DH](16|18)$/.test(D.runners[i].k);
 const BOLT=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 14h7l-1.5 8L19 10h-7z" fill="currentColor"/></svg>`;
 function burst(x,y,n){
   if(RM)return;const L=document.getElementById("fx");if(!L)return;
@@ -475,7 +496,7 @@ function renderTabs(){
   const t=[["team","Team"],["rounds","Rounds"],["leagues","Leagues"],["season","Season"],["rules","Rules"]];
   $("#tabs").innerHTML=t.map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" data-tab="${k}">${l}</button>`).join("");
   const m=$("#mgr");
-  if(dbOk){const nm=mgrName||cloud.email.split("@")[0]||"Account";m.className="";m.innerHTML=`<span class="dot">${esc(nm.slice(0,1).toUpperCase())}</span>${esc(nm)}`;m.title="Your account and leagues";m.setAttribute("aria-label","Account: "+nm)}
+  if(dbOk){const nm=mgrName||cloud.email.split("@")[0]||"Account";m.className="";m.innerHTML=`<span class="dot">${esc(nm.slice(0,1).toUpperCase())}</span>${esc(nm)}${cloud.admin&&pendingPhotos.length?`<span class="badge" title="Photos waiting for approval">${pendingPhotos.length}</span>`:""}`;m.title="Your account and leagues";m.setAttribute("aria-label","Account: "+nm)}
   else{m.className="out";m.textContent="Sign in";m.title="Sign in or create an account to play in leagues";m.setAttribute("aria-label","Sign in or create an account")}
 }
 function renderFacts(){
@@ -650,7 +671,7 @@ function leaguesView(){
    <div class="row"><button class="btn on" id="${authMode==="up"?"authUp":"authIn"}" ${authBusy?"disabled":""}>${authBusy?"Please wait":authMode==="up"?"Create account":"Sign in"}</button><button class="btn quiet" id="authSwap">${authMode==="up"?"I already have an account":"Create an account"}</button></div>
    ${authMsg?`<p class="note" style="margin:8px 0 0">${esc(authMsg)}</p>`:""}</div>
    <div class="card"><h3>Host a league with friends</h3><ol class="steps"><li>Create an account. It only needs an email and a password.</li><li>Create a league and give it a name.</li><li>Send your friends the invite link. They create their own account and land in your league.</li><li>Everyone picks a squad for the live season. The table adds up each round's points.</li></ol></div></div>`;
-  return `<h2 style="margin-top:0">Leagues</h2>${inviteBanner()}
+  return `<h2 style="margin-top:0">Leagues</h2>${inviteBanner()}${reviewCard()}
   <p class="lead">Compete with friends round by round. Everyone plays the live season on their own account. A league table adds up the points each member scores per round.</p>
   <div class="grid2">
    <div class="card"><h3>Your name</h3><div class="row"><input class="name" id="mgrName" maxlength="24" placeholder="Manager name" value="${esc(mgrName)}" aria-label="Manager name"></div>
@@ -683,7 +704,9 @@ function rulesView(){
   <li>A price comes from a weighted average of a runner's past points, with recent races counting more. Runners with no history cost 4.0M.</li>
   <li>The pool is the ${D.runners.filter(x=>x.p).length} runners with at least 3 starts.</li></ul></div>`;
 }
+let profileOpen=null;
 function profile(i){
+  profileOpen=i;
   const vis=E.visible(i,R()),s=E.stats(i,R());
   const hist=vis.length>1?(()=>{const w=300,h=48,mxv=Math.max(...vis.map(x=>x.pts),1),mnv=Math.min(...vis.map(x=>x.pts),0);
     const pts=vis.map((x,k)=>`${(k/(vis.length-1)*w).toFixed(1)},${(h-3-(x.pts-mnv)/(mxv-mnv||1)*(h-6)).toFixed(1)}`).join(" ");
@@ -694,7 +717,79 @@ function profile(i){
    ${hist}
    <div class="tbl" style="margin-top:12px"><table><thead><tr><th>Race</th><th>Place</th><th>Behind</th><th>Time</th><th>Points</th></tr></thead><tbody>
    ${vis.slice().reverse().map(h=>{const e=D.events[h.ev];return `<tr><td>${esc(e.name)}<div class="sub">${dshort(e.date)}${e.tier>1?", x"+e.tier:""}</div></td><td>${h.kind?["","DNF","MP","DSQ"][h.kind]:h.rank+" of "+e.n}</td><td>${h.kind?"–":(h.gap/100).toFixed(1)+"%"}</td><td>${h.kind?"–":tm(h.t)}</td><td class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</td></tr>`}).join("")||`<tr><td colspan="5" class="note">No results yet.</td></tr>`}
-   </tbody></table></div>${!isLive()&&!done()?`<p class="note">Showing races before round ${D.rounds[R()].n}.</p>`:""}</div></div>`;
+   </tbody></table></div>${!isLive()&&!done()?`<p class="note">Showing races before round ${D.rounds[R()].n}.</p>`:""}
+   ${photoSection(i)}</div></div>`;
+}
+function photoSection(i){
+  const id=D.runners[i].id,mine=myPhotos.filter(x=>x.runner_id===id);
+  const list=mine.map(x=>`<div class="mine"><span>Your photo <span class="st ${x.status}">${x.status==="approved"?"shown":x.status==="pending"?"waiting for approval":"not approved"}</span></span><button class="btn quiet" data-phdel="${esc(x.id)}">${x.status==="approved"?"Remove it":"Withdraw"}</button></div>`).join("");
+  if(!dbOk)return `<div class="phbox"><h3>Is this you?</h3><p class="note" style="margin:0">Sign in to add your own photo${youthCls(i)?", or a parent or guardian can add it for you":""}. It shows on your card once it has been approved.</p><div class="row"><button class="btn" id="phSignIn">Sign in to add a photo</button></div></div>`;
+  if(!phForm||phForm.i!==i)return `<div class="phbox"><h3>Is this you?</h3>${list}<p class="note" style="margin:0">Add your own photo${youthCls(i)?". For runners in D/H 16 and 18 a parent or guardian must send it":""}. It shows on this card once it has been approved.</p><div class="row"><button class="btn on" data-phopen="${i}">Add a photo</button></div></div>`;
+  const f=phForm,youth=/16$/.test(D.runners[i].k),rel=[];
+  if(!youth)rel.push(["self",D.runners[i].k.endsWith("18")?"This is me, and I am 18 or older":"This is me"]);
+  rel.push(["guardian","I am this runner's parent or guardian"]);
+  if(cloud.admin)rel.push(["admin","Admin: I have the runner's permission"]);
+  return `<div class="phbox"><h3>Add a photo of ${esc(nameOf(i))}</h3>
+   <div class="phprev">${f.url?`<img src="${f.url}" alt="Preview">`:`<div class="ph0"></div>`}<div><input type="file" id="phFile" accept="image/*" aria-label="Choose a photo"><p class="note" style="margin:6px 0 0">A clear photo of the face works best. It is cropped to a square and location data is removed.</p></div></div>
+   <div style="display:grid;gap:8px">${rel.map(([k,l])=>`<label><input type="radio" name="phRel" value="${k}" ${f.rel===k?"checked":""}> ${l}</label>`).join("")}</div>
+   <label><input type="checkbox" id="phConsent" ${f.consent?"checked":""}> I have the right to share this photo and agree to it being shown publicly on Orienteering Fantasy. It can be removed at any time.</label>
+   <div class="row"><button class="btn on" id="phSend" ${phBusy||!f.blob||!f.rel||!f.consent?"disabled":""}>${phBusy?"Sending…":"Send for approval"}</button><button class="btn quiet" id="phCancel">Cancel</button></div>
+   ${phMsg?`<p class="note" style="margin:0">${esc(phMsg)}</p>`:""}${list}</div>`;
+}
+/* square crop and re-encode in the browser: small upload, no EXIF or GPS data */
+function cropPhoto(file){
+  return new Promise((res,rej)=>{
+    if(!file||!/^image\//.test(file.type)){rej(new Error("Choose an image file."));return}
+    if(file.size>25e6){rej(new Error("That file is too large."));return}
+    const u=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{const n=Math.min(img.naturalWidth,img.naturalHeight);if(n<120){URL.revokeObjectURL(u);rej(new Error("That photo is too small. Use one at least 120 pixels wide."));return}
+      const S=Math.min(512,n),c=document.createElement("canvas");c.width=c.height=S;
+      const sx=(img.naturalWidth-n)/2,sy=Math.max(0,(img.naturalHeight-n)*.3);
+      c.getContext("2d").drawImage(img,sx,sy,n,n,0,0,S,S);URL.revokeObjectURL(u);
+      c.toBlob(b=>b?res({blob:b,url:c.toDataURL("image/jpeg",.6)}):rej(new Error("Could not read that photo.")),"image/jpeg",.86)};
+    img.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("Could not read that photo."))};img.src=u;
+  });
+}
+const uuid=()=>{try{return crypto.randomUUID()}catch(e){return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==="x"?r:(r&3|8)).toString(16)})}};
+async function loadPhotos(){
+  const sb=cloud.sb;if(!sb)return;
+  try{
+    const a=await sb.from("photo_submissions").select("runner_id,path,reviewed_at").eq("status","approved");
+    if(!a.error){photoUrl.clear();(a.data||[]).sort((x,y)=>String(x.reviewed_at).localeCompare(String(y.reviewed_at))).forEach(x=>photoUrl.set(x.runner_id,photoPublic(x.path)))}
+    if(cloud.uid){const m=await sb.from("photo_submissions").select("id,runner_id,path,status,created_at").eq("user_id",cloud.uid);if(!m.error)myPhotos=m.data||[]}else myPhotos=[];
+    if(cloud.admin){const q=await sb.from("photo_submissions").select("id,runner_id,path,relation,created_at").eq("status","pending");if(!q.error)pendingPhotos=(q.data||[]).sort((x,y)=>String(x.created_at).localeCompare(String(y.created_at)))}else pendingPhotos=[];
+  }catch(e){}
+  if(!(document.activeElement&&document.activeElement.matches("input")))render();
+  const pi=document.querySelector(".modal [data-phopen],.modal #phSignIn,.modal .phbox");if(pi&&profileOpen!==null)profile(profileOpen);
+}
+async function sendPhoto(){
+  const f=phForm;if(!f||phBusy||!f.blob||!f.rel||!f.consent||!cloud.uid)return;
+  phBusy=true;phMsg="";profile(f.i);
+  const path=cloud.uid+"/"+uuid()+".jpg",st=cloud.sb.storage.from("runner-photos");
+  try{
+    const up=await st.upload(path,f.blob,{contentType:"image/jpeg",upsert:false});if(up.error)throw up.error;
+    const ins=await cloud.sb.from("photo_submissions").insert({runner_id:D.runners[f.i].id,path,relation:f.rel,consent:true});
+    if(ins.error){await st.remove([path]);throw ins.error}
+    phForm=null;phMsg="";await loadPhotos();phMsg="Sent. The photo shows on the card once it has been approved.";
+  }catch(e){phMsg=/Too many/.test(e&&e.message||"")?"You already have 5 photos waiting for approval.":"Could not send the photo. Try again."}
+  phBusy=false;if(profileOpen!==null)profile(profileOpen);
+}
+async function dropPhoto(id,asAdmin){
+  const x=(asAdmin?pendingPhotos:myPhotos).find(y=>y.id===id);if(!x)return;
+  try{await cloud.sb.storage.from("runner-photos").remove([x.path]);await cloud.sb.from("photo_submissions").delete().eq("id",id)}catch(e){}
+  await loadPhotos();
+}
+async function approvePhoto(id){
+  try{await cloud.sb.from("photo_submissions").update({status:"approved",reviewed_at:new Date().toISOString()}).eq("id",id)}catch(e){}
+  await loadPhotos();
+}
+function reviewCard(){
+  if(!cloud.admin)return "";
+  const byId=new Map(D.runners.map((r,i)=>[r.id,i]));
+  return `<div class="card"><h3>Photos waiting for approval (${pendingPhotos.length})</h3>
+   <p class="note" style="margin:0 0 10px">Approve only photos that clearly show this runner. Runners in D/H 16 and 18 need a parent or guardian to send them.</p>
+   <div class="review">${pendingPhotos.map(x=>{const i=byId.get(x.runner_id);return `<div class="it"><img src="${esc(photoPublic(x.path))}" alt=""><div><b>${esc(i!==undefined?nameOf(i):x.runner_id)}</b><div class="sub">${i!==undefined?esc(D.runners[i].k+", "+clubOf(i)):"Runner not in the current data"}</div><div class="sub">${{self:"Sent by the runner",guardian:"Sent by a parent or guardian",admin:"Added by an admin"}[x.relation]||""}, ${dshort(String(x.created_at).slice(0,10))}</div></div>
+     <div class="row"><button class="btn on" data-phok="${esc(x.id)}">Approve</button><button class="btn" data-phno="${esc(x.id)}">Reject</button></div></div>`}).join("")||`<p class="note" style="margin:0">Nothing to review.</p>`}</div></div>`;
 }
 const words=(t,i0)=>t.split(" ").map((w,k)=>`<span class="w" style="--i:${i0+k}">${esc(w)}</span>`).join(" ")+" ";
 function renderHero(){
@@ -751,7 +846,7 @@ document.addEventListener("click",ev=>{
   const g=ev.target.closest("[data-ctrl]");
   if(g){const k=+g.dataset.ctrl,li=state.log.findIndex(l=>l.round===k),nt=li>=0?"rounds":"team";if(li>=0)viewRound=li;if(nt!==tab)animNext=true;tab=nt;render();return}
   const t=ev.target.closest("button,.modal");if(!t)return;const d=t.dataset;
-  if(d.close&&(ev.target===t||t.tagName==="BUTTON")){$("#modal").innerHTML="";return}
+  if(d.close&&(ev.target===t||t.tagName==="BUTTON")){$("#modal").innerHTML="";profileOpen=null;phForm=null;phMsg="";return}
   if(d.prof!==undefined){profile(+d.prof);return}
   if(d.tab){if(tab!==d.tab)animNext=true;tab=d.tab;confirmAuto=confirmReset=confirmMode=false;render();toTop();return}
   if(d.add!==undefined){const i=+d.add;if(!canAddReason(i)){plan.squad.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
@@ -777,6 +872,13 @@ document.addEventListener("click",ev=>{
     try{navigator.clipboard.writeText(u).then(done,()=>{prompt("Copy this invite link",u)})}catch(e){prompt("Copy this invite link",u)}return}
   if(d.share){try{navigator.share({title:"Join "+lgName(d.share)+" on Orienteering Fantasy",text:"Join my league "+lgName(d.share)+" on Orienteering Fantasy",url:inviteUrl(d.share)}).catch(()=>{})}catch(e){}return}
   if(t.id==="mgr"){if(tab!=="leagues")animNext=true;tab="leagues";if(!dbOk)authMode=authMode||"in";render();toTop();setTimeout(()=>{const f=document.getElementById(dbOk?"mgrName":"authEmail");if(f)f.focus()},60);return}
+  if(d.phopen!==undefined){phForm={i:+d.phopen,rel:"",consent:false,blob:null,url:""};phMsg="";profile(+d.phopen);return}
+  if(t.id==="phCancel"){phForm=null;phMsg="";if(profileOpen!==null)profile(profileOpen);return}
+  if(t.id==="phSend"){sendPhoto();return}
+  if(t.id==="phSignIn"){$("#modal").innerHTML="";profileOpen=null;if(tab!=="leagues")animNext=true;tab="leagues";authMode="in";render();toTop();return}
+  if(d.phdel){if(confirm("Remove this photo?"))dropPhoto(d.phdel,false);return}
+  if(d.phok){approvePhoto(d.phok);return}
+  if(d.phno){if(confirm("Reject and delete this photo?"))dropPhoto(d.phno,true);return}
   if(t.id==="wTeam"||t.id==="wLeague"||t.id==="wSignIn"){$("#modal").innerHTML="";const nt=t.id==="wTeam"?"team":"leagues";if(t.id==="wSignIn"){authMode="in"}
     if(nt!==tab)animNext=true;tab=nt;render();toTop();return}
   if(t.id==="createLeague"){const n=newLeague.trim();if(!n){leagueMsg="Give the league a name first.";render();return}joinLeague(mkCode(n),n).then(ok=>{if(ok)newLeague="";render()});return}
@@ -784,7 +886,7 @@ document.addEventListener("click",ev=>{
   if(d.leave){const c=d.leave;myLeagues=myLeagues.filter(x=>x!==c);delete myLgn[c];if(leagueUnsubs[c]){try{leagueUnsubs[c]()}catch(e){}delete leagueUnsubs[c]}if(cloud.sb&&cloud.uid)cloud.sb.from("league_members").delete().eq("code",c).eq("user_id",cloud.uid).then(()=>{});leagueMsg="";save();render();return}
 });
 document.addEventListener("keydown",ev=>{
-  if(ev.key==="Escape")$("#modal").innerHTML="";
+  if(ev.key==="Escape"){$("#modal").innerHTML="";profileOpen=null;phForm=null;phMsg=""}
   if((ev.key==="Enter"||ev.key===" ")&&ev.target.matches&&ev.target.matches("[data-ctrl]")){ev.preventDefault();ev.target.dispatchEvent(new MouseEvent("click",{bubbles:true}))}
 });
 document.addEventListener("input",ev=>{const t=ev.target;
@@ -793,6 +895,9 @@ document.addEventListener("input",ev=>{const t=ev.target;
   if(t.id==="newLeague")newLeague=t.value;
   if(t.id==="joinCode")joinCode=t.value;});
 document.addEventListener("change",ev=>{const t=ev.target;
+  if(phForm&&t.id==="phFile"){const fl=t.files&&t.files[0];phMsg="";cropPhoto(fl).then(r=>{phForm.blob=r.blob;phForm.url=r.url;profile(phForm.i)},e=>{phMsg=e.message;profile(phForm.i)})}
+  if(phForm&&t.name==="phRel"){phForm.rel=t.value;profile(phForm.i)}
+  if(phForm&&t.id==="phConsent"){phForm.consent=t.checked;profile(phForm.i)}
   if(t.id==="clubF"){clubF=t.value;shown=40;render()}
   if(t.id==="clsF"){clsF=t.value;shown=40;render()}
   if(t.id==="afford"){afford=t.checked;render()}});
@@ -857,7 +962,7 @@ function watchLeague(code){
 async function onSession(session){
   if(session&&session.user&&cloud.ready&&cloud.uid===session.user.id){render();return} /* token refresh: same account, already loaded */
   Object.keys(leagueUnsubs).forEach(c=>{try{leagueUnsubs[c]()}catch(e){}delete leagueUnsubs[c]});
-  if(!session||!session.user){cloud.uid=null;cloud.email="";cloud.canWrite=false;cloud.ready=false;dbOk=false;render();return}
+  if(!session||!session.user){cloud.uid=null;cloud.email="";cloud.canWrite=false;cloud.ready=false;cloud.admin=false;dbOk=false;myPhotos=[];pendingPhotos=[];phForm=null;loadPhotos();render();return}
   cloud.ready=false;
   const mine=localUid===session.user.id;
   if(localUid&&!mine)resetLocal(); /* this device's game belongs to another account */
@@ -881,6 +986,8 @@ async function onSession(session){
   /* never push before the account's own save has loaded: that could overwrite it */
   if(!loaded){cloudMsg="Could not load your account. Reload the page to try again. Nothing was overwritten.";render();return}
   cloud.ready=true;settle();pushCloud();myLeagues.forEach(watchLeague);
+  try{const a=await cloud.sb.rpc("is_admin");cloud.admin=a.data===true}catch(e){cloud.admin=false}
+  loadPhotos();
   if(pendingJoin){const c=pendingJoin;if(myLeagues.includes(c)){clearPending();leagueMsg="You are already in "+lgName(c)+"."}
     else{const ok=await joinLeague(c,"");if(ok||/No league has that code|look right/.test(leagueMsg))clearPending()}tab="leagues"}
   render();
@@ -891,6 +998,7 @@ async function initCloud(){
     if(!window.supabase||!window.supabase.createClient){authMsg="Could not load the sign-in service. Reload the page.";return}
     cloud.sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
     cloud.sb.auth.onAuthStateChange((ev,session)=>{setTimeout(()=>onSession(session),0)});
+    loadPhotos();
   }catch(e){}
 }
 async function doAuth(kind){
