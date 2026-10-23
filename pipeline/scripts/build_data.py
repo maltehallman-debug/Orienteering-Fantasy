@@ -1,4 +1,4 @@
-import json, sys, os, datetime as _dt
+import json, sys, os, re, datetime as _dt
 S = sys.argv[1]
 D = json.load(open(f"{S}/data/dataset_full.json"))
 events = D["events"]; pool = D["pool"]; ridx = {k: i for i, k in enumerate(pool)}
@@ -10,7 +10,7 @@ KIND = {"F": 0, "DNF": 1, "MP": 2, "DSQ": 3}
 out_events = []; res = []; evpos = {}
 for i, e in enumerate(events):
     evpos[e["id"]] = i
-    out_events.append({"name": e["name"], "date": e["date"], "tier": e["tier"], "n": e["n"], "c": e["cls"]})
+    out_events.append({"name": e["name"], "date": e["date"], "tier": e["tier"], "n": e["n"], "c": e["cls"], "lr": int(m.group()) if (m := re.match(r"\d+", str(e["id"]))) else 0})
     rows = []
     for k, s in e["scores"].items():
         if k not in ridx: continue
@@ -39,7 +39,7 @@ upcoming = sorted([u for u in D["upcoming"] if not any(m["date"] == u["date"] an
 LIVE_START_DATE = "2026-11-02"
 live_start = next(i for i, r in enumerate(out_rounds) if r["start"] == LIVE_START_DATE)
 data = {"runners": runners, "events": out_events, "rounds": out_rounds, "res": res, "prices": prices,
-        "asof": ASOF, "upcoming": [{"name": u["name"], "date": u["date"]} for u in upcoming], "liveStart": live_start,
+        "asof": ASOF, "upcoming": [dict({"name": u["name"], "date": u["date"]}, **({"lr": u["id"]} if u.get("id") else {})) for u in upcoming], "liveStart": live_start,
         # money is in tenths of a thousand (205 = 20.5k); ten runners, the first five are the A team and score double
         "budget": 1000, "squad": 10, "aSize": 5, "clubMax": 3, "freeTransfers": 3, "penalty": 40, "dnfPts": -50,
         # price tiers (lower bounds): diamond, gold, silver; everything below is bronze
