@@ -61,6 +61,19 @@ nav.tabs button[aria-selected="true"]{color:var(--ink);background:var(--panel2);
 .steps li{counter-increment:st;display:flex;gap:10px;align-items:flex-start;color:var(--muted);font-size:14px}
 .steps li::before{content:counter(st);flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:600 11px var(--mono);background:var(--chip);color:var(--ink)}
 .host{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);box-shadow:0 0 0 1px var(--accent-line) inset;margin-left:8px;vertical-align:middle}
+.welcome{text-align:center;padding:12px 6px 4px}
+.welcome h2{font-size:clamp(28px,5vw,40px);margin:14px 0 6px}
+.welcome p{color:var(--muted);margin:0 auto 18px;max-width:34ch}
+.welcome .row{justify-content:center}
+.tick{width:92px;height:92px;display:block;margin:0 auto}
+.tick circle{fill:var(--accent-soft);stroke:var(--accent);stroke-width:3}
+.tick path{fill:none;stroke:var(--accent);stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+.tick.bad circle{fill:color-mix(in srgb,var(--bad) 12%,transparent);stroke:var(--bad)}.tick.bad path{stroke:var(--bad)}
+@media (prefers-reduced-motion:no-preference){
+  .tick circle{stroke-dasharray:252;stroke-dashoffset:252;animation:draw .7s var(--ease) forwards}
+  .tick path{stroke-dasharray:60;stroke-dashoffset:60;animation:draw .45s var(--ease) .55s forwards}
+  .welcome h2,.welcome p,.welcome .row{animation:rise .6s var(--ease) both}.welcome p{animation-delay:.1s}.welcome .row{animation-delay:.2s}
+}
 .codebox{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
 .codebox code{font-family:var(--mono);font-weight:600;font-size:14px;letter-spacing:.04em;padding:8px 12px;border-radius:10px;background:var(--bg2);box-shadow:0 0 0 1px var(--line2) inset}
 /* hero */
@@ -762,6 +775,8 @@ document.addEventListener("click",ev=>{
     try{navigator.clipboard.writeText(u).then(done,()=>{prompt("Copy this invite link",u)})}catch(e){prompt("Copy this invite link",u)}return}
   if(d.share){try{navigator.share({title:"Join "+lgName(d.share)+" on Orienteering Fantasy",text:"Join my league "+lgName(d.share)+" on Orienteering Fantasy",url:inviteUrl(d.share)}).catch(()=>{})}catch(e){}return}
   if(t.id==="mgr"){if(tab!=="leagues")animNext=true;tab="leagues";if(!dbOk)authMode=authMode||"in";render();toTop();setTimeout(()=>{const f=document.getElementById(dbOk?"mgrName":"authEmail");if(f)f.focus()},60);return}
+  if(t.id==="wTeam"||t.id==="wLeague"||t.id==="wSignIn"){$("#modal").innerHTML="";const nt=t.id==="wTeam"?"team":"leagues";if(t.id==="wSignIn"){authMode="in"}
+    if(nt!==tab)animNext=true;tab=nt;render();toTop();return}
   if(t.id==="createLeague"){const n=newLeague.trim();if(!n){leagueMsg="Give the league a name first.";render();return}joinLeague(mkCode(n),n).then(ok=>{if(ok)newLeague="";render()});return}
   if(t.id==="joinLeague"){joinLeague(joinCode,"").then(ok=>{if(ok)joinCode="";render()});return}
   if(d.leave){const c=d.leave;myLeagues=myLeagues.filter(x=>x!==c);delete myLgn[c];if(leagueUnsubs[c]){try{leagueUnsubs[c]()}catch(e){}delete leagueUnsubs[c]}if(cloud.sb&&cloud.uid)cloud.sb.from("league_members").delete().eq("code",c).eq("user_id",cloud.uid).then(()=>{});leagueMsg="";save();render();return}
@@ -781,6 +796,23 @@ document.addEventListener("change",ev=>{const t=ev.target;
   if(t.id==="afford"){afford=t.checked;render()}});
 
 
+/* what the email link brought back: a session (confirmed) or an error such as an expired link */
+const AUTH_BACK=(()=>{try{const h=new URLSearchParams(location.hash.replace(/^#/,"")),q=new URLSearchParams(location.search),g=k=>h.get(k)||q.get(k)||"";
+  return {ok:!!(h.get("access_token")||q.get("code")),type:g("type"),err:g("error_description").replace(/\+/g," "),code:g("error_code")}}catch(e){return {}}})();
+if(AUTH_BACK.err){try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}}
+let welcomed=false;
+function welcomeSheet(kind){
+  const nm=esc(mgrName||cloud.email.split("@")[0]||"");
+  const joined=myLeagues.length?lgName(myLeagues[myLeagues.length-1]):"";
+  const body=kind==="ok"?`<svg class="tick" viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="40"/><path d="M29 47 l11 11 l23 -25"/></svg>
+    <h2>Email confirmed</h2><p>Welcome${nm?", "+nm:""}. You are signed in${joined?" and in the league <b>"+esc(joined)+"</b>":""}. Your squad now saves to your account on every device.</p>
+    <div class="row"><button class="btn on" id="wTeam">Pick your squad</button>${joined?`<button class="btn" id="wLeague">Open the league</button>`:""}</div>`
+   :`<svg class="tick bad" viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="40"/><path d="M33 33 l26 26 M59 33 l-26 26"/></svg>
+    <h2>That link did not work</h2><p>${AUTH_BACK.code==="otp_expired"?"The confirmation link has expired or was already used.":esc(AUTH_BACK.err||"The link could not be used.")} If you already confirmed your email, just sign in. Otherwise create the account again to get a new link.</p>
+    <div class="row"><button class="btn on" id="wSignIn">Sign in</button><button class="btn" data-close="1">Close</button></div>`;
+  $("#modal").innerHTML=`<div class="modal" data-close="1"><div class="sheet welcome" role="dialog" aria-modal="true" aria-label="${kind==="ok"?"Email confirmed":"Link problem"}">${body}</div></div>`;
+  if(kind==="ok")setTimeout(()=>burst(innerWidth/2,innerHeight*.3,70),500);
+}
 const SB_URL="https://hjpfmubvpvftxyyemltn.supabase.co",SB_KEY="sb_publishable_Ent2RuVrh-iKyjT1or8gOw_UFdZ74ch";
 let authEmail="",authPw="",authName="",authMode=pendingJoin?"up":"in",authMsg="",authBusy=false,copied="";
 function queueCloud(){if(!cloud.ready)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,1200)}
@@ -850,6 +882,7 @@ async function onSession(session){
   if(pendingJoin){const c=pendingJoin;if(myLeagues.includes(c)){clearPending();leagueMsg="You are already in "+lgName(c)+"."}
     else{const ok=await joinLeague(c,"");if(ok||/No league has that code|look right/.test(leagueMsg))clearPending()}tab="leagues"}
   render();
+  if(AUTH_BACK.ok&&!welcomed){welcomed=true;welcomeSheet("ok")}
 }
 async function initCloud(){
   try{
@@ -885,6 +918,7 @@ async function joinLeague(code,name){
   if(name){const r=await cloud.sb.from("leagues").insert({code,name:name.slice(0,40),owner:cloud.uid});if(r.error){leagueMsg="Could not create the league. Try again.";return false}}
   const m=await cloud.sb.from("league_members").insert({code,user_id:cloud.uid});
   if(m.error){leagueMsg=m.error.code==="23503"?"No league has that code.":"Could not join the league. Try again.";return false}
+  if(!name){try{const lg=await cloud.sb.from("leagues").select("name").eq("code",code).maybeSingle();if(lg.data&&lg.data.name)myLgn[code]=String(lg.data.name).slice(0,24)}catch(e){}}
   myLeagues.push(code);if(name){myLgn[code]=name;myOwn[code]=true}watchLeague(code);save();pushCloud();leagueMsg="Joined "+lgName(code)+".";return true;
 }
 document.addEventListener("input",e=>{const t=e.target;if(t.id==="authEmail")authEmail=t.value;if(t.id==="authPw")authPw=t.value;if(t.id==="authName")authName=t.value});
@@ -896,6 +930,7 @@ document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)r
 });
 
 render();initCloud();
+if(AUTH_BACK.err){welcomed=true;welcomeSheet("err")}
 </script>
 </body>
 </html>
