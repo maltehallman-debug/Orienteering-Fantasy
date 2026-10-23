@@ -180,7 +180,8 @@ while wk <= LAST_ROUND_START:
 print("rounds", len(rounds), [len(r["events"]) for r in rounds])
 
 # ---- prices ----
-PEXP = float(os.environ.get("PEXP", "2.6"))  # steep: a few stars cost far more than the field
+PTAU, PBETA = float(os.environ.get("PTAU", "11.5")), float(os.environ.get("PBETA", "1.35"))
+CLS = {k: clsc[k].most_common(1)[0][0] for k in pool}
 W0, DECAY = 2.0, 0.9
 allpts = [s["pts"] for e in events for s in e["scores"].values()]
 league_mean = sum(allpts) / len(allpts)
@@ -198,10 +199,15 @@ def prices_before(cutoff):
         for age, (_, p) in enumerate(reversed(ser_sorted[k][:n])):
             w = DECAY ** age; num += w * p; den += w
         ratings[k] = (num + W0 * m0) / (den + W0)
-    order = sorted(ratings, key=lambda k: ratings[k])
-    n = len(order)
-    # prices in thousands: about 2k for the weakest form up to 22k for the best
-    return {k: round(2.0 + 20.0 * ((i + 0.5) / n) ** PEXP, 1) for i, k in enumerate(order)}
+    # prices in thousands, set within each class (H16, D21, ...): the best runner 22k, two or three above 20k,
+    # about eight from 14k (gold), then a steep fall to 2-3.5k for most of the field
+    out = {}
+    for c in {CLS[k] for k in ratings}:
+        order = sorted((k for k in ratings if CLS[k] == c), key=lambda k: -ratings[k])
+        n = len(order)
+        # plus a gentle slope over the whole class so the field still differs (about 2.0k to 3.5k)
+        for i, k in enumerate(order): out[k] = round(2.0 + 18.5 * math.exp(-(i / PTAU) ** PBETA) + 1.5 * (1 - i / n) ** 1.5, 1)
+    return out
 price_by_round = []
 for r in rounds:
     pr = prices_before(dt.date.fromisoformat(r["start"]))

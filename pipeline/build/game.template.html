@@ -565,31 +565,79 @@ input.name{width:100%;max-width:380px}
 /* tiers by price */
 .tier{display:inline-flex;align-items:center;gap:4px;font:700 10px/1 var(--mono);letter-spacing:.04em;text-transform:uppercase;padding:4px 7px 4px 5px;border-radius:999px;white-space:nowrap}
 .tier svg{width:11px;height:11px}
-.t-gold{color:#92400e;background:linear-gradient(120deg,#fde68a,#fef3c7 45%,#fcd34d);box-shadow:inset 0 0 0 1px rgba(180,83,9,.25)}
-.t-silver{color:#334155;background:linear-gradient(120deg,#e2e8f0,#f8fafc 45%,#cbd5e1);box-shadow:inset 0 0 0 1px rgba(71,85,105,.22)}
-.t-bronze{color:#9a3412;background:linear-gradient(120deg,#fed7aa,#ffedd5 45%,#fdba74);box-shadow:inset 0 0 0 1px rgba(154,52,18,.22)}
-[data-theme="dark"] .t-gold{color:#fde68a;background:linear-gradient(120deg,#78350f,#92400e 50%,#713f12);box-shadow:inset 0 0 0 1px rgba(253,230,138,.25)}
-[data-theme="dark"] .t-silver{color:#f1f5f9;background:linear-gradient(120deg,#334155,#475569 50%,#334155);box-shadow:inset 0 0 0 1px rgba(226,232,240,.2)}
-[data-theme="dark"] .t-bronze{color:#fed7aa;background:linear-gradient(120deg,#7c2d12,#9a3412 50%,#7c2d12);box-shadow:inset 0 0 0 1px rgba(254,215,170,.2)}
-/* tier cards: the whole card takes the metal's colours */
-.rc.tier-gold{--t1:#92400e;--t2:#d97706;--t3:rgba(217,119,6,.16);--tbg:linear-gradient(165deg,#fffbeb 0%,#fef3c7 55%,#fde68a 100%)}
-.rc.tier-silver{--t1:#334155;--t2:#94a3b8;--t3:rgba(100,116,139,.14);--tbg:linear-gradient(165deg,#ffffff 0%,#f1f5f9 55%,#e2e8f0 100%)}
-.rc.tier-bronze{--t1:#9a3412;--t2:#ea580c;--t3:rgba(194,65,12,.13);--tbg:linear-gradient(165deg,#fff7ed 0%,#ffedd5 55%,#fed7aa 100%)}
-[data-theme="dark"] .rc.tier-gold{--t1:#fcd34d;--t2:#f59e0b;--t3:rgba(245,158,11,.16);--tbg:linear-gradient(165deg,#2b2412 0%,#3a2c0e 60%,#4a3510 100%)}
-[data-theme="dark"] .rc.tier-silver{--t1:#e2e8f0;--t2:#94a3b8;--t3:rgba(148,163,184,.14);--tbg:linear-gradient(165deg,#1c2533 0%,#263244 60%,#2f3b4f 100%)}
-[data-theme="dark"] .rc.tier-bronze{--t1:#fdba74;--t2:#ea580c;--t3:rgba(234,88,12,.15);--tbg:linear-gradient(165deg,#271812 0%,#341d12 60%,#432313 100%)}
-.rc[class*="tier-"]{background:var(--tbg);box-shadow:var(--shadow),inset 0 0 0 1.5px color-mix(in srgb,var(--t2) 45%,transparent),inset 0 3px 0 var(--t2)}
+.t-gold{color:#78350f;background:linear-gradient(110deg,#fcd34d,#fef3c7 30%,#fbbf24 55%,#fde68a 80%,#f59e0b);background-size:220% 100%;box-shadow:inset 0 0 0 1px rgba(180,83,9,.35),0 2px 8px -2px rgba(245,158,11,.55)}
+.t-silver{color:#1e293b;background:linear-gradient(110deg,#cbd5e1,#ffffff 30%,#e2e8f0 55%,#f8fafc 80%,#94a3b8);background-size:220% 100%;box-shadow:inset 0 0 0 1px rgba(71,85,105,.3),0 2px 8px -2px rgba(100,116,139,.45)}
+.t-bronze{color:#7c2d12;background:linear-gradient(110deg,#fb923c,#ffedd5 30%,#fdba74 55%,#fed7aa 80%,#ea580c);background-size:220% 100%;box-shadow:inset 0 0 0 1px rgba(154,52,18,.3),0 2px 8px -2px rgba(234,88,12,.45)}
+[data-theme="dark"] .t-gold{color:#422006;background:linear-gradient(110deg,#d97706,#fde68a 30%,#f59e0b 55%,#fcd34d 80%,#b45309);background-size:220% 100%}
+[data-theme="dark"] .t-silver{color:#0f172a;background:linear-gradient(110deg,#94a3b8,#f1f5f9 30%,#cbd5e1 55%,#e2e8f0 80%,#64748b);background-size:220% 100%}
+[data-theme="dark"] .t-bronze{color:#431407;background:linear-gradient(110deg,#c2410c,#fed7aa 30%,#fb923c 55%,#fdba74 80%,#9a3412);background-size:220% 100%}
+tbody tr.tr-gold td:first-child{box-shadow:inset 4px 0 0 #f59e0b}
+tbody tr.tr-silver td:first-child{box-shadow:inset 4px 0 0 #94a3b8}
+tbody tr.tr-bronze td:first-child{box-shadow:inset 4px 0 0 #ea580c}
+/* tier cards: the whole card is the metal. --t1 text accent, --t2 edge, --t3 tint, --tg glow, --tbg the plate, --tring the moving light on the edge */
+@property --ang{syntax:"<angle>";inherits:false;initial-value:0deg}
+.rc.tier-gold{--t1:#78350f;--t2:#d97706;--t3:rgba(146,64,14,.13);--tg:rgba(245,158,11,.55);
+  --tbg:linear-gradient(150deg,#fef3c7 0%,#fde68a 20%,#fcd34d 44%,#fbbf24 68%,#f59e0b 88%,#fcd34d 100%);
+  --tring:conic-gradient(from var(--ang),#b45309,#fde68a 12%,#fffbeb 18%,#f59e0b 30%,#b45309 50%,#fde68a 62%,#fffbeb 68%,#f59e0b 80%,#b45309)}
+.rc.tier-silver{--t1:#1e293b;--t2:#64748b;--t3:rgba(51,65,85,.1);--tg:rgba(100,116,139,.45);
+  --tbg:linear-gradient(150deg,#ffffff 0%,#f1f5f9 25%,#e2e8f0 50%,#cbd5e1 72%,#e2e8f0 88%,#f8fafc 100%);
+  --tring:conic-gradient(from var(--ang),#64748b,#f8fafc 12%,#ffffff 18%,#94a3b8 30%,#64748b 50%,#e2e8f0 62%,#ffffff 68%,#94a3b8 80%,#64748b)}
+.rc.tier-bronze{--t1:#7c2d12;--t2:#c2410c;--t3:rgba(124,45,18,.12);--tg:rgba(234,88,12,.45);
+  --tbg:linear-gradient(150deg,#fff7ed 0%,#ffedd5 24%,#fed7aa 50%,#fdba74 74%,#fb923c 92%,#fdba74 100%);
+  --tring:conic-gradient(from var(--ang),#9a3412,#fdba74 12%,#fff7ed 18%,#ea580c 30%,#9a3412 50%,#fed7aa 62%,#fff7ed 68%,#ea580c 80%,#9a3412)}
+[data-theme="dark"] .rc.tier-gold{--t1:#fde68a;--t2:#f59e0b;--t3:rgba(253,230,138,.14);--tg:rgba(245,158,11,.45);
+  --tbg:linear-gradient(150deg,#2a1f06 0%,#4a3508 30%,#78520a 60%,#a16207 85%,#713f12 100%)}
+[data-theme="dark"] .rc.tier-silver{--t1:#f1f5f9;--t2:#94a3b8;--t3:rgba(241,245,249,.12);--tg:rgba(148,163,184,.35);
+  --tbg:linear-gradient(150deg,#151c27 0%,#253042 30%,#3a4759 60%,#556377 85%,#334155 100%)}
+[data-theme="dark"] .rc.tier-bronze{--t1:#fed7aa;--t2:#ea580c;--t3:rgba(254,215,170,.12);--tg:rgba(234,88,12,.4);
+  --tbg:linear-gradient(150deg,#1f0f07 0%,#3b1a0b 30%,#6b2a0f 60%,#9a3412 85%,#5c220c 100%)}
+.rc[class*="tier-"]{overflow:hidden;isolation:isolate;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,-40%),rgba(255,255,255,var(--spot,0)),transparent 46%) 0 0/100% 100% no-repeat,var(--tbg) 0 0/240% 240%;
+  box-shadow:0 1px 2px rgba(0,0,0,.06),0 16px 36px -16px var(--tg),inset 0 1px 0 rgba(255,255,255,.55);
+  transition:transform .5s var(--ease-out),box-shadow .35s}
+[data-theme="dark"] .rc[class*="tier-"]{box-shadow:0 1px 2px rgba(0,0,0,.3),0 18px 40px -16px var(--tg),inset 0 1px 0 rgba(255,255,255,.08)}
+/* the metal edge: a 2px ring with a light running round it */
+.rc[class*="tier-"]::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;background:var(--tring);pointer-events:none;z-index:1;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.rc.tier-bronze::before{padding:1.5px}
 .rc[class*="tier-"] .price{color:var(--t1)}
 .rc[class*="tier-"] .cls{background:var(--t3);color:var(--t1)}
 .rc[class*="tier-"] .tm:not(.hi){background:var(--t3);color:var(--t1)}
-.rc[class*="tier-"] .av:not(.ph){box-shadow:0 0 0 2.5px color-mix(in srgb,var(--t2) 55%,transparent)}
-.rc[class*="tier-"] .boost:not(.on){background:color-mix(in srgb,var(--surface) 70%,transparent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--t2) 40%,transparent);color:var(--t1)}
+.rc[class*="tier-"] .sub,.rc[class*="tier-"] .meta .sub{color:color-mix(in srgb,var(--t1) 72%,var(--text-2))}
+.rc[class*="tier-"] .av:not(.ph){box-shadow:0 0 0 2.5px var(--t2),0 6px 14px -6px var(--tg)}
+.rc[class*="tier-"] .av.ph{box-shadow:0 0 0 2.5px var(--t2)}
+.rc[class*="tier-"] .boost:not(.on){background:color-mix(in srgb,var(--surface) 62%,transparent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--t2) 55%,transparent);color:var(--t1);backdrop-filter:blur(4px)}
+.rc[class*="tier-"] .sw,.rc[class*="tier-"] .rm{color:color-mix(in srgb,var(--t1) 70%,transparent)}
 .rc[class*="tier-"] .who{color:var(--text)}
-.rc.boosted[class*="tier-"]{box-shadow:var(--shadow),inset 0 0 0 2px var(--accent),inset 0 4px 0 var(--t2)}
+[data-theme="dark"] .rc[class*="tier-"] .who{color:#fff}
+.rc[class*="tier-"]>*{position:relative;z-index:2}
+.rc[class*="tier-"]>.top{position:static}
+.rc[class*="tier-"]>.tm,.rc[class*="tier-"] .ctrl{position:absolute;z-index:4}
+.rc[class*="tier-"] .av{position:relative;z-index:2}
+.rc.boosted[class*="tier-"]{box-shadow:0 0 0 2.5px var(--accent),0 18px 40px -14px var(--accent),inset 0 1px 0 rgba(255,255,255,.4)}
 @media (prefers-reduced-motion:no-preference){
-  .rc.tier-gold:not(.boosted){overflow:hidden}
-  .rc.tier-gold:not(.boosted)::after{content:"";position:absolute;inset:-40% auto -40% -60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);animation:sweep 7s var(--ease-io) 2s infinite;pointer-events:none}
-  [data-theme="dark"] .rc.tier-gold:not(.boosted)::after{background:linear-gradient(100deg,transparent,rgba(253,230,138,.12),transparent)}
+  .t-gold,.t-silver,.t-bronze{animation:chipSheen 4s linear infinite}
+  @keyframes chipSheen{to{background-position:-220% 0}}
+  .rc[class*="tier-"]{animation:metal 9s ease-in-out infinite alternate}
+  @keyframes metal{0%{background-position:0 0,0% 0%}100%{background-position:0 0,100% 100%}}
+  .rc[class*="tier-"]::before{animation:ring 6s linear infinite}
+  .rc.tier-gold::before{animation-duration:3.6s}
+  .rc.tier-bronze::before{animation-duration:8s}
+  @keyframes ring{to{--ang:360deg}}
+  /* a bright sweep across the plate now and then; gold more often */
+  .rc[class*="tier-"]:not(.boosted)::after{content:"";position:absolute;z-index:3;inset:-40% auto -40% -60%;width:42%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.7),transparent);transform:skewX(-18deg);animation:sweep 6s var(--ease-io) 1.2s infinite;pointer-events:none;mix-blend-mode:soft-light}
+  .rc.tier-gold:not(.boosted)::after{animation-duration:4.2s;mix-blend-mode:normal;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent)}
+  .rc.tier-silver:not(.boosted)::after{animation-delay:2.2s}
+  .rc.tier-bronze:not(.boosted)::after{animation-delay:3.4s;animation-duration:8s}
+  [data-theme="dark"] .rc.tier-gold:not(.boosted)::after{background:linear-gradient(100deg,transparent,rgba(253,230,138,.28),transparent)}
+  [data-theme="dark"] .rc[class*="tier-"]:not(.boosted)::after{mix-blend-mode:normal;background:linear-gradient(100deg,transparent,rgba(255,255,255,.12),transparent)}
+  /* a new gold or silver card lands with a flash */
+  .rc.pop.tier-gold,.rc.pop.tier-silver{animation:popIn .9s var(--spring) both,metal 9s ease-in-out .9s infinite alternate}
+  .rc.pop.tier-gold::after{animation:sweep 1.1s var(--ease-out) .25s 1}
+}
+@media (hover:hover) and (pointer:fine){
+  .rc[class*="tier-"].tilt{transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-4px) scale(1.02);transition:transform .12s linear,box-shadow .35s;--spot:.55;box-shadow:0 2px 4px rgba(0,0,0,.08),0 28px 50px -18px var(--tg),inset 0 1px 0 rgba(255,255,255,.6)}
+  [data-theme="dark"] .rc[class*="tier-"].tilt{--spot:.16}
 }
 /* chips */
 .chipgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -728,6 +776,15 @@ function armReveals(){
   document.querySelectorAll("#view h2,#view .card,#view .rc,#view .tbl,#view .filters,#view .hl,#view .two>aside,#view .next,#view .kv>div").forEach(el=>{
     const r=el.getBoundingClientRect(),seen=r.top<innerHeight*.92&&r.bottom>0;
     el.classList.add("rv");if(seen)el.classList.add("in");else el.style.setProperty("--rd",((n++%4)*.08)+"s");revealIO.observe(el)});
+}
+/* tier cards lean towards the pointer and catch the light where it is */
+if(!RM&&matchMedia("(hover:hover) and (pointer:fine)").matches){
+  let tcard=null;
+  addEventListener("pointermove",e=>{const c=e.target.closest&&e.target.closest('.rc[class*="tier-"]');
+    if(tcard&&tcard!==c){tcard.classList.remove("tilt");tcard.style.removeProperty("--rx");tcard.style.removeProperty("--ry")}
+    tcard=c;if(!c)return;const b=c.getBoundingClientRect(),x=(e.clientX-b.left)/b.width,y=(e.clientY-b.top)/b.height;
+    c.classList.add("tilt");c.style.setProperty("--rx",((.5-y)*10).toFixed(2)+"deg");c.style.setProperty("--ry",((x-.5)*12).toFixed(2)+"deg");c.style.setProperty("--mx",(x*100).toFixed(1)+"%");c.style.setProperty("--my",(y*100).toFixed(1)+"%")},{passive:true});
+  document.addEventListener("pointerleave",()=>{if(tcard){tcard.classList.remove("tilt");tcard=null}});
 }
 let lastPX=innerWidth/2,lastPY=innerHeight/2;
 addEventListener("pointerdown",e=>{lastPX=e.clientX;lastPY=e.clientY},{passive:true,capture:true});
@@ -949,7 +1006,7 @@ function marketRows(){
 }
 function marketBody(rows){
   return (rows.slice(0,shown).map(x=>{const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
-   return `<tr class="${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><button class="who" data-prof="${x.i}">${esc(x.n)}</button><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.starts?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
+   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><button class="who" data-prof="${x.i}">${esc(x.n)}</button><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.starts?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
    <td>${inS?`<button class="btn" data-sell="${x.i}">Remove</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Add</button>`}</td></tr>`}).join("")||`<tr><td colspan="10" class="note">No runners match. Clear the search or a filter.</td></tr>`);
 }
 const moreBtn=rows=>rows.length>shown?`<button class="btn" id="more">Show ${Math.min(40,rows.length-shown)} more</button>`:"";
