@@ -834,10 +834,7 @@ function resetLocal(){state=E.newState(LIVE);plan={squad:[],a:[],captain:null,vi
 const save=()=>{autoSave();localTs=Date.now();try{localStorage.setItem(KEY,JSON.stringify(blob()))}catch(e){}queueCloud()};
 const R=()=>state.round, done=()=>state.round>=E.R, pr=()=>Math.min(state.round,E.R-1);
 const isFinal=r=>r<E.R&&!!D.rounds[r].final;
-/* squads lock at the round's deadline: the Wednesday before it starts, 20:00 Swedish time */
-const lockMs=r=>Date.parse(D.rounds[r].lock||D.rounds[r].start+"T00:00:00+01:00");
-const hasStarted=r=>r<E.R&&Date.now()>=lockMs(r);
-const lockText=r=>{const t=new Date(lockMs(r));try{return t.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"short",timeZone:"Europe/Stockholm"}).replace(",","")+" at "+t.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Stockholm"})}catch(e){return "Wednesday "+dshort(D.rounds[r].start)+" at 20:00"}};
+const hasStarted=r=>r<E.R&&TODAY>=D.rounds[r].start;
 const isLive=()=>state.start===LIVE;
 const daysTo=d=>Math.round((Date.parse(d+"T00:00:00Z")-Date.parse(TODAY+"T00:00:00Z"))/864e5);
 /* a locked squad is scored automatically as soon as the round's results are in the data */
@@ -1064,11 +1061,11 @@ function liveNow(){
   return `<div class="livestrip"><div><span class="livedot">Live</span> <span class="note">Round ${D.rounds[L.round].n}${L.carried?", last round's squad is playing":""}</span><div style="margin-top:6px"><b>${fp(L.total)}</b> <span class="note">points so far</span></div></div><button class="btn" data-tab="rounds">Your runners</button></div>`;
 }
 function hero(r){
-  const rd=D.rounds[r],ms=lockMs(r)-Date.now(),d=Math.round(ms/864e5),h=Math.max(1,Math.ceil(ms/36e5)),u=comps(r),first=u[0];
+  const rd=D.rounds[r],d=daysTo(rd.start),u=comps(r),first=u[0];
   const title=first?esc(first.n.replace(/:.*/,"").replace(/,.*/,"")):"Week of "+dshort(rd.start);
   const when=dshort(rd.start)+" – "+dshort(rd.end);
   const side=isFinal(r)?`<span class="eyebrow">Scored</span>`:hasStarted(r)?`<span class="livedot">Live</span>`:
-    `<span class="eyebrow">Locks in</span><span class="num">${ms>=36*36e5?d+" days":h+(h===1?" hour":" hours")}</span><span class="sub">${esc(lockText(r))}</span>`;
+    `<span class="eyebrow">Locks ${d===1?"tomorrow":"in"}</span>${d===1?"":`<span class="num">${d} days</span>`}<span class="sub">Monday ${dshort(rd.start)}</span>`;
   return `<div class="next"><div class="next-main"><span class="next-k">Round ${rd.n} · ${when}</span><b>${title}</b>${u.length>1?`<button class="sub wklink" data-week="${r}">and ${u.length-1} more race${u.length===2?"":"s"} this week →</button>`:`<button class="sub wklink" data-week="${r}">Week calendar →</button>`}</div><div class="next-side">${side}</div></div>`;
 }
 function teamView(){
@@ -1102,7 +1099,7 @@ function teamView(){
    <dl><dt>Transfers</dt><dd>${!state.squad.length?"free":t.n+" of "+D.freeTransfers+" free"}</dd><dt>Penalty</dt><dd class="${pen?"dn":""}">${pen?"-"+fp(pen):"none"}</dd><dt>Bank after</dt><dd class="${E.bankAfter(state,plan.squad)<0?"dn":""}">${fm(E.bankAfter(state,plan.squad))}</dd></dl>
    <div><span class="eyebrow">Chips · one use each</span><div style="margin-top:10px">${chipsHtml}</div></div>
    ${errs.length&&!locked?`<ul class="errs">${errs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
-   ${isLive()?(saved?`<div class="savest" id="savest"><i>✓</i><span>Saved for round ${rd.n}<small>Locks automatically ${esc(lockText(r))}</small></span></div>`
+   ${isLive()?(saved?`<div class="savest" id="savest"><i>✓</i><span>Saved for round ${rd.n}<small>Locks automatically Monday ${cd}</small></span></div>`
        :`<div class="savest warn" id="savest"><i>!</i><span>${plan.squad.length?"Not saved yet":"No squad yet"}<small>${picks[r]?"Your last complete squad plays until this one is complete.":state.squad.length?"Last round's squad plays until this one is complete.":"It saves by itself once all "+D.squad+" runners are picked."}</small></span></div>`)
      :`<button class="btn go" id="play" ${errs.length||hasStarted(r)&&!fin?"disabled":""}>Play round ${rd.n}</button>`}
    ${isLive()&&syncMsg?`<p class="note" style="margin:0;color:var(--warn)">${esc(syncMsg)}</p>`:""}
@@ -1220,7 +1217,7 @@ function standings(code){
 function leagueTable(code){
   const st=standings(code),{rows,cur,prev}=st;
   if(!rows.length)return `<p class="note">Loading members…</p>`;
-  if(cur===undefined)return `<p class="note" style="margin:6px 0 10px">The first deadline is ${esc(lockText(LIVE))}. Teams and points show here once round ${D.rounds[LIVE].n} has locked.</p>
+  if(cur===undefined)return `<p class="note" style="margin:6px 0 10px">The live season starts on Monday ${dshort(D.rounds[LIVE].start)}. Teams and points show here once round ${D.rounds[LIVE].n} has started.</p>
    <div class="lgmembers">${rows.map(m=>`<span class="tag">${mgrDot(m)} ${esc(m.name)}${m.id===cloud.uid?" (you)":""}</span>`).join("")}</div>`;
   const live=!isFinal(cur);
   return `<div class="tbl lgt"><table><thead><tr><th>#</th><th>Team</th><th>R${D.rounds[cur].n}${live?' <span class="livedot">live</span>':""}</th>${prev!==undefined?`<th class="prevcol">R${D.rounds[prev].n}</th>`:""}<th>Total</th></tr></thead><tbody>
@@ -1288,14 +1285,14 @@ function managerSheet(code,id,r0){
    <div class="hd"><div style="display:flex;gap:14px;align-items:center">${mgrDot(m,1)}<div><h2>${esc(m.name)}${id===cloud.uid?' <span class="sub">(you)</span>':""}</h2>${m.team?`<div class="sub">Manager: ${esc(m.mgr)}</div>`:""}<div class="sub">${row?"Rank "+row.rank+" of "+st.rows.length+", ":""}${fp(m.total)} points, ${chipTags(m)}</div></div></div><button class="btn" data-close="1">Close</button></div>
    <div class="mbars" role="img" aria-label="Points per round">${bars.map(b=>`<button class="${b.q===r?"on":""}" data-mgrr="${esc(code)}|${esc(id)}|${b.q}" ${b.has?"":"disabled"} title="Round ${D.rounds[b.q].n}: ${b.has?fp(b.v):"no squad"}"><i style="height:${Math.max(3,Math.round(Math.max(0,b.v)/mx*64))}px"></i><span>${D.rounds[b.q].n}</span></button>`).join("")}</div>
    ${body}
-   ${openRound()<E.R?`<p class="note" style="margin-top:12px">${id===cloud.uid?(picks[openRound()]?"Your squad for round "+D.rounds[openRound()].n+" is saved.":"You have no complete squad for round "+D.rounds[openRound()].n+" yet."):"Squads for round "+D.rounds[openRound()].n+" stay hidden until the deadline, "+lockText(openRound())+"."}</p>`:""}`,true);
+   ${openRound()<E.R?`<p class="note" style="margin-top:12px">${id===cloud.uid?(picks[openRound()]?"Your squad for round "+D.rounds[openRound()].n+" is saved.":"You have no complete squad for round "+D.rounds[openRound()].n+" yet."):"Squads for round "+D.rounds[openRound()].n+" stay hidden until it starts on Monday "+dshort(D.rounds[openRound()].start)+"."}</p>`:""}`,true);
 }
 function inviteBanner(){
   return pendingJoin&&!myLeagues.includes(pendingJoin)?`<div class="invite"><span class="next-k">You are invited</span><b>${esc(lgName(pendingJoin))}</b><span class="note">${dbOk?"Joining the league…":"Create an account or sign in, and you join this league automatically."}</span></div>`:"";
 }
 function leaguesView(){
   if(dbOk&&lgOpen&&myLeagues.includes(lgOpen))return leagueDetail(lgOpen);
-  if(!dbOk)return `<h2 style="margin-top:0">Leagues</h2>${inviteBanner()}<div class="grid2"><div class="card"><h3>Play against your friends</h3><p class="note" style="margin:0 0 14px">Leagues need an account, so everyone's squad and points are saved.</p><button class="btn light" data-tab="profile">Sign in or create an account</button></div><div class="card"><h3>How leagues work</h3><ol class="steps"><li>Create an account and host a league.</li><li>Send the invite link. Friends sign up and land in your league.</li><li>Everyone picks a squad before the deadline, Wednesday at 20:00.</li><li>From then on you see each other's teams and points.</li></ol></div></div>`;
+  if(!dbOk)return `<h2 style="margin-top:0">Leagues</h2>${inviteBanner()}<div class="grid2"><div class="card"><h3>Play against your friends</h3><p class="note" style="margin:0 0 14px">Leagues need an account, so everyone's squad and points are saved.</p><button class="btn light" data-tab="profile">Sign in or create an account</button></div><div class="card"><h3>How leagues work</h3><ol class="steps"><li>Create an account and host a league.</li><li>Send the invite link. Friends sign up and land in your league.</li><li>Everyone locks a squad before Monday.</li><li>From then on you see each other's teams and points.</li></ol></div></div>`;
   return `<h2 style="margin-top:0">Leagues</h2>${inviteBanner()}
   ${isLive()?"":`<p class="note" style="margin:0 0 12px;color:var(--warn)">You are in a practice replay. Leagues only count the live season.</p>`}
   <div class="grid2">
@@ -1311,7 +1308,7 @@ function rulesView(){
   <li><b>A team and B team.</b> Your first five are the A team and score double. The other five are the B team and score normal points. Swap runners between them any time before the round starts.</li>
   <li><b>Boost</b> one runner each round to double their points again (an A-team runner then counts ×4). No race, no boost.</li>
   <li><b>Tiers</b> follow price: Gold from ${fm(D.tiers[0])}, Silver from ${fm(D.tiers[1])}, Bronze below that. Prices move with form, so a runner can move up or down a tier.</li>
-  <li>A round is one week, Thursday to Wednesday. Your squad saves itself and locks at the deadline, Wednesday at 20:00 just before the round starts. If it is not complete, your last complete squad plays. The live season runs ${dshort(D.rounds[LIVE].start)} to ${dshort(D.rounds[E.R-1].end)}.</li>
+  <li>A round is one week, Monday to Sunday. Your squad saves itself and locks when the round starts. If it is not complete, your last complete squad plays. The live season runs ${dshort(D.rounds[LIVE].start)} to ${dshort(D.rounds[E.R-1].end)}.</li>
   <li>In a league, other managers see your team and points once a round has started, never before.</li>
   <li>${D.freeTransfers} free transfers a round after your first squad. Each extra one costs ${D.penalty/10} points. Runners sell at today's price.</li>
   <li><b>Chips</b>, one use each and one per round: Wildcard (free transfers), 3x Boost, A-team double (A team ×4), B-team boost (B team ×2) and Youth surge (D16 and H16 runners score double).</li></ul></div>
