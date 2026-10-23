@@ -42,7 +42,7 @@ data = {"runners": runners, "events": out_events, "rounds": out_rounds, "res": r
         "asof": ASOF, "upcoming": [dict({"name": u["name"], "date": u["date"]}, **({"lr": u["id"]} if u.get("id") else {})) for u in upcoming], "liveStart": live_start,
         # money is in tenths of a thousand (205 = 20.5k); ten runners, the first five are the A team and score double
         "budget": 1000, "squad": 10, "aSize": 5, "clubMax": 3, "freeTransfers": 3, "penalty": 40, "dnfPts": -50,
-        # price tiers (lower bounds): diamond, gold, silver; everything below is bronze
-        "tiers": [160, 100, 50]}
+        # price tiers (lower bounds): gold, silver; everything below is bronze
+        "tiers": [140, 60]}
 json.dump(data, open(f"{S}/build/data.json", "w"), ensure_ascii=False, separators=(",", ":"))
 print("runners", len(runners), "events", len(out_events), "rounds", len(out_rounds), "bytes", os.path.getsize(f"{S}/build/data.json"), "upcoming", len(upcoming))
