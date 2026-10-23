@@ -484,6 +484,7 @@ input.name{width:100%;max-width:380px}
 #reel .t em{font-style:normal;color:var(--accent);display:flex;gap:.02em}
 #reel .k{font:500 11px var(--mono);letter-spacing:.3em;text-transform:uppercase;color:var(--text-3);animation:fadeUp 1s var(--ease-cine) 1.7s both}
 #reel{animation:curtain 1.1s var(--ease-io) 2.5s forwards}
+#reel.skip{animation:curtain .45s var(--ease-out) forwards}
 @keyframes flagIn{from{transform:scale(0) rotate(-90deg);opacity:0}}
 @keyframes letterIn{from{opacity:0;transform:translateY(.6em) rotate(6deg);filter:blur(8px)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}}
@@ -916,15 +917,18 @@ function drawTerrain(){
   el.setAttribute("viewBox",`0 0 ${W} ${H}`);el.innerHTML=out;
 }
 drawTerrain();
-/* opening titles: once per visit, never when arriving from an email or invite link, never with reduced motion */
+/* opening titles: on every page load (a reload too), never when arriving from an email or invite link, never with
+   reduced motion. A tap, scroll or key press sends them off early. */
 (function reel(){
-  let seen=false;try{seen=sessionStorage.getItem("of-reel")==="1";sessionStorage.setItem("of-reel","1")}catch(e){}
-  if(seen||RM||/access_token|error=|join=/.test(location.href))return;
+  if(RM||/access_token|error=|join=/.test(location.href))return;
   let n=0;const word=w=>[...w].map(c=>`<span style="--i:${n++}">${c}</span>`).join("");
   const letters=word("Orienteering")+`<span style="--i:${n++}">&nbsp;</span><em>${word("Fantasy")}</em>`;
   const r=document.createElement("div");r.id="reel";r.setAttribute("aria-hidden","true");
   r.innerHTML=`<div class="in"><svg viewBox="0 0 28 28"><circle class="ring" cx="14" cy="14" r="12.5"/><g class="flag"><path d="M8 8h12v12H8z" fill="#fff"/><path d="M20 8v12H8z" fill="#f06a2b"/><path d="M8 8h12v12H8z" fill="none" stroke="rgba(0,0,0,.25)" stroke-width=".8"/></g></svg><div class="t">${letters}</div><div class="k">D/H 16–21 · live season</div></div>`;
   document.body.appendChild(r);setTimeout(()=>r.remove(),3800);
+  const skip=()=>{if(!r.isConnected||r.classList.contains("skip"))return;r.classList.add("skip");setTimeout(()=>r.remove(),500);off()};
+  const evs=["pointerdown","wheel","keydown","touchstart"],off=()=>evs.forEach(e=>removeEventListener(e,skip,true));
+  evs.forEach(e=>addEventListener(e,skip,{capture:true,passive:true}));setTimeout(off,3800);
 })();
 /* the map moves slower than the page: depth */
 if(!RM){let raf=0;addEventListener("scroll",()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const p=document.getElementById("par");if(p)p.style.transform=`translate3d(0,${(-scrollY*.18).toFixed(1)}px,0)`})},{passive:true})}
