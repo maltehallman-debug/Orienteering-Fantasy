@@ -25,7 +25,12 @@ import base64
 _pp = f"{S}/data/photos.json"
 if os.path.exists(_pp):
     _ix = {r["id"]: r for r in runners}
+    # an old "name|H" key still works when exactly one runner has that name
+    _legacy = {}
+    for r in runners:
+        n, *_, g = r["id"].split("|"); _legacy.setdefault(f"{n}|{g}", []).append(r["id"])
     for rid, fn in json.load(open(_pp, encoding="utf-8")).items():
+        if rid not in _ix and len(_legacy.get(rid, [])) == 1: rid = _legacy[rid][0]
         if rid in _ix and os.path.exists(f"{S}/data/photos/{fn}"):
             _ix[rid]["ph"] = "data:image/jpeg;base64," + base64.b64encode(open(f"{S}/data/photos/{fn}", "rb").read()).decode()
         else:

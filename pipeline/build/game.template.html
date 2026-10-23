@@ -740,6 +740,8 @@ function burst(x,y){
 const centerOf=el=>{const b=el.getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2]};
 /* saved squads use stable runner ids, never array positions: the data is rebuilt daily and positions shift */
 const RI=new Map(D.runners.map((r,i)=>[r.id,i]));
+/* runners used to be "name|H"; now they are "name|club|H". An old id still finds its runner when only one runner has that name */
+{const leg=new Map();D.runners.forEach((r,i)=>{const p=r.id.split("|"),k=p[0]+"|"+p[p.length-1];leg.set(k,leg.has(k)?-1:i)});leg.forEach((i,k)=>{if(i>=0&&!RI.has(k))RI.set(k,i)})}
 const rk=i=>i==null?null:D.runners[i].id, ri=k=>k==null?null:(RI.has(k)?RI.get(k):null);
 const mapIds=(o,f)=>{const g=a=>(a||[]).map(f).filter(x=>x!==null);return o&&Object.assign({},o,{squad:g(o.squad),captain:f(o.captain),vice:f(o.vice)},o.a?{a:g(o.a)}:{})};
 const packSt=st=>Object.assign(mapIds(st,rk),{log:st.log.map(l=>Object.assign(mapIds(l,rk),{capLive:rk(l.capLive),in:(l.in||[]).map(rk),out:(l.out||[]).map(rk)}))});
@@ -1293,7 +1295,7 @@ function profile(i){
    ${photoSection(i)}`);
 }
 function photoSection(i){
-  const id=D.runners[i].id,mine=myPhotos.filter(x=>x.runner_id===id);
+  const id=D.runners[i].id,mine=myPhotos.filter(x=>RI.get(x.runner_id)===i);
   const list=mine.map(x=>`<div class="mine"><span>Your photo <span class="st ${x.status}">${x.status==="approved"?"shown":x.status==="pending"?"waiting for approval":"not approved"}</span></span><button class="btn quiet" data-phdel="${esc(x.id)}">${x.status==="approved"?"Remove it":"Withdraw"}</button></div>`).join("");
   if(!dbOk)return `<div class="phbox"><h3>Is this you?</h3><p class="note" style="margin:0">Sign in to add your own photo${youthCls(i)?", or a parent or guardian can add it for you":""}. It shows on your card once it has been approved.</p><div class="row"><button class="btn" id="phSignIn">Sign in to add a photo</button></div></div>`;
   if(!phForm||phForm.i!==i)return `<div class="phbox"><h3>Is this you?</h3>${list}<p class="note" style="margin:0">Add your own photo${youthCls(i)?". For runners in D/H 16 and 18 a parent or guardian must send it":""}. It shows on this card once it has been approved.</p><div class="row"><button class="btn on" data-phopen="${i}">Add a photo</button></div></div>`;
@@ -1345,7 +1347,7 @@ async function loadPhotos(){
   const sb=cloud.sb;if(!sb)return;
   try{
     const a=await sb.from("photo_submissions").select("runner_id,path,reviewed_at").eq("status","approved");
-    if(!a.error){photoUrl.clear();(a.data||[]).sort((x,y)=>String(x.reviewed_at).localeCompare(String(y.reviewed_at))).forEach(x=>photoUrl.set(x.runner_id,photoPublic(x.path)))}
+    if(!a.error){photoUrl.clear();(a.data||[]).sort((x,y)=>String(x.reviewed_at).localeCompare(String(y.reviewed_at))).forEach(x=>{const i=RI.get(x.runner_id);if(i!==undefined)photoUrl.set(D.runners[i].id,photoPublic(x.path))})}
     if(cloud.uid){const m=await sb.from("photo_submissions").select("id,runner_id,path,status,created_at").eq("user_id",cloud.uid);if(!m.error)myPhotos=m.data||[]}else myPhotos=[];
     if(cloud.admin){const q=await sb.from("photo_submissions").select("id,runner_id,path,relation,created_at").eq("status","pending");if(!q.error)pendingPhotos=(q.data||[]).sort((x,y)=>String(x.created_at).localeCompare(String(y.created_at)))}else pendingPhotos=[];
   }catch(e){}
@@ -1375,7 +1377,7 @@ async function approvePhoto(id){
 }
 function reviewCard(){
   if(!cloud.admin)return "";
-  const byId=new Map(D.runners.map((r,i)=>[r.id,i]));
+  const byId=RI;
   return `<div class="card"><h3>Photos waiting for approval (${pendingPhotos.length})</h3>
    <p class="note" style="margin:0 0 10px">Approve only photos that clearly show this runner. Runners in D/H 16 and 18 need a parent or guardian to send them.</p>
    <div class="review">${pendingPhotos.map(x=>{const i=byId.get(x.runner_id);return `<div class="it"><img src="${esc(photoPublic(x.path))}" alt=""><div><b>${esc(i!==undefined?nameOf(i):x.runner_id)}</b><div class="sub">${i!==undefined?esc(D.runners[i].k+", "+clubOf(i)):"Runner not in the current data"}</div><div class="sub">${{self:"Sent by the runner",guardian:"Sent by a parent or guardian",admin:"Added by an admin"}[x.relation]||""}, ${dshort(String(x.created_at).slice(0,10))}</div></div>

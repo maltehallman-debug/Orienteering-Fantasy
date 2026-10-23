@@ -63,7 +63,28 @@ for e in events:
 print("duplicate race copies dropped", len(events) - len(_best))
 events = sorted(_best.values(), key=lambda e: (e["date"], e["id"]))
 print("counted event-classes", len(events))
-rkey = lambda r, e: r["name"].strip().lower() + "|" + e["g"]
+# one runner = same name, same club, same sex. Two people who share a name but run for different clubs stay apart.
+# Results under a district association ("... OF"), a "förbund" or with no club go to the runner's real club when
+# exactly one runner of that name has one; otherwise they stay a separate runner.
+def nclub(c): return re.sub(r"\s+", " ", (c or "").strip()).lower()
+NONCLUB = re.compile(r"^$|\bof$|orienteringsförbund|förbund$")
+_real = collections.defaultdict(set)
+for e in events:
+    for r in e["rows"]:
+        c = nclub(r["club"])
+        if started(r) and not NONCLUB.search(c): _real[(r["name"].strip().lower(), e["g"])].add(c)
+# spellings of one club ("1900 Orientering" and "Aarhus 1900 Orientering"): a name that sits whole inside the other is the same club
+_canon = {}
+for nk, cs in _real.items():
+    for c in cs:
+        longer = [o for o in cs if o != c and len(c) >= 6 and re.search(r"(^|\s)" + re.escape(c) + r"($|\s)", o)]
+        if len(longer) == 1: _canon[(nk, c)] = longer[0]
+for nk in list(_real): _real[nk] = {_canon.get((nk, c), c) for c in _real[nk]}
+def rkey(r, e):
+    n, c, g = r["name"].strip().lower(), nclub(r["club"]), e["g"]
+    c = _canon.get(((n, g), c), c)
+    if NONCLUB.search(c) and len(_real.get((n, g), ())) == 1: c = next(iter(_real[(n, g)]))
+    return f"{n}|{c}|{g}"
 
 # ---- strength ratings (field-adjusted log-time model), vectorised ----
 keys_all = sorted({rkey(r, e) for e in events for r in e["fin"]})
