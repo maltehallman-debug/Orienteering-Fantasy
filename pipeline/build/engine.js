@@ -38,17 +38,20 @@ function makeEngine(D) {
     t.inn.forEach(i => b -= price(i, r));
     return b;
   }
-  function planErrors(state, plan) {
+  // opts.budget === false skips the budget check: prices move after a squad is locked, so a squad that was
+  // affordable when it was locked must still count when the round is scored
+  function planErrors(state, plan, opts) {
     const r = state.round, e = errors(plan.squad, r);
     if (!plan.squad.includes(plan.captain)) e.push("Pick a runner to boost");
     if (plan.chip && !["wc", "tc"].includes(plan.chip)) e.push("Unknown chip");
     if (plan.chip && state.chips[plan.chip]) e.push("Chip already used");
     if (plan.chip === "wc" && !state.squad.length) e.push("Wildcard cannot be used for the opening squad");
-    if (bankAfter(state, plan.squad) < 0) e.push("Over budget");
+    // a bank that went negative only because prices moved never blocks keeping the same squad
+    if (!(opts && opts.budget === false)) { const b = bankAfter(state, plan.squad); if (b < 0 && b < state.bank) e.push("Over budget"); }
     return e;
   }
-  function play(state, plan) {
-    const e = planErrors(state, plan);
+  function play(state, plan, opts) {
+    const e = planErrors(state, plan, opts);
     if (e.length) throw new Error(e.join("; "));
     const r = state.round, t = transfersFor(state, plan.squad);
     const penalty = plan.chip === "wc" ? 0 : Math.max(0, t.n - D.freeTransfers) * D.penalty;
@@ -66,6 +69,29 @@ function makeEngine(D) {
       log: state.log.concat([{ round: r, squad: plan.squad.slice(), captain: plan.captain, vice: null, capLive, chip: plan.chip || null, transfers: t.n, penalty, base, capExtra, total, in: t.inn, out: t.out }])
     };
     return { state: ns, result: { rows, base, capExtra, penalty, total, capLive, mult, transfers: t.n } };
+  }
+  // ----- live season: one locked squad per round, the last squad carries over when none is locked -----
+  // picks: { roundIndex: { squad, captain, chip } } with runner indices. Rounds from start to upto (inclusive) are
+  // scored with whatever results are in, so a round in progress gives provisional points. Every client runs this
+  // same function on the same published squads, so every league table shows the same numbers.
+  function season(picks, start, upto) {
+    let st = newState(start), prev = null;
+    const rounds = [];
+    for (let r = start; r <= upto && r < R; r++) {
+      st.round = r;
+      let p = picks[r] ? { squad: picks[r].squad.slice(), captain: picks[r].captain, chip: picks[r].chip || null } : null, carried = false;
+      if (p && p.chip && st.chips[p.chip]) p.chip = null;
+      if (!p || planErrors(st, p, { budget: false }).length) {
+        if (!prev) continue; // no squad yet: the manager joins later
+        p = { squad: prev.squad.slice(), captain: prev.captain, chip: null }; carried = true;
+      }
+      let o;
+      try { o = play(st, p, { budget: false }); } catch (e) { continue; }
+      st = o.state; prev = p;
+      rounds.push(Object.assign({ round: r, carried, rows: o.result.rows, mult: o.result.mult }, st.log[st.log.length - 1]));
+    }
+    st.round = Math.max(st.round, Math.min(upto + 1, R));
+    return { state: st, rounds };
   }
   // ----- benchmarks -----
   function rating(i, r, m0) {
@@ -119,6 +145,6 @@ function makeEngine(D) {
     const a = []; for (let i = 0; i < N; i++) if (starts[r][i]) a.push([i, pts[r][i]]);
     return a.sort((x, y) => y[1] - x[1]).slice(0, k);
   }
-  return { R, N, pts, starts, hist, visible, stats, price, errors, newState, transfersFor, bankAfter, planErrors, play, bots, roundBest, greedy, rating, leagueMean };
+  return { R, N, pts, starts, hist, visible, stats, price, errors, newState, transfersFor, bankAfter, planErrors, play, season, bots, roundBest, greedy, rating, leagueMean };
 }
 if (typeof module !== "undefined") module.exports = { makeEngine };
