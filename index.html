@@ -1824,47 +1824,85 @@ async function mergeLineups(){
   if(push.length){const u=await cloud.sb.from("squads").upsert(push);if(u.error)syncMsg="Your squad is saved on this device, but not to your account yet."}
   for(const r of drop)await cloud.sb.from("squads").delete().eq("user_id",cloud.uid).eq("round",+r);
 }
-/* the global top 20: everyone who has a squad in a started round (the account lets every player read those) */
-async function fetchGlobal(){
-  const sb=cloud.sb;if(!sb||!cloud.uid)return;
-  try{
-    const last=openRound()-1;if(last<LIVE){leagueRows.GLOBAL=[];return}
-    let all=[];for(let at=0;;at+=1000){const q=await sb.from("squads").select("user_id,round,squad,captain,chip").gte("round",LIVE).lte("round",last).order("user_id").order("round").range(at,at+999);if(q.error)return;all=all.concat(q.data||[]);if(!q.data||q.data.length<1000)break}
-    const ids=[...new Set(all.map(x=>x.user_id))];
-    let pf=[];for(let k=0;k<ids.length;k+=200){const q=await sb.from("profiles").select("id,name,team,avatar").in("id",ids.slice(k,k+200));if(q.error)return;pf=pf.concat(q.data||[])}
-    leagueRows.GLOBAL=buildRows(ids,pf,all);
-    if(tab==="leagues"&&!(document.activeElement&&document.activeElement.matches("input")))render();
-  }catch(e){}
+/* ----- squads of rounds that have locked never change (the account refuses edits after the deadline), so every
+   locked round is downloaded once per device, kept in browser storage in a compact form, and shared by the global
+   board and every league. Runner ids are stored once per round and squads point into that list. ----- */
+const SQK="of-squads-v1|"+D.rounds[LIVE].start+"|"+D.rounds[E.R-1].start;
+let sqStore=(()=>{try{const o=JSON.parse(localStorage.getItem(SQK)||"{}");return o&&typeof o==="object"?o:{}}catch(e){return {}}})();
+let sqMem={}; /* rounds fetched within an hour of their lock: used, but fetched again later in case of clock skew */
+const sqSave=()=>{try{localStorage.setItem(SQK,JSON.stringify(sqStore))}catch(e){/* storage full: the copy in memory still works */}};
+try{Object.keys(localStorage).forEach(k=>{if(k.startsWith("of-squads-")&&k!==SQK)localStorage.removeItem(k)})}catch(e){}
+const sqGet=r=>sqStore[r]||sqMem[r];
+const lockedAt=r=>Date.parse(D.rounds[r].start+"T00:00:00Z")-2*36e5; /* Monday 00:00 Swedish time, at the latest */
+/* leagues and the board ask at the same time when the page opens: they share one download */
+let sqBusy=null;
+const ensureRounds=()=>sqBusy||(sqBusy=loadRounds().finally(()=>{sqBusy=null}));
+async function loadRounds(){
+  const sb=cloud.sb,last=openRound()-1;if(!sb)return false;sqMem={};
+  for(let r=LIVE;r<=last&&r<E.R;r++){
+    if(sqStore[r])continue;
+    let all=[];for(let at=0;;at+=1000){const q=await sb.from("squads").select("user_id,squad,captain,chip").eq("round",r).order("user_id").range(at,at+999);if(q.error)return false;all=all.concat(q.data||[]);if(!q.data||q.data.length<1000)break}
+    const ids=[],ix=new Map(),k=id=>{if(!ix.has(id)){ix.set(id,ids.length);ids.push(id)}return ix.get(id)},rows={};
+    all.forEach(x=>{if(Array.isArray(x.squad))rows[x.user_id]=[x.squad.map(k),k(x.captain),x.chip||0]});
+    const ent={ids,rows};
+    if(Date.now()-lockedAt(r)>36e5){sqStore[r]=ent;sqSave()}else sqMem[r]=ent;
+  }
+  return true;
 }
-function buildRows(ids,pf,squads){
-  const names={},teams={},avs={};(pf||[]).forEach(p=>{names[p.id]=String(p.name||"Manager").slice(0,24);teams[p.id]=p.team?String(p.team).slice(0,30):"";avs[p.id]=typeof p.avatar==="string"&&p.avatar.startsWith(p.id+"/")?p.avatar:null});
-  const raw={};(squads||[]).forEach(x=>{(raw[x.user_id]=raw[x.user_id]||{})[x.round]=x});
+function squadsOf(uid){
+  const out={};for(let r=LIVE;r<openRound()&&r<E.R;r++){const e=sqGet(r),x=e&&e.rows[uid];if(x)out[r]={squad:x[0].map(k=>e.ids[k]),captain:e.ids[x[1]],chip:x[2]||null}}
+  return out;
+}
+const sqUsers=()=>{const u=new Set();for(let r=LIVE;r<openRound()&&r<E.R;r++){const e=sqGet(r);if(e)Object.keys(e.rows).forEach(id=>u.add(id))}return [...u]};
+/* names, team names and pictures: fetched only for the people on screen, kept for ten minutes */
+const pfCache=new Map();
+async function profilesFor(ids){
+  const sb=cloud.sb,now=Date.now(),need=ids.filter(id=>id!==cloud.uid&&(!pfCache.has(id)||now-pfCache.get(id).t>6e5));
+  for(let k=0;k<need.length;k+=200){const q=await sb.from("profiles").select("id,name,team,avatar").in("id",need.slice(k,k+200));if(q.error)return false;(q.data||[]).forEach(p=>pfCache.set(p.id,{t:now,name:p.name,team:p.team,avatar:p.avatar}))}
+  return true;
+}
+function buildRows(ids){
   const last=openRound()-1;
   return ids.map(id=>{
-    const pk=unpackPicks(raw[id]||{});Object.keys(pk).forEach(r=>{if(+r>last)delete pk[r]}); /* only rounds that have started count */
+    const mine=id===cloud.uid,p=pfCache.get(id)||{},nm=String((mine?mgrName:p.name)||"Manager").slice(0,24),tm=String((mine?myTeam:p.team)||"").slice(0,30),av=mine?myAv:(typeof p.avatar==="string"&&p.avatar.startsWith(id+"/")?p.avatar:null);
+    const pk=unpackPicks(squadsOf(id)); /* only rounds that have locked count */
     const sim=E.season(pk,LIVE,Math.min(last,E.R-1)),by={};sim.rounds.forEach(x=>{by[x.round]=x});
-    return {id,name:teams[id]||names[id]||"Manager",mgr:names[id]||"Manager",team:teams[id],av:avs[id],sim,by,total:sim.state.total,nextLocked:id===cloud.uid?!!picks[openRound()]:null};
+    return {id,name:tm||nm,mgr:nm,team:tm,av,sim,by,total:sim.state.total,nextLocked:mine?!!picks[openRound()]:null};
   });
+}
+/* the global top 20: everyone who has a squad in a locked round */
+async function fetchGlobal(){
+  if(!cloud.sb||!cloud.uid)return;
+  try{
+    if(openRound()-1<LIVE){leagueRows.GLOBAL=[];return}
+    if(!await ensureRounds())return;
+    const rows=buildRows(sqUsers()).sort((a,b)=>b.total-a.total);
+    /* names only for the top 20, anyone level with 20th, and you */
+    const cut=rows.length>20?rows[19].total:-Infinity,show=rows.filter((m,k)=>k<20||m.total===cut||m.id===cloud.uid).map(m=>m.id);
+    if(!await profilesFor(show))return;
+    leagueRows.GLOBAL=buildRows(rows.map(m=>m.id));
+    if(tab==="leagues"&&!(document.activeElement&&document.activeElement.matches("input")))render();
+  }catch(e){}
 }
 async function fetchLeague(code){
   if(code==="GLOBAL")return fetchGlobal();
   const sb=cloud.sb;if(!sb)return;
   try{
-    const m=await sb.from("league_members").select("user_id").eq("code",code).limit(100);
+    const [m,lg]=await Promise.all([sb.from("league_members").select("user_id").eq("code",code).limit(500),sb.from("leagues").select("name,owner").eq("code",code).maybeSingle()]);
     if(m.error)return;const ids=m.data.map(x=>x.user_id);
-    if(!ids.length){leagueRows[code]=[];return}
-    const [pf,lu,lg]=await Promise.all([sb.from("profiles").select("id,name,team,avatar").in("id",ids),sb.from("squads").select("user_id,round,squad,captain,chip").in("user_id",ids),sb.from("leagues").select("name,owner").eq("code",code).maybeSingle()]);
-    if(pf.error||lu.error)return;
     if(lg.data&&lg.data.name&&!myLgn[code])myLgn[code]=String(lg.data.name).slice(0,24);
     if(lg.data)myOwn[code]=lg.data.owner===cloud.uid;
-    leagueRows[code]=buildRows(ids,pf.data,lu.data);
+    if(!ids.length){leagueRows[code]=[];return}
+    if(!await ensureRounds()||!await profilesFor(ids))return;
+    leagueRows[code]=buildRows(ids);
     if(tab==="leagues"&&!(document.activeElement&&document.activeElement.matches("input")))render();
   }catch(e){}
 }
 function watchLeague(code){
   if(leagueUnsubs[code]||!cloud.sb)return;
   fetchLeague(code);
-  const iv=setInterval(()=>{if(!document.hidden)fetchLeague(code)},60000);
+  /* every 5 minutes: new members and, after a deadline, the round that just locked; locked squads come from the stored copy */
+  const iv=setInterval(()=>{if(!document.hidden)fetchLeague(code)},300000);
   leagueUnsubs[code]=()=>clearInterval(iv);
 }
 async function onSession(session){
@@ -1949,7 +1987,7 @@ document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)r
   if(t.id==="authIn"||t.id==="authUp")doAuth(t.id==="authUp"?"up":"in");
   if(t.id==="authSwap"){authMode=authMode==="in"?"up":"in";authMsg="";render()}
   if(t.id==="avDel"){delAvatar();return}
-  if(t.id==="authOut"){cloud.ready=false;resetLocal();localUid=null;try{localStorage.removeItem(KEY)}catch(e){}tab="profile";cloud.sb.auth.signOut().then(()=>{leagueRows={};render()})}
+  if(t.id==="authOut"){cloud.ready=false;resetLocal();sqStore={};sqMem={};pfCache.clear();try{localStorage.removeItem(SQK)}catch(e){}localUid=null;try{localStorage.removeItem(KEY)}catch(e){}tab="profile";cloud.sb.auth.signOut().then(()=>{leagueRows={};render()})}
 });
 
 render();initCloud();
