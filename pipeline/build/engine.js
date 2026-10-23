@@ -1,0 +1,124 @@
+function makeEngine(D) {
+  const R = D.rounds.length, N = D.runners.length;
+  const pts = Array.from({ length: R }, () => new Int32Array(N));
+  const starts = Array.from({ length: R }, () => new Int32Array(N));
+  D.rounds.forEach((rd, r) => rd.ev.forEach(ei => D.res[ei].forEach(row => { pts[r][row[0]] += row[5]; starts[r][row[0]]++; })));
+  const hist = Array.from({ length: N }, () => []);
+  D.res.forEach((rows, ei) => rows.forEach(row => hist[row[0]].push({ ev: ei, kind: row[1], rank: row[2], t: row[3], gap: row[4], pts: row[5] })));
+  const cutoff = r => (r >= R ? "9999-12-31" : D.rounds[r].start);
+  const visible = (i, r) => hist[i].filter(h => D.events[h.ev].date < cutoff(r));
+  function stats(i, r) {
+    const h = visible(i, r);
+    const total = h.reduce((a, x) => a + x.pts, 0);
+    const last3 = h.slice(-3);
+    const form = last3.length ? last3.reduce((a, x) => a + x.pts, 0) / last3.length : 0;
+    return { starts: h.length, total, form, last: h.length ? h[h.length - 1].pts : 0 };
+  }
+  const price = (i, r) => D.prices[Math.min(r, R - 1)][i];
+  const clubOf = i => D.runners[i].c;
+  function errors(squad, r) {
+    const e = [];
+    if (squad.length !== D.squad) e.push(`Pick exactly ${D.squad} runners`);
+    if (new Set(squad).size !== squad.length) e.push("Duplicate runner");
+    const cc = {};
+    squad.forEach(i => { cc[clubOf(i)] = (cc[clubOf(i)] || 0) + 1; if (!D.runners[i].p) e.push("Runner not in pool"); });
+    Object.entries(cc).forEach(([c, n]) => { if (n > D.clubMax) e.push(`Max ${D.clubMax} runners from ${c}`); });
+    return e;
+  }
+  function newState(start = 0) { return { start, round: start, squad: [], captain: null, vice: null, bank: D.budget, chips: { wc: false, tc: false }, log: [], total: 0 }; }
+  function transfersFor(state, squad) {
+    if (!state.squad.length) return { n: 0, out: [], inn: squad.slice() };
+    const out = state.squad.filter(i => !squad.includes(i)), inn = squad.filter(i => !state.squad.includes(i));
+    return { n: inn.length, out, inn };
+  }
+  function bankAfter(state, squad) {
+    const r = state.round, t = transfersFor(state, squad);
+    let b = state.bank;
+    t.out.forEach(i => b += price(i, r));
+    t.inn.forEach(i => b -= price(i, r));
+    return b;
+  }
+  function planErrors(state, plan) {
+    const r = state.round, e = errors(plan.squad, r);
+    if (!plan.squad.includes(plan.captain)) e.push("Pick a captain");
+    if (!plan.squad.includes(plan.vice) || plan.vice === plan.captain) e.push("Pick a different vice-captain");
+    if (plan.chip && !["wc", "tc"].includes(plan.chip)) e.push("Unknown chip");
+    if (plan.chip && state.chips[plan.chip]) e.push("Chip already used");
+    if (plan.chip === "wc" && !state.squad.length) e.push("Wildcard cannot be used for the opening squad");
+    if (bankAfter(state, plan.squad) < 0) e.push("Over budget");
+    return e;
+  }
+  function play(state, plan) {
+    const e = planErrors(state, plan);
+    if (e.length) throw new Error(e.join("; "));
+    const r = state.round, t = transfersFor(state, plan.squad);
+    const penalty = plan.chip === "wc" ? 0 : Math.max(0, t.n - D.freeTransfers) * D.penalty;
+    const capLive = starts[r][plan.captain] > 0 ? plan.captain : (starts[r][plan.vice] > 0 ? plan.vice : null);
+    const mult = plan.chip === "tc" ? 3 : 2;
+    const rows = plan.squad.map(i => ({ i, pts: pts[r][i], starts: starts[r][i], cap: i === capLive }));
+    const base = rows.reduce((a, x) => a + x.pts, 0);
+    const capExtra = capLive === null ? 0 : (mult - 1) * pts[r][capLive];
+    const total = base + capExtra - penalty;
+    const ns = {
+      start: state.start || 0, round: r + 1, squad: plan.squad.slice(), captain: plan.captain, vice: plan.vice, bank: bankAfter(state, plan.squad),
+      chips: { wc: state.chips.wc || plan.chip === "wc", tc: state.chips.tc || plan.chip === "tc" },
+      total: state.total + total,
+      log: state.log.concat([{ round: r, squad: plan.squad.slice(), captain: plan.captain, vice: plan.vice, capLive, chip: plan.chip || null, transfers: t.n, penalty, base, capExtra, total, in: t.inn, out: t.out }])
+    };
+    return { state: ns, result: { rows, base, capExtra, penalty, total, capLive, mult, transfers: t.n } };
+  }
+  // ----- benchmarks -----
+  function rating(i, r, m0) {
+    const h = visible(i, r); if (!h.length) return null;
+    let num = 0, den = 0;
+    for (let a = 0; a < h.length; a++) { const w = Math.pow(0.9, a); num += w * h[h.length - 1 - a].pts; den += w; }
+    return (num + 2 * m0) / (den + 2);
+  }
+  function leagueMean(r) {
+    let s = 0, n = 0;
+    D.res.forEach((rows, ei) => { if (D.events[ei].date < cutoff(r)) rows.forEach(x => { s += x[5]; n++; }); });
+    return n ? s / n : 170;
+  }
+  function greedy(order, r) {
+    const sq = [], cc = {}; let cost = 0;
+    for (const i of order) {
+      if (sq.length === D.squad) break;
+      const p = price(i, r), left = D.squad - sq.length - 1;
+      if (cost + p + left * 40 > D.budget) continue;
+      if ((cc[clubOf(i)] || 0) >= D.clubMax) continue;
+      sq.push(i); cc[clubOf(i)] = (cc[clubOf(i)] || 0) + 1; cost += p;
+    }
+    return sq;
+  }
+  function bestCaptain(sq, r) { return sq.slice().sort((a, b) => pts[r][b] - pts[r][a]); }
+  function bots() {
+    const out = { formChaser: 0, setForget: 0, ceiling: 0 };
+    let fixed = null;
+    for (let r = 0; r < R; r++) {
+      const m0 = leagueMean(r);
+      const pool = []; for (let i = 0; i < N; i++) if (D.runners[i].p) pool.push(i);
+      const rt = i => { const x = rating(i, r, m0); return x === null ? m0 * 0.8 : x; };
+      const order = pool.slice().sort((a, b) => rt(b) - rt(a));
+      const fc = greedy(order, r);
+      const capF = fc.slice().sort((a, b) => rt(b) - rt(a));
+      const sumF = fc.reduce((a, i) => a + pts[r][i], 0);
+      const capLive = [capF[0], capF[1]].find(i => starts[r][i] > 0);
+      out.formChaser += sumF + (capLive === undefined ? 0 : pts[r][capLive]);
+      if (!fixed) fixed = fc.slice();
+      const capS = fixed.slice().sort((a, b) => rt(b) - rt(a));
+      const capSL = [capS[0], capS[1]].find(i => starts[r][i] > 0);
+      out.setForget += fixed.reduce((a, i) => a + pts[r][i], 0) + (capSL === undefined ? 0 : pts[r][capSL]);
+      const top = pool.slice().sort((a, b) => pts[r][b] - pts[r][a]);
+      const cl = []; const cc = {};
+      for (const i of top) { if (cl.length === D.squad) break; if ((cc[clubOf(i)] || 0) >= D.clubMax) continue; cl.push(i); cc[clubOf(i)] = (cc[clubOf(i)] || 0) + 1; }
+      out.ceiling += cl.reduce((a, i) => a + pts[r][i], 0) + pts[r][cl[0]];
+    }
+    return out;
+  }
+  function roundBest(r, k = 5) {
+    const a = []; for (let i = 0; i < N; i++) if (starts[r][i]) a.push([i, pts[r][i]]);
+    return a.sort((x, y) => y[1] - x[1]).slice(0, k);
+  }
+  return { R, N, pts, starts, hist, visible, stats, price, errors, newState, transfersFor, bankAfter, planErrors, play, bots, roundBest, greedy, rating, leagueMean };
+}
+if (typeof module !== "undefined") module.exports = { makeEngine };

@@ -1,0 +1,656 @@
+<title>Orienteering Fantasy</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<style>
+/* Design language shared with Scanva: warm near-black ground, hairline borders, one signal orange from the control flag,
+   Geist + Geist Mono, pill buttons, big tight headlines with a soft second half. */
+:root{
+  --bg:#0b0c0b; --bg2:#0f110f; --panel:#131513; --panel2:#1a1d1a; --chip:#222622;
+  --ink:#f3f2ed; --muted:#a3a69e; --faint:#8b8f86;
+  --line:rgba(255,255,255,.075); --line2:rgba(255,255,255,.13);
+  --accent:#ff5b1f; --accent-hi:#ff7440; --accent-ink:#140903; --accent-soft:rgba(255,91,31,.12); --accent-line:rgba(255,91,31,.36);
+  --good:#6fd08c; --bad:#f2685c; --warn:#f2b544; --sky:#6c9ef0;
+  --font:"Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --ease:cubic-bezier(.23,1,.32,1); --gutter:clamp(16px,4vw,40px);
+  --topo:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='620' height='620' fill='none' stroke='white' stroke-opacity='.9' stroke-width='1.2'%3E%3Cellipse cx='420' cy='250' rx='60' ry='34'/%3E%3Cellipse cx='420' cy='250' rx='110' ry='64'/%3E%3Cellipse cx='420' cy='250' rx='170' ry='100'/%3E%3Cellipse cx='420' cy='250' rx='240' ry='142'/%3E%3Cellipse cx='420' cy='250' rx='320' ry='190'/%3E%3Cellipse cx='420' cy='250' rx='410' ry='245'/%3E%3C/svg%3E");
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#f6f5f1; --bg2:#efeee9; --panel:#ffffff; --panel2:#f3f2ee; --chip:#e8e7e1;
+  --ink:#17181a; --muted:#5d6158; --faint:#767a70;
+  --line:rgba(0,0,0,.09); --line2:rgba(0,0,0,.16);
+  --accent:#e8490f; --accent-hi:#ff5b1f; --accent-ink:#fff; --accent-soft:rgba(232,73,15,.10); --accent-line:rgba(232,73,15,.4);
+  --good:#1f8a4c; --bad:#c9372c; --warn:#a87000; --sky:#2f62c4;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;scroll-padding-top:84px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11";overflow-x:hidden;padding-bottom:64px}
+.container{width:100%;max-width:1180px;margin:0 auto;padding-left:max(var(--gutter),env(safe-area-inset-left,0px));padding-right:max(var(--gutter),env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+::selection{background:var(--accent);color:var(--accent-ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+h1,h2,h3{font-family:var(--font);font-weight:600;letter-spacing:-.035em;text-wrap:balance;margin:0}
+p{text-wrap:pretty}
+.mono{font-family:var(--mono)}
+/* nav */
+.nav{position:sticky;top:0;z-index:40;padding-top:env(safe-area-inset-top,0px);background:color-mix(in srgb,var(--bg) 78%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border-bottom:1px solid var(--line)}
+.nav-inner{display:flex;align-items:center;gap:28px;min-height:64px}
+.logo{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:18px;letter-spacing:-.035em;white-space:nowrap}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{background:none;border:0;padding:8px 13px;border-radius:999px;color:var(--muted);font-size:14px;font-weight:500;white-space:nowrap;transition:color .16s,background .16s}
+nav.tabs button[aria-selected="true"]{color:var(--ink);background:var(--panel2);box-shadow:0 0 0 1px var(--line2) inset}
+@media (hover:hover) and (pointer:fine){nav.tabs button:hover{color:var(--ink)}}
+#mgr{margin-left:auto;font-size:13px;color:var(--muted);white-space:nowrap}
+@media (max-width:760px){.nav-inner{flex-wrap:wrap;gap:0 16px;padding-top:10px}nav.tabs{order:3;width:100%;margin:6px 0 8px}#mgr{display:none}}
+/* hero */
+.lead-hero{position:relative;isolation:isolate;overflow:hidden;padding:clamp(28px,5vw,64px) 0 clamp(18px,3vw,32px)}
+.lead-hero::before{content:"";position:absolute;z-index:-1;inset:-20% -10% auto auto;width:760px;height:760px;background:radial-gradient(closest-side,rgba(255,91,31,.16),transparent 70%)}
+.lead-hero::after{content:"";position:absolute;z-index:-1;right:-120px;top:-40px;width:720px;height:720px;background:var(--topo) center/contain no-repeat;opacity:.07;-webkit-mask-image:radial-gradient(60% 60% at 60% 40%,#000 25%,transparent 75%);mask-image:radial-gradient(60% 60% at 60% 40%,#000 25%,transparent 75%)}
+:root[data-theme="light"] .lead-hero::after{filter:invert(1);opacity:.09}
+.kicker{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:20px}
+.kicker i{width:12px;height:12px;background:linear-gradient(135deg,var(--accent) 50%,transparent 50%);border:1.5px solid var(--accent);display:inline-block}
+.lead-hero h1{font-size:clamp(38px,6vw,72px);line-height:.98;letter-spacing:-.05em;margin-bottom:22px;max-width:14em}
+.soft{color:var(--faint)}
+.lede{font-size:clamp(16px,1.5vw,18px);color:var(--muted);max-width:36em;margin:0 0 6px}
+/* course + facts */
+.course{margin:6px 0 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.course svg{display:block;min-width:760px;width:100%;height:auto}
+.course .leg{fill:none;stroke:var(--accent);stroke-width:2.4;stroke-linecap:round}
+.course .leg.todo{stroke-opacity:.3;stroke-dasharray:2 6}
+.course .ctl{cursor:pointer}
+.course .ctl circle{fill:var(--bg);stroke:var(--accent);stroke-width:2.4;transition:fill .15s var(--ease)}
+.course .ctl.done circle{fill:var(--accent)}
+.course .ctl.now circle{stroke-width:4}
+.course .ctl text{font-family:var(--mono);font-weight:600;font-size:12px;fill:var(--accent);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.course .ctl.done text{fill:var(--accent-ink)}
+.course .ctl .pts{font-family:var(--mono);font-weight:500;font-size:11px;fill:var(--faint);text-anchor:middle}
+.course .ctl.done .pts{fill:var(--ink);font-weight:600}
+.course .ring{fill:none;stroke:var(--accent);stroke-width:2;opacity:0;transform-box:fill-box;transform-origin:center}
+.course .fin,.course .sta{fill:none;stroke:var(--accent);stroke-width:2.4;stroke-linejoin:round}
+@media (prefers-reduced-motion:no-preference){
+  .course .leg.draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw 1.1s var(--ease) forwards}
+  .course .ctl.now .ring{animation:ping 2.2s ease-out infinite}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  @keyframes ping{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
+}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px 0 6px}
+.facts>div{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px 16px;min-width:0}
+.facts span{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+.facts b{display:block;font-weight:600;font-size:26px;line-height:1.1;letter-spacing:-.03em}
+.facts .where{grid-column:1/-1;background:none;border:0;padding:4px 2px 0;text-align:left}
+.facts .where span{margin:0}
+main#view{padding-top:12px}
+h2{font-size:clamp(24px,3vw,32px);margin:34px 0 12px;line-height:1.15}
+h3{font-size:15px;font-weight:600;margin:0 0 6px;letter-spacing:-.01em}
+.lead{color:var(--muted);margin:0 0 14px;max-width:62ch}
+/* buttons */
+.btn{font-weight:500;font-size:14px;letter-spacing:-.01em;line-height:1;border-radius:999px;padding:11px 18px;border:0;background:var(--panel2);color:var(--ink);box-shadow:0 0 0 1px var(--line2) inset;transition:transform .16s var(--ease),background .16s,box-shadow .16s,color .16s}
+.btn:active:not(:disabled){transform:scale(.97)}
+@media (hover:hover) and (pointer:fine){.btn:hover:not(:disabled){background:var(--chip)}.btn.on:hover:not(:disabled),.btn.go:hover:not(:disabled){background:var(--accent-hi)}}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.on{background:var(--accent);color:var(--accent-ink);font-weight:600;box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 10px 30px -12px rgba(255,91,31,.7)}
+.btn.go{width:100%;padding:15px 22px;font-size:15px;font-weight:600;background:var(--accent);color:var(--accent-ink);box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 12px 34px -12px rgba(255,91,31,.75)}
+.btn.go:disabled{box-shadow:none;background:var(--chip);color:var(--muted)}
+.btn.quiet{background:none;box-shadow:none;color:var(--muted);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;padding:8px 6px}
+/* next-race banner */
+.next{position:relative;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 7%,var(--panel)),var(--panel) 70%);border-radius:22px;padding:20px 24px;margin:0 0 22px;box-shadow:0 0 0 1px var(--accent-line) inset,0 40px 80px -50px rgba(255,91,31,.4)}
+.next-main{display:grid;gap:4px}
+.next-k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.next-main b{font-weight:600;font-size:clamp(24px,4vw,36px);line-height:1.1;letter-spacing:-.04em}
+.two{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+@media (max-width:900px){.two{grid-template-columns:1fr}}
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 84px);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:20px;display:grid;gap:16px}
+@media (max-width:900px){.side{position:static}}
+.side dl{margin:0;display:grid;grid-template-columns:1fr auto;gap:8px 12px}
+.side dt{color:var(--muted)} .side dd{margin:0;font-weight:600;text-align:right;font-family:var(--mono);font-size:13px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.errs{margin:0;padding-left:18px;color:var(--bad);font-size:13.5px}
+.fixtures{display:flex;flex-wrap:wrap;gap:6px}
+.tag{background:var(--panel2);box-shadow:0 0 0 1px var(--line) inset;border-radius:999px;padding:4px 11px;font-size:12.5px}
+.tag.w{background:var(--accent-soft);color:var(--accent);box-shadow:0 0 0 1px var(--accent-line) inset;font-weight:600}
+/* squad */
+.sq{list-style:none;margin:0;padding:0;background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+.sq li{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:14px 18px;border-top:1px solid var(--line)}
+.sq li:first-child{border-top:0}
+.sq .mk{display:flex;gap:5px}
+.mk button{width:32px;height:32px;border-radius:50%;border:0;box-shadow:0 0 0 1px var(--line2) inset;background:none;font-family:var(--mono);font-weight:600;font-size:12px;color:var(--muted);padding:0;transition:transform .14s var(--ease),background .14s,color .14s}
+.mk button:active{transform:scale(.92)}
+.mk button.on{background:var(--accent);color:var(--accent-ink);box-shadow:none}
+.who{background:none;border:0;padding:0;text-align:left;font-weight:600;font-size:16px;letter-spacing:-.02em;overflow-wrap:anywhere}
+@media (hover:hover) and (pointer:fine){.who:hover{color:var(--accent)}}
+.sub{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.sq .empty{color:var(--muted);grid-template-columns:1fr;border-top-style:dashed}
+.price{font-family:var(--mono);font-weight:600;font-size:16px;text-align:right}
+.price small{display:block;font-size:11px;font-weight:500}
+.up{color:var(--good)} .dn{color:var(--bad)}
+.spark{display:block}
+@media (max-width:520px){.sq .spark,.sq .note{display:none}.sq li{grid-template-columns:auto minmax(0,1fr) auto}}
+.spark rect{fill:var(--accent)}
+.spark line{stroke:var(--line2)}
+/* market */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.filters input[type=search],.filters select,input.name{background:var(--panel2);color:var(--ink);border:0;box-shadow:0 0 0 1px var(--line2) inset;padding:11px 16px;border-radius:999px;min-width:0;font:inherit;font-size:14px}
+.filters input::placeholder,input.name::placeholder{color:var(--faint)}
+.filters label{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.filters input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.tbl{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:22px}
+table{border-collapse:collapse;width:100%}
+th,td{padding:11px 14px;text-align:right;border-top:1px solid var(--line);white-space:nowrap}
+thead th{border-top:0}
+th:first-child,td:first-child{text-align:left}
+th{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);background:var(--bg2)}
+th button{background:none;border:0;padding:0;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit}
+td{font-family:var(--mono);font-size:13px}
+td:first-child{font-family:var(--font)}
+td .who{font-size:15px}
+tr.in td{background:var(--accent-soft)}
+/* rounds */
+.rhead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.score{font-weight:600;font-size:clamp(52px,8vw,84px);line-height:.95;letter-spacing:-.05em}
+.pn{display:flex;gap:6px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:20px 22px;margin-bottom:12px;min-width:0}
+.ev{display:flex;gap:6px 14px;justify-content:space-between;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--line)}
+.ev:first-of-type{border-top:0}
+.pos{color:var(--good);font-weight:600} .neg{color:var(--bad);font-weight:600}
+.pts-big{font-family:var(--mono);font-weight:600;font-size:20px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:12px}
+.grid2 .card{margin-bottom:0}
+.grid2+.grid2,.grid2+.card,.card+.grid2{margin-top:12px}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:60;display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) 16px 16px;overflow:auto}
+.modal .sheet{background:var(--panel);box-shadow:0 0 0 1px var(--line2) inset,0 40px 80px -20px rgba(0,0,0,.7);border-radius:26px;width:100%;max-width:680px;padding:24px;margin-top:4vh}
+.modal .hd{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.modal h2{margin:0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:16px 0}
+.stats>div{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.stats b{display:block;font-size:22px;line-height:1.1;letter-spacing:-.03em;font-weight:600}
+.stats span{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+@media (prefers-reduced-motion:no-preference){
+  .modal{animation:fade .16s ease-out}.modal .sheet{animation:pop .22s var(--ease)}
+  @keyframes fade{from{opacity:0}} @keyframes pop{from{opacity:0;transform:scale(.96) translateY(8px)}}
+}
+.bars svg{display:block;width:100%;min-width:560px}
+.bars text{fill:var(--faint);font-size:11px;font-family:var(--mono)}
+.bars rect{fill:var(--accent)} .bars line{stroke:var(--line2)}
+.note{color:var(--muted);font-size:13px}
+ul.rules{padding-left:20px;margin:6px 0}ul.rules li{margin:8px 0;max-width:70ch;color:var(--muted)}ul.rules li b{color:var(--ink);font-weight:600}
+.lb{list-style:none;padding:0;margin:8px 0 0}
+.lb li{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+</style>
+
+<header class="nav"><div class="container nav-inner">
+  <span class="logo"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--accent)" stroke-width="3.2"/><circle cx="16" cy="16" r="3.6" fill="var(--accent)"/></svg>Orienteering Fantasy</span>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <span id="mgr"></span>
+</div></header>
+<div class="container">
+<section id="hero"></section>
+<div class="course" id="course"></div>
+<div class="facts" id="facts" aria-live="polite"></div>
+<main id="view"></main>
+</div>
+<div id="modal"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const D=/*DATA*/null;
+/*ENGINE*/
+
+const E=makeEngine(D);
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fp=x=>(x/10).toFixed(1);
+const sg=x=>(x>0?"+":"")+fp(x);
+const tm=t=>{const s=t/100,m=Math.floor(s/60);return m+":"+String(Math.floor(s%60)).padStart(2,"0")};
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const dshort=d=>{const [,m,dd]=d.split("-");return +dd+" "+MON[+m-1]};
+const KEY="orienteering-fantasy-v4";
+/* saved squads use stable runner ids, never array positions: the data is rebuilt daily and positions shift */
+const RI=new Map(D.runners.map((r,i)=>[r.id,i]));
+const rk=i=>i==null?null:D.runners[i].id, ri=k=>k==null?null:(RI.has(k)?RI.get(k):null);
+const mapIds=(o,f)=>{const g=a=>(a||[]).map(f).filter(x=>x!==null);return o&&Object.assign({},o,{squad:g(o.squad),captain:f(o.captain),vice:f(o.vice)})};
+const packSt=st=>Object.assign(mapIds(st,rk),{log:st.log.map(l=>Object.assign(mapIds(l,rk),{capLive:rk(l.capLive),in:(l.in||[]).map(rk),out:(l.out||[]).map(rk)}))});
+const unpackSt=st=>Object.assign(mapIds(st,ri),{log:st.log.map(l=>Object.assign(mapIds(l,ri),{capLive:ri(l.capLive),in:(l.in||[]).map(ri).filter(x=>x!==null),out:(l.out||[]).map(ri).filter(x=>x!==null)}))});
+const packPl=p=>p&&mapIds(p,rk), unpackPl=p=>p&&mapIds(p,ri);
+const TODAY=(()=>{try{return new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Stockholm"})}catch(e){return D.asof}})();
+const LIVE=D.liveStart;
+let state=E.newState(LIVE), plan={squad:[],captain:null,vice:null,chip:null};
+let lock=null,tab="team",viewRound=0,sortKey="total",sortDir=-1,q="",clubF="",clsF="",afford=false,shown=40,confirmAuto=false,confirmReset=false,confirmMode=false,mgrName="",dbOk=false,drawn=false,localTs=0,cloudTimer=null,cloudMsg="",leagueRows={},leagueUnsubs={},leagueMsg="",newLeague="",joinCode="";
+let cloud={sb:null,uid:null,email:"",canWrite:false,ready:false};
+let myLeagues=[],myLgn={};
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.state&&s.state.round<=E.R){state=unpackSt(s.state);plan=unpackPl(s.plan);lock=unpackPl(s.lock||null);mgrName=s.name||"";localTs=s.ts||0;myLeagues=s.leagues||[];myLgn=s.lgn||{};viewRound=Math.max(0,state.round-1)}}catch(e){}
+const blob=()=>({state:packSt(state),plan:packPl(plan),lock:packPl(lock),name:mgrName,ts:localTs,leagues:myLeagues,lgn:myLgn});
+const save=()=>{localTs=Date.now();try{localStorage.setItem(KEY,JSON.stringify(blob()))}catch(e){}queueCloud()};
+const R=()=>state.round, done=()=>state.round>=E.R, pr=()=>Math.min(state.round,E.R-1);
+const isFinal=r=>r<E.R&&!!D.rounds[r].final;
+const hasStarted=r=>r<E.R&&TODAY>=D.rounds[r].start;
+const isLive=()=>state.start===LIVE;
+const daysTo=d=>Math.round((Date.parse(d+"T00:00:00Z")-Date.parse(TODAY+"T00:00:00Z"))/864e5);
+/* a locked squad is scored automatically as soon as the round's results are in the data */
+function settle(){
+  let n=0;
+  while(lock&&!done()&&lock.round===state.round&&isFinal(state.round)){
+    try{const o=E.play(state,lock);state=o.state;plan={squad:state.squad.slice(),captain:state.captain,vice:state.vice,chip:null};lock=null;n++}catch(e){lock=null}
+  }
+  if(n){viewRound=state.log.length-1;save()}
+  return n;
+}
+const sched=r=>{const rd=D.rounds[r];return D.upcoming.filter(u=>u.date>=rd.start&&u.date<=rd.end)};
+const nameOf=i=>D.runners[i].n, clubOf=i=>D.runners[i].c;
+const clubCount=(sq,i)=>sq.filter(j=>clubOf(j)===clubOf(i)).length;
+function fixLeaders(){
+  const s=plan.squad;
+  if(!s.includes(plan.captain))plan.captain=s.find(i=>i!==plan.vice)??null;
+  if(!s.includes(plan.vice)||plan.vice===plan.captain)plan.vice=s.find(i=>i!==plan.captain)??null;
+}
+function startRound(){plan={squad:state.squad.slice(),captain:state.captain,vice:state.vice,chip:null}}
+if(state.squad.length&&!plan.squad.length)startRound();
+const settled=settle();
+const squadValue=()=>state.squad.reduce((a,i)=>a+E.price(i,pr()),0);
+
+/* ---------- course strip ---------- */
+function courseSvg(){
+  const W=1000,H=132,x0=46,x1=W-46,cr=15;
+  const w0=isLive()?LIVE:Math.min(Math.max(0,state.round-1),E.R-9),w1=Math.min(E.R,w0+(isLive()?E.R-LIVE:9)),n=w1-w0;
+  const step=(x1-x0)/(n+1);
+  const P=[];for(let k=0;k<=n+1;k++){P.push([x0+k*step,58+Math.sin(k*1.15)*20+(k%2?6:-6)])}
+  let legs="";
+  for(let k=0;k<P.length-1;k++){
+    const [ax,ay]=P[k],[bx,by]=P[k+1],dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L;
+    const r0=k===0?13:cr+2,r1=k===P.length-2?cr+8:cr+2;
+    const a=[ax+ux*r0,ay+uy*r0],b=[bx-ux*r1,by-uy*r1];
+    const played=(w0+k)<=state.round-1&&(w0+k)>=state.start; // leg k arrives at round w0+k
+    legs+=`<line class="leg ${played?"draw":"todo"}" style="--len:${Math.hypot(b[0]-a[0],b[1]-a[1]).toFixed(0)}" x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"/>`;
+  }
+  let c="";
+  for(let k=1;k<=n;k++){
+    const ri=w0+k-1,[x,y]=P[k],entry=state.log.find(l=>l.round===ri),played=!!entry,now=!done()&&ri===state.round;
+    const lab=played?Math.round(entry.total/10):(lock&&lock.round===ri?"locked":"");
+    const sub=dshort(D.rounds[ri].start);
+    c+=`<g class="ctl ${played?"done":""} ${now?"now":""}" data-ctrl="${ri}" role="button" tabindex="0" aria-label="Round ${D.rounds[ri].n}, week of ${sub}${played?", "+lab+" points":""}">
+      <circle class="ring" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${cr}"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${cr}"/>
+      <text x="${x.toFixed(1)}" y="${y.toFixed(1)}">${D.rounds[ri].n}</text>
+      <text class="pts" x="${x.toFixed(1)}" y="${(y+(k%2?-26:38)).toFixed(1)}" style="dominant-baseline:auto">${lab!==""?lab:sub}</text></g>`;
+  }
+  const [sx,sy]=P[0],[fx,fy]=P[n+1];
+  const start=`<polygon class="sta" points="${sx},${sy-13} ${sx-12},${sy+9} ${sx+12},${sy+9}"/>`;
+  const fin=`<circle class="fin" cx="${fx}" cy="${fy}" r="${cr-3}"/><circle class="fin" cx="${fx}" cy="${fy}" r="${cr+4}"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Season course, rounds ${D.rounds[w0].n} to ${D.rounds[w1-1].n}">${legs}${start}${c}${fin}</svg>`;
+}
+function renderCourse(){$("#course").innerHTML=courseSvg()}
+
+/* ---------- chrome ---------- */
+function renderTabs(){
+  const t=[["team","Team"],["rounds","Rounds"],["leagues","Leagues"],["season","Season"],["rules","Rules"]];
+  $("#tabs").innerHTML=t.map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" data-tab="${k}">${l}</button>`).join("");
+  $("#mgr").textContent=mgrName?("Manager "+mgrName):"";
+}
+function renderFacts(){
+  const r=R(),bank=done()?state.bank:E.bankAfter(state,plan.squad);
+  const where=done()?"Season complete":"Round "+D.rounds[r].n+": "+dshort(D.rounds[r].start)+" to "+dshort(D.rounds[r].end);
+  $("#facts").innerHTML=`<div><span>Points, ${state.log.length} ${state.log.length===1?"round":"rounds"}</span><b>${fp(state.total)}</b></div>
+   <div><span>Bank of ${fp(D.budget)}M</span><b class="${bank<0?"dn":""}">${fp(bank)}M</b></div>
+   <div><span>Squad value</span><b>${state.squad.length?fp(squadValue())+"M":"–"}</b></div>
+   <div><span>Chips left</span><b>${(state.chips.wc?0:1)+(state.chips.tc?0:1)}</b></div>
+   <div class="where"><span>${where}</span></div>`;
+}
+
+/* ---------- team ---------- */
+function spark(i,r){
+  const h=E.visible(i,r).slice(-6).map(x=>x.pts);if(!h.length)return `<span class="note">no results</span>`;
+  const w=60,ht=24,bw=w/6;
+  return `<svg class="spark" width="${w}" height="${ht}" viewBox="0 0 ${w} ${ht}" aria-hidden="true"><line x1="0" x2="${w}" y1="${ht-.5}" y2="${ht-.5}"/>${h.map((p,k)=>{const v=Math.max(0,Math.min(1,p/1000)),bh=Math.max(1.5,v*(ht-3));return `<rect x="${(k+(6-h.length))*bw+1}" y="${ht-1-bh}" width="${bw-2}" height="${bh}" rx="1"/>`}).join("")}</svg>`;
+}
+function squadRow(i){
+  const r=pr(),s=E.stats(i,r),d=r>0?E.price(i,r)-E.price(i,r-1):0;
+  return `<li><div class="mk"><button class="${plan.captain===i?"on":""}" data-cap="${i}" title="Captain, 2x points" aria-label="Make ${esc(nameOf(i))} captain">C</button><button class="${plan.vice===i?"on":""}" data-vice="${i}" title="Vice-captain, takes over if the captain does not race" aria-label="Make ${esc(nameOf(i))} vice-captain">V</button></div>
+   <div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}, ${s.starts} starts, form ${fp(s.form)}</div></div>
+   ${spark(i,r)}
+   <div class="price">${fp(E.price(i,r))}M<small class="${d>0?"up":d<0?"dn":""}">${d?(d>0?"up ":"down ")+fp(Math.abs(d)):"unchanged"}</small></div></li>`;
+}
+function canAddReason(i){
+  if(plan.squad.length>=D.squad)return "Squad is full";
+  if(clubCount(plan.squad,i)>=D.clubMax)return "Max "+D.clubMax+" from one club";
+  if(E.bankAfter(state,[...plan.squad,i])<0)return "Not enough budget";
+  return "";
+}
+function marketRows(){
+  const r=pr();let rows=[];
+  for(let i=0;i<E.N;i++){if(!D.runners[i].p)continue;
+    if(q&&!(nameOf(i)+" "+clubOf(i)).toLowerCase().includes(q))continue;
+    if(clubF&&clubOf(i)!==clubF)continue;
+    if(clsF&&(clsF.length===1?D.runners[i].k[0]!==clsF:D.runners[i].k!==clsF))continue;
+    const s=E.stats(i,r),p=E.price(i,r);
+    if(afford&&!plan.squad.includes(i)&&E.bankAfter(state,[...plan.squad,i])<0)continue;
+    rows.push({i,s,p,d:r>0?p-E.price(i,r-1):0,n:nameOf(i),avg:s.starts?s.total/s.starts:0});
+  }
+  const v={price:x=>x.p,form:x=>x.s.form,total:x=>x.s.total,avg:x=>x.avg,starts:x=>x.s.starts,name:x=>x.n.toLowerCase()}[sortKey];
+  rows.sort((a,b)=>{const x=v(a),y=v(b);return (x<y?-1:x>y?1:0)*sortDir||a.i-b.i});
+  return rows;
+}
+function marketHtml(){
+  const rows=marketRows();const clubs=[...new Set(D.runners.filter(x=>x.p).map(x=>x.c))].sort((a,b)=>a.localeCompare(b,"sv"));
+  const th=(k,l)=>`<th><button data-sort="${k}">${l}${sortKey===k?(sortDir<0?" ↓":" ↑"):""}</button></th>`;
+  return `<h2>Runner market</h2>
+  <div class="filters"><input type="search" id="q" placeholder="Search runner or club" value="${esc(q)}" aria-label="Search runners">
+   <select id="clsF" aria-label="Class"><option value="">All classes</option>${["H","D","H16","H18","H20","H21","D16","D18","D20","D21"].map(c=>`<option value="${c}" ${c===clsF?"selected":""}>${c==="H"?"All H (men)":c==="D"?"All D (women)":c}</option>`).join("")}</select>
+   <select id="clubF" aria-label="Club"><option value="">All clubs</option>${clubs.map(c=>`<option ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
+   <label><input type="checkbox" id="afford" ${afford?"checked":""}> Only runners I can afford</label></div>
+  <div class="tbl"><table><thead><tr>${th("name","Runner")}${th("price","Price")}<th>Change</th>${th("form","Form")}<th>Last results</th>${th("avg","Avg per start")}${th("total","Points so far")}${th("starts","Starts")}<th></th></tr></thead><tbody>
+  ${rows.slice(0,shown).map(x=>{const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
+   return `<tr class="${inS?"in":""}"><td><button class="who" data-prof="${x.i}">${esc(x.n)}</button><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></td><td><b>${fp(x.p)}M</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?(x.d>0?"+":"-")+fp(Math.abs(x.d)):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.starts?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
+   <td>${inS?`<button class="btn" data-sell="${x.i}">Remove</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Add</button>`}</td></tr>`}).join("")||`<tr><td colspan="9" class="note">No runners match. Clear the search or club filter.</td></tr>`}
+  </tbody></table></div>
+  ${rows.length>shown?`<p><button class="btn" id="more">Show ${Math.min(40,rows.length-shown)} more</button></p>`:""}
+  <p class="note">Form is the average of a runner's last three results. Only races before this round are counted in prices and stats.</p>`;
+}
+function raceTags(r){
+  const rd=D.rounds[r];
+  if(rd.ev.length)return rd.ev.slice(0,8).map(ei=>{const e=D.events[ei];return `<span class="tag ${e.tier>1?"w":""}">${esc(e.name)}, ${dshort(e.date)}${e.tier>1?" (x"+e.tier+")":""}</span>`}).join("");
+  const u=sched(r);
+  return u.length?u.slice(0,8).map(x=>`<span class="tag">${esc(x.name)}, ${dshort(x.date)}</span>`).join("")+(u.length>8?`<span class="note">and ${u.length-8} more</span>`:""):`<span class="note">No races listed yet. They appear on liveresultat a few days before the start.</span>`;
+}
+function hero(r){
+  const rd=D.rounds[r],d=daysTo(rd.start),u=sched(r),first=u[0];
+  const head=isFinal(r)?"Results are in":hasStarted(r)?"Round in progress":d===1?"Locks tomorrow":"Locks in "+d+" days";
+  const sub=first?esc(first.name.replace(/:.*/,""))+", "+dshort(u[0].date)+(u.length>1?" to "+dshort(u[u.length-1].date):""):"Week of "+dshort(rd.start);
+  return `<div class="next"><div class="next-main"><span class="next-k">${head}</span><b>${sub}</b><span class="note">${isFinal(r)?"This round has been scored.":hasStarted(r)?"Squads are locked while the races run.":"Squads lock when Monday "+dshort(rd.start)+" starts."}</span></div></div>`;
+}
+function teamView(){
+  if(done())return `<div class="card"><h2 style="margin-top:0">Season complete</h2><p>You finished on <b>${fp(state.total)}</b> points. The Season tab shows how that compares.</p><button class="btn on" data-tab="season">Open season summary</button></div>`;
+  const r=R(),rd=D.rounds[r],locked=lock&&lock.round===r,frozen=locked&&hasStarted(r);
+  const show=locked?lock:plan;
+  const errs=plan.squad.length?E.planErrors(state,{...plan,chip:plan.chip}):["Pick "+D.squad+" runners to start"];
+  const t=E.transfersFor(state,plan.squad),pen=plan.chip==="wc"?0:(!state.squad.length?0:Math.max(0,t.n-D.freeTransfers)*D.penalty);
+  const rows=[];for(let k=0;k<D.squad;k++)rows.push(show.squad[k]!==undefined?squadRow(show.squad[k]):`<li class="empty">Open slot. Add a runner from the market below.</li>`);
+  const fin=isFinal(r);
+  const lead=locked?(frozen?"Your squad is locked and the races are running. Points arrive automatically when the results are in.":"Your squad is locked for this round. You can still unlock it until the round starts."):
+     (!state.squad.length?"Build your opening squad. Changes are free until you lock it in.":"Prices have been updated from the latest results. You have "+D.freeTransfers+" free transfers.");
+  return `${hero(r)}<div class="two"><div>
+   <h2 style="margin-top:0">Round ${rd.n} squad${locked?` <span class="tag w" style="margin-left:8px;vertical-align:middle">Locked</span>`:""}</h2>
+   <p class="lead">${lead}</p>
+   <ul class="sq">${rows.join("")}</ul>
+   <p class="note" style="margin-top:8px">C doubles a runner's points. V takes over if the captain does not race this week.</p>
+  </div>
+  <aside class="side">
+   <div><h3>This week's races</h3><div class="fixtures">${raceTags(r)}</div></div>
+   <dl><dt>Transfers</dt><dd>${!state.squad.length?"free":t.n+" of "+D.freeTransfers+" free"}</dd><dt>Penalty</dt><dd class="${pen?"dn":""}">${pen?"-"+fp(pen):"none"}</dd><dt>Bank after</dt><dd class="${E.bankAfter(state,plan.squad)<0?"dn":""}">${fp(E.bankAfter(state,plan.squad))}M</dd></dl>
+   <div><h3>Chip</h3><div class="chips">
+    <button class="btn ${!plan.chip?"on":""}" data-chip="" ${locked?"disabled":""}>None</button>
+    <button class="btn ${plan.chip==="wc"?"on":""}" data-chip="wc" ${locked||state.chips.wc||!state.squad.length?"disabled":""} title="Unlimited free transfers this round">Wildcard</button>
+    <button class="btn ${plan.chip==="tc"?"on":""}" data-chip="tc" ${locked||state.chips.tc?"disabled":""} title="Captain scores triple">3x Captain</button></div></div>
+   ${errs.length&&!locked?`<ul class="errs">${errs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+   ${locked?`<button class="btn go" id="unlock" ${frozen?"disabled":""}>${frozen?"Locked until results arrive":"Unlock and edit squad"}</button>`
+     :`<button class="btn go" id="play" ${errs.length||hasStarted(r)&&!fin?"disabled":""}>${fin?"Play round "+rd.n:"Lock in squad for round "+rd.n}</button>`}
+   ${!locked&&hasStarted(r)&&!fin?`<p class="note" style="margin:0">This round has started and its results are not in yet. Squads for it are closed.</p>`:""}
+   ${fin&&state.squad.length&&!errs.length?`<button class="btn quiet" id="auto">${confirmAuto?"Confirm: play all finished rounds":"Auto-play finished rounds with this squad"}</button>`:""}
+  </aside></div>
+  ${locked?"":marketHtml()}`;
+}
+
+/* ---------- rounds ---------- */
+function evLines(i,rd){
+  return E.hist[i].filter(h=>D.rounds[rd].ev.includes(h.ev)).map(h=>{const e=D.events[h.ev];
+    const row=D.res[h.ev].find(x=>x[0]===i);const topb=row?row[6]:0;
+    return `<div class="ev"><span>${esc(e.name)} <span class="sub">${dshort(e.date)}</span></span><span>${h.kind?`<span class="neg">${["","Did not finish","Mispunch","Disqualified"][h.kind]}</span>`:`place ${h.rank} of ${e.n}, ${(h.gap/100).toFixed(1)}% behind${topb?", beat "+topb+" top "+(topb===1?"runner":"runners"):""}`}, <span class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</span></span></div>`}).join("")||`<div class="ev sub">Did not race this round</div>`;
+}
+function roundsView(){
+  if(!state.log.length)return `<div class="card">No rounds played yet. ${lock?"Your squad is locked for round "+D.rounds[lock.round].n+". Points appear here when the results are in.":"Lock in your squad on the Team tab."}</div>`;
+  const li=Math.min(viewRound,state.log.length-1),L=state.log[li],rd=L.round,evs=D.rounds[rd].ev;
+  return `<div class="rhead"><div><div class="score">${fp(L.total)}</div><div class="note">Round ${D.rounds[rd].n}, ${dshort(D.rounds[rd].start)} to ${dshort(D.rounds[rd].end)}. ${fp(L.base)} from runners${L.capLive===null?", no captain raced":", "+sg(L.capExtra)+" from "+esc(nameOf(L.capLive))+(L.chip==="tc"?" (triple captain)":" (captain)")}${L.penalty?", -"+fp(L.penalty)+" for "+L.transfers+" transfers":""}${L.chip==="wc"?", Wildcard played":""}</div></div>
+   <div class="pn"><button class="btn" data-round="${li-1}" ${li===0?"disabled":""}>Previous</button><button class="btn" data-round="${li+1}" ${li>=state.log.length-1?"disabled":""}>Next</button></div></div>
+  <div class="grid2">${L.squad.map(i=>{const p=E.pts[rd][i];return `<div class="card"><div class="ev" style="border:0;padding:0 0 4px"><div><button class="who" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${esc(clubOf(i))}${L.capLive===i?", captain":""}</span></div><span class="pts-big ${p<0?"neg":""}">${sg(p)}</span></div>${evLines(i,rd)}</div>`}).join("")}</div>
+  <div class="grid2">
+   <div class="card"><h3>Best scores this round</h3>${E.roundBest(rd,5).map(([i,p],k)=>`<div class="ev"><span>${k+1}. <button class="who" style="font-size:15px" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${esc(clubOf(i))}</span></span><b class="pos">${sg(p)}</b></div>`).join("")||'<div class="sub">No counted races this round.</div>'}</div>
+   <div class="card"><h3>Race results</h3>${evs.map(ei=>{const e=D.events[ei],top=D.res[ei].filter(x=>x[1]===0).slice(0,3);
+    return `<div class="ev"><span><b>${esc(e.name)}</b> <span class="sub">${dshort(e.date)}, ${e.n} finishers${e.tier>1?", x"+e.tier:""}</span></span><span class="sub">${top.map(x=>esc(nameOf(x[0]))+" "+tm(x[3])).join(", ")}</span></div>`}).join("")||'<div class="sub">No race with 3 or more finishers in these classes this round.</div>'}</div></div>
+  ${!done()&&li===state.log.length-1?`<p><button class="btn on" data-tab="team" id="next">Plan round ${D.rounds[R()].n}</button></p>`:""}`;
+}
+
+/* ---------- season ---------- */
+function chartSvg(){
+  const v=state.log.map(l=>l.total/10),nb=Math.max(8,v.length),W=Math.max(560,nb*44),H=170,pad=34,mx=Math.max(50,...v)*1.1,bw=(W-pad)/nb;
+  return `<div class="tbl bars" style="padding:10px"><svg viewBox="0 0 ${W} ${H+22}" role="img" aria-label="Points in each round">
+   ${[0,.5,1].map(f=>`<line x1="${pad}" x2="${W}" y1="${H-f*(H-10)}" y2="${H-f*(H-10)}"/><text x="0" y="${H-f*(H-10)+4}">${Math.round(f*mx)}</text>`).join("")}
+   ${v.map((x,k)=>{const h=Math.max(1,x/mx*(H-10));return `<rect x="${pad+k*bw+5}" y="${H-h}" width="${bw-10}" height="${h}" rx="2"/><text x="${pad+k*bw+bw/2}" y="${H+15}" text-anchor="middle">${D.rounds[state.log[k].round].n}</text>`}).join("")}</svg></div>`;
+}
+function seasonView(){
+  const live=isLive();
+  return `<h2 style="margin-top:0">Points per round</h2>
+  ${state.log.length?chartSvg():`<div class="card">Rounds you have played will show up here.</div>`}
+  <div class="card"><h3>Season mode</h3>
+   <p class="note" style="margin:0 0 10px">${live?"You are playing the live season, which starts on "+dshort(D.rounds[LIVE].start)+" with real upcoming races.":"You are replaying past rounds from "+dshort(D.rounds[0].start)+" as practice. Practice rounds do not count in leagues."}</p>
+   <button class="btn" id="mode">${confirmMode?"Confirm: erase this squad and switch":live?"Practice with a replay from "+dshort(D.rounds[0].start):"Switch to the live season"}</button>
+   <button class="btn quiet" id="reset">${confirmReset?"Confirm: erase this season and restart":"Restart"}</button></div>`;
+}
+function lgName(code){return myLgn[code]||code.replace(/-[A-Z0-9]{4}$/,"").replace(/_/g," ")}
+function leagueTable(code){
+  const rows=(leagueRows[code]||[]).slice();
+  const rset=new Set();rows.forEach(r=>Object.keys(r.rounds).forEach(k=>rset.add(+k)));
+  const rs=[...rset].sort((a,b)=>a-b);
+  if(!rows.length)return `<p class="note">Loading members. If this stays empty, nobody has played a live round yet.</p>`;
+  rows.forEach(r=>{r.total=rs.reduce((a,k)=>a+(r.rounds[k]||0),0)});
+  rows.sort((a,b)=>b.total-a.total);
+  const best={};rs.forEach(k=>{best[k]=Math.max(...rows.map(r=>r.rounds[k]??-1e9))});
+  const last=rs[rs.length-1];
+  const win=last!==undefined?rows.filter(r=>r.rounds[last]===best[last]):[];
+  return `${last!==undefined?`<p class="note" style="margin:6px 0 10px">Round ${D.rounds[last].n} winner: <b>${win.map(w=>esc(w.name)).join(", ")}</b> with ${best[last].toFixed(1)}</p>`:""}
+  <div class="tbl"><table><thead><tr><th>Manager</th><th>Total</th>${rs.slice(-8).map(k=>`<th>R${D.rounds[k].n}</th>`).join("")}</tr></thead><tbody>
+  ${rows.map((r,i)=>`<tr class="${r.id===cloud.uid?"in":""}"><td>${i+1}. ${esc(r.name)}${r.id===cloud.uid?" (you)":""}</td><td><b>${r.total.toFixed(1)}</b></td>${rs.slice(-8).map(k=>`<td class="${r.rounds[k]!==undefined&&r.rounds[k]===best[k]?"pos":""}">${r.rounds[k]!==undefined?r.rounds[k].toFixed(1):"–"}</td>`).join("")}</tr>`).join("")}
+  </tbody></table></div>`;
+}
+function leaguesView(){
+  if(!dbOk)return `<h2 style="margin-top:0">Leagues</h2><div class="card"><h3>${authMode==="up"?"Create your account":"Sign in"}</h3>
+   <p class="note" style="margin:0 0 10px">Your squad is saved to your account and works on any device. Without an account it is saved in this browser only.</p>
+   ${authMode==="up"?`<div class="row" style="margin-bottom:8px"><input class="name" id="authName" maxlength="24" placeholder="Manager name" value="${esc(authName)}" aria-label="Manager name" autocomplete="nickname"></div>`:""}
+   <div class="row" style="margin-bottom:8px"><input class="name" id="authEmail" type="email" placeholder="Email" value="${esc(authEmail)}" aria-label="Email" autocomplete="email"></div>
+   <div class="row" style="margin-bottom:8px"><input class="name" id="authPw" type="password" placeholder="Password (8+ characters)" value="${esc(authPw)}" aria-label="Password" autocomplete="${authMode==="up"?"new-password":"current-password"}"></div>
+   <div class="row"><button class="btn on" id="${authMode==="up"?"authUp":"authIn"}" ${authBusy?"disabled":""}>${authBusy?"Please wait":authMode==="up"?"Create account":"Sign in"}</button><button class="btn quiet" id="authSwap">${authMode==="up"?"I already have an account":"Create an account"}</button></div>
+   ${authMsg?`<p class="note" style="margin:8px 0 0">${esc(authMsg)}</p>`:""}</div>`;
+  return `<h2 style="margin-top:0">Leagues</h2>
+  <p class="lead">Compete with friends round by round. Everyone plays the live season on their own account. A league table adds up the points each member scores per round.</p>
+  <div class="grid2">
+   <div class="card"><h3>Your name</h3><div class="row"><input class="name" id="mgrName" maxlength="24" placeholder="Manager name" value="${esc(mgrName)}" aria-label="Manager name"></div>
+    <p class="note" id="cloudstat" style="margin:8px 0 0">${esc(cloudMsg||"Progress saves to your account automatically.")}</p><div class="row" style="margin-top:8px"><span class="note">${esc(cloud.email)}</span><button class="btn quiet" id="authOut">Sign out</button></div>
+    ${isLive()?"":`<p class="note" style="margin:8px 0 0">You are in practice mode. Switch to the live season on the Season tab to appear in leagues.</p>`}</div>
+   <div class="card"><h3>Create a league</h3><div class="row"><input class="name" id="newLeague" maxlength="24" placeholder="League name" value="${esc(newLeague)}" aria-label="League name"><button class="btn on" id="createLeague">Create</button></div>
+    <h3 style="margin-top:14px">Join with a code</h3><div class="row"><input class="name" id="joinCode" maxlength="40" placeholder="CODE-1A2B" value="${esc(joinCode)}" aria-label="League code"><button class="btn on" id="joinLeague">Join</button></div>
+    ${leagueMsg?`<p class="note" style="margin:8px 0 0">${esc(leagueMsg)}</p>`:""}</div></div>
+  ${myLeagues.length?myLeagues.map(c=>`<div class="card"><div class="ev" style="border:0;padding:0"><div><h3 style="margin:0">${esc(lgName(c))}</h3><div class="sub">Invite friends with the code <b>${esc(c)}</b></div></div><button class="btn quiet" data-leave="${esc(c)}">Leave</button></div>${leagueTable(c)}</div>`).join(""):`<div class="card">You are not in a league yet. Create one and send the code to your friends.</div>`}`;
+}
+function rulesView(){
+  return `<h2 style="margin-top:0">How it works</h2>
+  <div class="grid2"><div class="card"><h3>Your team</h3><ul class="rules"><li>Pick ${D.squad} runners from classes D and H 16, 18, 20 and 21 with ${fp(D.budget)}M. No more than ${D.clubMax} from one club.</li>
+  <li>Choose a captain (2x points) and a vice-captain who steps in if the captain does not race that week.</li>
+  <li>A round is one calendar week, Monday to Sunday. Your squad locks when the week starts and scores automatically once the results are in. The live season runs from ${dshort(D.rounds[LIVE].start)} to ${dshort(D.rounds[E.R-1].end)}.</li>
+  <li>After the opening squad you get ${D.freeTransfers} free transfers a round. Each extra transfer costs ${D.penalty/10} points. Runners sell at today's price.</li>
+  <li>Two chips, one use each: Wildcard (unlimited free transfers for a round) and 3x Captain.</li></ul></div>
+  <div class="card"><h3>Points for a race</h3><ul class="rules"><li><b>2</b> for a valid finish.</li>
+  <li><b>Runners beaten:</b> each one is worth between 0.1 and 2.0, depending on the beaten runner's class. Beating one of the best H16 runners is worth about 20 times more than beating a newcomer. Capped at 35.</li>
+  <li><b>Speed:</b> 18 minus 80 times the share behind the winner, never below 0. A runner 10% behind the winner earns 10 before field quality is applied.</li>
+  <li><b>Podium:</b> 12 for a win, 7 for second, 4 for third.</li>
+  <li><b>Field quality:</b> speed and podium points are multiplied by 0.75 to 1.5, based on how strong the ten best starters are.</li>
+  <li><b>Small fields:</b> speed and podium points are scaled from 40% with 3 finishers up to 100% with 20 or more.</li>
+  <li><b>Race weight:</b> Ungdoms-SM x1.4. Swedish League, DM and other championships x1.2. Everything else x1.</li>
+  <li><b>Mispunch, did not finish, disqualified:</b> -5. Did not start: 0.</li></ul></div></div>
+  <div class="card"><h3>Class rating</h3><p style="max-width:70ch;margin:6px 0">Each runner's class comes from how fast they run compared with the rest of the field, adjusted for how strong that field was, across all ${D.events.length} races in the data. It decides how much a beaten runner is worth. Class is only used to score races. Prices never use it, they only use results from before the round.</p></div>
+  <div class="card"><h3>Data</h3><ul class="rules"><li>D/H 16 to 21 results from liveresultat.orientering.se for ${D.events.length} races between ${dshort(D.events[0].date)} and ${dshort(D.events[D.events.length-1].date)}, each class in a race with at least 3 finishers. Relay, patrol, aggregate and some non-Swedish races are left out.</li>
+  <li>Data is current to ${dshort(D.asof)}. Prices for every round come only from races before it. The page refreshes itself with new races every day.</li><li>Races that are still being run, or that are not on liveresultat yet (like O-Event, 6 to 8 November), are shown in the schedule and count once they have 3 or more finishers in a class.</li>
+  <li>A price comes from a weighted average of a runner's past points, with recent races counting more. Runners with no history cost 4.0M.</li>
+  <li>The pool is the ${D.runners.filter(x=>x.p).length} runners with at least 3 starts.</li></ul></div>`;
+}
+function profile(i){
+  const vis=E.visible(i,R()),s=E.stats(i,R());
+  const hist=vis.length>1?(()=>{const w=300,h=48,mxv=Math.max(...vis.map(x=>x.pts),1),mnv=Math.min(...vis.map(x=>x.pts),0);
+    const pts=vis.map((x,k)=>`${(k/(vis.length-1)*w).toFixed(1)},${(h-3-(x.pts-mnv)/(mxv-mnv||1)*(h-6)).toFixed(1)}`).join(" ");
+    return `<svg viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px" role="img" aria-label="Points per race"><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round"/></svg>`})():"";
+  $("#modal").innerHTML=`<div class="modal" data-close="1"><div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(nameOf(i))}">
+   <div class="hd"><div><h2>${esc(nameOf(i))}</h2><div class="sub">${esc(clubOf(i))}</div></div><button class="btn" data-close="1">Close</button></div>
+   <div class="stats"><div><b>${D.runners[i].p?fp(E.price(i,pr()))+"M":"–"}</b><span>Price</span></div><div><b>${s.starts}</b><span>Starts</span></div><div><b>${fp(s.total)}</b><span>Points</span></div><div><b>${s.starts?fp(s.total/s.starts):"–"}</b><span>Per start</span></div>${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Class rating</span></div>`:""}</div>
+   ${hist}
+   <div class="tbl" style="margin-top:12px"><table><thead><tr><th>Race</th><th>Place</th><th>Behind</th><th>Time</th><th>Points</th></tr></thead><tbody>
+   ${vis.slice().reverse().map(h=>{const e=D.events[h.ev];return `<tr><td>${esc(e.name)}<div class="sub">${dshort(e.date)}${e.tier>1?", x"+e.tier:""}</div></td><td>${h.kind?["","DNF","MP","DSQ"][h.kind]:h.rank+" of "+e.n}</td><td>${h.kind?"–":(h.gap/100).toFixed(1)+"%"}</td><td>${h.kind?"–":tm(h.t)}</td><td class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</td></tr>`}).join("")||`<tr><td colspan="5" class="note">No results yet.</td></tr>`}
+   </tbody></table></div>${!isLive()&&!done()?`<p class="note">Showing races before round ${D.rounds[R()].n}.</p>`:""}</div></div>`;
+}
+function renderHero(){
+  $("#hero").innerHTML=tab==="team"?`<div class="lead-hero"><div class="kicker"><i></i>Live season · D/H 16–21</div><h1>Pick six orienteers. <span class="soft">Beat everyone you know.</span></h1><p class="lede">Real results from liveresultat.orientering.se, scored round by round. Beat the best runners to earn the most points.</p></div>`:"";
+}
+function render(){
+  renderHero();renderCourse();renderTabs();renderFacts();
+  $("#view").innerHTML=tab==="team"?teamView():tab==="rounds"?roundsView():tab==="season"?seasonView():tab==="leagues"?leaguesView():rulesView();
+}
+function doPlay(chip){
+  const o=E.play(state,{squad:plan.squad,captain:plan.captain,vice:plan.vice,chip:chip});
+  state=o.state;plan={squad:state.squad.slice(),captain:state.captain,vice:state.vice,chip:null};save();
+}
+const toTop=()=>{try{window.scrollTo(0,0)}catch(e){}};
+document.addEventListener("click",ev=>{
+  const g=ev.target.closest("[data-ctrl]");
+  if(g){const k=+g.dataset.ctrl,li=state.log.findIndex(l=>l.round===k);if(li>=0){viewRound=li;tab="rounds"}else{tab="team"}render();return}
+  const t=ev.target.closest("button,.modal");if(!t)return;const d=t.dataset;
+  if(d.close&&(ev.target===t||t.tagName==="BUTTON")){$("#modal").innerHTML="";return}
+  if(d.prof!==undefined){profile(+d.prof);return}
+  if(d.tab){tab=d.tab;confirmAuto=confirmReset=confirmMode=false;render();toTop();return}
+  if(d.add!==undefined){const i=+d.add;if(!canAddReason(i)){plan.squad.push(i);fixLeaders();save()}render();return}
+  if(d.sell!==undefined){plan.squad=plan.squad.filter(j=>j!==+d.sell);fixLeaders();save();render();return}
+  if(d.cap!==undefined){const i=+d.cap;if(plan.vice===i)plan.vice=plan.captain;plan.captain=i;save();render();return}
+  if(d.vice!==undefined){const i=+d.vice;if(plan.captain===i)plan.captain=plan.vice;plan.vice=i;save();render();return}
+  if(d.chip!==undefined){plan.chip=d.chip||null;render();return}
+  if(d.sort){if(sortKey===d.sort)sortDir=-sortDir;else{sortKey=d.sort;sortDir=d.sort==="name"?1:-1}render();return}
+  if(d.round!==undefined){viewRound=+d.round;render();return}
+  if(t.id==="more"){shown+=40;render();return}
+  if(t.id==="play"){try{
+      if(isFinal(R())){doPlay(plan.chip);viewRound=state.log.length-1;tab="rounds";confirmAuto=false;render();toTop()}
+      else{const e=E.planErrors(state,plan);if(e.length)throw new Error(e.join("; "));lock={round:R(),squad:plan.squad.slice(),captain:plan.captain,vice:plan.vice,chip:plan.chip||null};save();render();toTop()}
+    }catch(e){$("#view").insertAdjacentHTML("afterbegin",`<p class="errs">${esc(e.message)}</p>`)}return}
+  if(t.id==="unlock"){if(lock&&!hasStarted(lock.round)){plan={squad:lock.squad.slice(),captain:lock.captain,vice:lock.vice,chip:lock.chip};lock=null;save();render()}return}
+  if(t.id==="auto"){if(!confirmAuto){confirmAuto=true;render();return}
+    try{while(!done()&&isFinal(R())){doPlay(null)}}catch(e){}confirmAuto=false;viewRound=Math.max(0,state.log.length-1);tab=state.log.length?"rounds":"team";render();toTop();return}
+  if(t.id==="reset"){if(!confirmReset){confirmReset=true;render();return}
+    state=E.newState(state.start);plan={squad:[],captain:null,vice:null,chip:null};lock=null;confirmReset=false;save();tab="team";render();return}
+  if(t.id==="mode"){if(!confirmMode){confirmMode=true;render();return}
+    state=E.newState(isLive()?0:LIVE);plan={squad:[],captain:null,vice:null,chip:null};lock=null;confirmMode=false;viewRound=0;save();tab="team";render();return}
+  if(t.id==="createLeague"){const n=newLeague.trim();if(!n){leagueMsg="Give the league a name first.";render();return}joinLeague(mkCode(n),n).then(ok=>{if(ok)newLeague="";render()});return}
+  if(t.id==="joinLeague"){joinLeague(joinCode,"").then(ok=>{if(ok)joinCode="";render()});return}
+  if(d.leave){const c=d.leave;myLeagues=myLeagues.filter(x=>x!==c);delete myLgn[c];if(leagueUnsubs[c]){try{leagueUnsubs[c]()}catch(e){}delete leagueUnsubs[c]}if(cloud.sb&&cloud.uid)cloud.sb.from("league_members").delete().eq("code",c).eq("user_id",cloud.uid).then(()=>{});leagueMsg="";save();render();return}
+});
+document.addEventListener("keydown",ev=>{
+  if(ev.key==="Escape")$("#modal").innerHTML="";
+  if((ev.key==="Enter"||ev.key===" ")&&ev.target.matches&&ev.target.matches("[data-ctrl]")){ev.preventDefault();ev.target.dispatchEvent(new MouseEvent("click",{bubbles:true}))}
+});
+document.addEventListener("input",ev=>{const t=ev.target;
+  if(t.id==="q"){q=t.value.trim().toLowerCase();shown=40;const p=t.selectionStart;render();const n=$("#q");n.focus();n.setSelectionRange(p,p)}
+  if(t.id==="mgrName"){mgrName=t.value.slice(0,24);save()}
+  if(t.id==="newLeague")newLeague=t.value;
+  if(t.id==="joinCode")joinCode=t.value;});
+document.addEventListener("change",ev=>{const t=ev.target;
+  if(t.id==="clubF"){clubF=t.value;shown=40;render()}
+  if(t.id==="clsF"){clsF=t.value;shown=40;render()}
+  if(t.id==="afford"){afford=t.checked;render()}});
+
+
+const SB_URL="https://hjpfmubvpvftxyyemltn.supabase.co",SB_KEY="sb_publishable_Ent2RuVrh-iKyjT1or8gOw_UFdZ74ch";
+let authEmail="",authPw="",authName="",authMode="in",authMsg="",authBusy=false;
+function queueCloud(){if(!cloud.ready)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,1200)}
+function setStat(m){cloudMsg=m;const e=document.getElementById("cloudstat");if(e)e.textContent=m}
+async function pushCloud(){
+  if(!cloud.sb||!cloud.uid)return;
+  try{
+    const rounds={};if(isLive())state.log.forEach(l=>{if(l.round>=LIVE)rounds[l.round]=Math.round(l.total)});
+    const a=await cloud.sb.from("saves").upsert({user_id:cloud.uid,state:blob(),updated_at:new Date().toISOString()});
+    if(a.error)throw a.error;
+    const p=await cloud.sb.from("profiles").update({name:(mgrName||"Manager").slice(0,24)}).eq("id",cloud.uid);
+    if(p.error)throw p.error;
+    const rows=Object.entries(rounds).map(([k,v])=>({user_id:cloud.uid,round:+k,pts:v,updated_at:new Date().toISOString()}));
+    if(rows.length){const r=await cloud.sb.from("scores").upsert(rows);if(r.error)throw r.error}
+    setStat("Saved to your account");
+  }catch(e){setStat("Could not save to your account. Your progress is still kept in this browser.")}
+}
+async function fetchLeague(code){
+  const sb=cloud.sb;if(!sb)return;
+  try{
+    const m=await sb.from("league_members").select("user_id").eq("code",code).limit(100);
+    if(m.error)return;const ids=m.data.map(x=>x.user_id);
+    if(!ids.length){leagueRows[code]=[];return}
+    const [pf,sc,lg]=await Promise.all([sb.from("profiles").select("id,name").in("id",ids),sb.from("scores").select("user_id,round,pts").in("user_id",ids),sb.from("leagues").select("name").eq("code",code).maybeSingle()]);
+    if(lg.data&&lg.data.name&&!myLgn[code])myLgn[code]=String(lg.data.name).slice(0,24);
+    const byId={};ids.forEach(id=>byId[id]={id,name:"Manager",rounds:{},total:0});
+    (pf.data||[]).forEach(p=>{if(byId[p.id])byId[p.id].name=String(p.name||"Manager").slice(0,24)});
+    (sc.data||[]).forEach(s=>{if(byId[s.user_id]&&s.round>=0&&s.round<E.R)byId[s.user_id].rounds[s.round]=s.pts/10});
+    leagueRows[code]=Object.values(byId);
+    if(tab==="leagues"&&!(document.activeElement&&document.activeElement.matches("input")))render();
+  }catch(e){}
+}
+function watchLeague(code){
+  if(leagueUnsubs[code]||!cloud.sb)return;
+  fetchLeague(code);
+  const iv=setInterval(()=>{if(!document.hidden)fetchLeague(code)},60000);
+  leagueUnsubs[code]=()=>clearInterval(iv);
+}
+async function onSession(session){
+  Object.keys(leagueUnsubs).forEach(c=>{try{leagueUnsubs[c]()}catch(e){}delete leagueUnsubs[c]});
+  if(!session||!session.user){cloud.uid=null;cloud.email="";cloud.canWrite=false;cloud.ready=false;dbOk=false;render();return}
+  cloud.uid=session.user.id;cloud.email=session.user.email||"";dbOk=true;cloud.canWrite=true;
+  try{
+    const [sv,pf,mb]=await Promise.all([cloud.sb.from("saves").select("state").eq("user_id",cloud.uid).maybeSingle(),cloud.sb.from("profiles").select("name").eq("id",cloud.uid).maybeSingle(),cloud.sb.from("league_members").select("code").eq("user_id",cloud.uid)]);
+    const v=sv.data&&sv.data.state;
+    if(v&&v.state&&(v.ts||0)>localTs&&v.state.round<=E.R){
+      state=unpackSt(JSON.parse(JSON.stringify(v.state)));plan=unpackPl(JSON.parse(JSON.stringify(v.plan||packPl(plan))));lock=unpackPl(v.lock||null);mgrName=v.name||mgrName;
+      myLeagues=v.leagues||[];myLgn=v.lgn||{};localTs=v.ts;viewRound=Math.max(0,state.log.length-1);
+    }
+    if(!mgrName&&pf.data&&pf.data.name)mgrName=pf.data.name;
+    (mb.data||[]).forEach(r=>{if(!myLeagues.includes(r.code))myLeagues.push(r.code)});
+    try{localStorage.setItem(KEY,JSON.stringify(blob()))}catch(e){}
+  }catch(e){}
+  cloud.ready=true;settle();pushCloud();myLeagues.forEach(watchLeague);render();
+}
+async function initCloud(){
+  try{
+    if(!window.supabase||!window.supabase.createClient){authMsg="Could not load the sign-in service. Reload the page.";return}
+    cloud.sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    cloud.sb.auth.onAuthStateChange((ev,session)=>{setTimeout(()=>onSession(session),0)});
+  }catch(e){}
+}
+async function doAuth(kind){
+  if(authBusy||!cloud.sb)return;authMsg="";
+  const email=authEmail.trim(),pw=authPw;
+  if(!email||!pw){authMsg="Enter your email and a password.";render();return}
+  if(kind==="up"&&pw.length<8){authMsg="Use at least 8 characters for the password.";render();return}
+  authBusy=true;render();
+  try{
+    if(kind==="up"){
+      const r=await cloud.sb.auth.signUp({email,password:pw,options:{data:{name:(authName||mgrName||"").trim().slice(0,24)},emailRedirectTo:location.origin+location.pathname}});
+      if(r.error)authMsg=r.error.message;else if(!r.data.session)authMsg="Check your email and click the confirmation link, then sign in.";else{authPw="";if(authName)mgrName=authName.trim().slice(0,24)}
+    }else{
+      const r=await cloud.sb.auth.signInWithPassword({email,password:pw});
+      if(r.error)authMsg=r.error.message==="Invalid login credentials"?"Wrong email or password.":r.error.message;else authPw="";
+    }
+  }catch(e){authMsg="Something went wrong. Try again."}
+  authBusy=false;render();
+}
+const mkCode=n=>{const slug=(n.toUpperCase().replace(/[^A-Z0-9ÅÄÖ]+/g,"_").replace(/^_+|_+$/g,"")||"LEAGUE").slice(0,14);const al="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let r="";for(let i=0;i<4;i++)r+=al[Math.floor(Math.random()*al.length)];return slug+"-"+r};
+async function joinLeague(code,name){
+  code=code.trim().toUpperCase();
+  if(!cloud.uid){leagueMsg="Sign in first.";return false}
+  if(!/^[A-Z0-9ÅÄÖ_]{1,14}-[A-Z0-9]{4}$/.test(code)){leagueMsg="That code does not look right. It should look like NAME-1A2B.";return false}
+  if(myLeagues.includes(code)){leagueMsg="You are already in this league.";return false}
+  if(myLeagues.length>=8){leagueMsg="You can be in up to 8 leagues.";return false}
+  if(name){const r=await cloud.sb.from("leagues").insert({code,name:name.slice(0,40),owner:cloud.uid});if(r.error){leagueMsg="Could not create the league. Try again.";return false}}
+  const m=await cloud.sb.from("league_members").insert({code,user_id:cloud.uid});
+  if(m.error){leagueMsg=m.error.code==="23503"?"No league has that code.":"Could not join the league. Try again.";return false}
+  myLeagues.push(code);if(name)myLgn[code]=name;watchLeague(code);save();pushCloud();leagueMsg="Joined "+lgName(code)+".";return true;
+}
+document.addEventListener("input",e=>{const t=e.target;if(t.id==="authEmail")authEmail=t.value;if(t.id==="authPw")authPw=t.value;if(t.id==="authName")authName=t.value});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&["authEmail","authPw","authName"].includes(e.target.id))doAuth(authMode)});
+document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;
+  if(t.id==="authIn"||t.id==="authUp")doAuth(t.id==="authUp"?"up":"in");
+  if(t.id==="authSwap"){authMode=authMode==="in"?"up":"in";authMsg="";render()}
+  if(t.id==="authOut"){cloud.sb.auth.signOut().then(()=>{leagueRows={};render()})}
+});
+
+render();initCloud();
+</script>

@@ -20,11 +20,3 @@ with cf.ThreadPoolExecutor(12) as ex:
 print("secs", round(time.time()-t))
 json.dump(out, open(f"{S}/data/classes.json", "w"), ensure_ascii=False)
 print("failed", sum(1 for v in out.values() if v is None), "empty", sum(1 for v in out.values() if v == []))
-def isH16(n): return re.sub(r"[\s_-]", "", n.upper()) in ("H16","M16","H16A","H16K")
-h16 = [c for c in sel if out.get(c["id"]) and any(isH16(x) for x in out[c["id"]])]
-print("with H16:", len(h16))
-json.dump(h16, open(f"{S}/data/h16_comps.json", "w"), ensure_ascii=False)
-# variants of class names containing 16
-from collections import Counter
-cnt = Counter(x for v in out.values() if v for x in v if re.search(r"(^|\W)(H|M|P|HD|HE)?\s*-?16($|\W)", x.upper()) or "H16" in x.upper())
-print(cnt.most_common(30))
