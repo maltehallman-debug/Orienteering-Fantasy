@@ -467,17 +467,11 @@ input.name{width:100%;max-width:380px}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}}
 @keyframes curtain{to{clip-path:inset(0 0 100% 0);visibility:hidden}}
 @media (prefers-reduced-motion:reduce){#reel{display:none}}
-/* page changes: the old page blurs away, the new one rises out of focus */
-html.vt-page::view-transition-old(root){animation:vtOut .55s var(--ease-cine-in) both}
-html.vt-page::view-transition-new(root){animation:vtIn 1s var(--ease-cine) .2s both}
-html.vt-page::view-transition-group(hdr),html.vt-page::view-transition-group(tabbar),html.vt-page::view-transition-group(terrain){animation-duration:0s}
-@keyframes vtOut{to{opacity:0;transform:scale(.965) translateY(-10px);filter:blur(10px)}}
-@keyframes vtIn{from{opacity:0;transform:translateY(34px) scale(1.01);filter:blur(12px)}}
 @media (prefers-reduced-motion:no-preference){
   /* everything that enters takes its time */
   .enter #view>*{animation:viewIn .95s var(--ease-cine) both}
   .enter #view>*:nth-child(2){animation-delay:.12s}.enter #view>*:nth-child(3){animation-delay:.24s}.enter #view>*:nth-child(n+4){animation-delay:.36s}
-  .enter #view .rc,.enter #view .grid2>.card,.enter .facts>div,.enter #view .hl,.enter #view .kv>div{animation:cardIn 1.1s var(--ease-cine) both;animation-delay:calc(.25s + var(--i,0) * 95ms)}
+  .enter #view .rc,.enter #view .grid2>.card,.enter .facts>div,.enter #view .hl,.enter #view .kv>div{animation:cardIn 1.1s var(--ease-cine) both;animation-delay:calc(.12s + var(--i,0) * 90ms)}
   .enter #view .kv>div:nth-child(2){--i:1}.enter #view .kv>div:nth-child(3){--i:2}.enter #view .kv>div:nth-child(4){--i:3}
   @keyframes viewIn{from{opacity:0;transform:translateY(26px);filter:blur(6px)}}
   @keyframes cardIn{from{opacity:0;transform:perspective(900px) translateY(36px) rotateX(14deg) scale(.96);filter:blur(4px)}}
@@ -1332,18 +1326,20 @@ function countUp(){
     el.textContent=a.toFixed(1)+suf;requestAnimationFrame(step);
   });
 }
-let lastTab=null,inVT=false;
-function render(){
-  if(lastTab!==null&&tab!==lastTab&&!RM&&document.startViewTransition&&!inVT){
-    inVT=true;document.documentElement.classList.add("vt-page");
-    try{const v=document.startViewTransition(()=>{inVT=false;doRender()});v.finished.finally(()=>document.documentElement.classList.remove("vt-page"))}
-    catch(e){inVT=false;document.documentElement.classList.remove("vt-page");doRender()}
-    return;
-  }
-  doRender();
+/* page changes: the page you leave drifts up and out of focus, then the new one is built and its parts rise in.
+   Plain animations on the content (not the View Transitions API, which hides the new page until it is complete). */
+let leaving=false,leaveAnim=null;
+function nav(apply){
+  if(RM||!Element.prototype.animate){apply();animNext=true;render();toTop();return}
+  if(leaving){apply();animNext=true;return}
+  apply();animNext=true;leaving=true;renderTabs();
+  const c=document.querySelector("body>.container");
+  leaveAnim=c.animate([{opacity:1,transform:"none",filter:"blur(0px)"},{opacity:0,transform:"translateY(-18px) scale(.985)",filter:"blur(8px)"}],{duration:360,easing:"cubic-bezier(.45,0,.75,.35)",fill:"forwards"});
+  const done=()=>{if(!leaving)return;leaving=false;try{window.scrollTo(0,0)}catch(e){}render();leaveAnim.cancel();leaveAnim=null};
+  leaveAnim.onfinish=done;setTimeout(done,700); /* never get stuck if the animation is interrupted */
 }
-function doRender(){
-  lastTab=tab;
+function render(){
+  if(leaving)return; /* the page change will draw the latest state when it lands */
   const now=performance.now();
   const opening=animNext&&!RM;
   if(opening){enterUntil=now+2600;clearTimeout(enterTimer);enterTimer=setTimeout(()=>document.body.classList.remove("enter"),2650)}
@@ -1359,16 +1355,16 @@ function doPlay(chip){
   state=o.state;plan={squad:state.squad.slice(),captain:state.captain,vice:null,chip:null};save();
 }
 
-const toTop=()=>{try{window.scrollTo(0,0)}catch(e){}};
+const toTop=()=>{if(leaving)return;try{window.scrollTo(0,0)}catch(e){}};
 document.addEventListener("click",ev=>{
   const g=ev.target.closest("[data-ctrl]");
-  if(g){const k=+g.dataset.ctrl,li=state.log.findIndex(l=>l.round===k),nt=li>=0?"rounds":"team";if(li>=0)viewRound=li;if(nt!==tab)animNext=true;tab=nt;render();return}
+  if(g){const k=+g.dataset.ctrl,li=state.log.findIndex(l=>l.round===k),nt=li>=0?"rounds":"team";if(li>=0)viewRound=li;if(nt!==tab)nav(()=>{tab=nt});else render();return}
   const mg=ev.target.closest("[data-mgr]");
   if(mg&&!ev.target.closest("button")){const [c,id]=mg.dataset.mgr.split("|");managerSheet(c,id,null);return}
   const t=ev.target.closest("button,.modal");if(!t)return;const d=t.dataset;
   if(d.close&&(ev.target===t||t.tagName==="BUTTON")){$("#modal").innerHTML="";profileOpen=null;phForm=null;phMsg="";return}
   if(d.prof!==undefined){profile(+d.prof);return}
-  if(d.tab){if(tab!==d.tab)animNext=true;tab=d.tab;if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;render();toTop();return}
+  if(d.tab){const nt=d.tab;if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
   if(d.add!==undefined){const i=+d.add;if(!canAddReason(i)){plan.squad.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
   if(d.sell!==undefined){plan.squad=plan.squad.filter(j=>j!==+d.sell);fixLeaders();save();render();return}
   if(d.boost!==undefined){const i=+d.boost;if(lock&&lock.round===R())return;if(plan.squad.includes(i)&&plan.captain!==i){plan.captain=i;plan.vice=null;justBoosted=i;save();const [x,y]=centerOf(t);burst(x,y,30)}render();return}
@@ -1399,21 +1395,21 @@ document.addEventListener("click",ev=>{
   if(d.jump){const m=document.getElementById("market");if(m)m.scrollIntoView({behavior:RM?"auto":"smooth",block:"start"});return}
   if(t.id==="themeBtn"){const i=THEMES.findIndex(x=>x[0]===curTheme());setTheme(THEMES[(i+1)%THEMES.length][0],t);return}
   if(d.theme){setTheme(d.theme,t);return}
-  if(t.id==="mgr"){if(tab!=="profile")animNext=true;tab="profile";if(!dbOk)authMode=authMode||"in";render();toTop();return}
+  if(t.id==="mgr"){if(!dbOk)authMode=authMode||"in";if(tab!=="profile")nav(()=>{tab="profile"});else{render();toTop()}return}
   if(d.phopen!==undefined){phForm={i:+d.phopen,rel:"",consent:false,blob:null,url:""};phMsg="";profile(+d.phopen);return}
   if(t.id==="phCancel"){phForm=null;phMsg="";if(profileOpen!==null)profile(profileOpen);return}
   if(t.id==="phSend"){sendPhoto();return}
-  if(t.id==="phSignIn"){$("#modal").innerHTML="";profileOpen=null;if(tab!=="profile")animNext=true;tab="profile";authMode="in";render();toTop();return}
+  if(t.id==="phSignIn"){$("#modal").innerHTML="";profileOpen=null;authMode="in";if(tab!=="profile")nav(()=>{tab="profile"});else{render();toTop()}return}
   if(d.phdel){if(confirm("Remove this photo?"))dropPhoto(d.phdel,false);return}
   if(d.phok){approvePhoto(d.phok);return}
   if(d.phno){if(confirm("Reject and delete this photo?"))dropPhoto(d.phno,true);return}
-  if(d.lgopen){tab="leagues";lgOpen=d.lgopen;lgSub="table";lgRound=null;animNext=true;fetchLeague(d.lgopen);render();toTop();return}
-  if(d.lgback){lgOpen=null;animNext=true;render();toTop();return}
+  if(d.lgopen){const c=d.lgopen;fetchLeague(c);nav(()=>{tab="leagues";lgOpen=c;lgSub="table";lgRound=null});return}
+  if(d.lgback){nav(()=>{lgOpen=null});return}
   if(d.lgsub){lgSub=d.lgsub;render();return}
   if(d.lground!==undefined&&d.lground!=="undefined"){lgRound=+d.lground;render();return}
   if(d.mgrr){const [c,id,r]=d.mgrr.split("|");if(r!=="undefined")managerSheet(c,id,+r);return}
   if(t.id==="wTeam"||t.id==="wLeague"||t.id==="wSignIn"){$("#modal").innerHTML="";const nt=t.id==="wTeam"?"team":t.id==="wSignIn"?"profile":"leagues";if(t.id==="wSignIn"){authMode="in"}
-    if(nt!==tab)animNext=true;tab=nt;render();toTop();return}
+    if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
   if(t.id==="createLeague"){const n=newLeague.trim();if(!n){leagueMsg="Give the league a name first.";render();return}joinLeague(mkCode(n),n).then(ok=>{if(ok)newLeague="";render()});return}
   if(t.id==="joinLeague"){joinLeague(joinCode,"").then(ok=>{if(ok)joinCode="";render()});return}
   if(d.leave){const c=d.leave;myLeagues=myLeagues.filter(x=>x!==c);delete myLgn[c];if(leagueUnsubs[c]){try{leagueUnsubs[c]()}catch(e){}delete leagueUnsubs[c]}if(cloud.sb&&cloud.uid)cloud.sb.from("league_members").delete().eq("code",c).eq("user_id",cloud.uid).then(()=>{});leagueMsg="";save();render();return}
