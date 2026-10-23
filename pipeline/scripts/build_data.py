@@ -7,6 +7,8 @@ ev_round = {}
 for r in rounds:
     for eid in r["events"]: ev_round[eid] = r["n"] - 1
 KIND = {"F": 0, "DNF": 1, "MP": 2, "DSQ": 3}
+# race points are scaled so a good week is about 100 and rounded to whole points (stored in tenths like everything else)
+PSCALE = 0.32
 out_events = []; res = []; evpos = {}
 for i, e in enumerate(events):
     evpos[e["id"]] = i
@@ -14,7 +16,7 @@ for i, e in enumerate(events):
     rows = []
     for k, s in e["scores"].items():
         if k not in ridx: continue
-        rows.append([ridx[k], KIND[s["k"]], s.get("rank", 0), s.get("t", 0), int(round(s.get("gap", 0) * 10000)), int(round(s["pts"] * 10)), s.get("topb", 0)])
+        rows.append([ridx[k], KIND[s["k"]], s.get("rank", 0), s.get("t", 0), int(round(s.get("gap", 0) * 10000)), int(round(s["pts"] * PSCALE)) * 10, s.get("topb", 0)])
     rows.sort(key=lambda x: (x[1] != 0, x[2] if x[1] == 0 else 0, -x[5]))
     res.append(rows)
 out_rounds = [{"n": r["n"], "start": r["start"], "end": r["end"], "ev": [evpos[x] for x in r["events"]], "final": 1 if r["final"] else 0} for r in rounds]
@@ -46,8 +48,8 @@ live_start = next(i for i, r in enumerate(out_rounds) if r["start"] == LIVE_STAR
 data = {"runners": runners, "events": out_events, "rounds": out_rounds, "res": res, "prices": prices,
         "asof": ASOF, "upcoming": [dict({"name": u["name"], "date": u["date"]}, **({"lr": u["id"]} if u.get("id") else {})) for u in upcoming], "liveStart": live_start,
         # money is in tenths of a thousand (205 = 20.5k); ten runners, the first five are the A team and score double
-        "budget": 1000, "squad": 10, "aSize": 5, "clubMax": 3, "freeTransfers": 3, "penalty": 40, "dnfPts": -50,
-        # price tiers (lower bounds): gold, silver; everything below is bronze
-        "tiers": [140, 60]}
+        "budget": 1000, "squad": 10, "aSize": 5, "clubMax": 3, "freeTransfers": 3, "penalty": 40, "dnfPts": -30,
+        # price tiers (lower bounds): gold (about the top 8 in a class), silver (the next 13 or so); the rest is bronze
+        "tiers": [175, 130]}
 json.dump(data, open(f"{S}/build/data.json", "w"), ensure_ascii=False, separators=(",", ":"))
 print("runners", len(runners), "events", len(out_events), "rounds", len(out_rounds), "bytes", os.path.getsize(f"{S}/build/data.json"), "upcoming", len(upcoming))

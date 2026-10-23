@@ -115,12 +115,14 @@ function makeEngine(D) {
     D.res.forEach((rows, ei) => { if (D.events[ei].date < cutoff(r)) rows.forEach(x => { s += x[5]; n++; }); });
     return n ? s / n : 170;
   }
+  // the cheapest price in the pool this round: what each still-empty place must at least cost
+  const minP = r => { let m = Infinity; for (let i = 0; i < N; i++) if (D.runners[i].p) m = Math.min(m, price(i, r)); return m };
   function greedy(order, r) {
-    const sq = [], cc = {}; let cost = 0;
+    const sq = [], cc = {}, mp = minP(r); let cost = 0;
     for (const i of order) {
       if (sq.length === D.squad) break;
       const p = price(i, r), left = D.squad - sq.length - 1;
-      if (cost + p + left * 20 > D.budget) continue;
+      if (cost + p + left * mp > D.budget) continue;
       if ((cc[clubOf(i)] || 0) >= D.clubMax) continue;
       sq.push(i); cc[clubOf(i)] = (cc[clubOf(i)] || 0) + 1; cost += p;
     }

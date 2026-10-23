@@ -705,7 +705,7 @@ const D=/*DATA*/null;
 const E=makeEngine(D);
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const fp=x=>(x/10).toFixed(1);
+const fp=x=>String(Math.round(x/10));
 const sg=x=>(x>0?"+":"")+fp(x);
 const tm=t=>{const s=t/100,m=Math.floor(s/60);return m+":"+String(Math.floor(s%60)).padStart(2,"0")};
 const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -1319,11 +1319,12 @@ function rulesView(){
   <li><b>Field quality:</b> speed and podium points are multiplied by 0.75 to 1.5, based on how strong the ten best starters are.</li>
   <li><b>Small fields:</b> speed and podium points are scaled from 40% with 3 finishers up to 100% with 20 or more.</li>
   <li><b>Race weight:</b> Ungdoms-SM x1.4. Swedish League, DM and other championships x1.2. Everything else x1.</li>
-  <li><b>Mispunch, did not finish, disqualified:</b> -5. Did not start: 0.</li></ul></div></div>
+  <li><b>Mispunch, did not finish, disqualified:</b> -5 before scaling. Did not start: 0.</li>
+  <li><b>Your points:</b> the race total is multiplied by 0.32 and rounded to a whole number. A finish is worth at least 1, a solid race 3 to 8, a win in a strong field 20 or more, a mispunch -2. A good week for a whole team is around 100.</li></ul></div></div>
   <div class="card"><h3>Class rating</h3><p style="max-width:70ch;margin:6px 0">Each runner's class comes from how fast they run compared with the rest of the field, adjusted for how strong that field was, across all ${D.events.length} races in the data. It decides how much a beaten runner is worth. Class is only used to score races. Prices never use it, they only use results from before the round.</p></div>
   <div class="card"><h3>Data</h3><ul class="rules"><li>D/H 16 to 21 results from liveresultat.orientering.se for ${D.events.length} races between ${dshort(D.events[0].date)} and ${dshort(D.events[D.events.length-1].date)}, each class in a race with at least 3 finishers. Only real competitions count: proper H/D 16, 18, 20 and 21 classes (plain or elite), at least two of those age groups in the race (one for championships), and no club championships, training races, youth series, MTBO or OL-skytte. Relay, patrol and aggregate results are left out.</li>
   <li>Data is current to ${dshort(D.asof)}. Prices for every round come only from races before it. The page refreshes itself with new races every day.</li><li>Races that are still being run, or that are not on liveresultat yet (like O-Event, 6 to 8 November), are shown in the schedule and count once they have 3 or more finishers in a class.</li>
-  <li>A price comes from a weighted average of a runner's past points, with recent races counting more. Runners with no history cost 4.0M.</li>
+  <li>A price comes from a runner's rank in their class (H16, D21 and so on) by a weighted average of past points, with recent races counting more. In every class the best runner costs 22k, the top three 20k or more, about the 15th best 14.5k, and the rest of the field down to 2.5k. Runners with no history cost 2.5k.</li>
   <li>The pool is the ${D.runners.filter(x=>x.p).length} runners with at least 3 starts.</li></ul></div>`;
 }
 /* cards glide from where they were to where they are now (swaps between A and B, adds, removals) */
@@ -1467,8 +1468,8 @@ function countUp(){
     const to=+el.dataset.count,key=el.dataset.key,suf=el.dataset.suf||"",from=shown0[key];shown0[key]=to;
     if(RM||from===undefined&&!document.body.classList.contains("enter")||from===to)return;
     const a=from===undefined?0:from,t0=performance.now(),dur=1600;
-    const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,4);if(!el.isConnected)return;el.textContent=(a+(to-a)*e).toFixed(1)+suf;if(k<1)requestAnimationFrame(step)};
-    el.textContent=a.toFixed(1)+suf;requestAnimationFrame(step);
+    const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,4);if(!el.isConnected)return;el.textContent=(a+(to-a)*e).toFixed(suf==="k"?1:0)+suf;if(k<1)requestAnimationFrame(step)};
+    el.textContent=a.toFixed(suf==="k"?1:0)+suf;requestAnimationFrame(step);
   });
 }
 /* page changes: the page you leave drifts up and out of focus, then the new one is built and its parts rise in.
