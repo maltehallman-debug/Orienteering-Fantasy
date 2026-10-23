@@ -4,16 +4,17 @@ S = sys.argv[1]
 comps = {c["id"]: c for c in json.load(open(f"{S}/data/comps_clean.json"))}
 MIN_FIN = 3
 EXCLUDE = {36940, 36892, 40850, 37141, 37143, 40373}   # aggregates, chase duplicates, patrol, some foreign pilots
-SEASON_START = dt.date(2026, 5, 4)
+# a round runs Thursday to Wednesday; squads lock the Wednesday before at 20:00 (Swedish time)
+SEASON_START = dt.date(2026, 5, 7)
 TODAY = dt.date.today()
-LAST_ROUND_START = dt.date(2026, 12, 21)
+LAST_ROUND_START = dt.date(2026, 12, 24)
 def norm(n): return re.sub(r"[\s_-]", "", n.upper())
 def _pos(x):
     try: return int(x) > 0
     except Exception: return False
 def finished(r): return r["status"] == 0 and _pos(r["result"])
 def started(r): return finished(r) or r["status"] in (2, 3, 4)
-def monday(d): return d - dt.timedelta(days=d.weekday())
+def round_start(d): return d - dt.timedelta(days=(d.weekday() - 3) % 7)  # the Thursday on or before d
 def tier_of(c):
     n = c["name"].lower()
     if "ungdoms-sm" in n: return 1.4
@@ -173,7 +174,7 @@ print("runners total", len(names), "pool", len(pool))
 rounds = []
 wk = SEASON_START; i = 0
 while wk <= LAST_ROUND_START:
-    ids = [e["id"] for e in events if monday(e["d"]) == wk]
+    ids = [e["id"] for e in events if round_start(e["d"]) == wk]
     end = wk + dt.timedelta(days=6)
     rounds.append({"n": i + 1, "start": wk.isoformat(), "end": end.isoformat(), "events": ids, "final": end < TODAY})
     wk += dt.timedelta(days=7); i += 1
@@ -208,7 +209,8 @@ def prices_before(cutoff):
     return out
 price_by_round = []
 for r in rounds:
-    pr = prices_before(dt.date.fromisoformat(r["start"]))
+    # prices are fixed from races before deadline day (the Wednesday), so nothing moves them after a squad locks
+    pr = prices_before(dt.date.fromisoformat(r["start"]) - dt.timedelta(days=1))
     price_by_round.append({k: pr.get(k, 2.5) for k in pool})
     r["rated"] = len(pr)
 
