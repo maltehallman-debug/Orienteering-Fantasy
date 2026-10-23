@@ -40,6 +40,9 @@ LIVE_START_DATE = "2026-11-02"
 live_start = next(i for i, r in enumerate(out_rounds) if r["start"] == LIVE_START_DATE)
 data = {"runners": runners, "events": out_events, "rounds": out_rounds, "res": res, "prices": prices,
         "asof": ASOF, "upcoming": [{"name": u["name"], "date": u["date"]} for u in upcoming], "liveStart": live_start,
-        "budget": 600, "squad": 6, "clubMax": 2, "freeTransfers": 2, "penalty": 40, "dnfPts": -50}
+        # money is in tenths of a thousand (205 = 20.5k); ten runners, the first five are the A team and score double
+        "budget": 1000, "squad": 10, "aSize": 5, "clubMax": 3, "freeTransfers": 3, "penalty": 40, "dnfPts": -50,
+        # price tiers (lower bounds): diamond, gold, silver; everything below is bronze
+        "tiers": [160, 100, 50]}
 json.dump(data, open(f"{S}/build/data.json", "w"), ensure_ascii=False, separators=(",", ":"))
 print("runners", len(runners), "events", len(out_events), "rounds", len(out_rounds), "bytes", os.path.getsize(f"{S}/build/data.json"), "upcoming", len(upcoming))

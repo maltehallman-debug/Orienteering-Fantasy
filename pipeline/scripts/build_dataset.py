@@ -159,7 +159,7 @@ while wk <= LAST_ROUND_START:
 print("rounds", len(rounds), [len(r["events"]) for r in rounds])
 
 # ---- prices ----
-PEXP = float(os.environ.get("PEXP", "2.0"))
+PEXP = float(os.environ.get("PEXP", "2.6"))  # steep: a few stars cost far more than the field
 W0, DECAY = 2.0, 0.9
 allpts = [s["pts"] for e in events for s in e["scores"].values()]
 league_mean = sum(allpts) / len(allpts)
@@ -179,11 +179,12 @@ def prices_before(cutoff):
         ratings[k] = (num + W0 * m0) / (den + W0)
     order = sorted(ratings, key=lambda k: ratings[k])
     n = len(order)
-    return {k: round(4.0 + 9.0 * ((i + 0.5) / n) ** PEXP, 1) for i, k in enumerate(order)}
+    # prices in thousands: about 2k for the weakest form up to 22k for the best
+    return {k: round(2.0 + 20.0 * ((i + 0.5) / n) ** PEXP, 1) for i, k in enumerate(order)}
 price_by_round = []
 for r in rounds:
     pr = prices_before(dt.date.fromisoformat(r["start"]))
-    price_by_round.append({k: pr.get(k, 4.0) for k in pool})
+    price_by_round.append({k: pr.get(k, 2.0) for k in pool})
     r["rated"] = len(pr)
 
 hc = {int(k) for k, v in _cl.items() if v and any(REAL.match(norm(n)) for n in v)}

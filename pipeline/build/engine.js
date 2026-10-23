@@ -25,7 +25,16 @@ function makeEngine(D) {
     Object.entries(cc).forEach(([c, n]) => { if (n > D.clubMax) e.push(`Max ${D.clubMax} runners from ${c}`); });
     return e;
   }
-  function newState(start = 0) { return { start, round: start, squad: [], captain: null, vice: null, bank: D.budget, chips: { wc: false, tc: false }, log: [], total: 0 }; }
+  // chips, one use each per season: wc wildcard (free transfers), tc 3x boost, ax A team double, bb B team plays like the A team, yo youth (16) double
+  const CHIPS = ["wc", "tc", "ax", "bb", "yo"];
+  const A = D.aSize || Math.ceil(D.squad / 2);
+  const youth = i => /16$/.test(D.runners[i].k);
+  // points multiplier for the runner at position k of an ordered squad (A team first), before the boost
+  function teamMult(i, k, chip) {
+    const a = k < A;
+    return (a ? 2 : 1) * (chip === "ax" && a ? 2 : 1) * (chip === "bb" && !a ? 2 : 1) * (chip === "yo" && youth(i) ? 2 : 1);
+  }
+  function newState(start = 0) { return { start, round: start, squad: [], captain: null, vice: null, bank: D.budget, chips: { wc: false, tc: false, ax: false, bb: false, yo: false }, log: [], total: 0 }; }
   function transfersFor(state, squad) {
     if (!state.squad.length) return { n: 0, out: [], inn: squad.slice() };
     const out = state.squad.filter(i => !squad.includes(i)), inn = squad.filter(i => !state.squad.includes(i));
@@ -43,7 +52,7 @@ function makeEngine(D) {
   function planErrors(state, plan, opts) {
     const r = state.round, e = errors(plan.squad, r);
     if (!plan.squad.includes(plan.captain)) e.push("Pick a runner to boost");
-    if (plan.chip && !["wc", "tc"].includes(plan.chip)) e.push("Unknown chip");
+    if (plan.chip && !CHIPS.includes(plan.chip)) e.push("Unknown chip");
     if (plan.chip && state.chips[plan.chip]) e.push("Chip already used");
     if (plan.chip === "wc" && !state.squad.length) e.push("Wildcard cannot be used for the opening squad");
     // a bank that went negative only because prices moved never blocks keeping the same squad
@@ -58,13 +67,14 @@ function makeEngine(D) {
     // "captain" is the boosted runner (field name kept so old saves still load); no fallback if they do not race
     const capLive = starts[r][plan.captain] > 0 ? plan.captain : null;
     const mult = plan.chip === "tc" ? 3 : 2;
-    const rows = plan.squad.map(i => ({ i, pts: pts[r][i], starts: starts[r][i], cap: i === capLive }));
-    const base = rows.reduce((a, x) => a + x.pts, 0);
-    const capExtra = capLive === null ? 0 : (mult - 1) * pts[r][capLive];
+    // plan.squad is ordered: the first A runners are the A team
+    const rows = plan.squad.map((i, k) => { const tm = teamMult(i, k, plan.chip); return { i, pts: pts[r][i], starts: starts[r][i], cap: i === capLive, team: k < A ? "A" : "B", mult: tm * (i === capLive ? mult : 1) }; });
+    const base = rows.reduce((a, x, k) => a + x.pts * teamMult(x.i, k, plan.chip), 0);
+    const capExtra = capLive === null ? 0 : (mult - 1) * pts[r][capLive] * teamMult(capLive, plan.squad.indexOf(capLive), plan.chip);
     const total = base + capExtra - penalty;
     const ns = {
       start: state.start || 0, round: r + 1, squad: plan.squad.slice(), captain: plan.captain, vice: null, bank: bankAfter(state, plan.squad),
-      chips: { wc: state.chips.wc || plan.chip === "wc", tc: state.chips.tc || plan.chip === "tc" },
+      chips: Object.fromEntries(CHIPS.map(c => [c, !!(state.chips[c] || plan.chip === c)])),
       total: state.total + total,
       log: state.log.concat([{ round: r, squad: plan.squad.slice(), captain: plan.captain, vice: null, capLive, chip: plan.chip || null, transfers: t.n, penalty, base, capExtra, total, in: t.inn, out: t.out }])
     };
@@ -110,7 +120,7 @@ function makeEngine(D) {
     for (const i of order) {
       if (sq.length === D.squad) break;
       const p = price(i, r), left = D.squad - sq.length - 1;
-      if (cost + p + left * 40 > D.budget) continue;
+      if (cost + p + left * 20 > D.budget) continue;
       if ((cc[clubOf(i)] || 0) >= D.clubMax) continue;
       sq.push(i); cc[clubOf(i)] = (cc[clubOf(i)] || 0) + 1; cost += p;
     }
@@ -145,6 +155,6 @@ function makeEngine(D) {
     const a = []; for (let i = 0; i < N; i++) if (starts[r][i]) a.push([i, pts[r][i]]);
     return a.sort((x, y) => y[1] - x[1]).slice(0, k);
   }
-  return { R, N, pts, starts, hist, visible, stats, price, errors, newState, transfersFor, bankAfter, planErrors, play, season, bots, roundBest, greedy, rating, leagueMean };
+  return { R, N, pts, starts, hist, visible, stats, price, errors, newState, transfersFor, bankAfter, planErrors, play, season, teamMult, CHIPS, A, youth, bots, roundBest, greedy, rating, leagueMean };
 }
 if (typeof module !== "undefined") module.exports = { makeEngine };

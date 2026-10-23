@@ -502,6 +502,96 @@ input.name{width:100%;max-width:380px}
   .ripple{animation:ripple 1s var(--ease-cine) forwards}
 }
 @media (prefers-reduced-motion:no-preference) and (max-width:640px){.modal .sheet{animation:sheetUp .7s var(--ease-drawer)}}
+/* ================= A/B teams, tiers, chips ================= */
+.teamhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:18px 0 10px}
+.teamhead:first-of-type{margin-top:4px}
+.teamhead b{font-size:22px;letter-spacing:-.03em}
+.teamhead .x{font:600 11px/1 var(--mono);padding:6px 9px;border-radius:999px;background:var(--accent);color:var(--accent-ink);margin-left:8px;vertical-align:3px}
+.teamhead .x.b{background:var(--surface-3);color:var(--text-2)}
+.squadwrap{position:relative}
+.squad.ab{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:1100px){.squad.ab{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:620px){.squad.ab{grid-template-columns:1fr 1fr;gap:8px}}
+.squad.ab .rc{padding:12px;gap:8px}
+.squad.ab .rc .av{--s:40px}
+.squad.ab .rc .who{font-size:15px}
+.squad.ab .rc.slot{min-height:180px}
+.squad.ab .rc{padding:10px 10px 12px;text-align:center}
+.squad.ab .rc .top{justify-content:center;padding-top:6px}
+.squad.ab .rc .top>span[style]{display:none}
+.squad.ab .rc .ctrl{position:absolute;right:4px;top:4px;gap:0}
+.squad.ab .rc .sw,.squad.ab .rc .rm{width:26px;height:26px}
+.squad.ab .rc .mult{display:none}
+.squad.ab .rc .who{text-align:center;display:block;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.squad.ab .rc .sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.squad.ab .rc .meta{justify-content:center;flex-wrap:wrap;gap:4px 6px}
+.squad.ab .rc .meta:has(.price){justify-content:space-between;flex-wrap:nowrap}
+.squad.ab .rc .meta .sub{font-size:11.5px}
+.squad.ab .rc .price{font-size:16px}
+.squad.ab .rc .price small{font-size:9px}
+.squad.ab .rc .boost{padding-left:6px;padding-right:6px;font-size:13px;white-space:nowrap}
+.rc .ctrl{display:flex;gap:2px}
+.rc .sw{width:30px;height:30px;border-radius:9px;border:0;background:none;color:var(--text-3);display:grid;place-items:center;padding:0;transition:background-color .15s,color .15s,transform .12s}
+.rc .sw:active{transform:scale(.9)}
+@media (hover:hover) and (pointer:fine){.rc .sw:hover{background:var(--surface-3);color:var(--accent)}}
+.rc .sw svg{width:16px;height:16px}
+.rc.sel{box-shadow:var(--shadow),inset 0 0 0 2px var(--accent);transform:translateY(-4px)}
+.rc .tm{position:absolute;left:10px;top:10px;z-index:2;font:700 11px/1 var(--mono);padding:4px 6px;border-radius:7px;background:var(--surface-3);color:var(--text-2);transition:background-color .3s,color .3s}
+.rc .tm.hi{background:var(--accent);color:var(--accent-ink)}
+.rc .top{padding-left:0}
+.swapto{position:absolute;inset:auto 8px 8px 8px;z-index:3;border:0;border-radius:var(--r-sm);padding:10px;font-weight:700;font-size:13px;background:var(--accent);color:var(--accent-ink);box-shadow:0 10px 24px -10px var(--accent)}
+.rc.slot .swapto{position:static;margin-top:10px;width:100%}
+/* tiers by price */
+.tier{display:inline-flex;align-items:center;gap:4px;font:700 10px/1 var(--mono);letter-spacing:.04em;text-transform:uppercase;padding:4px 7px 4px 5px;border-radius:999px;white-space:nowrap}
+.tier svg{width:11px;height:11px}
+.t-diamond{color:#0e7490;background:linear-gradient(120deg,#cffafe,#e0e7ff,#fae8ff,#cffafe);background-size:300% 100%}
+.t-gold{color:#92400e;background:#fef3c7}
+.t-silver{color:#475569;background:#e2e8f0}
+.t-bronze{color:#9a3412;background:#ffedd5}
+[data-theme="dark"] .t-diamond{color:#a5f3fc;background:linear-gradient(120deg,#164e63,#312e81,#581c87,#164e63);background-size:300% 100%}
+[data-theme="dark"] .t-gold{color:#fde68a;background:#422006}
+[data-theme="dark"] .t-silver{color:#e2e8f0;background:#334155}
+[data-theme="dark"] .t-bronze{color:#fdba74;background:#431407}
+.rc.tier-diamond{box-shadow:var(--shadow),inset 0 0 0 1px var(--line),inset 0 3px 0 #22d3ee}
+.rc.tier-gold{box-shadow:var(--shadow),inset 0 0 0 1px var(--line),inset 0 3px 0 #f59e0b}
+.rc.tier-silver{box-shadow:var(--shadow),inset 0 0 0 1px var(--line),inset 0 3px 0 #94a3b8}
+.rc.tier-bronze{box-shadow:var(--shadow),inset 0 0 0 1px var(--line),inset 0 3px 0 #c2410c}
+.rc.boosted.tier-diamond,.rc.boosted.tier-gold,.rc.boosted.tier-silver,.rc.boosted.tier-bronze{box-shadow:var(--shadow),inset 0 0 0 2px var(--accent)}
+@media (prefers-reduced-motion:no-preference){.t-diamond{animation:irid 6s linear infinite}@keyframes irid{to{background-position:300% 0}}}
+/* chips */
+.chipgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chipc{position:relative;display:grid;gap:4px;justify-items:start;text-align:left;border:0;border-radius:var(--r-sm);padding:11px 12px;background:var(--surface-2);box-shadow:inset 0 0 0 1.5px var(--line-2);color:var(--text);transition:transform .2s var(--spring),box-shadow .25s,background-color .25s;overflow:hidden}
+.chipc b{font-size:13.5px;letter-spacing:-.01em}
+.chipc small{font-size:11.5px;color:var(--text-2);line-height:1.3}
+.chipc svg{width:20px;height:20px;color:var(--accent)}
+.chipc:active:not(:disabled){transform:scale(.96)}
+.chipc.on{background:var(--accent);color:var(--accent-ink);box-shadow:0 12px 28px -14px var(--accent)}
+.chipc.on small,.chipc.on svg{color:var(--accent-ink)}
+.chipc:disabled{opacity:.42;cursor:default}
+.chipc.used::after{content:"Used";position:absolute;right:8px;top:8px;font:700 9.5px var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--text-3)}
+.chipc.none{grid-column:1/-1;justify-items:center;padding:9px}
+@media (hover:hover) and (pointer:fine){.chipc:not(:disabled):not(.on):hover{box-shadow:inset 0 0 0 1.5px var(--accent-line)}}
+.chipbanner{position:absolute;z-index:6;left:50%;top:50%;pointer-events:none;text-align:center;white-space:nowrap;font:700 clamp(34px,6vw,64px)/1 var(--font);letter-spacing:-.04em;color:var(--accent);text-shadow:0 2px 0 var(--surface),0 18px 40px rgba(0,0,0,.18);opacity:0}
+.chipbanner small{display:block;margin-top:8px;font:600 12px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--text-2);text-shadow:none}
+.savest{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r-sm);font-size:14px;font-weight:600;background:var(--accent-tint);color:var(--text)}
+.savest i{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-style:normal;background:var(--accent);color:var(--accent-ink);font-size:13px}
+.savest.warn{background:rgba(217,119,6,.1)}.savest.warn i{background:var(--warn);color:#fff}
+.savest small{display:block;font-weight:500;color:var(--text-2);font-size:12.5px}
+@media (prefers-reduced-motion:no-preference){
+  .chipc.on{animation:chipOn .9s var(--spring)}
+  @keyframes chipOn{0%{transform:perspective(500px) rotateY(-180deg) scale(.9)}100%{transform:none}}
+  .chipbanner.go{animation:banner 2.2s var(--ease-cine) forwards}
+  @keyframes banner{0%{opacity:0;transform:translate(-50%,-50%) scale(1.8);filter:blur(12px)}18%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:none}72%{opacity:1;transform:translate(-50%,-50%) scale(1.02)}100%{opacity:0;transform:translate(-50%,-62%) scale(.96);filter:blur(6px)}}
+  .rc.hit{animation:fxHit 1.6s var(--spring) both}
+  .rc.hit::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:4;pointer-events:none;background:radial-gradient(circle at 50% 40%,var(--accent) 0,transparent 70%);opacity:0;animation:fxFlash 1.4s var(--ease-cine)}
+  @keyframes fxHit{0%{transform:scale(1)}22%{transform:scale(1.08) rotate(-1.5deg)}45%{transform:scale(.98)}100%{transform:none}}
+  @keyframes fxFlash{0%{opacity:0}20%{opacity:.45}100%{opacity:0}}
+  .rc.chipped{animation:aura 2.8s ease-in-out infinite}
+  @keyframes aura{0%,100%{box-shadow:var(--shadow),inset 0 0 0 1.5px var(--accent-line)}50%{box-shadow:var(--shadow),inset 0 0 0 2px var(--accent),0 0 26px -6px var(--accent)}}
+  .rc .tm.hi{animation:tmPop .7s var(--spring)}
+  @keyframes tmPop{from{transform:scale(.4) rotate(-20deg)}}
+  .savest i{animation:ctlIn .6s var(--spring)}
+}
 /* theme switch: the new colours spread out from the button */
 ::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
 </style>
@@ -539,7 +629,7 @@ const sg=x=>(x>0?"+":"")+fp(x);
 const tm=t=>{const s=t/100,m=Math.floor(s/60);return m+":"+String(Math.floor(s%60)).padStart(2,"0")};
 const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const dshort=d=>{const [,m,dd]=d.split("-");return +dd+" "+MON[+m-1]};
-const KEY="orienteering-fantasy-v4";
+const KEY="orienteering-fantasy-v5"; /* v5: ten runners, A and B teams, prices in thousands */
 const RM=(()=>{try{return matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){return true}})();
 const FINE=(()=>{try{return matchMedia("(hover: hover) and (pointer: fine)").matches}catch(e){return false}})();
 const hsh=s=>{let h=2166136261;for(let k=0;k<s.length;k++){h^=s.charCodeAt(k);h=Math.imul(h,16777619)}return h>>>0};
@@ -613,7 +703,7 @@ const centerOf=el=>{const b=el.getBoundingClientRect();return [b.left+b.width/2,
 /* saved squads use stable runner ids, never array positions: the data is rebuilt daily and positions shift */
 const RI=new Map(D.runners.map((r,i)=>[r.id,i]));
 const rk=i=>i==null?null:D.runners[i].id, ri=k=>k==null?null:(RI.has(k)?RI.get(k):null);
-const mapIds=(o,f)=>{const g=a=>(a||[]).map(f).filter(x=>x!==null);return o&&Object.assign({},o,{squad:g(o.squad),captain:f(o.captain),vice:f(o.vice)})};
+const mapIds=(o,f)=>{const g=a=>(a||[]).map(f).filter(x=>x!==null);return o&&Object.assign({},o,{squad:g(o.squad),captain:f(o.captain),vice:f(o.vice)},o.a?{a:g(o.a)}:{})};
 const packSt=st=>Object.assign(mapIds(st,rk),{log:st.log.map(l=>Object.assign(mapIds(l,rk),{capLive:rk(l.capLive),in:(l.in||[]).map(rk),out:(l.out||[]).map(rk)}))});
 const unpackSt=st=>Object.assign(mapIds(st,ri),{log:st.log.map(l=>Object.assign(mapIds(l,ri),{capLive:ri(l.capLive),in:(l.in||[]).map(ri).filter(x=>x!==null),out:(l.out||[]).map(ri).filter(x=>x!==null)}))});
 const packPl=p=>p&&mapIds(p,rk), unpackPl=p=>p&&mapIds(p,ri);
@@ -638,11 +728,13 @@ let localUid=null;
 let picks={},liveRounds=[],syncMsg="";
 const packPicks=()=>{const o={};Object.keys(picks).forEach(r=>{const p=picks[r];o[r]={squad:p.squad.map(rk),captain:rk(p.captain),chip:p.chip||null}});return o};
 function unpackPicks(o){const out={};Object.keys(o||{}).forEach(r=>{const p=o[r],sq=(p&&p.squad||[]).map(ri);
-  if(sq.length===6&&!sq.includes(null)&&+r>=0&&+r<E.R){const c=ri(p.captain);out[+r]={squad:sq,captain:sq.includes(c)?c:sq[0],chip:p.chip==="wc"||p.chip==="tc"?p.chip:null}}});return out}
+  if(sq.length===D.squad&&!sq.includes(null)&&+r>=0&&+r<E.R){const c=ri(p.captain);out[+r]={squad:sq,captain:sq.includes(c)?c:sq[0],chip:E.CHIPS.includes(p.chip)?p.chip:null}}});return out}
+/* a v4 save (six runners) cannot be played under the new rules: keep only the account, name and leagues */
+try{if(!localStorage.getItem(KEY)){const o=JSON.parse(localStorage.getItem("orienteering-fantasy-v4")||"null");if(o){localUid=o.uid||null;mgrName=o.name||"";myLeagues=o.leagues||[];myLgn=o.lgn||{}}}}catch(e){}
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.state&&s.state.round<=E.R){localUid=s.uid||null;picks=unpackPicks(s.picks);state=unpackSt(s.state);plan=unpackPl(s.plan);lock=unpackPl(s.lock||null);mgrName=s.name||"";localTs=s.ts||0;myLeagues=s.leagues||[];myLgn=s.lgn||{};viewRound=Math.max(0,state.round-1)}}catch(e){}
-const blob=()=>({uid:cloud.uid||localUid,picks:packPicks(),state:packSt(state),plan:packPl(plan),lock:packPl(lock),name:mgrName,ts:localTs,leagues:myLeagues,lgn:myLgn});
-function resetLocal(){state=E.newState(LIVE);plan={squad:[],captain:null,vice:null,chip:null};lock=null;picks={};liveRounds=[];syncMsg="";mgrName="";myLeagues=[];myLgn={};myOwn={};leagueRows={};localTs=0;viewRound=0}
-const save=()=>{localTs=Date.now();try{localStorage.setItem(KEY,JSON.stringify(blob()))}catch(e){}queueCloud()};
+const blob=()=>({ver:5,uid:cloud.uid||localUid,picks:packPicks(),state:packSt(state),plan:packPl(plan),lock:packPl(lock),name:mgrName,ts:localTs,leagues:myLeagues,lgn:myLgn});
+function resetLocal(){state=E.newState(LIVE);plan={squad:[],a:[],captain:null,vice:null,chip:null};lock=null;picks={};liveRounds=[];syncMsg="";mgrName="";myLeagues=[];myLgn={};myOwn={};leagueRows={};localTs=0;viewRound=0}
+const save=()=>{autoSave();localTs=Date.now();try{localStorage.setItem(KEY,JSON.stringify(blob()))}catch(e){}queueCloud()};
 const R=()=>state.round, done=()=>state.round>=E.R, pr=()=>Math.min(state.round,E.R-1);
 const isFinal=r=>r<E.R&&!!D.rounds[r].final;
 const hasStarted=r=>r<E.R&&TODAY>=D.rounds[r].start;
@@ -656,7 +748,7 @@ function liveSync(){
   state=sim.state;liveRounds=sim.rounds;state.log=sim.rounds; /* round entries carry the "carried over" flag */
   const p=state.round<E.R?picks[state.round]:null;
   lock=p?{round:state.round,squad:p.squad.slice(),captain:p.captain,vice:null,chip:p.chip}:null;
-  if(lock)plan={squad:lock.squad.slice(),captain:lock.captain,vice:null,chip:lock.chip};
+  if(lock)plan={squad:lock.squad.slice(),a:lock.squad.slice(0,AS),captain:lock.captain,vice:null,chip:lock.chip};
   else if(!plan.squad.length&&state.squad.length)startRound();
   if(plan.chip&&state.chips[plan.chip])plan.chip=null;
   fixLeaders();viewRound=Math.max(0,state.log.length-1);
@@ -665,7 +757,7 @@ function settle(){
   if(isLive()){liveSync();return 0}
   let n=0;
   while(lock&&!done()&&lock.round===state.round&&isFinal(state.round)){
-    try{const o=E.play(state,lock);state=o.state;plan={squad:state.squad.slice(),captain:state.captain,vice:null,chip:null};lock=null;n++}catch(e){lock=null}
+    try{const o=E.play(state,lock);state=o.state;plan={squad:state.squad.slice(),a:state.squad.slice(0,AS),captain:state.captain,vice:null,chip:null};lock=null;n++}catch(e){lock=null}
   }
   if(n){viewRound=state.log.length-1;save()}
   return n;
@@ -673,18 +765,50 @@ function settle(){
 const sched=r=>{const rd=D.rounds[r];return D.upcoming.filter(u=>u.date>=rd.start&&u.date<=rd.end)};
 const nameOf=i=>D.runners[i].n, clubOf=i=>D.runners[i].c;
 const clubCount=(sq,i)=>sq.filter(j=>clubOf(j)===clubOf(i)).length;
+const AS=D.aSize||5;
+/* money is stored in tenths of a thousand: 205 is 20.5k */
+const fm=x=>(x/10).toFixed(1)+"k";
+const fmd=x=>(x>0?"+":x<0?"-":"")+(Math.abs(x)/10).toFixed(1)+"k";
+const TIERS=[["diamond","Diamond"],["gold","Gold"],["silver","Silver"],["bronze","Bronze"]];
+const tierOf=(i,r)=>{const p=E.price(i,r==null?pr():r),t=D.tiers||[160,100,50];return p>=t[0]?0:p>=t[1]?1:p>=t[2]?2:3};
+const GEM=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z" fill="currentColor"/></svg>`;
+const tierTag=(i,r)=>{const t=tierOf(i,r);return `<span class="tier t-${TIERS[t][0]}">${GEM}${TIERS[t][1]}</span>`};
+/* the A team is plan.a (up to five runners), the rest of plan.squad is the B team; ordered squads put the A team first */
+const ordered=p=>{const a=(p.a||[]).filter(i=>p.squad.includes(i));return [...a,...p.squad.filter(i=>!a.includes(i))]};
+const CHIPINFO={wc:["Wildcard","Free transfers this round"],tc:["3x Boost","Boosted runner scores triple"],ax:["A-team double","A team scores ×4"],bb:["B-team boost","B team scores ×2"],yo:["Youth surge","D/H16 runners score double"]};
+const CHIPICON={wc:'<path d="M4 7h11l-3-3M20 17H9l3 3"/>',tc:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',ax:'<path d="M4 20 10 4h4l6 16M7 13h10"/>',bb:'<path d="M6 4h7a4 4 0 0 1 0 8H6zM6 12h8a4 4 0 0 1 0 8H6z"/>',yo:'<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/>'};
+const chipSvg=c=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CHIPICON[c]||""}</svg>`;
+/* the multiplier a runner gets this round: their team, the chip, and the boost */
+function multOf(i,squad,chip,cap){const k=squad.indexOf(i);return E.teamMult(i,k,chip)*(i===cap?(chip==="tc"?3:2):1)}
 /* plan.captain holds the boosted runner (the name is kept so saves from before the boost change still load) */
 function fixLeaders(){
   const s=plan.squad;plan.vice=null;
+  if(!Array.isArray(plan.a))plan.a=s.slice(0,AS);
+  plan.a=plan.a.filter((i,k,a)=>s.includes(i)&&a.indexOf(i)===k).slice(0,AS);
+  /* the B team holds at most squad - A places; anyone beyond that moves up */
+  for(const i of s){if(s.length-plan.a.length<=D.squad-AS)break;if(!plan.a.includes(i))plan.a.push(i)}
   if(!s.includes(plan.captain))plan.captain=s.length?s[0]:null;
 }
-function startRound(){plan={squad:state.squad.slice(),captain:state.captain,vice:null,chip:null}}
+function startRound(){plan={squad:state.squad.slice(),a:state.squad.slice(0,AS),captain:state.captain,vice:null,chip:null}}
+/* the live season saves itself: every valid change becomes the squad for the coming round, and it locks when the round starts */
+let pubTimer=null;
+function autoSave(){
+  if(!isLive()||done()||hasStarted(R())||!plan.squad.length)return;
+  const sq=ordered(plan),p={squad:sq,captain:plan.captain,chip:plan.chip||null};
+  if(E.planErrors(state,p).length)return;
+  const cur=picks[R()];
+  if(cur&&cur.squad.join()===sq.join()&&cur.captain===p.captain&&(cur.chip||null)===p.chip)return;
+  picks[R()]=p;lock={round:R(),squad:sq.slice(),captain:p.captain,vice:null,chip:p.chip};
+  const r=R();clearTimeout(pubTimer);pubTimer=setTimeout(()=>publishPick(r),600);
+}
+const isSaved=()=>{const p=picks[R()];if(!p||!plan.squad.length)return false;const sq=ordered(plan);return p.squad.join()===sq.join()&&p.captain===plan.captain&&(p.chip||null)===(plan.chip||null)};
 if(state.squad.length&&!plan.squad.length)startRound();
 fixLeaders();if(lock)lock.vice=null;
 /* saves from before per-round squads: a lock for the live season becomes that round's pick */
-if(isLive()&&lock&&!picks[lock.round]&&lock.squad.length===6)picks[lock.round]={squad:lock.squad.slice(),captain:lock.captain,chip:lock.chip||null};
+if(isLive()&&lock&&!picks[lock.round]&&lock.squad.length===D.squad)picks[lock.round]={squad:lock.squad.slice(),captain:lock.captain,chip:lock.chip||null};
 const settled=settle();
 const squadValue=()=>state.squad.reduce((a,i)=>a+E.price(i,pr()),0);
+let swapSel=null,justChip=null,justSwapped=[];
 
 /* ---------- course strip ---------- */
 function courseSvg(){
@@ -732,9 +856,9 @@ function renderFacts(){
   const where=done()?"Season complete":"Round "+D.rounds[r].n+": "+dshort(D.rounds[r].start)+" to "+dshort(D.rounds[r].end);
   const sv=plan.squad.reduce((a,i)=>a+E.price(i,pr()),0);
   $("#facts").innerHTML=`<div><span>Points</span><b data-count="${state.total/10}" data-key="pts">${fp(state.total)}</b></div>
-   <div><span>In the bank</span><b class="${bank<0?"dn":""}" data-count="${bank/10}" data-key="bank" data-suf="M">${fp(bank)}M</b></div>
-   <div><span>Squad value</span><b ${plan.squad.length?`data-count="${sv/10}" data-key="val" data-suf="M"`:""}>${plan.squad.length?fp(sv)+"M":"–"}</b></div>
-   <div><span>Chips left</span><b>${(state.chips.wc?0:1)+(state.chips.tc?0:1)} of 2</b></div>`;
+   <div><span>In the bank</span><b class="${bank<0?"dn":""}" data-count="${bank/10}" data-key="bank" data-suf="k">${fm(bank)}</b></div>
+   <div><span>Squad, ${plan.squad.length} of ${D.squad}</span><b ${plan.squad.length?`data-count="${sv/10}" data-key="val" data-suf="k"`:""}>${plan.squad.length?fm(sv):"–"}</b></div>
+   <div><span>Chips left</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length} of ${E.CHIPS.length}</b></div>`;
 }
 
 /* ---------- team ---------- */
@@ -743,15 +867,20 @@ function spark(i,r){
   const w=60,ht=24,bw=w/6;
   return `<svg class="spark" width="${w}" height="${ht}" viewBox="0 0 ${w} ${ht}" aria-hidden="true"><line x1="0" x2="${w}" y1="${ht-.5}" y2="${ht-.5}"/>${h.map((p,k)=>{const v=Math.max(0,Math.min(1,p/300)),bh=Math.max(1.5,v*(ht-3));return `<rect ${p<=0?'class="z" ':""}x="${(k+(6-h.length))*bw+1}" y="${ht-1-bh}" width="${bw-2}" height="${bh}" rx="1"/>`}).join("")}</svg>`;
 }
-function squadCard(i,k,show,locked){
+const SWAP=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M7 4 3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/></svg>`;
+/* which runners a chip changes: they get the effect animation and a glowing edge */
+function chipHits(i,team,show){const c=show.chip;return c==="wc"||(c==="tc"&&show.captain===i)||(c==="ax"&&team==="A")||(c==="bb"&&team==="B")||(c==="yo"&&E.youth(i))}
+function squadCard(i,k,show,locked,team){
   const r=pr(),s=E.stats(i,r),d=r>0?E.price(i,r)-E.price(i,r-1):0,on=show.captain===i,m=show.chip==="tc"?3:2;
-  return `<div class="rc ${on?"boosted":""} ${justAdded===i?"pop":""} ${justBoosted===i?"zap":""}" style="--i:${k}" data-card="${i}">
-   ${on?`<span class="mult">${m}x</span>`:""}<span class="gl"></span>
-   <div class="top">${avatar(i)}${locked?"":`<button class="rm" data-sell="${i}" title="Remove from squad" aria-label="Remove ${esc(nameOf(i))}">&times;</button>`}</div>
+  const sq=ordered(show),mult=multOf(i,sq,show.chip,show.captain),hit=chipHits(i,team,show),other=swapSel!==null&&swapSel!==i&&plan.a.includes(swapSel)!==(team==="A");
+  return `<div class="rc tier-${TIERS[tierOf(i,r)][0]} ${on?"boosted":""} ${justAdded===i?"pop":""} ${justBoosted===i?"zap":""} ${swapSel===i?"sel":""} ${hit&&show.chip?"chipped":""} ${hit&&justChip?"hit":""}" style="--i:${k}" data-card="${i}">
+   <span class="tm ${mult>(team==="A"?2:1)?"hi":""}" title="This runner's points count ×${mult} this round">×${mult}</span>${on?`<span class="mult">${m}x</span>`:""}
+   <div class="top"><span style="width:30px"></span>${avatar(i)}${locked?"":`<span class="ctrl"><button class="sw" data-swap="${i}" title="Swap between A and B" aria-label="Swap ${esc(nameOf(i))} to the other team">${SWAP}</button><button class="rm" data-sell="${i}" title="Remove from squad" aria-label="Remove ${esc(nameOf(i))}">&times;</button></span>`}</div>
    <div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button><div class="sub">${esc(clubOf(i))}</div></div>
-   <div class="meta"><span class="cls">${D.runners[i].k}</span>${spark(i,r)}</div>
-   <div class="meta"><span class="sub">${s.starts} starts, form ${fp(s.form)}</span><span class="price">${fp(E.price(i,r))}M<small class="${d>0?"up":d<0?"dn":""}">${d?(d>0?"+":"-")+fp(Math.abs(d)):"same"}</small></span></div>
-   <button class="boost ${on?"on":""}" data-boost="${i}" ${locked?"disabled":""} aria-pressed="${on}" aria-label="${on?esc(nameOf(i))+" is boosted":"Boost "+esc(nameOf(i))}">${BOLT}${on?"Boosted "+m+"x":"Boost"}</button></div>`;
+   <div class="meta"><span class="cls">${D.runners[i].k}</span>${tierTag(i,r)}</div>
+   <div class="meta"><span class="sub">form ${fp(s.form)}</span><span class="price">${fm(E.price(i,r))}<small class="${d>0?"up":d<0?"dn":""}">${d?fmd(d):"same"}</small></span></div>
+   <button class="boost ${on?"on":""}" data-boost="${i}" ${locked?"disabled":""} aria-pressed="${on}" aria-label="${on?esc(nameOf(i))+" is boosted":"Boost "+esc(nameOf(i))}">${BOLT}${on?"Boosted "+m+"x":"Boost"}</button>
+   ${other?`<button class="swapto" data-swapwith="${i}">Swap with ${esc(nameOf(swapSel).split(" ")[0])}</button>`:""}</div>`;
 }
 function canAddReason(i){
   if(plan.squad.length>=D.squad)return "Squad is full";
@@ -759,10 +888,15 @@ function canAddReason(i){
   if(E.bankAfter(state,[...plan.squad,i])<0)return "Not enough budget";
   return "";
 }
+/* search ignores case and accents (öberg finds Öberg, oberg too) and keeps exactly what was typed in the box */
+const fold=x=>String(x).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim();
+const HAY=D.runners.map(r=>fold(r.n+" "+r.c));
+let qRaw="",tierF="";
 function marketRows(){
-  const r=pr();let rows=[];
+  const r=pr();let rows=[];const qq=fold(qRaw),terms=qq?qq.split(" "):[];
   for(let i=0;i<E.N;i++){if(!D.runners[i].p)continue;
-    if(q&&!(nameOf(i)+" "+clubOf(i)).toLowerCase().includes(q))continue;
+    if(terms.length&&!terms.every(t=>HAY[i].includes(t)))continue;
+    if(tierF&&TIERS[tierOf(i,r)][0]!==tierF)continue;
     if(clubF&&clubOf(i)!==clubF)continue;
     if(clsF&&(clsF.length===1?D.runners[i].k[0]!==clsF:D.runners[i].k!==clsF))continue;
     const s=E.stats(i,r),p=E.price(i,r);
@@ -773,20 +907,27 @@ function marketRows(){
   rows.sort((a,b)=>{const x=v(a),y=v(b);return (x<y?-1:x>y?1:0)*sortDir||a.i-b.i});
   return rows;
 }
+function marketBody(rows){
+  return (rows.slice(0,shown).map(x=>{const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
+   return `<tr class="${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><button class="who" data-prof="${x.i}">${esc(x.n)}</button><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.starts?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
+   <td>${inS?`<button class="btn" data-sell="${x.i}">Remove</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Add</button>`}</td></tr>`}).join("")||`<tr><td colspan="10" class="note">No runners match. Clear the search or a filter.</td></tr>`);
+}
+const moreBtn=rows=>rows.length>shown?`<button class="btn" id="more">Show ${Math.min(40,rows.length-shown)} more</button>`:"";
+/* typing only redraws the list, never the search box: no lost spaces, capitals or å/ä/ö mid-composition */
+function refreshMarket(){const rows=marketRows(),b=document.getElementById("mrows"),m=document.getElementById("mmore");if(b)b.innerHTML=marketBody(rows);if(m)m.innerHTML=moreBtn(rows)}
 function marketHtml(){
-  const rows=marketRows();const clubs=[...new Set(D.runners.filter(x=>x.p).map(x=>x.c))].sort((a,b)=>a.localeCompare(b,"sv"));
+  const rows=marketRows();const clubs=[...new Set(D.runners.filter(x=>x.p&&x.c).map(x=>x.c))].sort((a,b)=>a.localeCompare(b,"sv"));
   const th=(k,l)=>`<th><button data-sort="${k}">${l}${sortKey===k?(sortDir<0?" ↓":" ↑"):""}</button></th>`;
   return `<h2 id="market">Runners</h2>
-  <div class="filters"><input type="search" id="q" placeholder="Search runner or club" value="${esc(q)}" aria-label="Search runners">
+  <div class="filters"><input type="search" id="q" placeholder="Search runner or club" value="${esc(qRaw)}" aria-label="Search runners" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+   <select id="tierF" aria-label="Tier"><option value="">All tiers</option>${TIERS.map(([k,l])=>`<option value="${k}" ${k===tierF?"selected":""}>${l}</option>`).join("")}</select>
    <select id="clsF" aria-label="Class"><option value="">All classes</option>${["H","D","H16","H18","H20","H21","D16","D18","D20","D21"].map(c=>`<option value="${c}" ${c===clsF?"selected":""}>${c==="H"?"All men (H)":c==="D"?"All women (D)":c}</option>`).join("")}</select>
-   <select id="clubF" aria-label="Club"><option value="">All clubs</option>${clubs.map(c=>`<option ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
+   <select id="clubF" aria-label="Club"><option value="">All clubs</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
    <label><input type="checkbox" id="afford" ${afford?"checked":""}> Affordable only</label></div>
-  <div class="tbl"><table><thead><tr>${th("name","Runner")}${th("price","Price")}<th>Change</th>${th("form","Form")}<th>Last six</th>${th("avg","Per start")}${th("total","Points")}${th("starts","Starts")}<th></th></tr></thead><tbody>
-  ${rows.slice(0,shown).map(x=>{const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
-   return `<tr class="${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><button class="who" data-prof="${x.i}">${esc(x.n)}</button><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td><b>${fp(x.p)}M</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?(x.d>0?"+":"-")+fp(Math.abs(x.d)):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.starts?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
-   <td>${inS?`<button class="btn" data-sell="${x.i}">Remove</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Add</button>`}</td></tr>`}).join("")||`<tr><td colspan="9" class="note">No runners match. Clear the search or club filter.</td></tr>`}
+  <div class="tbl"><table><thead><tr>${th("name","Runner")}<th>Tier</th>${th("price","Price")}<th>Change</th>${th("form","Form")}<th>Last six</th>${th("avg","Per start")}${th("total","Points")}${th("starts","Starts")}<th></th></tr></thead><tbody id="mrows">
+  ${marketBody(rows)}
   </tbody></table></div>
-  ${rows.length>shown?`<p><button class="btn" id="more">Show ${Math.min(40,rows.length-shown)} more</button></p>`:""}
+  <p id="mmore">${moreBtn(rows)}</p>
   <p class="note">Form is the average of the last three results. Prices and stats only count races before this round.</p>`;
 }
 /* one entry per competition: results are stored per class ("Name (H16)") and some organisers publish a race twice */
@@ -816,32 +957,38 @@ function hero(r){
 }
 function teamView(){
   if(done())return `<div class="card"><h2 style="margin-top:0">Season complete</h2><p>You finished on <b>${fp(state.total)}</b> points.</p><button class="btn on" data-tab="profile">See your season</button></div>`;
-  const r=R(),rd=D.rounds[r],locked=lock&&lock.round===r,frozen=locked&&hasStarted(r);
-  const show=locked?lock:plan;
-  const errs=plan.squad.length?E.planErrors(state,{...plan,chip:plan.chip}):["Pick "+D.squad+" runners to start"];
+  const r=R(),rd=D.rounds[r],locked=!isLive()&&lock&&lock.round===r,frozen=locked&&hasStarted(r);
+  const show=locked?Object.assign({a:lock.squad.slice(0,AS)},lock):plan;
+  const errs=plan.squad.length?E.planErrors(state,{squad:ordered(plan),captain:plan.captain,chip:plan.chip}):["Pick "+D.squad+" runners to start"];
   const t=E.transfersFor(state,plan.squad),pen=plan.chip==="wc"?0:(!state.squad.length?0:Math.max(0,t.n-D.freeTransfers)*D.penalty);
-  const rows=[];for(let k=0;k<D.squad;k++)rows.push(show.squad[k]!==undefined?squadCard(show.squad[k],k,show,locked):`<div class="rc slot" style="--i:${k}"><div><b>${k+1}</b>Empty control</div></div>`);
+  const A=(show.a||[]).filter(i=>show.squad.includes(i)),B=show.squad.filter(i=>!A.includes(i));
+  const slot=(k,team)=>{const can=swapSel!==null&&(team==="A"?!plan.a.includes(swapSel):plan.a.includes(swapSel));return `<div class="rc slot" style="--i:${k}"><div><b>${k+1}</b>${team==="A"?"A":"B"} team spot${can?`<button class="swapto" data-moveto="${team}">Move ${esc(nameOf(swapSel).split(" ")[0])} here</button>`:""}</div></div>`};
+  const teamRows=(list,n,team,off)=>{const out=[];for(let k=0;k<n;k++)out.push(list[k]!==undefined?squadCard(list[k],off+k,show,locked,team):slot(off+k,team));return out.join("")};
   const fin=isFinal(r);
-  const lead=locked?(frozen?"Locked. Points come in as the results do.":"Locked for round "+rd.n+". You can unlock and change it until Monday."):
-     (!state.squad.length?"Pick six runners within "+fp(D.budget)+"M, at most "+D.clubMax+" from one club. Changes are free until you lock.":D.freeTransfers+" free transfers this round. Prices follow the latest results.");
+  const saved=isLive()&&isSaved(),cd=dshort(rd.start);
+  const lead=locked?(frozen?"Locked. Points come in as the results do.":"Locked for round "+rd.n+"."):
+     (!state.squad.length?"Pick "+D.squad+" runners for "+fm(D.budget)+", at most "+D.clubMax+" per club. The first five are your A team and score double.":D.freeTransfers+" free transfers this round. Prices follow the latest results.");
+  const chipsHtml=`<div class="chipgrid"><button class="chipc none ${!plan.chip?"on":""}" data-chip="" ${locked?"disabled":""}><b>No chip</b></button>${E.CHIPS.map(c=>{const used=state.chips[c],off=locked||used||(c==="wc"&&!state.squad.length);return `<button class="chipc ${plan.chip===c?"on":""} ${used?"used":""}" data-chip="${c}" ${off?"disabled":""} title="${esc(CHIPINFO[c][1])}">${chipSvg(c)}<b>${CHIPINFO[c][0]}</b><small>${CHIPINFO[c][1]}</small></button>`}).join("")}</div>`;
   return `${hero(r)}${liveNow()}<div class="two"><div>
-   <h2 style="margin-top:0">Your squad${locked?` <span class="host" style="font-family:var(--font)">Locked</span>`:""}</h2>
+   <h2 style="margin-top:0">Your squad</h2>
    <p class="lead">${lead}</p>
-   <div class="squad">${rows.join("")}${justLocked&&locked?'<div class="stamp" aria-hidden="true">LOCKED</div>':""}</div>
-   <p class="note" style="margin-top:10px">Your boosted runner scores double, or triple with the 3x Boost chip. No race, no boost.</p>
+   <div class="squadwrap">
+   <div class="teamhead"><span><b>A team</b><span class="x">×2</span></span><span class="sub">${A.length} of ${AS}</span></div>
+   <div class="squad ab">${teamRows(A,AS,"A",0)}</div>
+   <div class="teamhead"><span><b>B team</b><span class="x b">×1</span></span><span class="sub">${B.length} of ${D.squad-AS}</span></div>
+   <div class="squad ab">${teamRows(B,D.squad-AS,"B",AS)}</div>
+   ${justChip&&plan.chip?`<div class="chipbanner go" aria-hidden="true">${esc(CHIPINFO[plan.chip][0])}<small>${esc(CHIPINFO[plan.chip][1])}</small></div>`:""}
+   ${justLocked&&locked?'<div class="stamp" aria-hidden="true">LOCKED</div>':""}</div>
+   <p class="note" style="margin-top:10px">A team ×2, B team ×1. Your boosted runner's points double again, or triple with 3x Boost. Tap ${SWAP.replace('<svg','<svg style="width:14px;height:14px;vertical-align:-2px"')} to swap a runner between the teams.</p>
   </div>
   <aside class="side">
    <div><span class="eyebrow">Races this round</span><div class="fixtures" style="margin-top:10px">${raceTags(r)}</div></div>
-   <dl><dt>Transfers</dt><dd>${!state.squad.length?"free":t.n+" of "+D.freeTransfers+" free"}</dd><dt>Penalty</dt><dd class="${pen?"dn":""}">${pen?"-"+fp(pen):"none"}</dd><dt>Bank after</dt><dd class="${E.bankAfter(state,plan.squad)<0?"dn":""}">${fp(E.bankAfter(state,plan.squad))}M</dd></dl>
-   <div><span class="eyebrow">Chip</span><div class="chips" style="margin-top:10px">
-    <button class="btn ${!plan.chip?"on":""}" data-chip="" ${locked?"disabled":""}>None</button>
-    <button class="btn ${plan.chip==="wc"?"on":""}" data-chip="wc" ${locked||state.chips.wc||!state.squad.length?"disabled":""} title="Unlimited free transfers this round">Wildcard</button>
-    <button class="btn ${plan.chip==="tc"?"on":""}" data-chip="tc" ${locked||state.chips.tc?"disabled":""} title="Your boosted runner scores triple">3x Boost</button></div></div>
+   <dl><dt>Transfers</dt><dd>${!state.squad.length?"free":t.n+" of "+D.freeTransfers+" free"}</dd><dt>Penalty</dt><dd class="${pen?"dn":""}">${pen?"-"+fp(pen):"none"}</dd><dt>Bank after</dt><dd class="${E.bankAfter(state,plan.squad)<0?"dn":""}">${fm(E.bankAfter(state,plan.squad))}</dd></dl>
+   <div><span class="eyebrow">Chips · one use each</span><div style="margin-top:10px">${chipsHtml}</div></div>
    ${errs.length&&!locked?`<ul class="errs">${errs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
-   ${locked?`<button class="btn go" id="unlock" ${frozen?"disabled":""}>${frozen?"Locked until results arrive":"Unlock and edit squad"}</button>`
-     :`<button class="btn go" id="play" ${errs.length||hasStarted(r)&&!fin?"disabled":""}>${fin?"Play round "+rd.n:"Lock in squad for round "+rd.n}</button>`}
-   ${!locked&&hasStarted(r)&&!fin?`<p class="note" style="margin:0">This round has started and its results are not in yet. Squads for it are closed.</p>`:""}
-   ${isLive()&&!locked&&state.squad.length?`<p class="note" style="margin:0">Not locked. If you don't lock before Monday ${dshort(rd.start)}, last round's squad plays again.</p>`:""}
+   ${isLive()?(saved?`<div class="savest" id="savest"><i>✓</i><span>Saved for round ${rd.n}<small>Locks automatically Monday ${cd}</small></span></div>`
+       :`<div class="savest warn" id="savest"><i>!</i><span>${plan.squad.length?"Not saved yet":"No squad yet"}<small>${picks[r]?"Your last complete squad plays until this one is complete.":state.squad.length?"Last round's squad plays until this one is complete.":"It saves by itself once all "+D.squad+" runners are picked."}</small></span></div>`)
+     :`<button class="btn go" id="play" ${errs.length||hasStarted(r)&&!fin?"disabled":""}>Play round ${rd.n}</button>`}
    ${isLive()&&syncMsg?`<p class="note" style="margin:0;color:var(--warn)">${esc(syncMsg)}</p>`:""}
    ${fin&&state.squad.length&&!errs.length?`<button class="btn quiet" id="auto">${confirmAuto?"Confirm: play all finished rounds":"Auto-play finished rounds with this squad"}</button>`:""}
   </aside></div>
@@ -859,7 +1006,7 @@ function roundsView(){
   const li=Math.min(viewRound,state.log.length-1),L=state.log[li],rd=L.round;
   return `${!isFinal(rd)?`<p class="next-k" style="margin:0 0 6px">Live · points so far, more results may come in</p>`:""}${L.carried?`<p class="note" style="margin:0 0 6px">No squad was locked for this round, so the squad from the round before played.</p>`:""}<div class="rhead"><div><div class="score" data-count="${L.total/10}" data-key="score${li}">${fp(L.total)}</div><div class="note">Round ${D.rounds[rd].n}, ${dshort(D.rounds[rd].start)} to ${dshort(D.rounds[rd].end)}. ${fp(L.base)} from runners${L.capLive===null?", boosted runner did not race":", "+sg(L.capExtra)+" boost from "+esc(nameOf(L.capLive))+(L.chip==="tc"?" (3x)":" (2x)")}${L.penalty?", -"+fp(L.penalty)+" for "+L.transfers+" transfers":""}${L.chip==="wc"?", Wildcard played":""}</div></div>
    <div class="pn"><button class="btn" data-round="${li-1}" ${li===0?"disabled":""}>Previous</button><button class="btn" data-round="${li+1}" ${li>=state.log.length-1?"disabled":""}>Next</button></div></div>
-  <div class="grid2">${L.squad.map((i,k)=>{const p=E.pts[rd][i],b=L.captain===i;return `<div class="card" style="--i:${k}${b?";box-shadow:0 0 0 1px var(--accent-line) inset":""}"><div class="ev" style="border:0;padding:0 0 4px;align-items:center"><div style="display:flex;gap:12px;align-items:center;min-width:0">${avatar(i,"sm")}<div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${esc(clubOf(i))}${b?`, <b style="color:var(--accent)">boosted ${L.chip==="tc"?"3x":"2x"}</b>`:""}</span></div></div><span class="pts-big ${p<0?"neg":""}">${sg(p)}</span></div>${evLines(i,rd)}</div>`}).join("")}</div>
+  <div class="grid2">${L.squad.map((i,k)=>{const m=multOf(i,L.squad,L.chip,L.capLive),raw=E.pts[rd][i],p=raw*m,b=L.captain===i;return `<div class="card" style="--i:${k}${b?";box-shadow:0 0 0 1px var(--accent-line) inset":""}"><div class="ev" style="border:0;padding:0 0 4px;align-items:center"><div style="display:flex;gap:12px;align-items:center;min-width:0">${avatar(i,"sm")}<div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${k<AS?"A team":"B team"}, ${esc(clubOf(i))}${b?`, <b style="color:var(--accent)">boosted</b>`:""}</span></div></div><span class="pts-big ${p<0?"neg":""}">${sg(p)}${E.starts[rd][i]?` <span class="sub" style="font-size:12px">${sg(raw)} ×${m}</span>`:""}</span></div>${evLines(i,rd)}</div>`}).join("")}</div>
   <div class="card"><h3>Best scores this round</h3>${E.roundBest(rd,5).map(([i,p],k)=>`<div class="ev"><span>${k+1}. <button class="who" style="font-size:15px" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${esc(clubOf(i))}</span></span><b class="pos">${sg(p)}</b></div>`).join("")||'<div class="sub">No counted races this round.</div>'}</div>
   ${!done()&&li===state.log.length-1?`<p><button class="btn on" data-tab="team" id="next">Plan round ${D.rounds[R()].n}</button></p>`:""}`;
 }
@@ -883,7 +1030,7 @@ function profileView(){
   const live=isLive();
   return `<div class="pfhead">${mgrDot(me,1)}<div><h2>${esc(me.name)}</h2><div class="sub">${esc(cloud.email)}</div></div></div>
   ${reviewCard()}
-  <div class="kv"><div><span>Points</span><b>${fp(state.total)}</b></div><div><span>Rounds</span><b>${L.length}</b></div><div><span>Best round</span><b>${best?fp(best.total):"–"}</b></div><div><span>Chips left</span><b>${(state.chips.wc?0:1)+(state.chips.tc?0:1)}</b></div></div>
+  <div class="kv"><div><span>Points</span><b>${fp(state.total)}</b></div><div><span>Rounds</span><b>${L.length}</b></div><div><span>Best round</span><b>${best?fp(best.total):"–"}</b></div><div><span>Chips left</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length}</b></div></div>
   ${L.length?seasonBars():""}
   <div class="grid2" style="margin-top:12px">
    <div class="card"><h3>Manager name</h3><input class="name" id="mgrName" maxlength="24" value="${esc(mgrName)}" aria-label="Manager name" autocapitalize="words">
@@ -961,7 +1108,7 @@ function leagueTable(code){
     <td>${ptsOf(m,cur)!==null?fp(ptsOf(m,cur)):"–"}</td>${prev!==undefined?`<td class="prevcol">${ptsOf(m,prev)!==null?fp(ptsOf(m,prev)):"–"}</td>`:""}<td><b>${fp(m.t)}</b></td></tr>`).join("")}
    </tbody></table></div>`;
 }
-function chipTags(m){const c=m.sim.state.chips,b=[];if(c.tc)b.push("3x Boost used");if(c.wc)b.push("Wildcard used");return b.join(", ")||"Both chips left"}
+function chipTags(m){const c=m.sim.state.chips,u=E.CHIPS.filter(k=>c[k]);return u.length?u.map(k=>CHIPINFO[k][0]).join(", ")+" used":"All chips left"}
 function lgStats(code,r){
   const rows=(leagueRows[code]||[]).filter(m=>m.by[r]),own=new Map(),boost=new Map();
   rows.forEach(m=>{m.by[r].squad.forEach(i=>own.set(i,(own.get(i)||0)+1));const c=m.by[r].captain;boost.set(c,(boost.get(c)||0)+1)});
@@ -990,13 +1137,13 @@ function leagueDetail(code){
     ${S.topRunner&&S.topRunner.p>0?hl("Best runner picked",esc(nameOf(S.topRunner.i)),sg(S.topRunner.p)+", in "+S.topRunner.n+" of "+S.rows.length+" teams"):""}
     ${S.diff&&S.diff.p>0&&(!S.topRunner||S.diff.i!==S.topRunner.i||S.rows.length>2)?hl("Best differential",esc(nameOf(S.diff.i)),sg(S.diff.p)+", only "+esc(S.diffOwner.name)):""}
     ${S.mb&&S.mb[1]>1?hl("Most boosted",esc(nameOf(S.mb[0])),S.mb[1]+" of "+S.rows.length+" managers"):""}`;
-  return head+nav+(hlsHtml.trim()?`<div class="hls">${hlsHtml}</div>`:"")+`   <div class="grid2"><div class="card"><h3>Round ranking</h3>${ranked.map((m,k)=>{const x=m.by[r];return `<div class="ev" data-mgr="${esc(code)}|${esc(m.id)}" style="cursor:pointer"><span style="display:flex;gap:10px;align-items:center">${k+1}. ${mgrDot(m)}<span><b>${esc(m.name)}</b><span class="sub" style="display:block">Boost ${esc(nameOf(x.captain))}${x.capLive===null?" (did not race)":" "+sg(x.capExtra)}${x.chip?", "+(x.chip==="tc"?"3x Boost":"Wildcard"):""}${x.penalty?", -"+fp(x.penalty)+" transfers":""}${x.carried?", squad carried over":""}</span></span></span><b>${fp(x.total)}</b></div>`}).join("")}</div>
+  return head+nav+(hlsHtml.trim()?`<div class="hls">${hlsHtml}</div>`:"")+`   <div class="grid2"><div class="card"><h3>Round ranking</h3>${ranked.map((m,k)=>{const x=m.by[r];return `<div class="ev" data-mgr="${esc(code)}|${esc(m.id)}" style="cursor:pointer"><span style="display:flex;gap:10px;align-items:center">${k+1}. ${mgrDot(m)}<span><b>${esc(m.name)}</b><span class="sub" style="display:block">Boost ${esc(nameOf(x.captain))}${x.capLive===null?" (did not race)":" "+sg(x.capExtra)}${x.chip?", "+CHIPINFO[x.chip][0]:""}${x.penalty?", -"+fp(x.penalty)+" transfers":""}${x.carried?", squad carried over":""}</span></span></span><b>${fp(x.total)}</b></div>`}).join("")}</div>
    <div class="card"><h3>Who picked whom</h3>${S.pick.slice(0,12).map(x=>`<div class="ev"><span style="display:flex;gap:10px;align-items:center">${avatar(x.i,"sm")}<span><button class="who" style="font-size:14.5px" data-prof="${x.i}">${esc(nameOf(x.i))}</button><span class="sub" style="display:block">${Math.round(x.n/S.rows.length*100)}% of teams${x.started?"":", did not race"}</span></span></span><b class="${x.p<0?"neg":x.p>0?"pos":""}">${sg(x.p)}</b></div>`).join("")}</div></div>`;
 }
 function teamCard(code,m,r,k){
   const x=m.by[r];
   return `<div class="card tc" style="--i:${k}" data-mgr="${esc(code)}|${esc(m.id)}"><div class="ev" style="border:0;padding:0 0 8px;align-items:center"><span style="display:flex;gap:10px;align-items:center">${mgrDot(m)}<b>${esc(m.name)}</b></span><span class="pts-big">${fp(x.total)}</span></div>
-   <div class="mini">${x.squad.map(i=>{const b=i===x.captain,p=E.pts[r][i]*(b&&x.capLive!==null?x.mult:1);return `<div class="mr ${b?"b":""}">${avatar(i,"sm")}<span>${esc(nameOf(i).split(" ").slice(-1)[0])}${b?` <i>${x.mult}x</i>`:""}</span><b class="${E.starts[r][i]?(p<0?"neg":"pos"):"sub"}">${E.starts[r][i]?sg(p):"–"}</b></div>`}).join("")}</div></div>`;
+   <div class="mini">${x.squad.map((i,k)=>{const b=i===x.captain,m2=multOf(i,x.squad,x.chip,x.capLive),p=E.pts[r][i]*m2;return `${k===0?'<span class="eyebrow">A team</span>':k===AS?'<span class="eyebrow" style="margin-top:6px">B team</span>':""}<div class="mr ${b?"b":""}">${avatar(i,"sm")}<span>${esc(nameOf(i).split(" ").slice(-1)[0])}${b?` <i>boost</i>`:""} <span class="sub" style="font-size:11px">×${m2}</span></span><b class="${E.starts[r][i]?(p<0?"neg":"pos"):"sub"}">${E.starts[r][i]?sg(p):"–"}</b></div>`}).join("")}</div></div>`;
 }
 function managerSheet(code,id,r0){
   const m=(leagueRows[code]||[]).find(x=>x.id===id);if(!m)return;
@@ -1005,10 +1152,10 @@ function managerSheet(code,id,r0){
   const bars=st.rs.map(q=>{const v=ptsOf(m,q);return {q,v:v===null?0:v,has:v!==null}}),mx=Math.max(100,...bars.map(b=>b.v));
   const body=!x?`<p class="note">${esc(m.name)} has no squad in a round that has started yet.</p>`:`
    <div class="rnav"><button class="btn" data-mgrr="${esc(code)}|${esc(id)}|${rs[ix-1]}" ${ix<=0?"disabled":""}>Previous</button><b>Round ${D.rounds[r].n}${!isFinal(r)?' <span class="livedot">live</span>':""}</b><button class="btn" data-mgrr="${esc(code)}|${esc(id)}|${rs[ix+1]}" ${ix>=rs.length-1?"disabled":""}>Next</button></div>
-   <div class="stats"><div><b>${fp(x.total)}</b><span>Round points</span></div><div><b>${fp(x.base)}</b><span>From runners</span></div><div><b>${x.capLive===null?"0.0":sg(x.capExtra)}</b><span>Boost${x.chip==="tc"?" (3x)":""}</span></div><div><b class="${x.penalty?"dn":""}">${x.penalty?"-"+fp(x.penalty):"0.0"}</b><span>${x.transfers} transfer${x.transfers===1?"":"s"}</span></div></div>
-   ${x.carried?`<p class="note">No squad was locked for this round, so the squad from the round before played.</p>`:""}${x.chip==="wc"?`<p class="note">Wildcard played: transfers were free this round.</p>`:""}
-   <div class="squad sheetsq">${x.squad.map(i=>{const b=i===x.captain,raced=E.starts[r][i]>0,p=E.pts[r][i]*(b&&raced?x.mult:1);
-     return `<div class="rc ${b?"boosted":""}">${b?`<span class="mult">${x.mult}x</span>`:""}<div class="top">${avatar(i)}</div><div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}</div></div>
+   <div class="stats"><div><b>${fp(x.total)}</b><span>Round points</span></div><div><b>${fp(x.base)}</b><span>From runners</span></div><div><b>${x.capLive===null?"0.0":sg(x.capExtra)}</b><span>Boost${x.chip?" · "+CHIPINFO[x.chip][0]:""}</span></div><div><b class="${x.penalty?"dn":""}">${x.penalty?"-"+fp(x.penalty):"0.0"}</b><span>${x.transfers} transfer${x.transfers===1?"":"s"}</span></div></div>
+   ${x.carried?`<p class="note">No squad was locked for this round, so the squad from the round before played.</p>`:""}${x.chip?`<p class="note"><b>${CHIPINFO[x.chip][0]}</b> played: ${CHIPINFO[x.chip][1].toLowerCase()}.</p>`:""}
+   <div class="squad sheetsq">${x.squad.map((i,k)=>{const b=i===x.captain,raced=E.starts[r][i]>0,m2=multOf(i,x.squad,x.chip,x.capLive),p=E.pts[r][i]*m2;
+     return `${k===0?'<div class="eyebrow" style="grid-column:1/-1">A team · ×2</div>':k===AS?'<div class="eyebrow" style="grid-column:1/-1;margin-top:4px">B team · ×1</div>':""}<div class="rc ${b?"boosted":""}"><span class="tm ${m2>(k<AS?2:1)?"hi":""}">×${m2}${b?" · boost":""}</span><div class="top"><span style="width:30px"></span>${avatar(i)}</div><div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}</div></div>
      <div class="meta"><span class="sub">${raced?E.hist[i].filter(h=>D.rounds[r].ev.includes(h.ev)).length+" race"+(E.hist[i].filter(h=>D.rounds[r].ev.includes(h.ev)).length===1?"":"s"):"did not race"}</span><b class="pts-big ${p<0?"neg":""}">${raced?sg(p):"–"}</b></div></div>`}).join("")}</div>
    ${x.in&&x.in.length?`<p class="note"><b style="color:var(--good)">In:</b> ${x.in.map(i=>esc(nameOf(i))).join(", ")} &nbsp; <b style="color:var(--bad)">Out:</b> ${x.out.map(i=>esc(nameOf(i))).join(", ")}</p>`:""}
    ${me&&me.id!==id&&me.by[r]?(()=>{const a=new Set(me.by[r].squad),both=x.squad.filter(i=>a.has(i)),only=x.squad.filter(i=>!a.has(i)),mine=me.by[r].squad.filter(i=>!x.squad.includes(i));
@@ -1019,7 +1166,7 @@ function managerSheet(code,id,r0){
    <div class="hd"><div style="display:flex;gap:14px;align-items:center">${mgrDot(m,1)}<div><h2>${esc(m.name)}${id===cloud.uid?' <span class="sub">(you)</span>':""}</h2><div class="sub">${row?"Rank "+row.rank+" of "+st.rows.length+", ":""}${fp(m.total)} points, ${chipTags(m)}</div></div></div><button class="btn" data-close="1">Close</button></div>
    <div class="mbars" role="img" aria-label="Points per round">${bars.map(b=>`<button class="${b.q===r?"on":""}" data-mgrr="${esc(code)}|${esc(id)}|${b.q}" ${b.has?"":"disabled"} title="Round ${D.rounds[b.q].n}: ${b.has?fp(b.v):"no squad"}"><i style="height:${Math.max(3,Math.round(Math.max(0,b.v)/mx*64))}px"></i><span>${D.rounds[b.q].n}</span></button>`).join("")}</div>
    ${body}
-   ${openRound()<E.R?`<p class="note" style="margin-top:12px">${id===cloud.uid?(picks[openRound()]?"Your squad for round "+D.rounds[openRound()].n+" is locked.":"You have not locked a squad for round "+D.rounds[openRound()].n+" yet."):"Squads for round "+D.rounds[openRound()].n+" stay hidden until it starts on Monday "+dshort(D.rounds[openRound()].start)+"."}</p>`:""}`,true);
+   ${openRound()<E.R?`<p class="note" style="margin-top:12px">${id===cloud.uid?(picks[openRound()]?"Your squad for round "+D.rounds[openRound()].n+" is saved.":"You have no complete squad for round "+D.rounds[openRound()].n+" yet."):"Squads for round "+D.rounds[openRound()].n+" stay hidden until it starts on Monday "+dshort(D.rounds[openRound()].start)+"."}</p>`:""}`,true);
 }
 function inviteBanner(){
   return pendingJoin&&!myLeagues.includes(pendingJoin)?`<div class="invite"><span class="next-k">You are invited</span><b>${esc(lgName(pendingJoin))}</b><span class="note">${dbOk?"Joining the league…":"Create an account or sign in, and you join this league automatically."}</span></div>`:"";
@@ -1038,13 +1185,14 @@ function leaguesView(){
 }
 function rulesView(){
   return `<h2 style="margin-top:0">How it works</h2>
-  <div class="grid2"><div class="card"><h3>Your team</h3><ul class="rules"><li>Pick ${D.squad} runners from classes D and H 16, 18, 20 and 21 with ${fp(D.budget)}M. No more than ${D.clubMax} from one club.</li>
-  <li>Boost one runner each round to double their points. If the boosted runner does not race that week, the boost gives nothing.</li>
-  <li>A round is one calendar week, Monday to Sunday. Your squad locks when the week starts and scores automatically once the results are in. The live season runs from ${dshort(D.rounds[LIVE].start)} to ${dshort(D.rounds[E.R-1].end)}.</li>
-  <li>Lock your squad for next round any time before it starts, even while this round is still running. If you do not lock one, your squad from the round before plays again.</li>
-  <li>In a league, the other managers see your team, your boost and your points once a round has started, never before. A squad cannot be changed after its round has started.</li>
-  <li>After the opening squad you get ${D.freeTransfers} free transfers a round. Each extra transfer costs ${D.penalty/10} points. Runners sell at today's price.</li>
-  <li>Two chips, one use each: Wildcard (unlimited free transfers for a round) and 3x Boost (your boosted runner scores triple).</li></ul></div>
+  <div class="grid2"><div class="card"><h3>Your team</h3><ul class="rules"><li>Pick ${D.squad} runners from D and H 16, 18, 20 and 21 for ${fm(D.budget)}, at most ${D.clubMax} from one club.</li>
+  <li><b>A team and B team.</b> Your first five are the A team and score double. The other five are the B team and score normal points. Swap runners between them any time before the round starts.</li>
+  <li><b>Boost</b> one runner each round to double their points again (an A-team runner then counts ×4). No race, no boost.</li>
+  <li><b>Tiers</b> follow price: Diamond from ${fm(D.tiers[0])}, Gold from ${fm(D.tiers[1])}, Silver from ${fm(D.tiers[2])}, Bronze below that. Prices move with form.</li>
+  <li>A round is one week, Monday to Sunday. Your squad saves itself and locks when the round starts. If it is not complete, your last complete squad plays. The live season runs ${dshort(D.rounds[LIVE].start)} to ${dshort(D.rounds[E.R-1].end)}.</li>
+  <li>In a league, other managers see your team and points once a round has started, never before.</li>
+  <li>${D.freeTransfers} free transfers a round after your first squad. Each extra one costs ${D.penalty/10} points. Runners sell at today's price.</li>
+  <li><b>Chips</b>, one use each and one per round: Wildcard (free transfers), 3x Boost, A-team double (A team ×4), B-team boost (B team ×2) and Youth surge (D16 and H16 runners score double).</li></ul></div>
   <div class="card"><h3>Points for a race</h3><ul class="rules"><li><b>2</b> for a valid finish.</li>
   <li><b>Runners beaten:</b> each one is worth between 0.1 and 2.0, depending on the beaten runner's class. Beating one of the best H16 runners is worth about 20 times more than beating a newcomer. Capped at 35.</li>
   <li><b>Speed:</b> 18 minus 80 times the share behind the winner, never below 0. A runner 10% behind the winner earns 10 before field quality is applied.</li>
@@ -1059,6 +1207,15 @@ function rulesView(){
   <li>A price comes from a weighted average of a runner's past points, with recent races counting more. Runners with no history cost 4.0M.</li>
   <li>The pool is the ${D.runners.filter(x=>x.p).length} runners with at least 3 starts.</li></ul></div>`;
 }
+/* cards glide from where they were to where they are now (swaps between A and B, adds, removals) */
+let flipFrom=null;
+function flipCapture(){if(RM||tab!=="team")return;flipFrom=new Map();document.querySelectorAll("#view .rc[data-card]").forEach(el=>flipFrom.set(el.dataset.card,el.getBoundingClientRect()))}
+function flip(){
+  const from=flipFrom;flipFrom=null;if(!from||RM)return;
+  document.querySelectorAll("#view .rc[data-card]").forEach(el=>{const a=from.get(el.dataset.card);if(!a)return;const b=el.getBoundingClientRect(),dx=a.left-b.left,dy=a.top-b.top;
+    if(Math.abs(dx)+Math.abs(dy)<2)return;el.animate([{transform:`translate(${dx}px,${dy}px) scale(1.04)`,zIndex:5},{transform:"none",zIndex:5}],{duration:750,easing:"cubic-bezier(.16,1,.3,1)"})});
+  justSwapped=[];
+}
 let profileOpen=null;
 function profile(i){
   profileOpen=i;
@@ -1068,7 +1225,7 @@ function profile(i){
     return `<svg viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px" role="img" aria-label="Points per race"><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round"/></svg>`})():"";
   showSheet("prof|"+i,nameOf(i),`
    <div class="hd"><div style="display:flex;gap:16px;align-items:center;min-width:0">${avatar(i,"lg")}<div style="min-width:0"><h2>${esc(nameOf(i))}</h2><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}</div></div></div><button class="btn" data-close="1">Close</button></div>
-   <div class="stats"><div><b>${D.runners[i].p?fp(E.price(i,pr()))+"M":"–"}</b><span>Price</span></div><div><b>${s.starts}</b><span>Starts</span></div><div><b>${fp(s.total)}</b><span>Points</span></div><div><b>${s.starts?fp(s.total/s.starts):"–"}</b><span>Per start</span></div>${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Class rating</span></div>`:""}</div>
+   <div class="stats"><div><b>${D.runners[i].p?fm(E.price(i,pr())):"–"}</b><span>Price · ${TIERS[tierOf(i)][1]}</span></div><div><b>${s.starts}</b><span>Starts</span></div><div><b>${fp(s.total)}</b><span>Points</span></div><div><b>${s.starts?fp(s.total/s.starts):"–"}</b><span>Per start</span></div>${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Class rating</span></div>`:""}</div>
    ${hist}
    <div class="tbl" style="margin-top:12px"><table><thead><tr><th>Race</th><th>Place</th><th>Behind</th><th>Time</th><th>Points</th></tr></thead><tbody>
    ${vis.slice().reverse().map(h=>{const e=D.events[h.ev];return `<tr><td>${esc(e.name)}<div class="sub">${dshort(e.date)}${e.tier>1?", x"+e.tier:""}</div></td><td>${h.kind?["","DNF","MP","DSQ"][h.kind]:h.rank+" of "+e.n}</td><td>${h.kind?"–":(h.gap/100).toFixed(1)+"%"}</td><td>${h.kind?"–":tm(h.t)}</td><td class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</td></tr>`}).join("")||`<tr><td colspan="5" class="note">No results yet.</td></tr>`}
@@ -1147,7 +1304,7 @@ function reviewCard(){
      <div class="row"><button class="btn on" data-phok="${esc(x.id)}">Approve</button><button class="btn" data-phno="${esc(x.id)}">Reject</button></div></div>`}).join("")||`<p class="note" style="margin:0">Nothing to review.</p>`}</div></div>`;
 }
 function introCourse(){
-  const P=[[110,250],[220,120],[350,210],[320,62],[480,140],[575,46]],lab=["Pick six","Boost one","Lock","Score","Win"];
+  const P=[[110,250],[220,120],[350,210],[320,62],[480,140],[575,46]],lab=["Pick ten","A team ×2","Auto-lock","Score","Win"];
   let legs="",ctl="";
   for(let k=0;k<P.length-1;k++){const [ax,ay]=P[k],[bx,by]=P[k+1],L=Math.hypot(bx-ax,by-ay),ux=(bx-ax)/L,uy=(by-ay)/L,r0=k?24:20,r1=k===P.length-2?30:24;
     const a=[ax+ux*r0,ay+uy*r0],b=[bx-ux*r1,by-uy*r1];legs+=`<line class="leg" style="--k:${k};--len:${Math.hypot(b[0]-a[0],b[1]-a[1]).toFixed(0)}" x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"/>`}
@@ -1159,7 +1316,7 @@ function introCourse(){
 function renderHero(){
   const show=tab==="team"&&!dbOk&&!state.squad.length&&!plan.squad.length&&isLive();
   const w=(t,i0)=>t.split(" ").map((x,k)=>`<span class="w" style="--i:${i0+k}">${esc(x)}</span>`).join(" ");
-  $("#hero").innerHTML=show?`<div class="intro"><div><span class="eyebrow">Fantasy orienteering · D/H 16–21</span><h1 style="margin-top:14px">${w("Pick six.",0)}<br>${w("Boost one.",2)}<br><em>${w("Beat everyone.",4)}</em></h1>
+  $("#hero").innerHTML=show?`<div class="intro"><div><span class="eyebrow">Fantasy orienteering · D/H 16–21</span><h1 style="margin-top:14px">${w("Pick ten.",0)}<br>${w("Double your A team.",2)}<br><em>${w("Beat everyone.",6)}</em></h1>
    <p>Your runners score from their real results on liveresultat, every week until Christmas. Beat strong fields, win classes, take your league.</p>
    <div class="row"><button class="btn go" style="width:auto" data-jump="market">Pick your squad</button><button class="btn" data-tab="profile">Create an account</button></div></div>${introCourse()}</div>`:"";
 }
@@ -1191,6 +1348,7 @@ function nav(apply){
 }
 function render(){
   if(leaving)return; /* the page change will draw the latest state when it lands */
+  flipCapture();
   const now=performance.now();
   const opening=animNext&&!RM;
   if(opening){enterUntil=now+2600;clearTimeout(enterTimer);enterTimer=setTimeout(()=>document.body.classList.remove("enter"),2650)}
@@ -1198,12 +1356,12 @@ function render(){
   renderHero();renderTicker();renderCourse();renderTabs();renderFacts();
   if(tab==="season")tab="profile";
   $("#view").innerHTML=tab==="team"?teamView():tab==="rounds"?roundsView():tab==="leagues"?leaguesView():tab==="profile"?profileView():rulesView();
-  justAdded=null;justBoosted=null;justLocked=false;countUp();
+  justAdded=null;justBoosted=null;justLocked=false;justChip=null;countUp();flip();
   if(opening)armReveals();
 }
 function doPlay(chip){
-  const o=E.play(state,{squad:plan.squad,captain:plan.captain,vice:null,chip:chip});
-  state=o.state;plan={squad:state.squad.slice(),captain:state.captain,vice:null,chip:null};save();
+  const o=E.play(state,{squad:ordered(plan),captain:plan.captain,vice:null,chip:chip});
+  state=o.state;plan={squad:state.squad.slice(),a:state.squad.slice(0,AS),captain:state.captain,vice:null,chip:null};save();
 }
 
 const toTop=()=>{if(leaving)return;try{window.scrollTo(0,0)}catch(e){}};
@@ -1216,17 +1374,20 @@ document.addEventListener("click",ev=>{
   if(d.close&&(ev.target===t||t.tagName==="BUTTON")){$("#modal").innerHTML="";profileOpen=null;phForm=null;phMsg="";return}
   if(d.prof!==undefined){profile(+d.prof);return}
   if(d.tab){const nt=d.tab;if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
-  if(d.add!==undefined){const i=+d.add;if(!canAddReason(i)){plan.squad.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
-  if(d.sell!==undefined){plan.squad=plan.squad.filter(j=>j!==+d.sell);fixLeaders();save();render();return}
-  if(d.boost!==undefined){const i=+d.boost;if(lock&&lock.round===R())return;if(plan.squad.includes(i)&&plan.captain!==i){plan.captain=i;plan.vice=null;justBoosted=i;save();const [x,y]=centerOf(t);burst(x,y,30)}render();return}
-  if(d.chip!==undefined){plan.chip=d.chip||null;render();return}
+  if(d.add!==undefined){const i=+d.add;if(!canAddReason(i)){plan.squad.push(i);if(!Array.isArray(plan.a))plan.a=[];if(plan.a.length<AS)plan.a.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
+  if(d.sell!==undefined){const i=+d.sell;plan.squad=plan.squad.filter(j=>j!==i);plan.a=(plan.a||[]).filter(j=>j!==i);if(swapSel===i)swapSel=null;fixLeaders();save();render();return}
+  if(d.swap!==undefined){const i=+d.swap;swapSel=swapSel===i?null:i;render();return}
+  if(d.swapwith!==undefined){const j=+d.swapwith,i=swapSel;swapSel=null;if(i!==null&&i!==j){const ia=plan.a.includes(i),ja=plan.a.includes(j);if(ia!==ja){if(ia)plan.a[plan.a.indexOf(i)]=j;else plan.a[plan.a.indexOf(j)]=i;justSwapped=[i,j];save()}}render();return}
+  if(d.moveto){const i=swapSel;swapSel=null;if(i!==null){if(d.moveto==="A"&&!plan.a.includes(i)&&plan.a.length<AS)plan.a.push(i);else if(d.moveto==="B"&&plan.a.includes(i)&&plan.squad.length-plan.a.length<D.squad-AS)plan.a=plan.a.filter(x=>x!==i);justSwapped=[i];fixLeaders();save()}render();return}
+  if(d.boost!==undefined){const i=+d.boost;if(!isLive()&&lock&&lock.round===R())return;if(plan.squad.includes(i)&&plan.captain!==i){plan.captain=i;plan.vice=null;justBoosted=i;save();const [x,y]=centerOf(t);burst(x,y,30)}render();return}
+  if(d.chip!==undefined){const c=d.chip||null;if(c!==plan.chip){plan.chip=c;justChip=c;save()}render();if(c){const [x,y]=centerOf(t);burst(x,y)}return}
   if(d.sort){if(sortKey===d.sort)sortDir=-sortDir;else{sortKey=d.sort;sortDir=d.sort==="name"?1:-1}render();return}
   if(d.round!==undefined){viewRound=+d.round;render();return}
-  if(t.id==="more"){shown+=40;render();return}
+  if(t.id==="more"){shown+=40;refreshMarket();return}
   if(t.id==="play"){try{
       const [bx,by]=centerOf(t);
       if(isFinal(R())){doPlay(plan.chip);viewRound=state.log.length-1;tab="rounds";animNext=true;confirmAuto=false;render();toTop();burst(innerWidth/2,innerHeight*.3,60)}
-      else{const e=E.planErrors(state,plan);if(e.length)throw new Error(e.join("; "));
+      else{const e=E.planErrors(state,{squad:ordered(plan),captain:plan.captain,chip:plan.chip});if(e.length)throw new Error(e.join("; "));
         if(isLive()){if(hasStarted(R()))throw new Error("This round has already started.");picks[R()]={squad:plan.squad.slice(),captain:plan.captain,chip:plan.chip||null};liveSync();publishPick(R())}
         else lock={round:R(),squad:plan.squad.slice(),captain:plan.captain,vice:null,chip:plan.chip||null};
         save();justLocked=true;burst(bx,by);render();const sq=document.querySelector(".squad");if(sq&&!RM)sq.scrollIntoView({behavior:"smooth",block:"center"});else toTop()}
@@ -1271,11 +1432,13 @@ document.addEventListener("keydown",ev=>{
   if((ev.key==="Enter"||ev.key===" ")&&ev.target.matches&&ev.target.matches("[data-ctrl]")){ev.preventDefault();ev.target.dispatchEvent(new MouseEvent("click",{bubbles:true}))}
 });
 document.addEventListener("input",ev=>{const t=ev.target;
-  if(t.id==="q"){q=t.value.trim().toLowerCase();shown=40;const p=t.selectionStart;render();const n=$("#q");n.focus();n.setSelectionRange(p,p)}
+  if(t.id==="q"){if(ev.isComposing)return;qRaw=t.value;shown=40;refreshMarket()}
   if(t.id==="mgrName"){mgrName=t.value.slice(0,24);save()}
   if(t.id==="newLeague")newLeague=t.value;
   if(t.id==="joinCode")joinCode=t.value;});
+document.addEventListener("compositionend",ev=>{if(ev.target.id==="q"){qRaw=ev.target.value;shown=40;refreshMarket()}});
 document.addEventListener("change",ev=>{const t=ev.target;
+  if(t.id==="tierF"){tierF=t.value;shown=40;render()}
   if(phForm&&t.id==="phFile"){const fl=t.files&&t.files[0];phMsg="";cropPhoto(fl).then(r=>{phForm.blob=r.blob;phForm.url=r.url;profile(phForm.i)},e=>{phMsg=e.message;profile(phForm.i)})}
   if(phForm&&t.name==="phRel"){phForm.rel=t.value;profile(phForm.i)}
   if(phForm&&t.id==="phConsent"){phForm.consent=t.checked;profile(phForm.i)}
@@ -1323,8 +1486,8 @@ async function publishPick(r){
   if(!cloud.sb||!cloud.uid||!cloud.ready||!isLive())return;
   try{
     const p=picks[r];
-    const q=p?await cloud.sb.from("lineups").upsert(Object.assign({user_id:cloud.uid,round:r,updated_at:new Date().toISOString()},idsOf(p)))
-             :await cloud.sb.from("lineups").delete().eq("user_id",cloud.uid).eq("round",r);
+    const q=p?await cloud.sb.from("squads").upsert(Object.assign({user_id:cloud.uid,round:r,updated_at:new Date().toISOString()},idsOf(p)))
+             :await cloud.sb.from("squads").delete().eq("user_id",cloud.uid).eq("round",r);
     if(q.error)throw q.error;
     syncMsg="";
   }catch(e){syncMsg=hasStarted(r)?"This round has already started, so the change was not saved. Reload the page.":"Saved on this device, but not to your account yet. It is sent again next time you lock or reload."}
@@ -1332,7 +1495,7 @@ async function publishPick(r){
 }
 /* squads for rounds that have started come from the account (they are fixed there); open rounds come from this device */
 async function mergeLineups(){
-  const q=await cloud.sb.from("lineups").select("round,squad,captain,chip").eq("user_id",cloud.uid);
+  const q=await cloud.sb.from("squads").select("round,squad,captain,chip").eq("user_id",cloud.uid);
   if(q.error)throw q.error;
   const srv={};(q.data||[]).forEach(x=>{srv[x.round]=x});
   const sp=unpackPicks(srv),o=openRound();
@@ -1340,8 +1503,8 @@ async function mergeLineups(){
   Object.keys(sp).forEach(r=>{if(+r<o||!picks[r])picks[r]=sp[r]});
   const push=Object.keys(picks).filter(r=>+r>=o).map(r=>Object.assign({user_id:cloud.uid,round:+r,updated_at:new Date().toISOString()},idsOf(picks[r])));
   const drop=Object.keys(srv).filter(r=>+r>=o&&!picks[r]);
-  if(push.length){const u=await cloud.sb.from("lineups").upsert(push);if(u.error)syncMsg="Your squad is saved on this device, but not to your account yet."}
-  for(const r of drop)await cloud.sb.from("lineups").delete().eq("user_id",cloud.uid).eq("round",+r);
+  if(push.length){const u=await cloud.sb.from("squads").upsert(push);if(u.error)syncMsg="Your squad is saved on this device, but not to your account yet."}
+  for(const r of drop)await cloud.sb.from("squads").delete().eq("user_id",cloud.uid).eq("round",+r);
 }
 async function fetchLeague(code){
   const sb=cloud.sb;if(!sb)return;
@@ -1349,7 +1512,7 @@ async function fetchLeague(code){
     const m=await sb.from("league_members").select("user_id").eq("code",code).limit(100);
     if(m.error)return;const ids=m.data.map(x=>x.user_id);
     if(!ids.length){leagueRows[code]=[];return}
-    const [pf,lu,lg]=await Promise.all([sb.from("profiles").select("id,name").in("id",ids),sb.from("lineups").select("user_id,round,squad,captain,chip").in("user_id",ids),sb.from("leagues").select("name,owner").eq("code",code).maybeSingle()]);
+    const [pf,lu,lg]=await Promise.all([sb.from("profiles").select("id,name").in("id",ids),sb.from("squads").select("user_id,round,squad,captain,chip").in("user_id",ids),sb.from("leagues").select("name,owner").eq("code",code).maybeSingle()]);
     if(pf.error||lu.error)return;
     if(lg.data&&lg.data.name&&!myLgn[code])myLgn[code]=String(lg.data.name).slice(0,24);
     if(lg.data)myOwn[code]=lg.data.owner===cloud.uid;
@@ -1384,7 +1547,8 @@ async function onSession(session){
     if(sv.error||pf.error||mb.error)throw new Error("load");
     const v=sv.data&&sv.data.state;
     /* the account's save wins over a game played signed out; between two copies of the same account's game, the newer one wins */
-    if(v&&v.state&&v.state.round<=E.R&&(!mine||(v.ts||0)>localTs)){
+    if(v&&v.ver!==5){mgrName=v.name||mgrName;(v.leagues||[]).forEach(c=>{if(!myLeagues.includes(c))myLeagues.push(c)});Object.assign(myLgn,v.lgn||{})}
+    if(v&&v.ver===5&&v.state&&v.state.round<=E.R&&(!mine||(v.ts||0)>localTs)){
       state=unpackSt(JSON.parse(JSON.stringify(v.state)));plan=unpackPl(JSON.parse(JSON.stringify(v.plan||packPl(plan))));lock=unpackPl(v.lock||null);mgrName=v.name||mgrName;picks=unpackPicks(v.picks||{});
       myLeagues=v.leagues||[];myLgn=v.lgn||{};localTs=v.ts;viewRound=Math.max(0,state.log.length-1);
       if(state.squad.length&&!plan.squad.length)startRound();fixLeaders();if(lock)lock.vice=null;
