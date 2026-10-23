@@ -21,6 +21,17 @@ def tier_of(c):
             or "unionsmatchen" in n or "jwoc" in n or "publiktävling sm" in n or "wcs spec" in n or "woc spect" in n):
         return 1.2
     return 1.0
+# Only real competitions count: proper H/D16-21 classes (plain or elite, not K/A/B/short variants),
+# no other sports, no club-internal or training races, and at least two of the four age groups
+# unless it is a championship (Ungdoms-SM and Unionsmatchen only have 16).
+REAL = re.compile(r"^([DH])(16|18|20|21)(E|ELIT|ELITE)?$")
+OTHER_SPORT = re.compile(r"mtbo|mtb-o|ol-skytte|skidorient|\bvtt\b|trail-?o\b|precision", re.I)
+TRAINING = re.compile(r"\bkm\b|klubbmästerskap|klubbmatch|träning|^test\b|\btest \d|fasttest|testløb|ungdomsserie|u-serie|u-ringen|totalresultat", re.I)
+_cl = json.load(open(f"{S}/data/classes.json"))
+def real_comp(c):
+    if not c["name"].strip() or OTHER_SPORT.search(c["name"]) or TRAINING.search(c["name"]): return False
+    ages = {REAL.match(norm(n)).group(2) for n in (_cl.get(str(c["id"])) or []) if REAL.match(norm(n))}
+    return len(ages) >= 2 or (len(ages) >= 1 and tier_of(c) > 1)
 
 events = []
 seen_ek = set()
@@ -28,8 +39,8 @@ for p in glob.glob(f"{S}/data/results/*.json"):
     j = json.load(open(p))
     cid = j["id"]; cn = norm(j.get("className", "H16"))
     if cid in EXCLUDE or cid not in comps: continue
-    m = re.match(r"^([DH])(16|18|20|21)", cn)
-    if not m: continue
+    m = REAL.match(cn)
+    if not m or not real_comp(comps[cid]): continue
     ek = f"{cid}:{cn}"
     if ek in seen_ek: continue
     seen_ek.add(ek)
@@ -167,12 +178,11 @@ for r in rounds:
     price_by_round.append({k: pr.get(k, 4.0) for k in pool})
     r["rated"] = len(pr)
 
-_cl = json.load(open(f"{S}/data/classes.json"))
-hc = {int(k) for k, v in _cl.items() if v and any(re.match(r"^[DH](16|18|20|21)", norm(n)) for n in v)}
+hc = {int(k) for k, v in _cl.items() if v and any(REAL.match(norm(n)) for n in v)}
 done_cids = {e["cid"] for e in events}
 upcoming = []
 for c in comps.values():
-    if TODAY.isoformat() <= c["date"] <= "2026-12-31" and c["id"] in hc and c["id"] not in EXCLUDE:
+    if TODAY.isoformat() <= c["date"] <= "2026-12-31" and c["id"] in hc and c["id"] not in EXCLUDE and real_comp(c):
         upcoming.append({"id": c["id"], "name": c["name"].strip(), "date": c["date"]})
 upcoming.sort(key=lambda x: (x["date"], x["id"]))
 print("upcoming races", len(upcoming))

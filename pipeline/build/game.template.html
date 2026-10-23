@@ -350,7 +350,8 @@ function marketHtml(){
 }
 function raceTags(r){
   const rd=D.rounds[r];
-  if(rd.ev.length)return rd.ev.slice(0,8).map(ei=>{const e=D.events[ei];return `<span class="tag ${e.tier>1?"w":""}">${esc(e.name)}, ${dshort(e.date)}${e.tier>1?" (x"+e.tier+")":""}</span>`}).join("");
+  if(rd.ev.length){const seen=new Map();rd.ev.forEach(ei=>{const e=D.events[ei],n=e.name.replace(/ \([DH]\d+\)$/,"");if(!seen.has(n+e.date))seen.set(n+e.date,{n,e})});const c=[...seen.values()];
+    return c.slice(0,8).map(({n,e})=>`<span class="tag ${e.tier>1?"w":""}">${esc(n)}, ${dshort(e.date)}${e.tier>1?" (x"+e.tier+")":""}</span>`).join("")+(c.length>8?`<span class="note">and ${c.length-8} more</span>`:"")}
   const u=sched(r);
   return u.length?u.slice(0,8).map(x=>`<span class="tag">${esc(x.name)}, ${dshort(x.date)}</span>`).join("")+(u.length>8?`<span class="note">and ${u.length-8} more</span>`:""):`<span class="note">No races listed yet. They appear on liveresultat a few days before the start.</span>`;
 }
@@ -400,14 +401,11 @@ function evLines(i,rd){
 }
 function roundsView(){
   if(!state.log.length)return `<div class="card">No rounds played yet. ${lock?"Your squad is locked for round "+D.rounds[lock.round].n+". Points appear here when the results are in.":"Lock in your squad on the Team tab."}</div>`;
-  const li=Math.min(viewRound,state.log.length-1),L=state.log[li],rd=L.round,evs=D.rounds[rd].ev;
+  const li=Math.min(viewRound,state.log.length-1),L=state.log[li],rd=L.round;
   return `<div class="rhead"><div><div class="score">${fp(L.total)}</div><div class="note">Round ${D.rounds[rd].n}, ${dshort(D.rounds[rd].start)} to ${dshort(D.rounds[rd].end)}. ${fp(L.base)} from runners${L.capLive===null?", no captain raced":", "+sg(L.capExtra)+" from "+esc(nameOf(L.capLive))+(L.chip==="tc"?" (triple captain)":" (captain)")}${L.penalty?", -"+fp(L.penalty)+" for "+L.transfers+" transfers":""}${L.chip==="wc"?", Wildcard played":""}</div></div>
    <div class="pn"><button class="btn" data-round="${li-1}" ${li===0?"disabled":""}>Previous</button><button class="btn" data-round="${li+1}" ${li>=state.log.length-1?"disabled":""}>Next</button></div></div>
   <div class="grid2">${L.squad.map(i=>{const p=E.pts[rd][i];return `<div class="card"><div class="ev" style="border:0;padding:0 0 4px"><div><button class="who" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${esc(clubOf(i))}${L.capLive===i?", captain":""}</span></div><span class="pts-big ${p<0?"neg":""}">${sg(p)}</span></div>${evLines(i,rd)}</div>`}).join("")}</div>
-  <div class="grid2">
-   <div class="card"><h3>Best scores this round</h3>${E.roundBest(rd,5).map(([i,p],k)=>`<div class="ev"><span>${k+1}. <button class="who" style="font-size:15px" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${esc(clubOf(i))}</span></span><b class="pos">${sg(p)}</b></div>`).join("")||'<div class="sub">No counted races this round.</div>'}</div>
-   <div class="card"><h3>Race results</h3>${evs.map(ei=>{const e=D.events[ei],top=D.res[ei].filter(x=>x[1]===0).slice(0,3);
-    return `<div class="ev"><span><b>${esc(e.name)}</b> <span class="sub">${dshort(e.date)}, ${e.n} finishers${e.tier>1?", x"+e.tier:""}</span></span><span class="sub">${top.map(x=>esc(nameOf(x[0]))+" "+tm(x[3])).join(", ")}</span></div>`}).join("")||'<div class="sub">No race with 3 or more finishers in these classes this round.</div>'}</div></div>
+  <div class="card"><h3>Best scores this round</h3>${E.roundBest(rd,5).map(([i,p],k)=>`<div class="ev"><span>${k+1}. <button class="who" style="font-size:15px" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${esc(clubOf(i))}</span></span><b class="pos">${sg(p)}</b></div>`).join("")||'<div class="sub">No counted races this round.</div>'}</div>
   ${!done()&&li===state.log.length-1?`<p><button class="btn on" data-tab="team" id="next">Plan round ${D.rounds[R()].n}</button></p>`:""}`;
 }
 
