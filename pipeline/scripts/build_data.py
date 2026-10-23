@@ -20,6 +20,16 @@ for i, e in enumerate(events):
 out_rounds = [{"n": r["n"], "start": r["start"], "end": r["end"], "ev": [evpos[x] for x in r["events"]], "final": 1 if r["final"] else 0} for r in rounds]
 prices = [[int(round(p[k] * 10)) for k in pool] for p in D["prices"]]
 runners = [{"n": D["names"][k], "c": D["clubs"][k], "p": 1, "s": int(round(D["strength"].get(k, 0.05) * 100)), "k": D["cls"][k], "id": k} for k in pool]
+# runner photos: photos.json maps a runner id ("name|H" or "name|D") to a file in data/photos, embedded so the page stays one file
+import base64
+_pp = f"{S}/data/photos.json"
+if os.path.exists(_pp):
+    _ix = {r["id"]: r for r in runners}
+    for rid, fn in json.load(open(_pp, encoding="utf-8")).items():
+        if rid in _ix and os.path.exists(f"{S}/data/photos/{fn}"):
+            _ix[rid]["ph"] = "data:image/jpeg;base64," + base64.b64encode(open(f"{S}/data/photos/{fn}", "rb").read()).decode()
+        else:
+            print("photo not used:", rid, fn)
 ASOF = _dt.date.today().isoformat()
 manual = []
 _mp = f"{S}/data/manual_events.json"

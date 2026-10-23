@@ -271,6 +271,7 @@ ul.rules{padding-left:20px;margin:6px 0}ul.rules li{margin:8px 0;max-width:70ch;
 /* ===== runner avatars (drawn, not photos) ===== */
 .av{--s:56px;width:var(--s);height:var(--s);border-radius:calc(var(--s) * .3);flex:none;position:relative;overflow:hidden;background:linear-gradient(145deg,hsl(var(--h1) 78% 58%),hsl(var(--h2) 62% 26%));box-shadow:0 0 0 1px rgba(255,255,255,.14) inset,0 10px 24px -14px hsl(var(--h1) 80% 50%)}
 .av svg{position:absolute;inset:0;width:100%;height:100%}
+.av.ph{background:var(--chip)}.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .av.sm{--s:34px}.av.lg{--s:92px}
 td .who-wrap{display:flex;align-items:center;gap:10px}
 
@@ -357,6 +358,7 @@ const FINE=(()=>{try{return matchMedia("(hover: hover) and (pointer: fine)").mat
 const hsh=s=>{let h=2166136261;for(let k=0;k<s.length;k++){h^=s.charCodeAt(k);h=Math.imul(h,16777619)}return h>>>0};
 /* drawn runner portrait: club colours, a contour map behind, the runner with a map in hand, pose varied per runner */
 function avatar(i,cls){
+  if(D.runners[i].ph)return `<div class="av ph ${cls||""}" aria-hidden="true"><img src="${D.runners[i].ph}" alt="" loading="lazy" decoding="async"></div>`;
   const r=D.runners[i],h=hsh(r.id),hc=hsh(r.c),h1=hc%360,h2=(h1+40+(h>>>3)%140)%360,flip=h&1,lean=((h>>>5)%9)-4;
   const ini=r.n.split(/\s+/).filter(Boolean).map(w=>w[0]).slice(0,2).join("").toUpperCase();
   const fig=`<g transform="${flip?"translate(64 0) scale(-1 1) ":""}rotate(${lean} 32 34)" stroke="rgba(8,9,8,.82)" stroke-linecap="round" stroke-linejoin="round" fill="none">

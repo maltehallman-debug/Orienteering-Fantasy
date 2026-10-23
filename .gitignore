@@ -3,3 +3,5 @@ pipeline/data/*
 !pipeline/data/manual_events.json
 pipeline/build/data.json
 pipeline/build/index.html
+!pipeline/data/photos.json
+!pipeline/data/photos/
