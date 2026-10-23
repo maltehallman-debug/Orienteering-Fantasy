@@ -1,61 +1,49 @@
 <!doctype html>
-<html lang="en" data-theme="map">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="theme-color" content="#f2ecdc" id="themeColor">
+<meta name="theme-color" content="#ffffff" id="themeColor">
 <meta name="description" content="Fantasy orienteering for D/H 16–21. Pick six runners, boost one, and score on real results from liveresultat.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="O-Fantasy">
 <title>Orienteering Fantasy</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f2ecdc'/%3E%3Ccircle cx='32' cy='32' r='19' fill='none' stroke='%23a3268f' stroke-width='5'/%3E%3Cpath d='M22 22h20v20H22z' fill='%23fff'/%3E%3Cpath d='M42 22v20H22z' fill='%23f06a2b'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ffffff'/%3E%3Ccircle cx='32' cy='32' r='19' fill='none' stroke='%232563eb' stroke-width='5'/%3E%3Cpath d='M22 22h20v20H22z' fill='%23fff'/%3E%3Cpath d='M42 22v20H22z' fill='%23f06a2b'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Martian+Mono:wght@400;500;600&display=swap">
 <script>/* apply the saved theme before first paint, so the page never flashes the wrong colours */
-try{var t=localStorage.getItem("of-theme");if(t==="map"||t==="night"||t==="forest")document.documentElement.dataset.theme=t}catch(e){}</script>
+try{var t=localStorage.getItem("of-theme");if(t==="night"||t==="forest")t="dark";if(t==="map")t="light";if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
-/* Orienteering Fantasy. The palette is an orienteering map: paper, brown contours, green vegetation,
-   blue water, and the purple the course is overprinted in. Familjen Grotesk (Stockholm) for words,
-   Martian Mono for the small print, like a timing slip. */
+/* Orienteering Fantasy. Classic colours: white and slate with one blue, and a dark mode to match.
+   Familjen Grotesk (Stockholm) for words, Martian Mono for the small print, like a timing slip. */
 :root{
   --font:"Familjen Grotesk",ui-sans-serif,system-ui,sans-serif;
   --mono:"Martian Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   --ease-out:cubic-bezier(.23,1,.32,1); --ease-io:cubic-bezier(.77,0,.175,1); --ease-drawer:cubic-bezier(.32,.72,0,1); --spring:cubic-bezier(.34,1.56,.64,1);
   --r:16px; --r-sm:11px; --gutter:clamp(16px,4vw,32px); --tabbar:0px;
 }
-/* MAP: paper, contours, course purple */
-:root,[data-theme="map"]{
-  --bg:#f2ecdc; --surface:#fbf7ec; --surface-2:#f5efdf; --surface-3:#e9e1cb;
-  --line:rgba(60,42,20,.12); --line-2:rgba(60,42,20,.22);
-  --text:#1f1a12; --text-2:#5b5244; --text-3:#8a8070;
-  --accent:#a3268f; --accent-press:#8a1f79; --accent-ink:#fff; --accent-tint:rgba(163,38,143,.10); --accent-line:rgba(163,38,143,.45);
-  --c2:#2e86c1; --c3:#4f9a3f; --contour:#b8742f;
-  --good:#3d8b37; --bad:#c8402f; --warn:#b07a12;
-  --hdr:rgba(242,236,220,.82); --shadow:0 1px 0 rgba(60,42,20,.06),0 10px 30px -18px rgba(60,42,20,.45);
-  --contour-op:.38; color-scheme:light;
+/* LIGHT: white pages, dark text, one blue */
+:root,[data-theme="light"]{
+  --bg:#f5f7fa; --surface:#ffffff; --surface-2:#f8fafc; --surface-3:#eef1f5;
+  --line:rgba(15,23,42,.08); --line-2:rgba(15,23,42,.15);
+  --text:#0f172a; --text-2:#475569; --text-3:#94a3b8;
+  --accent:#2563eb; --accent-press:#1d4ed8; --accent-ink:#ffffff; --accent-tint:rgba(37,99,235,.08); --accent-line:rgba(37,99,235,.4);
+  --c2:#0ea5e9; --c3:#10b981; --contour:#94a3b8;
+  --good:#16a34a; --bad:#dc2626; --warn:#d97706;
+  --hdr:rgba(255,255,255,.85); --shadow:0 1px 2px rgba(15,23,42,.05),0 8px 24px -16px rgba(15,23,42,.25);
+  --contour-op:.35; color-scheme:light;
 }
-/* NIGHT-O: a forest at night, the headlamp beam */
-[data-theme="night"]{
-  --bg:#0d1424; --surface:#141d33; --surface-2:#19243f; --surface-3:#22304f;
-  --line:rgba(190,210,255,.09); --line-2:rgba(190,210,255,.16);
-  --text:#e8eefc; --text-2:#a5b2d1; --text-3:#7383a8;
-  --accent:#ffd23f; --accent-press:#ffc400; --accent-ink:#1a1400; --accent-tint:rgba(255,210,63,.12); --accent-line:rgba(255,210,63,.5);
-  --c2:#5cc8ff; --c3:#7ee08a; --contour:#5c74b8;
-  --good:#6fe08c; --bad:#ff7a6b; --warn:#ffd23f;
-  --hdr:rgba(13,20,36,.82); --shadow:0 12px 34px -18px rgba(0,0,0,.8);
-  --contour-op:.5; color-scheme:dark;
-}
-/* FOREST: deep spruce, lime marking tape */
-[data-theme="forest"]{
-  --bg:#0f1e15; --surface:#15291c; --surface-2:#1a3223; --surface-3:#223f2d;
-  --line:rgba(210,255,200,.09); --line-2:rgba(210,255,200,.16);
-  --text:#ecf5e6; --text-2:#a9c4a6; --text-3:#7a9a77;
-  --accent:#c8f03c; --accent-press:#b5df22; --accent-ink:#132006; --accent-tint:rgba(200,240,60,.12); --accent-line:rgba(200,240,60,.5);
-  --c2:#6fd3c4; --c3:#c8f03c; --contour:#4f8a52;
-  --good:#9be36b; --bad:#ff8a70; --warn:#f2d04b;
-  --hdr:rgba(15,30,21,.82); --shadow:0 12px 34px -18px rgba(0,0,0,.8);
-  --contour-op:.55; color-scheme:dark;
+/* DARK: the same, with the lights off */
+[data-theme="dark"]{
+  --bg:#0b1120; --surface:#111827; --surface-2:#162033; --surface-3:#1f2a3d;
+  --line:rgba(226,232,240,.08); --line-2:rgba(226,232,240,.15);
+  --text:#f1f5f9; --text-2:#94a3b8; --text-3:#64748b;
+  --accent:#3b82f6; --accent-press:#2563eb; --accent-ink:#ffffff; --accent-tint:rgba(59,130,246,.12); --accent-line:rgba(59,130,246,.5);
+  --c2:#38bdf8; --c3:#34d399; --contour:#475569;
+  --good:#4ade80; --bad:#f87171; --warn:#fbbf24;
+  --hdr:rgba(11,17,32,.85); --shadow:0 10px 30px -18px rgba(0,0,0,.8);
+  --contour-op:.4; color-scheme:dark;
 }
 *{box-sizing:border-box}
 html{background:var(--bg);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;scroll-padding-top:80px;overscroll-behavior-y:none}
@@ -81,8 +69,8 @@ p{text-wrap:pretty}
 .terrain svg{position:absolute;left:-10%;top:-10%;width:120%;height:120%;opacity:var(--contour-op);transition:opacity .4s}
 .terrain path{fill:none;stroke:var(--contour);stroke-width:1;vector-effect:non-scaling-stroke}
 .terrain path.ix{stroke-width:2}
-.terrain .veg{fill:var(--c3);opacity:.09;stroke:none}
-.terrain .lake{fill:var(--c2);opacity:.12;stroke:var(--c2);stroke-opacity:.5}
+.terrain .veg{fill:var(--contour);opacity:.05;stroke:none}
+.terrain .lake{fill:var(--c2);opacity:.06;stroke:none}
 @media (prefers-reduced-motion:no-preference){
   .terrain svg{animation:drift 140s ease-in-out infinite alternate}
   @keyframes drift{from{transform:translate3d(0,0,0) rotate(0)}to{transform:translate3d(-4%,3%,0) rotate(2.5deg)}}
@@ -261,7 +249,7 @@ main#view{padding-top:20px}
 
 /* ---------- avatars ---------- */
 .av{--s:46px;width:var(--s);height:var(--s);border-radius:50%;flex:none;position:relative;overflow:hidden;display:grid;place-items:center;background:hsl(var(--h,30) 45% 86%);color:hsl(var(--h,30) 55% 30%);font:700 calc(var(--s) * .38)/1 var(--font);letter-spacing:-.02em;transition:box-shadow .3s}
-[data-theme="night"] .av:not(.ph),[data-theme="forest"] .av:not(.ph){background:hsl(var(--h,30) 30% 26%);color:hsl(var(--h,30) 70% 82%)}
+[data-theme="dark"] .av:not(.ph){background:hsl(var(--h,30) 30% 26%);color:hsl(var(--h,30) 70% 82%)}
 .av.sm{--s:34px}.av.lg{--s:76px}
 .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .av.ph{background:var(--surface-3)}
@@ -298,7 +286,7 @@ tr.in td{background:var(--accent-tint)}
 .pts-big{font-size:24px;font-weight:700;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
 
 /* ---------- sheets ---------- */
-.modal{position:fixed;inset:0;z-index:60;background:rgba(20,14,6,.42);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:max(24px,env(safe-area-inset-top,0px)) 16px 24px;overflow:auto;overscroll-behavior:contain}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.45);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:max(24px,env(safe-area-inset-top,0px)) 16px 24px;overflow:auto;overscroll-behavior:contain}
 .modal .sheet{background:var(--surface);box-shadow:0 40px 90px -30px rgba(0,0,0,.55),inset 0 0 0 1px var(--line);border-radius:22px;width:100%;max-width:680px;padding:22px;margin-top:4vh}
 .modal .hd{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
 .modal h2{margin:0;font-size:32px}
@@ -374,7 +362,7 @@ input.name{width:100%;max-width:380px}
 .kv b{display:block;font-size:30px;letter-spacing:-.04em;margin-top:6px;font-variant-numeric:tabular-nums;line-height:1}
 .lglist button.lgi{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:12px 0;border:0;border-top:1px solid var(--line);background:none;text-align:left;font-size:15px;font-weight:600;color:var(--text)}
 .lglist .lgi:first-child{border-top:0}
-.themes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.themes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:440px}
 .themes button{border:0;border-radius:var(--r);padding:0;overflow:hidden;background:none;box-shadow:inset 0 0 0 1.5px var(--line-2);text-align:left;transition:transform .2s var(--spring),box-shadow .2s}
 .themes button[aria-pressed="true"]{box-shadow:inset 0 0 0 2.5px var(--accent)}
 .themes button:active{transform:scale(.97)}
@@ -397,7 +385,7 @@ input.name{width:100%;max-width:380px}
 .codebox{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
 .codebox code{font:500 13.5px/1 var(--mono);padding:11px 13px;border-radius:var(--r-sm);background:var(--surface-2);box-shadow:inset 0 0 0 1.5px var(--line-2)}
 .mdot{--h:20;width:32px;height:32px;flex:none;border-radius:50%;display:inline-grid;place-items:center;font:700 14px/1 var(--font);color:hsl(var(--h) 55% 28%);background:hsl(var(--h) 50% 85%);vertical-align:middle}
-[data-theme="night"] .mdot,[data-theme="forest"] .mdot{color:hsl(var(--h) 70% 85%);background:hsl(var(--h) 32% 28%)}
+[data-theme="dark"] .mdot{color:hsl(var(--h) 70% 85%);background:hsl(var(--h) 32% 28%)}
 .mdot.big{width:56px;height:56px;font-size:24px}
 .livedot{font:600 10px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--bad);display:inline-flex;align-items:center;gap:6px;vertical-align:middle}
 .livedot::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--bad)}
@@ -513,8 +501,8 @@ let myPhotos=[],pendingPhotos=[],phForm=null,phMsg="",phBusy=false;
 const photoPublic=path=>SB_URL+"/storage/v1/object/public/runner-photos/"+path.split("/").map(encodeURIComponent).join("/");
 const youthCls=i=>/^[DH](16|18)$/.test(D.runners[i].k);
 /* ---------- themes ---------- */
-const THEMES=[["map","Map","#f2ecdc",["#f2ecdc","#b8742f","#a3268f","#2e86c1"]],["night","Night-O","#0d1424",["#0d1424","#5c74b8","#ffd23f","#5cc8ff"]],["forest","Forest","#0f1e15",["#0f1e15","#4f8a52","#c8f03c","#6fd3c4"]]];
-const curTheme=()=>document.documentElement.dataset.theme||"map";
+const THEMES=[["light","Light","#ffffff",["#f5f7fa","#cbd5e1","#2563eb","#10b981"]],["dark","Dark","#0b1120",["#0b1120","#334155","#3b82f6","#34d399"]]];
+const curTheme=()=>document.documentElement.dataset.theme||"light";
 function setTheme(name,from){
   const t=THEMES.find(x=>x[0]===name)||THEMES[0];
   const apply=()=>{document.documentElement.dataset.theme=t[0];const m=document.getElementById("themeColor");if(m)m.content=t[2];try{localStorage.setItem("of-theme",t[0])}catch(e){}if(tab==="profile")render()};
