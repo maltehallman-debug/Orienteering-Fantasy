@@ -49,8 +49,20 @@ nav.tabs::-webkit-scrollbar{display:none}
 nav.tabs button{background:none;border:0;padding:8px 13px;border-radius:999px;color:var(--muted);font-size:14px;font-weight:500;white-space:nowrap;transition:color .16s,background .16s}
 nav.tabs button[aria-selected="true"]{color:var(--ink);background:var(--panel2);box-shadow:0 0 0 1px var(--line2) inset}
 @media (hover:hover) and (pointer:fine){nav.tabs button:hover{color:var(--ink)}}
-#mgr{margin-left:auto;font-size:13px;color:var(--muted);white-space:nowrap}
-@media (max-width:760px){.nav-inner{flex-wrap:wrap;gap:0 16px;padding-top:10px}nav.tabs{order:3;width:100%;margin:6px 0 8px}#mgr{display:none}}
+#mgr{margin-left:auto;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;border:0;border-radius:999px;padding:7px 14px 7px 7px;font-size:13.5px;font-weight:600;background:var(--panel2);color:var(--ink);box-shadow:0 0 0 1px var(--line2) inset;transition:box-shadow .2s,transform .16s var(--ease)}
+#mgr:active{transform:scale(.97)}
+#mgr .dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:700 10.5px var(--mono);background:var(--accent);color:var(--accent-ink)}
+#mgr.out{padding:9px 16px;background:var(--accent);color:var(--accent-ink);box-shadow:0 10px 26px -12px rgba(255,91,31,.8)}
+@media (hover:hover) and (pointer:fine){#mgr:not(.out):hover{box-shadow:0 0 0 1px var(--accent-line) inset}}
+@media (max-width:760px){.nav-inner{flex-wrap:wrap;gap:0 16px;padding-top:10px}nav.tabs{order:3;width:100%;margin:6px 0 8px}#mgr{font-size:12.5px}}
+.invite{display:grid;gap:4px;padding:16px 18px;border-radius:18px;margin:0 0 14px;background:linear-gradient(120deg,var(--accent-soft),transparent 80%);box-shadow:0 0 0 1px var(--accent-line) inset}
+.invite b{font-size:18px;letter-spacing:-.02em}
+.steps{counter-reset:st;list-style:none;padding:0;margin:10px 0 0;display:grid;gap:8px}
+.steps li{counter-increment:st;display:flex;gap:10px;align-items:flex-start;color:var(--muted);font-size:14px}
+.steps li::before{content:counter(st);flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:600 11px var(--mono);background:var(--chip);color:var(--ink)}
+.host{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);box-shadow:0 0 0 1px var(--accent-line) inset;margin-left:8px;vertical-align:middle}
+.codebox{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.codebox code{font-family:var(--mono);font-weight:600;font-size:14px;letter-spacing:.04em;padding:8px 12px;border-radius:10px;background:var(--bg2);box-shadow:0 0 0 1px var(--line2) inset}
 /* hero */
 .lead-hero{position:relative;isolation:isolate;overflow:hidden;padding:clamp(28px,5vw,64px) 0 clamp(18px,3vw,32px)}
 .lead-hero::after{content:"";position:absolute;z-index:-1;right:-120px;top:-40px;width:720px;height:720px;background:var(--topo) center/contain no-repeat;opacity:.07;-webkit-mask-image:radial-gradient(60% 60% at 60% 40%,#000 25%,transparent 75%);mask-image:radial-gradient(60% 60% at 60% 40%,#000 25%,transparent 75%)}
@@ -301,7 +313,7 @@ td .who-wrap{display:flex;align-items:center;gap:10px}
 <header class="nav"><div class="container nav-inner">
   <span class="logo"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--accent)" stroke-width="3.2"/><circle class="dot" cx="16" cy="16" r="3.6" fill="var(--accent)"/></svg>Orienteering Fantasy</span>
   <nav class="tabs" role="tablist" id="tabs"></nav>
-  <span id="mgr"></span>
+  <button id="mgr" type="button"></button>
 </div></header>
 <div class="container">
 <section id="hero"></section>
@@ -491,9 +503,21 @@ const LIVE=D.liveStart;
 let state=E.newState(LIVE), plan={squad:[],captain:null,vice:null,chip:null};
 let lock=null,tab="team",viewRound=0,sortKey="total",sortDir=-1,q="",clubF="",clsF="",afford=false,shown=40,confirmAuto=false,confirmReset=false,confirmMode=false,mgrName="",dbOk=false,drawn=false,localTs=0,cloudTimer=null,cloudMsg="",leagueRows={},leagueUnsubs={},leagueMsg="",newLeague="",joinCode="";
 let cloud={sb:null,uid:null,email:"",canWrite:false,ready:false};
-let myLeagues=[],myLgn={};
-try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.state&&s.state.round<=E.R){state=unpackSt(s.state);plan=unpackPl(s.plan);lock=unpackPl(s.lock||null);mgrName=s.name||"";localTs=s.ts||0;myLeagues=s.leagues||[];myLgn=s.lgn||{};viewRound=Math.max(0,state.round-1)}}catch(e){}
-const blob=()=>({state:packSt(state),plan:packPl(plan),lock:packPl(lock),name:mgrName,ts:localTs,leagues:myLeagues,lgn:myLgn});
+let myLeagues=[],myLgn={},myOwn={};
+const PJ="orienteering-fantasy-join";
+let pendingJoin=(()=>{let c="";try{c=new URLSearchParams(location.search).get("join")||""}catch(e){}
+  c=c.trim().toUpperCase();
+  if(/^[A-Z0-9ÅÄÖ_]{1,14}-[A-Z0-9]{4}$/.test(c)){try{localStorage.setItem(PJ,c)}catch(e){}
+    try{history.replaceState(null,"",location.pathname+location.hash)}catch(e){}return c}
+  try{return localStorage.getItem(PJ)||""}catch(e){return ""}})();
+if(pendingJoin)tab="leagues";
+const inviteUrl=c=>location.origin+location.pathname+"?join="+encodeURIComponent(c);
+function clearPending(){pendingJoin="";try{localStorage.removeItem(PJ)}catch(e){}}
+/* uid records which account a saved game belongs to, so a shared device never mixes two accounts */
+let localUid=null;
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.state&&s.state.round<=E.R){localUid=s.uid||null;state=unpackSt(s.state);plan=unpackPl(s.plan);lock=unpackPl(s.lock||null);mgrName=s.name||"";localTs=s.ts||0;myLeagues=s.leagues||[];myLgn=s.lgn||{};viewRound=Math.max(0,state.round-1)}}catch(e){}
+const blob=()=>({uid:cloud.uid||localUid,state:packSt(state),plan:packPl(plan),lock:packPl(lock),name:mgrName,ts:localTs,leagues:myLeagues,lgn:myLgn});
+function resetLocal(){state=E.newState(LIVE);plan={squad:[],captain:null,vice:null,chip:null};lock=null;mgrName="";myLeagues=[];myLgn={};myOwn={};leagueRows={};localTs=0;viewRound=0}
 const save=()=>{localTs=Date.now();try{localStorage.setItem(KEY,JSON.stringify(blob()))}catch(e){}queueCloud()};
 const R=()=>state.round, done=()=>state.round>=E.R, pr=()=>Math.min(state.round,E.R-1);
 const isFinal=r=>r<E.R&&!!D.rounds[r].final;
@@ -558,7 +582,9 @@ function renderCourse(){$("#course").innerHTML=courseSvg()}
 function renderTabs(){
   const t=[["team","Team"],["rounds","Rounds"],["leagues","Leagues"],["season","Season"],["rules","Rules"]];
   $("#tabs").innerHTML=t.map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" data-tab="${k}">${l}</button>`).join("");
-  $("#mgr").textContent=mgrName?("Manager "+mgrName):"";
+  const m=$("#mgr");
+  if(dbOk){const nm=mgrName||cloud.email.split("@")[0]||"Account";m.className="";m.innerHTML=`<span class="dot">${esc(nm.slice(0,1).toUpperCase())}</span>${esc(nm)}`;m.title="Your account and leagues";m.setAttribute("aria-label","Account: "+nm)}
+  else{m.className="out";m.textContent="Sign in";m.title="Sign in or create an account to play in leagues";m.setAttribute("aria-label","Sign in or create an account")}
 }
 function renderFacts(){
   const r=R(),bank=done()?state.bank:E.bankAfter(state,plan.squad);
@@ -720,24 +746,29 @@ function leagueTable(code){
   ${rows.map((r,i)=>`<tr class="${r.id===cloud.uid?"in":""}"><td>${i+1}. ${esc(r.name)}${r.id===cloud.uid?" (you)":""}</td><td><b>${r.total.toFixed(1)}</b></td>${rs.slice(-8).map(k=>`<td class="${r.rounds[k]!==undefined&&r.rounds[k]===best[k]?"pos":""}">${r.rounds[k]!==undefined?r.rounds[k].toFixed(1):"–"}</td>`).join("")}</tr>`).join("")}
   </tbody></table></div>`;
 }
+function inviteBanner(){
+  return pendingJoin&&!myLeagues.includes(pendingJoin)?`<div class="invite"><span class="next-k">You are invited</span><b>${esc(lgName(pendingJoin))}</b><span class="note">${dbOk?"Joining the league…":"Create an account or sign in, and you join this league automatically."}</span></div>`:"";
+}
 function leaguesView(){
-  if(!dbOk)return `<h2 style="margin-top:0">Leagues</h2><div class="card"><h3>${authMode==="up"?"Create your account":"Sign in"}</h3>
+  if(!dbOk)return `<h2 style="margin-top:0">Leagues</h2>${inviteBanner()}<div class="grid2"><div class="card"><h3>${authMode==="up"?"Create your account":"Sign in"}</h3>
    <p class="note" style="margin:0 0 10px">Your squad is saved to your account and works on any device. Without an account it is saved in this browser only.</p>
    ${authMode==="up"?`<div class="row" style="margin-bottom:8px"><input class="name" id="authName" maxlength="24" placeholder="Manager name" value="${esc(authName)}" aria-label="Manager name" autocomplete="nickname"></div>`:""}
    <div class="row" style="margin-bottom:8px"><input class="name" id="authEmail" type="email" placeholder="Email" value="${esc(authEmail)}" aria-label="Email" autocomplete="email"></div>
    <div class="row" style="margin-bottom:8px"><input class="name" id="authPw" type="password" placeholder="Password (8+ characters)" value="${esc(authPw)}" aria-label="Password" autocomplete="${authMode==="up"?"new-password":"current-password"}"></div>
    <div class="row"><button class="btn on" id="${authMode==="up"?"authUp":"authIn"}" ${authBusy?"disabled":""}>${authBusy?"Please wait":authMode==="up"?"Create account":"Sign in"}</button><button class="btn quiet" id="authSwap">${authMode==="up"?"I already have an account":"Create an account"}</button></div>
-   ${authMsg?`<p class="note" style="margin:8px 0 0">${esc(authMsg)}</p>`:""}</div>`;
-  return `<h2 style="margin-top:0">Leagues</h2>
+   ${authMsg?`<p class="note" style="margin:8px 0 0">${esc(authMsg)}</p>`:""}</div>
+   <div class="card"><h3>Host a league with friends</h3><ol class="steps"><li>Create an account. It only needs an email and a password.</li><li>Create a league and give it a name.</li><li>Send your friends the invite link. They create their own account and land in your league.</li><li>Everyone picks a squad for the live season. The table adds up each round's points.</li></ol></div></div>`;
+  return `<h2 style="margin-top:0">Leagues</h2>${inviteBanner()}
   <p class="lead">Compete with friends round by round. Everyone plays the live season on their own account. A league table adds up the points each member scores per round.</p>
   <div class="grid2">
    <div class="card"><h3>Your name</h3><div class="row"><input class="name" id="mgrName" maxlength="24" placeholder="Manager name" value="${esc(mgrName)}" aria-label="Manager name"></div>
     <p class="note" id="cloudstat" style="margin:8px 0 0">${esc(cloudMsg||"Progress saves to your account automatically.")}</p><div class="row" style="margin-top:8px"><span class="note">${esc(cloud.email)}</span><button class="btn quiet" id="authOut">Sign out</button></div>
     ${isLive()?"":`<p class="note" style="margin:8px 0 0">You are in practice mode. Switch to the live season on the Season tab to appear in leagues.</p>`}</div>
-   <div class="card"><h3>Create a league</h3><div class="row"><input class="name" id="newLeague" maxlength="24" placeholder="League name" value="${esc(newLeague)}" aria-label="League name"><button class="btn on" id="createLeague">Create</button></div>
+   <div class="card"><h3>Host a league</h3><div class="row"><input class="name" id="newLeague" maxlength="24" placeholder="League name" value="${esc(newLeague)}" aria-label="League name"><button class="btn on" id="createLeague">Create</button></div>
     <h3 style="margin-top:14px">Join with a code</h3><div class="row"><input class="name" id="joinCode" maxlength="40" placeholder="CODE-1A2B" value="${esc(joinCode)}" aria-label="League code"><button class="btn on" id="joinLeague">Join</button></div>
     ${leagueMsg?`<p class="note" style="margin:8px 0 0">${esc(leagueMsg)}</p>`:""}</div></div>
-  ${myLeagues.length?myLeagues.map(c=>`<div class="card"><div class="ev" style="border:0;padding:0"><div><h3 style="margin:0">${esc(lgName(c))}</h3><div class="sub">Invite friends with the code <b>${esc(c)}</b></div></div><button class="btn quiet" data-leave="${esc(c)}">Leave</button></div>${leagueTable(c)}</div>`).join(""):`<div class="card">You are not in a league yet. Create one and send the code to your friends.</div>`}`;
+  ${myLeagues.length?myLeagues.map(c=>`<div class="card"><div class="ev" style="border:0;padding:0"><div><h3 style="margin:0;display:inline">${esc(lgName(c))}</h3>${myOwn[c]?`<span class="host">You host</span>`:""}
+    <div class="codebox"><code>${esc(c)}</code><button class="btn on" data-copy="${esc(c)}">${copied===c?"Link copied":"Copy invite link"}</button>${navigator.share?`<button class="btn" data-share="${esc(c)}">Share</button>`:""}</div></div><button class="btn quiet" data-leave="${esc(c)}">Leave</button></div>${leagueTable(c)}</div>`).join(""):`<div class="card">You are not in a league yet. Host one and send the invite link to your friends.</div>`}`;
 }
 function rulesView(){
   return `<h2 style="margin-top:0">How it works</h2>
@@ -775,7 +806,7 @@ function profile(i){
 }
 const words=(t,i0)=>t.split(" ").map((w,k)=>`<span class="w" style="--i:${i0+k}">${esc(w)}</span>`).join(" ")+" ";
 function renderHero(){
-  $("#hero").innerHTML=tab==="team"?`<div class="lead-hero"><div class="kicker"><i></i>Live season · D/H 16–21</div><h1>${words("Pick six orienteers.",0)}${words("Boost one.",3)}<span class="soft shine">${words("Beat everyone you know.",5)}</span></h1><p class="lede">Real results from liveresultat.orientering.se, scored round by round. Beat the best runners to earn the most points.</p></div>`:"";
+  $("#hero").innerHTML=tab==="team"?`<div class="lead-hero"><div class="kicker"><i></i>Live season · D/H 16–21</div><h1>${words("Pick six orienteers.",0)}${words("Boost one.",3)}<span class="w soft shine" style="--i:5">Beat everyone you know.</span></h1><p class="lede">Real results from liveresultat.orientering.se, scored round by round. Beat the best runners to earn the most points.</p></div>`:"";
 }
 let tickHtml=null,tickKey=null;
 function renderTicker(){
@@ -850,6 +881,10 @@ document.addEventListener("click",ev=>{
     state=E.newState(state.start);plan={squad:[],captain:null,vice:null,chip:null};lock=null;confirmReset=false;save();tab="team";render();return}
   if(t.id==="mode"){if(!confirmMode){confirmMode=true;render();return}
     state=E.newState(isLive()?0:LIVE);plan={squad:[],captain:null,vice:null,chip:null};lock=null;confirmMode=false;viewRound=0;save();tab="team";render();return}
+  if(d.copy){const u=inviteUrl(d.copy),done=()=>{copied=d.copy;render();setTimeout(()=>{copied="";render()},2200)};
+    try{navigator.clipboard.writeText(u).then(done,()=>{prompt("Copy this invite link",u)})}catch(e){prompt("Copy this invite link",u)}return}
+  if(d.share){try{navigator.share({title:"Join "+lgName(d.share)+" on Orienteering Fantasy",text:"Join my league "+lgName(d.share)+" on Orienteering Fantasy",url:inviteUrl(d.share)}).catch(()=>{})}catch(e){}return}
+  if(t.id==="mgr"){if(tab!=="leagues")animNext=true;tab="leagues";if(!dbOk)authMode=authMode||"in";render();toTop();setTimeout(()=>{const f=document.getElementById(dbOk?"mgrName":"authEmail");if(f)f.focus()},60);return}
   if(t.id==="createLeague"){const n=newLeague.trim();if(!n){leagueMsg="Give the league a name first.";render();return}joinLeague(mkCode(n),n).then(ok=>{if(ok)newLeague="";render()});return}
   if(t.id==="joinLeague"){joinLeague(joinCode,"").then(ok=>{if(ok)joinCode="";render()});return}
   if(d.leave){const c=d.leave;myLeagues=myLeagues.filter(x=>x!==c);delete myLgn[c];if(leagueUnsubs[c]){try{leagueUnsubs[c]()}catch(e){}delete leagueUnsubs[c]}if(cloud.sb&&cloud.uid)cloud.sb.from("league_members").delete().eq("code",c).eq("user_id",cloud.uid).then(()=>{});leagueMsg="";save();render();return}
@@ -870,11 +905,11 @@ document.addEventListener("change",ev=>{const t=ev.target;
 
 
 const SB_URL="https://hjpfmubvpvftxyyemltn.supabase.co",SB_KEY="sb_publishable_Ent2RuVrh-iKyjT1or8gOw_UFdZ74ch";
-let authEmail="",authPw="",authName="",authMode="in",authMsg="",authBusy=false;
+let authEmail="",authPw="",authName="",authMode=pendingJoin?"up":"in",authMsg="",authBusy=false,copied="";
 function queueCloud(){if(!cloud.ready)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,1200)}
 function setStat(m){cloudMsg=m;const e=document.getElementById("cloudstat");if(e)e.textContent=m}
 async function pushCloud(){
-  if(!cloud.sb||!cloud.uid)return;
+  if(!cloud.sb||!cloud.uid||!cloud.ready)return;
   try{
     const rounds={};if(isLive())state.log.forEach(l=>{if(l.round>=LIVE)rounds[l.round]=Math.round(l.total)});
     const a=await cloud.sb.from("saves").upsert({user_id:cloud.uid,state:blob(),updated_at:new Date().toISOString()});
@@ -892,8 +927,9 @@ async function fetchLeague(code){
     const m=await sb.from("league_members").select("user_id").eq("code",code).limit(100);
     if(m.error)return;const ids=m.data.map(x=>x.user_id);
     if(!ids.length){leagueRows[code]=[];return}
-    const [pf,sc,lg]=await Promise.all([sb.from("profiles").select("id,name").in("id",ids),sb.from("scores").select("user_id,round,pts").in("user_id",ids),sb.from("leagues").select("name").eq("code",code).maybeSingle()]);
+    const [pf,sc,lg]=await Promise.all([sb.from("profiles").select("id,name").in("id",ids),sb.from("scores").select("user_id,round,pts").in("user_id",ids),sb.from("leagues").select("name,owner").eq("code",code).maybeSingle()]);
     if(lg.data&&lg.data.name&&!myLgn[code])myLgn[code]=String(lg.data.name).slice(0,24);
+    if(lg.data)myOwn[code]=lg.data.owner===cloud.uid;
     const byId={};ids.forEach(id=>byId[id]={id,name:"Manager",rounds:{},total:0});
     (pf.data||[]).forEach(p=>{if(byId[p.id])byId[p.id].name=String(p.name||"Manager").slice(0,24)});
     (sc.data||[]).forEach(s=>{if(byId[s.user_id]&&s.round>=0&&s.round<E.R)byId[s.user_id].rounds[s.round]=s.pts/10});
@@ -908,13 +944,20 @@ function watchLeague(code){
   leagueUnsubs[code]=()=>clearInterval(iv);
 }
 async function onSession(session){
+  if(session&&session.user&&cloud.ready&&cloud.uid===session.user.id){render();return} /* token refresh: same account, already loaded */
   Object.keys(leagueUnsubs).forEach(c=>{try{leagueUnsubs[c]()}catch(e){}delete leagueUnsubs[c]});
   if(!session||!session.user){cloud.uid=null;cloud.email="";cloud.canWrite=false;cloud.ready=false;dbOk=false;render();return}
-  cloud.uid=session.user.id;cloud.email=session.user.email||"";dbOk=true;cloud.canWrite=true;
+  cloud.ready=false;
+  const mine=localUid===session.user.id;
+  if(localUid&&!mine)resetLocal(); /* this device's game belongs to another account */
+  cloud.uid=session.user.id;cloud.email=session.user.email||"";dbOk=true;cloud.canWrite=true;localUid=cloud.uid;
+  let loaded=false;
   try{
     const [sv,pf,mb]=await Promise.all([cloud.sb.from("saves").select("state").eq("user_id",cloud.uid).maybeSingle(),cloud.sb.from("profiles").select("name").eq("id",cloud.uid).maybeSingle(),cloud.sb.from("league_members").select("code").eq("user_id",cloud.uid)]);
+    if(sv.error||pf.error||mb.error)throw new Error("load");
     const v=sv.data&&sv.data.state;
-    if(v&&v.state&&(v.ts||0)>localTs&&v.state.round<=E.R){
+    /* the account's save wins over a game played signed out; between two copies of the same account's game, the newer one wins */
+    if(v&&v.state&&v.state.round<=E.R&&(!mine||(v.ts||0)>localTs)){
       state=unpackSt(JSON.parse(JSON.stringify(v.state)));plan=unpackPl(JSON.parse(JSON.stringify(v.plan||packPl(plan))));lock=unpackPl(v.lock||null);mgrName=v.name||mgrName;
       myLeagues=v.leagues||[];myLgn=v.lgn||{};localTs=v.ts;viewRound=Math.max(0,state.log.length-1);
       if(state.squad.length&&!plan.squad.length)startRound();fixLeaders();if(lock)lock.vice=null;
@@ -922,8 +965,14 @@ async function onSession(session){
     if(!mgrName&&pf.data&&pf.data.name)mgrName=pf.data.name;
     (mb.data||[]).forEach(r=>{if(!myLeagues.includes(r.code))myLeagues.push(r.code)});
     try{localStorage.setItem(KEY,JSON.stringify(blob()))}catch(e){}
+    loaded=true;
   }catch(e){}
-  cloud.ready=true;settle();pushCloud();myLeagues.forEach(watchLeague);render();
+  /* never push before the account's own save has loaded: that could overwrite it */
+  if(!loaded){cloudMsg="Could not load your account. Reload the page to try again. Nothing was overwritten.";render();return}
+  cloud.ready=true;settle();pushCloud();myLeagues.forEach(watchLeague);
+  if(pendingJoin){const c=pendingJoin;if(myLeagues.includes(c)){clearPending();leagueMsg="You are already in "+lgName(c)+"."}
+    else{const ok=await joinLeague(c,"");if(ok||/No league has that code|look right/.test(leagueMsg))clearPending()}tab="leagues"}
+  render();
 }
 async function initCloud(){
   try{
@@ -959,14 +1008,14 @@ async function joinLeague(code,name){
   if(name){const r=await cloud.sb.from("leagues").insert({code,name:name.slice(0,40),owner:cloud.uid});if(r.error){leagueMsg="Could not create the league. Try again.";return false}}
   const m=await cloud.sb.from("league_members").insert({code,user_id:cloud.uid});
   if(m.error){leagueMsg=m.error.code==="23503"?"No league has that code.":"Could not join the league. Try again.";return false}
-  myLeagues.push(code);if(name)myLgn[code]=name;watchLeague(code);save();pushCloud();leagueMsg="Joined "+lgName(code)+".";return true;
+  myLeagues.push(code);if(name){myLgn[code]=name;myOwn[code]=true}watchLeague(code);save();pushCloud();leagueMsg="Joined "+lgName(code)+".";return true;
 }
 document.addEventListener("input",e=>{const t=e.target;if(t.id==="authEmail")authEmail=t.value;if(t.id==="authPw")authPw=t.value;if(t.id==="authName")authName=t.value});
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&["authEmail","authPw","authName"].includes(e.target.id))doAuth(authMode)});
 document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;
   if(t.id==="authIn"||t.id==="authUp")doAuth(t.id==="authUp"?"up":"in");
   if(t.id==="authSwap"){authMode=authMode==="in"?"up":"in";authMsg="";render()}
-  if(t.id==="authOut"){cloud.sb.auth.signOut().then(()=>{leagueRows={};render()})}
+  if(t.id==="authOut"){cloud.ready=false;resetLocal();localUid=null;try{localStorage.removeItem(KEY)}catch(e){}tab="leagues";cloud.sb.auth.signOut().then(()=>{leagueRows={};render()})}
 });
 
 render();initCloud();
