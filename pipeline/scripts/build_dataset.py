@@ -28,6 +28,7 @@ REAL = re.compile(r"^([DH])(16|18|20|21)(E|ELIT|ELITE)?$")
 OTHER_SPORT = re.compile(r"mtbo|mtb-o|ol-skytte|skidorient|\bvtt\b|trail-?o\b|precision", re.I)
 TRAINING = re.compile(r"\bkm\b|klubbmästerskap|klubbmatch|träning|^test\b|\btest \d|fasttest|testløb|ungdomsserie|u-serie|u-ringen|totalresultat", re.I)
 _cl = json.load(open(f"{S}/data/classes.json"))
+def clean_name(n): return re.sub(r"\s*\((lokal kopia|local copy)[^)]*\)?\s*$", "", n.strip(), flags=re.I).strip()
 def real_comp(c):
     if not c["name"].strip() or OTHER_SPORT.search(c["name"]) or TRAINING.search(c["name"]): return False
     ages = {REAL.match(norm(n)).group(2) for n in (_cl.get(str(c["id"])) or []) if REAL.match(norm(n))}
@@ -51,9 +52,16 @@ for p in glob.glob(f"{S}/data/results/*.json"):
     d = dt.date.fromisoformat(c["date"])
     if d >= TODAY: continue
     g, age = m.group(1), m.group(2)
-    events.append({"id": ek, "cid": cid, "name": f'{c["name"].strip()} ({g}{age})', "date": c["date"], "d": d, "tier": tier_of(c),
+    # the label keeps the real class (H21 and H21E are different races in the same competition)
+    events.append({"id": ek, "cid": cid, "name": f'{clean_name(c["name"])} ({cn})', "date": c["date"], "d": d, "tier": tier_of(c),
                    "g": g, "cls": g + age, "rows": rows, "fin": fin})
-events.sort(key=lambda e: (e["date"], e["id"]))
+# some organisers publish the same race as two competitions: keep one copy per race, date and class
+_best = {}
+for e in events:
+    k = (e["name"].lower(), e["date"])
+    if k not in _best or (len(e["fin"]), -e["cid"]) > (len(_best[k]["fin"]), -_best[k]["cid"]): _best[k] = e
+print("duplicate race copies dropped", len(events) - len(_best))
+events = sorted(_best.values(), key=lambda e: (e["date"], e["id"]))
 print("counted event-classes", len(events))
 rkey = lambda r, e: r["name"].strip().lower() + "|" + e["g"]
 
@@ -183,8 +191,9 @@ done_cids = {e["cid"] for e in events}
 upcoming = []
 for c in comps.values():
     if TODAY.isoformat() <= c["date"] <= "2026-12-31" and c["id"] in hc and c["id"] not in EXCLUDE and real_comp(c):
-        upcoming.append({"id": c["id"], "name": c["name"].strip(), "date": c["date"]})
+        upcoming.append({"id": c["id"], "name": clean_name(c["name"]), "date": c["date"]})
 upcoming.sort(key=lambda x: (x["date"], x["id"]))
+_seen = set(); upcoming = [u for u in upcoming if not ((u["name"].lower(), u["date"]) in _seen or _seen.add((u["name"].lower(), u["date"])))]
 print("upcoming races", len(upcoming))
 json.dump({"upcoming": upcoming, "events": [{k: v for k, v in e.items() if k not in ("rows", "fin", "d")} for e in events],
            "rounds": rounds, "pool": pool,

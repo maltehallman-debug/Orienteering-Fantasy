@@ -25,7 +25,7 @@ manual = []
 _mp = f"{S}/data/manual_events.json"
 if os.path.exists(_mp):
     manual = [dict(m, id=0, manual=1) for m in json.load(open(_mp)) if m["date"] >= ASOF]
-upcoming = sorted([u for u in D["upcoming"] if not any(m["date"] == u["date"] and m["name"] == u["name"] for m in manual)] + manual, key=lambda u: (u["date"], u["name"]))
+upcoming = sorted([u for u in D["upcoming"] if not any(m["date"] == u["date"] and m["name"].lower() == u["name"].lower() for m in manual)] + manual, key=lambda u: (u["date"], u["name"]))
 LIVE_START_DATE = "2026-11-02"
 live_start = next(i for i, r in enumerate(out_rounds) if r["start"] == LIVE_START_DATE)
 data = {"runners": runners, "events": out_events, "rounds": out_rounds, "res": res, "prices": prices,

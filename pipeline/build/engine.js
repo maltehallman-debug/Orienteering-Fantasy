@@ -40,8 +40,7 @@ function makeEngine(D) {
   }
   function planErrors(state, plan) {
     const r = state.round, e = errors(plan.squad, r);
-    if (!plan.squad.includes(plan.captain)) e.push("Pick a captain");
-    if (!plan.squad.includes(plan.vice) || plan.vice === plan.captain) e.push("Pick a different vice-captain");
+    if (!plan.squad.includes(plan.captain)) e.push("Pick a runner to boost");
     if (plan.chip && !["wc", "tc"].includes(plan.chip)) e.push("Unknown chip");
     if (plan.chip && state.chips[plan.chip]) e.push("Chip already used");
     if (plan.chip === "wc" && !state.squad.length) e.push("Wildcard cannot be used for the opening squad");
@@ -53,17 +52,18 @@ function makeEngine(D) {
     if (e.length) throw new Error(e.join("; "));
     const r = state.round, t = transfersFor(state, plan.squad);
     const penalty = plan.chip === "wc" ? 0 : Math.max(0, t.n - D.freeTransfers) * D.penalty;
-    const capLive = starts[r][plan.captain] > 0 ? plan.captain : (starts[r][plan.vice] > 0 ? plan.vice : null);
+    // "captain" is the boosted runner (field name kept so old saves still load); no fallback if they do not race
+    const capLive = starts[r][plan.captain] > 0 ? plan.captain : null;
     const mult = plan.chip === "tc" ? 3 : 2;
     const rows = plan.squad.map(i => ({ i, pts: pts[r][i], starts: starts[r][i], cap: i === capLive }));
     const base = rows.reduce((a, x) => a + x.pts, 0);
     const capExtra = capLive === null ? 0 : (mult - 1) * pts[r][capLive];
     const total = base + capExtra - penalty;
     const ns = {
-      start: state.start || 0, round: r + 1, squad: plan.squad.slice(), captain: plan.captain, vice: plan.vice, bank: bankAfter(state, plan.squad),
+      start: state.start || 0, round: r + 1, squad: plan.squad.slice(), captain: plan.captain, vice: null, bank: bankAfter(state, plan.squad),
       chips: { wc: state.chips.wc || plan.chip === "wc", tc: state.chips.tc || plan.chip === "tc" },
       total: state.total + total,
-      log: state.log.concat([{ round: r, squad: plan.squad.slice(), captain: plan.captain, vice: plan.vice, capLive, chip: plan.chip || null, transfers: t.n, penalty, base, capExtra, total, in: t.inn, out: t.out }])
+      log: state.log.concat([{ round: r, squad: plan.squad.slice(), captain: plan.captain, vice: null, capLive, chip: plan.chip || null, transfers: t.n, penalty, base, capExtra, total, in: t.inn, out: t.out }])
     };
     return { state: ns, result: { rows, base, capExtra, penalty, total, capLive, mult, transfers: t.n } };
   }
@@ -102,11 +102,11 @@ function makeEngine(D) {
       const fc = greedy(order, r);
       const capF = fc.slice().sort((a, b) => rt(b) - rt(a));
       const sumF = fc.reduce((a, i) => a + pts[r][i], 0);
-      const capLive = [capF[0], capF[1]].find(i => starts[r][i] > 0);
+      const capLive = starts[r][capF[0]] > 0 ? capF[0] : undefined;
       out.formChaser += sumF + (capLive === undefined ? 0 : pts[r][capLive]);
       if (!fixed) fixed = fc.slice();
       const capS = fixed.slice().sort((a, b) => rt(b) - rt(a));
-      const capSL = [capS[0], capS[1]].find(i => starts[r][i] > 0);
+      const capSL = starts[r][capS[0]] > 0 ? capS[0] : undefined;
       out.setForget += fixed.reduce((a, i) => a + pts[r][i], 0) + (capSL === undefined ? 0 : pts[r][capSL]);
       const top = pool.slice().sort((a, b) => pts[r][b] - pts[r][a]);
       const cl = []; const cc = {};
