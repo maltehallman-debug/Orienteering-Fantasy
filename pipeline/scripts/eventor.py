@@ -121,9 +121,9 @@ def classes_of(ev):
     p = f"{C}/classes/{ev['id']}.json"; old = jload(p, None)
     upcoming = ev["end"] >= TODAY.isoformat()
     age = time.time() - os.path.getmtime(p) if old is not None else 1e12
-    stale = old is None or "_n" not in old or (upcoming and age > 3 * 86400) or (not upcoming and old.get("_final") is None)
+    stale = old is None or "_eb" not in old or (upcoming and age > 3 * 86400) or (not upcoming and old.get("_final") is None)
     if not stale: return old
-    raw = get("eventclasses", eventId=ev["id"])
+    raw = get("eventclasses", eventId=ev["id"], includeEntryBreakdown="true")   # numberOfEntries is only sent with the breakdown
     if raw is None: return old or {}
     out = {}; n = 0
     for c in ET.fromstring(raw):
@@ -131,7 +131,7 @@ def classes_of(ev):
         out[text(c, "EventClassId")] = text(c, "ClassShortName") or text(c, "Name")
         try: n += int(c.attrib.get("numberOfEntries", 0))
         except ValueError: pass
-    out["_n"] = n
+    out["_n"] = n; out["_eb"] = 1
     if not upcoming: out["_final"] = 1
     jsave(p, out); return out
 near = [e for e in events if e["date"] <= (TODAY + dt.timedelta(days=AHEAD)).isoformat() or e["id"] in ADD]
@@ -302,14 +302,14 @@ print("upcoming races", len(up), "big competitions per week ahead:", {k: len(v) 
 # this game week and all of the next one (on a Saturday, the coming game week starts in two days)
 horizon = (monday(TODAY) + dt.timedelta(days=20)).isoformat()
 want = sorted({u["eid"] for u in up if u["date"] <= horizon})
-entries = []
+entries = []; allent = collections.Counter()
 for i in range(0, len(want), 15):
     ids = want[i:i + 15]
     raw = get("entries", eventIds=",".join(map(str, ids)), includePersonElement="true", includeOrganisationElement="true", includeEventElement="false")
     if not raw: continue
     for en in ET.fromstring(raw):
         if strip(en.tag) != "Entry": continue
-        eid = int(text(en, "EventId") or 0); ecid = text(en, "EntryClass", "EventClassId")
+        eid = int(text(en, "EventId") or 0); ecid = text(en, "EntryClass", "EventClassId"); allent[eid] += 1
         cn = str(cl.get(eid, {}).get(ecid, ""))
         if not REAL.match(norm(cn)): continue
         comp = path(en, "Competitor"); per = path(comp, "Person")
@@ -320,6 +320,10 @@ for i in range(0, len(want), 15):
         entries.append({"eid": eid, "rid": int(text(en, "EventRaceId") or 0), "name": re.sub(r"\s+", " ", f"{given} {text(pn, 'Family')}").strip(),
                         "club": (text(o, "ShortName") or text(o, "Name")) if o is not None else "", "cls": norm(cn)})
 jsave(f"{S}/data/eventor_entries.json", entries)
-print("entries per event:", dict(collections.Counter(e["eid"] for e in entries)), "classes known for:", {e: cl.get(e, {}).get("_n") for e in want})
+# the entry list counts everyone entered (all classes), so it also gives the size of the field when the class list does not
+for e in evinfo:
+    if allent.get(e["eid"], 0) > (e["n"] or 0): e["n"] = allent[e["eid"]]
+jsave(f"{S}/data/eventor_events.json", evinfo)
+print("entries per event:", dict(collections.Counter(e["eid"] for e in entries)), "all classes:", dict(allent), "classes known for:", {e: cl.get(e, {}).get("_n") for e in want})
 print("entries in D/H 16-21 for", len(want), "events:", len(entries))
 print("eventor calls", dict(calls))
