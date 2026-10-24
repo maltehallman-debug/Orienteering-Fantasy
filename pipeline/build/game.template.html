@@ -359,7 +359,7 @@ input.name{width:100%;max-width:380px}
 /* ---------- intro with a course that draws itself ---------- */
 .intro{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:26px;align-items:center;padding:30px 0 22px}
 .intro h1{font-size:clamp(46px,6.3vw,90px);line-height:.88;letter-spacing:-.06em;font-weight:700}
-.intro h1 .w{display:inline-block}
+.intro h1 .w{display:inline-block;padding:.08em .05em .22em;margin:-.08em -.05em -.22em}
 .intro h1 em{font-style:normal;color:var(--accent);position:relative;white-space:nowrap}
 .intro h1 em::after{content:"";position:absolute;left:-2%;right:-2%;bottom:.04em;height:.12em;background:var(--accent);opacity:.22;border-radius:4px;transform-origin:left}
 .intro p{color:var(--text-2);font-size:18px;margin:18px 0 0;max-width:42ch}
@@ -619,22 +619,47 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 :root{--ease-cine:cubic-bezier(.16,1,.3,1);--ease-cine-in:cubic-bezier(.7,0,.84,0)}
 .terrain .par{position:absolute;inset:0;will-change:transform}
 .nav{view-transition-name:hdr}.tabbar{view-transition-name:tabbar}.terrain{view-transition-name:terrain}
-/* opening titles */
-#reel{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg);pointer-events:none}
-#reel .in{display:grid;justify-items:center;gap:22px}
-#reel svg{width:96px;height:96px;overflow:visible}
-#reel .ring{fill:none;stroke:var(--accent);stroke-width:2.4;stroke-dasharray:80;stroke-dashoffset:80;animation:draw 1.1s var(--ease-cine) .15s forwards;transform-origin:14px 14px}
-#reel .flag{transform-origin:14px 14px;animation:flagIn .9s var(--spring) .8s both}
-#reel .t{font:700 clamp(30px,6vw,56px)/1 var(--font);letter-spacing:-.045em;color:var(--text);display:flex;gap:.02em}
-#reel .t span{display:inline-block;animation:letterIn .9s var(--ease-cine) both;animation-delay:calc(1s + var(--i) * 45ms)}
-#reel .t em{font-style:normal;color:var(--accent);display:flex;gap:.02em}
-#reel .k{font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);animation:fadeUp 1s var(--ease-cine) 1.7s both}
-#reel{animation:curtain 1.1s var(--ease-io) 2.5s forwards}
-#reel.skip{animation:curtain .45s var(--ease-out) forwards}
-@keyframes flagIn{from{transform:scale(0) rotate(-90deg);opacity:0}}
-@keyframes letterIn{from{opacity:0;transform:translateY(.6em) rotate(6deg);filter:blur(8px)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}}
-@keyframes curtain{to{clip-path:inset(0 0 100% 0);visibility:hidden}}
+/* opening titles. The map draws itself, a leg runs from the start triangle to the control, the control is punched,
+   then the name rises letter by letter. Nothing clips the letters and nothing is blurred: a blurred inline letter
+   is clipped to its own line box, which is what cut the g and y before.
+   The page entrance waits underneath (paused) and plays as the titles leave, and the map behind the titles is
+   the page's own map, so the hand-over is seamless. */
+#reel{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg);pointer-events:none;overflow:hidden}
+#reel .map{position:absolute;left:-10%;top:-10%;width:120%;height:120%;opacity:var(--contour-op)}
+#reel .map path{fill:none;stroke:var(--contour);stroke-width:var(--sw,1);stroke-dasharray:1;stroke-dashoffset:1;animation:mapDraw 1.7s var(--ease-cine) both;animation-delay:var(--d,0s)}
+#reel .map path.ix{stroke-width:calc(var(--sw,1) * 2)}
+#reel .map .veg,#reel .map .lake{stroke:none;stroke-dasharray:none;animation:mapFill 1.2s ease-out .5s both}
+#reel .map .veg{fill:var(--contour);opacity:.05}#reel .map .lake{fill:var(--c2);opacity:.06}
+#reel .in{position:relative;display:grid;justify-items:center;gap:clamp(14px,2.4vw,22px);will-change:transform,opacity}
+#reel .leg{width:clamp(190px,34vw,300px);height:auto;overflow:visible}
+#reel .leg .st,#reel .leg .ln,#reel .leg .ring{fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1}
+#reel .leg .st{animation:legDraw .5s var(--ease-out) .15s forwards}
+#reel .leg .ln{animation:legDraw .6s var(--ease-io) .5s forwards}
+#reel .leg .ring{animation:legDraw .55s var(--ease-out) 1s forwards}
+#reel .leg .flag{transform-box:fill-box;transform-origin:50% 50%;animation:flagIn .7s var(--spring) 1.3s both}
+#reel .leg .ping{fill:none;stroke:var(--accent);stroke-width:2;transform-box:fill-box;transform-origin:50% 50%;opacity:0;animation:ping .9s var(--ease-out) 1.35s forwards}
+#reel .t{display:flex;font:700 clamp(30px,9.4vw,76px)/1.25 var(--display);color:var(--text);white-space:nowrap}
+#reel .t span{display:inline-block;opacity:0;transform:translateY(.42em) rotate(8deg);transform-origin:0 100%;animation:rise .9s var(--ease-cine) forwards;animation-delay:calc(1.3s + var(--i) * 28ms)}
+#reel .t em{font-style:normal;color:var(--accent);display:flex}
+#reel .t .sp{width:.22em}
+#reel .k{font:600 clamp(11px,2.8vw,13px)/1 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);opacity:0;animation:fadeUp .7s var(--ease-out) 2s forwards}
+#reel .rule{width:0;height:2px;border-radius:2px;background:var(--accent);opacity:.35;animation:ruleIn .8s var(--ease-cine) 1.9s forwards;margin-top:-4px}
+#reel.out .in{animation:reelOut .55s var(--ease-out) forwards}
+#reel.out{animation:bgOut .75s var(--ease-out) .1s forwards}
+#reel.skip .in{animation:reelOut .3s var(--ease-out) forwards}
+#reel.skip{animation:bgOut .4s var(--ease-out) forwards}
+@keyframes mapDraw{to{stroke-dashoffset:0}}
+@keyframes mapFill{from{opacity:0}}
+@keyframes legDraw{to{stroke-dashoffset:0}}
+@keyframes flagIn{from{transform:scale(.45) rotate(-28deg);opacity:0}}
+@keyframes ping{0%{opacity:.55;transform:scale(1)}100%{opacity:0;transform:scale(2.3)}}
+@keyframes rise{40%{opacity:1}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes ruleIn{to{width:min(220px,46vw)}}
+@keyframes reelOut{to{opacity:0;transform:translateY(-18px) scale(.97)}}
+@keyframes bgOut{to{opacity:0;visibility:hidden}}
+/* the page's own entrance waits under the titles */
+body.reel-hold>:not(#reel),body.reel-hold>:not(#reel) *,body.reel-hold>:not(#reel) *::before,body.reel-hold>:not(#reel) *::after,#reel.fw,#reel.fw *,#reel.fw *::before,#reel.fw *::after{animation-play-state:paused!important}
 @media (prefers-reduced-motion:reduce){#reel{display:none}}
 @media (prefers-reduced-motion:no-preference){
   /* everything that enters takes its time */
@@ -1023,16 +1048,31 @@ function drawTerrain(){
 drawTerrain();
 /* opening titles: on every page load (a reload too), never when arriving from an email or invite link, never with
    reduced motion. A tap, scroll or key press sends them off early. */
+let reelEnd=0;
 (function reel(){
   if(RM||/access_token|error=|join=/.test(location.href))return;
   let n=0;const word=w=>[...w].map(c=>`<span style="--i:${n++}">${c}</span>`).join("");
-  const letters=word("Orienteering")+`<span style="--i:${n++}">&nbsp;</span><em>${word("Fantasy")}</em>`;
+  const letters=word("Orienteering")+`<span class="sp" style="--i:${n++}"></span><em>${word("Fantasy")}</em>`;
+  const T=document.getElementById("terrain"),vb=T?T.getAttribute("viewBox")||"0 0 1600 1000":"0 0 1600 1000",[,,VW,VH]=vb.split(" ").map(Number);
+  const sw=1/Math.max(innerWidth*1.2/VW,innerHeight*1.2/VH);
   const r=document.createElement("div");r.id="reel";r.setAttribute("aria-hidden","true");
-  r.innerHTML=`<div class="in"><svg viewBox="0 0 28 28"><circle class="ring" cx="14" cy="14" r="12.5"/><g class="flag"><path d="M8 8h12v12H8z" fill="#fff"/><path d="M20 8v12H8z" fill="#f06a2b"/><path d="M8 8h12v12H8z" fill="none" stroke="rgba(0,0,0,.25)" stroke-width=".8"/></g></svg><div class="t">${letters}</div><div class="k">D/H 16–21 · live season</div></div>`;
-  document.body.appendChild(r);setTimeout(()=>r.remove(),3800);
-  const skip=()=>{if(!r.isConnected||r.classList.contains("skip"))return;r.classList.add("skip");setTimeout(()=>r.remove(),500);off()};
+  r.innerHTML=`<svg class="map" viewBox="${vb}" preserveAspectRatio="xMidYMid slice" style="--sw:${sw.toFixed(3)}">${T?T.innerHTML:""}</svg>
+   <div class="in"><svg class="leg" viewBox="0 0 200 60"><path class="st" pathLength="1" d="M22 15.5 34 36.5H10Z"/><path class="ln" pathLength="1" d="M40 30H150"/>
+    <circle class="ping" cx="170" cy="30" r="16"/><circle class="ring" pathLength="1" cx="170" cy="30" r="16"/>
+    <g class="flag"><path d="M161 21h18v18h-18z" fill="#fff"/><path d="M179 21v18h-18z" fill="#f06a2b"/><path d="M161 21h18v18h-18z" fill="none" stroke="rgba(0,0,0,.25)" stroke-width=".8"/></g></svg>
+   <div class="t">${letters}</div><div class="rule"></div><div class="k">D/H 16–21 · live season</div></div>`;
+  /* every contour draws in, hill by hill, from the middle of the screen outwards */
+  const ps=[...r.querySelectorAll(".map path:not(.veg):not(.lake)")];ps.forEach((p,k)=>{p.setAttribute("pathLength","1");p.style.setProperty("--d",(.05+(k/ps.length)*.7).toFixed(3)+"s")});
+  r.classList.add("fw");document.body.appendChild(r);document.body.classList.add("reel-hold");reelEnd=performance.now()+3400;
+  let gone=false,started=false;
+  const go=fast=>{if(gone)return;gone=true;off();reelEnd=performance.now();r.classList.add(fast?"skip":"out");
+    document.body.classList.remove("reel-hold");setTimeout(()=>r.remove(),fast?450:900)};
+  const skip=()=>go(true);
   const evs=["pointerdown","wheel","keydown","touchstart"],off=()=>evs.forEach(e=>removeEventListener(e,skip,true));
-  evs.forEach(e=>addEventListener(e,skip,{capture:true,passive:true}));setTimeout(off,3800);
+  evs.forEach(e=>addEventListener(e,skip,{capture:true,passive:true}));
+  /* wait (at most 0.7s) for the display face, so no letter swaps font mid-flight; nothing is drawn while waiting */
+  const start=()=>{if(started||gone)return;started=true;r.classList.remove("fw");reelEnd=performance.now()+2700;setTimeout(()=>go(false),2700)};
+  try{document.fonts.load('700 60px "Barlow Condensed"').then(start,start)}catch(e){start()}setTimeout(start,700);
 })();
 /* the map moves slower than the page: depth */
 if(!RM){let raf=0;const prog=document.createElement("div");prog.id="prog";prog.setAttribute("aria-hidden","true");document.body.appendChild(prog);
@@ -1979,7 +2019,7 @@ function render(){
   flipCapture();
   const now=performance.now();
   const opening=animNext&&!RM;
-  if(opening){enterUntil=now+2600;clearTimeout(enterTimer);enterTimer=setTimeout(()=>document.body.classList.remove("enter"),2650)}
+  if(opening){const hold=Math.max(0,reelEnd-now);enterUntil=now+2600+hold;clearTimeout(enterTimer);enterTimer=setTimeout(()=>document.body.classList.remove("enter"),2650+hold)}
   animNext=false;document.body.classList.toggle("enter",now<enterUntil);
   renderHero();renderTicker();renderCourse();renderTabs();renderFacts();
   if(tab==="season")tab="profile";
