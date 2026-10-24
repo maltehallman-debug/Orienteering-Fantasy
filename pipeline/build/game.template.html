@@ -1101,20 +1101,12 @@ nav.tabs .ind.on{opacity:1}
 .seg{display:inline-flex;border-radius:10px;box-shadow:inset 0 0 0 1.5px var(--line-2);overflow:hidden}
 .seg button{border:0;background:none;padding:7px 11px;font:600 13px/1 var(--font);color:var(--text-2)}
 .seg button.on{background:var(--accent);color:var(--accent-ink)}
-/* the week board: cards overlap like a hand of cards, the upper card's point over the one below */
-.lineup{column-gap:0}
-.lineup .lu-col{gap:0}
-.lineup .lu-col>.lc+.lc{margin-top:-17%}
-.lineup .lu-col>.lc:first-child{z-index:2}
-.lineup .lu-col:nth-child(2){z-index:3;margin:0 -9%}
-.lineup .lc.tilt{z-index:5}
 /* cards cast a clear shadow and glow in their own metal, also on phones where there is no hover */
 .sqc-sh{--glow:rgba(127,138,155,.42);filter:drop-shadow(0 2px 2px var(--cs1)) drop-shadow(0 12px 14px var(--cs2)) drop-shadow(0 4px 18px var(--glow))}
 .sqc-sh:has(.fifa-gold){--glow:rgba(214,163,40,.55)}
 .sqc-sh:has(.fifa-bronze){--glow:rgba(190,105,45,.5)}
 .sqc.boosted .sqc-sh{--glow:color-mix(in srgb,var(--accent) 60%,transparent)}
 .sqc.tilt .sqc-sh{filter:drop-shadow(0 4px 4px var(--cs1)) drop-shadow(0 26px 24px var(--cs2)) drop-shadow(0 8px 26px var(--glow))}
-.lineup{filter:drop-shadow(0 2px 2px var(--cs1)) drop-shadow(0 16px 18px var(--cs2)) drop-shadow(0 6px 22px rgba(214,163,40,.28))}
 </style>
 </head>
 <body>
@@ -1760,9 +1752,8 @@ async function makeShareImage(){
   S.forEach(([l,v],k)=>{const sx=520+(k%2)*250,sy=240+Math.floor(k/2)*130;c.textAlign="left";c.fillStyle=t3;c.font=`600 22px ${font}`;c.fillText(l,sx,sy);c.fillStyle=text;c.font=`800 64px ${dfont}`;c.fillText(v,sx,sy+62)});
   c.textAlign="center";c.fillStyle=text;c.font=`800 54px ${dfont}`;c.fillText("Round "+b.rd.n+" · "+(b.team==="B"?"B team ×1":"A team ×2"),W/2,518);
   c.fillStyle=t2;c.font=`500 28px ${font}`;c.fillText(b.when+(b.x&&b.x.chip?" · "+CHIPINFO[b.x.chip][0]:""),W/2,556);
-  const ch=380,cw=Math.round(ch*.72),y0=588,gap=-62,sx=Math.round((W-3*cw)/4)+18,pos=[[sx,y0],[W-sx-cw,y0],[(W-cw)/2,y0+(ch+gap)/2],[sx,y0+ch+gap],[W-sx-cw,y0+ch+gap]];
-  /* drawn bottom row first, so each upper card's point lies over the card below it, and the middle card last */
-  for(const k of [3,4,0,1,2])if(b.cards[k])await drawFifa(c,b.cards[k],pos[k][0],pos[k][1],cw,ch,dfont);
+  const ch=340,cw=Math.round(ch*.72),y0=592,gap=18,sx=Math.round((W-3*cw)/4),pos=[[sx,y0],[W-sx-cw,y0],[(W-cw)/2,y0+(ch+gap)/2],[sx,y0+ch+gap],[W-sx-cw,y0+ch+gap]];
+  for(let k=0;k<b.cards.length;k++)await drawFifa(c,b.cards[k],pos[k][0],pos[k][1],cw,ch,dfont);
   c.textAlign="center";c.fillStyle=t3;c.font=`500 24px ${font}`;c.fillText(location.host?location.host+location.pathname.replace(/index\.html$/,""):"Orienteering Fantasy",W/2,H-58);
   return await new Promise((res,rej)=>cv.toBlob(bl=>bl?res(bl):rej(new Error("picture")),"image/png"));
 }
