@@ -25,12 +25,16 @@ jobs:
       - name: Restore result cache
         uses: actions/cache@v4
         with:
-          path: pipeline/data/results
+          path: |
+            pipeline/data/results
+            pipeline/data/eventor
           key: results-${{ github.run_id }}
           restore-keys: results-
       - name: Build
         env:
           TZ: Europe/Stockholm
+          # only used as a request header to eventor.orientering.se; GitHub masks it in logs and it is never written out
+          EVENTOR_API_KEY: ${{ secrets.EVENTOR_API_KEY }}
         run: bash pipeline/refresh.sh
       - name: Commit if changed
         run: |

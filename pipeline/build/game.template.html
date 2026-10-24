@@ -1044,6 +1044,16 @@ nav.tabs .ind.on{opacity:1}
   }
 }
 @media (prefers-reduced-motion:reduce){.modal.closing{display:none}}
+/* Eventor: entered markers, big races and skipped weeks */
+.entered{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;font:800 11px/1 var(--font);margin-left:6px;vertical-align:2px;background:var(--good);color:#fff;box-shadow:0 0 0 2px var(--surface);cursor:help;flex:none;user-select:none}
+.avw .entered{position:absolute;right:-4px;bottom:-3px;margin:0;z-index:3}
+.sqc .avw .entered{right:-1cqw;bottom:-1cqw;width:13cqw;height:13cqw;font-size:8.5cqw;box-shadow:0 0 0 1.2cqw var(--rim)}
+.legend .entered{margin:0 0 0 8px;cursor:default}
+.entline{margin:8px 0 0}.entline .entered{margin:0 6px 0 0}
+.tag.big,.tag.ent{white-space:nowrap}.tag.big{background:var(--accent);color:var(--accent-ink)}.tag.ent{background:var(--accent-tint);color:var(--accent)}
+.skipnote{margin:0 0 14px;padding:12px 14px;border-radius:var(--r-sm);background:color-mix(in srgb,var(--warn) 12%,var(--surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 35%,transparent);color:var(--text-2);font-size:14px}
+.skipnote b{color:var(--text)}
+.next.skip .next-main b{color:var(--warn)}
 </style>
 </head>
 <body>
@@ -1409,7 +1419,7 @@ function squadCard(i,k,show,locked,team){
   return `<div class="sqc ${on?"boosted":""} ${justAdded===i?"pop":""} ${justBoosted===i?"zap":""} ${swapSel===i?"sel":""} ${hit&&show.chip?"chipped":""} ${hit&&justChip?"hit":""}" style="--i:${k}" data-card="${i}">
    <div class="sqc-sh"><button class="lc fifa-${TIERS[tierOf(i,r)][0]} ${on?"cap":""}" style="--k:${k%5}" data-prof="${i}" aria-label="${esc(nameOf(i))}">
     <span class="lc-rate"><b>${D.runners[i].k}</b><small class="${mult>(team==="A"?2:1)?"hi":""}" title="This runner's points count ×${mult} this round">×${mult}</small></span>
-    <span class="lc-ph"><span class="avw">${avatar(i,"lg")}${idleTag(i)}</span></span>
+    <span class="lc-ph"><span class="avw">${avatar(i,"lg")}${idleTag(i)}${entTag(i)}</span></span>
     ${on?`<span class="lc-cap"><i>Boost ×${m}</i></span>`:""}
     <b class="lc-name">${esc(surname(nameOf(i)))}</b>
     <span class="lc-st"><span><b>${kSuf(fm(E.price(i,r)))}</b><i>Price</i></span><span><b>${fp(s.perWeek)}</b><i>Pts / wk</i></span></span>
@@ -1447,7 +1457,7 @@ function marketBody(rows){mRows=rows;
   return (rows.slice(0,shown).map(rowHtml).join("")||`<tr><td colspan="10" class="note">No runners match. Clear the search or a filter.</td></tr>`);
 }
 function rowHtml(x){const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
-   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}<div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
+   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}<div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
    <td>${inS?`<button class="btn" data-sell="${x.i}">Remove</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Add</button>`}</td></tr>`}
 /* the runner list grows as you scroll: a marker under it loads the next runners before you reach the end, and each
    new runner rises in on its own. A button stays as a fallback where the browser cannot watch the marker. */
@@ -1477,7 +1487,7 @@ function marketHtml(){
    <select id="clsF" aria-label="Class"><option value="">All classes</option>${["H","D","H16","H18","H20","H21","D16","D18","D20","D21"].map(c=>`<option value="${c}" ${c===clsF?"selected":""}>${c==="H"?"All men (H)":c==="D"?"All women (D)":c}</option>`).join("")}</select>
    <select id="clubF" aria-label="Club"><option value="">All clubs</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
    <label><input type="checkbox" id="afford" ${afford?"checked":""}> Affordable only</label></div>
-  <p class="legend"><span class="idle y" aria-hidden="true">!</span> no race last week <span class="idle r" aria-hidden="true">!</span> none in 10 weeks</p>
+  <p class="legend"><span class="idle y" aria-hidden="true">!</span> no race last week <span class="idle r" aria-hidden="true">!</span> none in 10 weeks${Object.keys(ENT).length?` <span class="entered" aria-hidden="true">✓</span> entered this week`:""}</p>
   <div class="tbl mkt"><table><thead><tr>${th("name","Runner")}<th>Tier</th>${th("price","Price")}<th>Change</th>${th("form","Form","Average of the last 3 race weeks")}<th title="Points in each of the last 6 weeks they raced">Last 6 race weeks</th>${th("avg","Per week","Average of the last 5 race weeks")}${th("total","Points")}${th("starts","Starts")}<th></th></tr></thead><tbody id="mrows">
   ${marketBody(rows)}
   </tbody></table></div>
@@ -1487,17 +1497,24 @@ function marketHtml(){
 /* one entry per competition: results are stored per class ("Name (H16)") and some organisers publish a race twice */
 const compName=n=>n.replace(/ \([DH]\d+[A-Z]*\)$/,"").replace(/\s*\((lokal kopia|local copy)[^)]*\)?\s*$/i,"").trim();
 function comps(r){
-  const m=new Map(),add=(name,date,tier,lr)=>{const n=compName(name),k=n.toLowerCase()+"|"+date;const o=m.get(k);if(!o)m.set(k,{n,date,tier,lr:lr||0});else{o.tier=Math.max(o.tier,tier);if(!o.lr&&lr)o.lr=lr}};
-  D.rounds[r].ev.forEach(ei=>{const e=D.events[ei];add(e.name,e.date,e.tier,e.lr)});
-  sched(r).forEach(u=>add(u.name,u.date,1,u.lr));
+  const m=new Map(),add=(name,date,tier,lr,eo,big)=>{const n=compName(name),k=n.toLowerCase()+"|"+date;const o=m.get(k);if(!o)m.set(k,{n,date,tier,lr:lr||0,eo:eo||0,big:big||0});else{o.tier=Math.max(o.tier,tier);if(!o.lr&&lr)o.lr=lr;if(!o.eo&&eo)o.eo=eo;o.big=o.big||big||0}};
+  D.rounds[r].ev.forEach(ei=>{const e=D.events[ei];add(e.name,e.date,e.tier,e.lr,e.eo)});
+  sched(r).forEach(u=>add(u.name,u.date,1,u.lr,u.eo,u.big));
   return [...m.values()].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.n.localeCompare(b.n,"sv"));
 }
 const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const dayName=s=>DAYS[new Date(s+"T12:00:00Z").getUTCDay()];
+/* entries (Eventor): which runners in the game have entered a race, and which races a runner has entered this week */
+const ENT=D.entered||{};
+const entOf=(i,r)=>{const rd=D.rounds[r];return rd?(ENT[i]||[]).map(k=>D.upcoming[k]).filter(u=>u&&u.date>=rd.start&&u.date<=rd.end):[]};
+const _entN=new Map();Object.values(ENT).forEach(a=>a.forEach(k=>_entN.set(k,(_entN.get(k)||0)+1)));
+const entCount=x=>{let n=0;D.upcoming.forEach((u,k)=>{if(u.date===x.date&&compName(u.name).toLowerCase()===x.n.toLowerCase())n+=_entN.get(k)||0});return n};
+const entTag=i=>{const r=R(),e=r<E.R&&!isFinal(r)?entOf(i,r):[];if(!e.length)return "";const t="Entered: "+e.map(u=>compName(u.name)+" ("+dshort(u.date)+")").join(", ");return `<span class="entered" title="${esc(t)}" aria-label="${esc(t)}" role="img">✓</span>`};
+const skipNote=r=>{const rd=D.rounds[r];return rd&&rd.skip?`<div class="skipnote"><b>No game this week.</b> Round ${rd.n} has ${rd.big?"only one big competition":"no big competitions"}, and a game week needs two. Nothing is scored, transfers are free and chips stay unused.</div>`:""};
 function weekList(r){
   const c=comps(r),by={};c.forEach(x=>{(by[x.date]=by[x.date]||[]).push(x)});
   const rd=D.rounds[r],days=[];for(let t=Date.parse(rd.start+"T12:00:00Z");t<=Date.parse(rd.end+"T12:00:00Z");t+=864e5)days.push(new Date(t).toISOString().slice(0,10));
-  return `<div class="wk">${days.map(d=>`<div class="wkd ${by[d]?"":"empty"}"><div class="wkh"><b>${dayName(d)}</b><span class="sub">${dshort(d)}</span></div>${by[d]?by[d].map(x=>`<div class="wkr">${x.lr?`<a href="https://liveresultat.orientering.se/followfull.php?comp=${x.lr}" target="_blank" rel="noopener">${esc(x.n)}</a>`:`<span>${esc(x.n)}</span>`}${x.tier>1?`<span class="tag w">×${x.tier}</span>`:""}</div>`).join(""):`<div class="sub">No races</div>`}</div>`).join("")}</div>`;
+  return `${skipNote(r)}<div class="wk">${days.map(d=>`<div class="wkd ${by[d]?"":"empty"}"><div class="wkh"><b>${dayName(d)}</b><span class="sub">${dshort(d)}</span></div>${by[d]?by[d].map(x=>`<div class="wkr">${x.eo?`<a href="https://eventor.orientering.se/Events/Show/${x.eo}" target="_blank" rel="noopener">${esc(x.n)}</a>`:x.lr?`<a href="https://liveresultat.orientering.se/followfull.php?comp=${x.lr}" target="_blank" rel="noopener">${esc(x.n)}</a>`:`<span>${esc(x.n)}</span>`}${x.big?`<span class="tag big">Big</span>`:""}${x.tier>1?`<span class="tag w">×${x.tier}</span>`:""}${entCount(x)?`<span class="tag ent" title="Runners in the game who have entered">${entCount(x)} entered</span>`:""}</div>`).join(""):`<div class="sub">No races</div>`}</div>`).join("")}</div>`;
 }
 let weekR=null;
 function weekSheet(r){
@@ -1523,6 +1540,7 @@ function hero(r){
   const when=dshort(rd.start)+" – "+dshort(rd.end);
   const side=isFinal(r)?`<span class="eyebrow">Scored</span>`:hasStarted(r)?`<span class="livedot">Live</span>`:
     `<span class="eyebrow">Locks ${d===1?"tomorrow":"in"}</span>${d===1?"":`<span class="num">${d} days</span>`}<span class="sub">Monday ${dshort(rd.start)}</span>`;
+  if(rd.skip)return `<div class="next skip"><div class="next-main"><span class="next-k">Round ${rd.n} · ${when}</span><b>No game this week</b><button class="sub wklink" data-week="${r}">Fewer than two big competitions. Week calendar →</button></div><div class="next-side"><span class="eyebrow">Free transfers</span><span class="sub">Next game: round ${(D.rounds.slice(r+1).find(x=>!x.skip)||rd).n}</span></div></div>`;
   return `<div class="next"><div class="next-main"><span class="next-k">Round ${rd.n} · ${when}</span><b>${title}</b>${u.length>1?`<button class="sub wklink" data-week="${r}">and ${u.length-1} more race${u.length===2?"":"s"} this week →</button>`:`<button class="sub wklink" data-week="${r}">Week calendar →</button>`}</div><div class="next-side">${side}</div></div>`;
 }
 function teamView(){
@@ -1530,7 +1548,7 @@ function teamView(){
   const r=R(),rd=D.rounds[r],locked=!isLive()&&lock&&lock.round===r,frozen=locked&&hasStarted(r);
   const show=locked?Object.assign({a:lock.squad.slice(0,AS)},lock):plan;
   const errs=plan.squad.length?E.planErrors(state,{squad:ordered(plan),captain:plan.captain,chip:plan.chip}):["Pick "+D.squad+" runners to start"];
-  const t=E.transfersFor(state,plan.squad),pen=plan.chip==="wc"?0:(!state.squad.length?0:Math.max(0,t.n-D.freeTransfers)*D.penalty);
+  const t=E.transfersFor(state,plan.squad),pen=plan.chip==="wc"||rd.skip?0:(!state.squad.length?0:Math.max(0,t.n-D.freeTransfers)*D.penalty);
   const A=(show.a||[]).filter(i=>show.squad.includes(i)),B=show.squad.filter(i=>!A.includes(i));
   const slot=(k,team)=>{const can=swapSel!==null&&(team==="A"?!plan.a.includes(swapSel):plan.a.includes(swapSel));return `<div class="rc slot sqc-slot" style="--i:${k}"><div><b>${k+1}</b>${team==="A"?"A":"B"} team spot${can?`<button class="swapto" data-moveto="${team}">Move ${esc(nameOf(swapSel).split(" ")[0])} here</button>`:""}</div></div>`};
   const teamRows=(list,n,team,off)=>{const out=[];for(let k=0;k<n;k++)out.push(list[k]!==undefined?squadCard(list[k],off+k,show,locked,team):slot(off+k,team));return out.join("")};
@@ -1538,7 +1556,7 @@ function teamView(){
   const saved=isLive()&&isSaved(),cd=dshort(rd.start);
   const lead=locked?(frozen?"Locked. Points come in as the results do.":"Locked for round "+rd.n+"."):
      (!state.squad.length?"Pick "+D.squad+" runners for "+fm(D.budget)+", at most "+D.clubMax+" per club.":D.freeTransfers+" free transfers this round.");
-  const chipsHtml=`<div class="chipgrid"><button class="chipc none ${!plan.chip?"on":""}" data-chip="" ${locked?"disabled":""}><b>No chip</b></button>${E.CHIPS.map(c=>{const used=state.chips[c],off=locked||used||(c==="wc"&&!state.squad.length);return `<button class="chipc ${plan.chip===c?"on":""} ${used?"used":""}" data-chip="${c}" ${off?"disabled":""} title="${esc(CHIPINFO[c][1])}">${chipSvg(c)}<b>${CHIPINFO[c][0]}</b><small>${CHIPINFO[c][1]}</small></button>`}).join("")}</div>`;
+  const chipsHtml=`<div class="chipgrid"><button class="chipc none ${!plan.chip?"on":""}" data-chip="" ${locked?"disabled":""}><b>No chip</b></button>${E.CHIPS.map(c=>{const used=state.chips[c],off=locked||used||rd.skip||(c==="wc"&&!state.squad.length);return `<button class="chipc ${plan.chip===c?"on":""} ${used?"used":""}" data-chip="${c}" ${off?"disabled":""} title="${esc(CHIPINFO[c][1])}">${chipSvg(c)}<b>${CHIPINFO[c][0]}</b><small>${CHIPINFO[c][1]}</small></button>`}).join("")}</div>`;
   return `${hero(r)}${liveNow()}<div class="two"><div>
    <p class="eyebrow pg-k">01 · Build your ten</p><h2 style="margin-top:0">Your squad</h2>
    <p class="lead">${lead}</p>
@@ -1907,6 +1925,7 @@ function rulesView(){
   <li><b>Boost</b> one runner each round to double their points again (an A-team runner then counts ×4). No race, no boost.</li>
   <li><b>Warnings:</b> a yellow ! means a runner did not race last game week, a red ! that they have not raced in the last 10 game weeks.</li>
   <li><b>Tiers</b> follow price: Gold from ${fm(D.tiers[0])}, Silver from ${fm(D.tiers[1])}, Bronze below that. Prices move with form, so a runner can move up or down a tier.</li>
+  <li>A game week needs at least two big competitions: championships and national events in Eventor, plus Helg utan älg and Novembertävlingarna. A week with fewer is skipped: nothing is scored, transfers are free and chips cannot be played. It is shown on the Team tab and in the week calendar as soon as it is known.</li>
   <li>A round is one week, Monday to Sunday. Your squad saves itself and locks when the round starts. If it is not complete, your last complete squad plays. The live season runs ${dshort(D.rounds[LIVE].start)} to ${dshort(D.rounds[E.R-1].end)}.</li>
   <li>In a league, other managers see your team and points once a round has started, never before.</li>
   <li>${D.freeTransfers} free transfers a round after your first squad. Each extra one costs ${D.penalty/10} points. Runners sell at today's price.</li>
@@ -1921,7 +1940,8 @@ function rulesView(){
   <li><b>Mispunch, did not finish, disqualified:</b> -5 before scaling. Did not start: 0.</li>
   <li><b>Your points:</b> the race total is multiplied by 0.32 and rounded to a whole number. A finish is worth at least 1, a solid race 3 to 8, a win in a strong field 20 or more, a mispunch -2. A good week for a whole team is around 100.</li></ul></div></div>
   <div class="card"><h3>Class rating</h3><p style="max-width:70ch;margin:6px 0">Each runner's class comes from how fast they run compared with the rest of the field, adjusted for how strong that field was, across all ${D.events.length} races in the data. It decides how much a beaten runner is worth. Class is only used to score races. Prices never use it, they only use results from before the round.</p></div>
-  <div class="card"><h3>Data</h3><ul class="rules"><li>D/H 16 to 21 results from liveresultat.orientering.se for ${D.events.length} races between ${dshort(D.events[0].date)} and ${dshort(D.events[D.events.length-1].date)}, each class in a race with at least 3 finishers. Only real competitions count: proper H/D 16, 18, 20 and 21 classes (plain or elite), at least two of those age groups in the race (one for championships), and no club championships, training races, youth series, MTBO or OL-skytte. Relay, patrol and aggregate results are left out.</li>
+  <div class="card"><h3>Data</h3><ul class="rules"><li>D/H 16 to 21 results for ${D.events.length} races between ${dshort(D.events[0].date)} and ${dshort(D.events[D.events.length-1].date)}, each class in a race with at least 3 finishers. Only real competitions count: proper H/D 16, 18, 20 and 21 classes (plain or elite), at least two of those age groups in the race (one for championships), and no club championships, training races, youth series, MTBO or OL-skytte. Relays count on the team's result; patrol and aggregate results are left out.</li>
+  <li>Official results come from Eventor, the Swedish Orienteering Federation's system, for Swedish races only. Results that are not in Eventor yet come from liveresultat.orientering.se and are replaced by the official ones once they are published. Entries for the coming weeks also come from Eventor: a green ✓ marks a runner who has entered a race this week.</li>
   <li>Data is current to ${dshort(D.asof)}. Prices for every round come only from races before it. The page refreshes itself with new races every day.</li><li>Races that are still being run, or that are not on liveresultat yet (like O-Event, 6 to 8 November), are shown in the schedule and count once they have 3 or more finishers in a class.</li>
   <li>A price comes from a runner's rank in their class (H16, D21 and so on) by a weighted average of past points, with recent races counting more. In every class the best runner costs 22k, the top three 20k or more, about the 15th best 14.5k, and the rest of the field down to 2.5k. Runners with no history cost 2.5k.</li>
   <li>The pool is the ${D.runners.filter(x=>x.p).length} runners with at least 3 starts.</li></ul></div>`;
@@ -1947,6 +1967,7 @@ function profile(i){
   showSheet("prof|"+i,nameOf(i),`
    <div class="hd"><div style="display:flex;gap:16px;align-items:center;min-width:0">${avatar(i,"lg")}<div style="min-width:0"><h2>${esc(nameOf(i))}${idleTag(i)}</h2><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}${idle(i)?" · "+(idle(i)===2?"no race in 10 weeks":"did not race last week"):""}</div></div></div><button class="btn" data-close="1">Close</button></div>
    <div class="stats"><div><b>${D.runners[i].p?fm(E.price(i,pr())):"–"}</b><span>Price · ${TIERS[tierOf(i)][1]}</span></div><div><b>${s.starts}</b><span>Starts</span></div><div><b>${fp(s.total)}</b><span>Points</span></div><div><b>${fp(s.weeks?s.perWeek:0)}</b><span>Per week, last 5</span></div>${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Class rating</span></div>`:""}</div>
+   ${(()=>{const e=(ENT[i]||[]).map(k=>D.upcoming[k]).filter(Boolean);return e.length?`<p class="note entline"><span class="entered" aria-hidden="true">✓</span> Entered: ${e.map(u=>`${u.eo?`<a href="https://eventor.orientering.se/Events/Show/${u.eo}" target="_blank" rel="noopener">${esc(compName(u.name))}</a>`:esc(compName(u.name))} (${dshort(u.date)})`).join(", ")}</p>`:""})()}
    ${hist}
    <div class="tbl rtab" style="margin-top:12px"><table><thead><tr><th>Race</th><th>Place</th><th>Behind</th><th>Time</th><th>Points</th></tr></thead><tbody>
    ${groups.map(g=>{const tot=g.list.reduce((a,h)=>a+h.pts,0);return `<tr class="wkhead"><td colspan="2"><b>${g.q<0?"Before round 1":"Round "+D.rounds[g.q].n}</b> <span class="sub">${g.q<0?"not part of a game week":dshort(D.rounds[g.q].start)+" – "+dshort(D.rounds[g.q].end)+", "+g.list.length+" race"+(g.list.length>1?"s":"")}</span></td><td></td><td></td><td class="${tot<0?"neg":"pos"}"><b>${sg(tot)}</b></td></tr>`+g.list.map(h=>{const e=D.events[h.ev];return `<tr><td>${esc(e.name)}<div class="sub">${dshort(e.date)}${e.tier>1?", x"+e.tier:""}</div></td><td>${h.kind?["","DNF","MP","DSQ"][h.kind]:h.rank+" of "+e.n}</td><td>${h.kind?"–":(h.gap/100).toFixed(1)+"%"}</td><td>${h.kind?"–":tm(h.t)}</td><td class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</td></tr>`}).join("")}).join("")||`<tr><td colspan="5" class="note">No results yet.</td></tr>`}
@@ -2056,7 +2077,7 @@ function renderHero(){
   const show=tab==="team"&&!dbOk&&!state.squad.length&&!plan.squad.length&&isLive();
   const w=(t,i0)=>t.split(" ").map((x,k)=>`<span class="w" style="--i:${i0+k}">${esc(x)}</span>`).join(" ");
   $("#hero").innerHTML=show?`<div class="intro"><div><span class="eyebrow">Fantasy orienteering · D/H 16–21</span><h1 style="margin-top:14px">${w("Pick ten.",0)}<br>${w("Double your A team.",2)}<br><em>${w("Beat everyone.",6)}</em></h1>
-   <p>Real results from liveresultat, every week until Christmas.</p>
+   <p>Official results from Eventor, every week until Christmas.</p>
    <div class="row"><button class="btn go" style="width:auto" data-jump="market">Pick your squad</button><button class="btn" data-tab="profile">Create an account</button></div></div>${introCourse()}</div>`:"";
 }
 

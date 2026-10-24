@@ -4,6 +4,15 @@ S = sys.argv[1]
 comps = {c["id"]: c for c in json.load(open(f"{S}/data/comps_clean.json"))}
 MIN_FIN = 3
 EXCLUDE = {36940, 36892, 40850, 37141, 37143, 40373, 40929}   # aggregates, chase duplicates, patrol, some foreign pilots, Natt-Njudung (small local night race)
+# Eventor (official results, written by eventor.py when the nightly job has the key): competitions with ids from
+# 9000000 are Eventor races, and the liveresultat copies of races Eventor has published are dropped
+EV_OFFSET = 9_000_000
+def _j(name, default):
+    try: return json.load(open(f"{S}/data/{name}", encoding="utf-8"))
+    except Exception: return default
+EVMETA = _j("eventor_meta.json", {})
+EXCLUDE |= set(_j("eventor_replaces.json", []))
+print("eventor races", len(EVMETA), "liveresultat copies replaced", len(EXCLUDE) - 7)
 SEASON_START = dt.date(2026, 5, 4)
 TODAY = dt.date.today()
 LAST_ROUND_START = dt.date(2026, 12, 21)
@@ -15,6 +24,9 @@ def finished(r): return r["status"] == 0 and _pos(r["result"])
 def started(r): return finished(r) or r["status"] in (2, 3, 4)
 def monday(d): return d - dt.timedelta(days=d.weekday())
 def tier_of(c):
+    if EVMETA.get(str(c["id"]), {}).get("cls") == 1: return max(1.2, _tier_name(c))   # Eventor: a championship
+    return _tier_name(c)
+def _tier_name(c):
     n = c["name"].lower()
     if "ungdoms-sm" in n: return 1.4
     if ("swedish league" in n or n.startswith("dm") or n.startswith("gm,") or "mästerskapen" in n
@@ -38,7 +50,8 @@ def clean_name(n): return re.sub(r"\s*\((lokal kopia|local copy)[^)]*\)?\s*$", "
 # (Eventor, once connected, decides this properly: only Swedish events count.)
 FOREIGN = re.compile(r"[øæ]|\bstafet\b|\bløb|\bløp|bornholm|kolding|aarhus|århus|odense|aalborg|ålborg|esbjerg|silkeborg|horsens|vejle|herning|viborg|randers|roskilde|allerød|farum|tisvilde|københavn|copenhagen|danmark|denmark|oslo\b|bergen\b|trondheim|stavanger|kristiansand|drammen|lillehammer|tromsø|norge\b|norway", re.I)
 def real_comp(c):
-    if not c["name"].strip() or OTHER_SPORT.search(c["name"]) or TRAINING.search(c["name"]) or FOREIGN.search(c["name"]): return False
+    if not c["name"].strip() or OTHER_SPORT.search(c["name"]) or TRAINING.search(c["name"]): return False
+    if c["id"] < EV_OFFSET and FOREIGN.search(c["name"]): return False   # Eventor races are Swedish by their organiser
     ages = {age_of(n) for n in (_cl.get(str(c["id"])) or []) if age_of(n)}
     return len(ages) >= 2 or (len(ages) >= 1 and tier_of(c) > 1)
 
@@ -66,7 +79,7 @@ for p in glob.glob(f"{S}/data/results/*.json"):
     if d >= TODAY: continue
     g, age = m.group(1), m.group(2)
     # the label keeps the real class (H21 and H21E are different races in the same competition)
-    events.append({"id": ek, "cid": cid, "name": f'{clean_name(c["name"])} ({cn})', "date": c["date"], "d": d, "tier": tier_of(c),
+    events.append({"id": ek, "cid": cid, "eo": EVMETA.get(str(cid), {}).get("eid", 0), "name": f'{clean_name(c["name"])} ({cn})', "date": c["date"], "d": d, "tier": tier_of(c),
                    "g": g, "cls": g + age, "rows": rows, "fin": fin})
 # ---- split classes ----
 # A relay lists each leg as its own class. The same numbered team names ("OK Linné 1") come back on every leg with a
@@ -77,8 +90,8 @@ RELAYNAME = re.compile(r"stafett|relay|relais|staffel|kavle|tiomila|jukola|venla
 def _rows(j): return [r for r in j["rows"] if r["name"] and r["name"].strip().lower() != "vacant"]
 for (cid, g, age, el), P in parts.items():
     c = comps[cid]; d = dt.date.fromisoformat(c["date"]); legs = sorted(P); cls = g + age + el
-    relay = False
-    if len(legs) >= 2:
+    relay = bool(EVMETA.get(str(cid), {}).get("relay"))
+    if len(legs) >= 2 and not relay:
         a, b = _rows(P[legs[0]]), _rows(P[legs[1]])
         ca, cb = {r["club"] for r in a}, {r["club"] for r in b}
         na, nb = {r["name"].strip().lower() for r in a}, {r["name"].strip().lower() for r in b}
@@ -88,7 +101,7 @@ for (cid, g, age, el), P in parts.items():
         for k in legs:
             rows = _rows(P[k]); fin = [r for r in rows if finished(r)]
             if len(fin) < MIN_FIN: continue
-            events.append({"id": f"{cid}:{cls}-{k}", "cid": cid, "name": f'{clean_name(c["name"])} ({cls}-{k})', "date": c["date"], "d": d,
+            events.append({"id": f"{cid}:{cls}-{k}", "cid": cid, "eo": EVMETA.get(str(cid), {}).get("eid", 0), "name": f'{clean_name(c["name"])} ({cls}-{k})', "date": c["date"], "d": d,
                            "tier": tier_of(c), "g": g, "cls": g + age, "rows": rows, "fin": fin})
         continue
     final = {r["club"]: r for r in _rows(P[legs[-1]])}
@@ -101,7 +114,7 @@ for (cid, g, age, el), P in parts.items():
                          "result": t["result"], "status": r["status"] if r["status"] in (2, 3, 4) else (0 if finished(t) else 2), "teamok": finished(t)})
     teams_fin = {r["team"] for r in rows if r["teamok"]}
     if len(teams_fin) < MIN_FIN: continue
-    events.append({"id": f"{cid}:{cls}:relay", "cid": cid, "name": f'{clean_name(c["name"])} ({cls}, relay)', "date": c["date"], "d": d,
+    events.append({"id": f"{cid}:{cls}:relay", "cid": cid, "eo": EVMETA.get(str(cid), {}).get("eid", 0), "name": f'{clean_name(c["name"])} ({cls}, relay)', "date": c["date"], "d": d,
                    "tier": tier_of(c), "g": g, "cls": g + age, "rows": rows, "fin": [r for r in rows if r["teamok"] and finished(r)], "relay": True})
 print("relays", sum(1 for e in events if e.get("relay")), "split heats/stages", sum(1 for e in events if not e.get("relay") and e["id"].count("-") and ":" in e["id"] and e["id"].split(":")[1][-2:-1] == "-"))
 # some organisers publish the same race as two competitions: keep one copy per race, date and class
@@ -248,14 +261,21 @@ pool = sorted([k for k in names if starts[k] >= POOL_MIN], key=lambda k: (names[
 print("runners total", len(names), "pool", len(pool))
 
 # ---- rounds ----
+# A live game week needs at least two big competitions (championships and national events in Eventor, plus Helg utan
+# älg and Novembertävlingarna). Weeks with fewer are skipped, and the site says so as soon as it is known.
+EVWEEKS = _j("eventor_weeks.json", None)
+LIVE_START = dt.date(2026, 11, 2)
 rounds = []
 wk = SEASON_START; i = 0
 while wk <= LAST_ROUND_START:
     ids = [e["id"] for e in events if monday(e["d"]) == wk]
     end = wk + dt.timedelta(days=6)
-    rounds.append({"n": i + 1, "start": wk.isoformat(), "end": end.isoformat(), "events": ids, "final": end < TODAY})
+    big = EVWEEKS.get(wk.isoformat(), 0) if EVWEEKS is not None else None
+    skip = EVWEEKS is not None and wk >= LIVE_START and big < 2
+    rounds.append({"n": i + 1, "start": wk.isoformat(), "end": end.isoformat(), "events": [] if skip else ids, "final": end < TODAY, "big": big, "skip": skip})
     wk += dt.timedelta(days=7); i += 1
 print("rounds", len(rounds), [len(r["events"]) for r in rounds])
+print("skipped live weeks", [r["start"] for r in rounds if r.get("skip")], "big per live week", [(r["start"], r["big"]) for r in rounds if r["start"] >= LIVE_START.isoformat()])
 
 # ---- prices ----
 PTAU, PBETA = float(os.environ.get("PTAU", "37.6")), float(os.environ.get("PBETA", "0.816"))
@@ -298,8 +318,25 @@ for c in comps.values():
         upcoming.append({"id": c["id"], "name": clean_name(c["name"]), "date": c["date"]})
 upcoming.sort(key=lambda x: (x["date"], x["id"]))
 _seen = set(); upcoming = [u for u in upcoming if not ((u["name"].lower(), u["date"]) in _seen or _seen.add((u["name"].lower(), u["date"])))]
+EVUP = _j("eventor_upcoming.json", None)
+if EVUP is not None:
+    upcoming = [{"id": 0, "eo": u["eid"], "name": clean_name(u["name"]), "date": u["date"], "big": 1 if u["big"] else 0}
+                for u in EVUP if (u["ages"] >= 2 or u["cls"] == 1) and not TRAINING.search(u["name"]) and not OTHER_SPORT.search(u["name"])]
+    _seen = set(); upcoming = [u for u in upcoming if not ((u["name"].lower(), u["date"]) in _seen or _seen.add((u["name"].lower(), u["date"])))]
 print("upcoming races", len(upcoming))
-json.dump({"upcoming": upcoming, "events": [{k: v for k, v in e.items() if k not in ("rows", "fin", "d")} for e in events],
+# entries (Eventor): which pool runners have entered which upcoming race, matched like results (name, club, sex)
+entered = collections.defaultdict(list)
+_upix = {}
+for i, u in enumerate(upcoming):
+    if u.get("eo"): _upix.setdefault(u["eo"], []).append(i)
+pset0 = set(pool)
+for en in _j("eventor_entries.json", []):
+    k = rkey({"name": en["name"], "club": en["club"]}, {"g": en["cls"][0]})
+    if k in pset0:
+        for i in _upix.get(en["eid"], []):
+            if i not in entered[k]: entered[k].append(i)
+print("pool runners with entries", len(entered))
+json.dump({"entered": entered, "upcoming": upcoming, "events": [{k: v for k, v in e.items() if k not in ("rows", "fin", "d")} for e in events],
            "rounds": rounds, "pool": pool,
            "names": {k: names[k].most_common(1)[0][0] for k in pool},
            "clubs": {k: pick_club(clubs[k]) for k in pool},

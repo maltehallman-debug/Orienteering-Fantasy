@@ -60,6 +60,7 @@ function makeEngine(D) {
     if (!plan.squad.includes(plan.captain)) e.push("Pick a runner to boost");
     if (plan.chip && !CHIPS.includes(plan.chip)) e.push("Unknown chip");
     if (plan.chip && state.chips[plan.chip]) e.push("Chip already used");
+    if (plan.chip && D.rounds[r] && D.rounds[r].skip) e.push("No chips in a skipped week");
     if (plan.chip === "wc" && !state.squad.length) e.push("Wildcard cannot be used for the opening squad");
     // a bank that went negative only because prices moved never blocks keeping the same squad
     if (!(opts && opts.budget === false)) { const b = bankAfter(state, plan.squad); if (b < 0 && b < state.bank) e.push("Over budget"); }
@@ -69,7 +70,8 @@ function makeEngine(D) {
     const e = planErrors(state, plan, opts);
     if (e.length) throw new Error(e.join("; "));
     const r = state.round, t = transfersFor(state, plan.squad);
-    const penalty = plan.chip === "wc" ? 0 : Math.max(0, t.n - D.freeTransfers) * D.penalty;
+    // a skipped week (fewer than two big competitions) scores nothing, so its transfers are free
+    const penalty = plan.chip === "wc" || (D.rounds[r] && D.rounds[r].skip) ? 0 : Math.max(0, t.n - D.freeTransfers) * D.penalty;
     // "captain" is the boosted runner (field name kept so old saves still load); no fallback if they do not race
     const capLive = starts[r][plan.captain] > 0 ? plan.captain : null;
     const mult = plan.chip === "tc" ? 3 : 2;
@@ -96,7 +98,7 @@ function makeEngine(D) {
     for (let r = start; r <= upto && r < R; r++) {
       st.round = r;
       let p = picks[r] ? { squad: picks[r].squad.slice(), captain: picks[r].captain, chip: picks[r].chip || null } : null, carried = false;
-      if (p && p.chip && st.chips[p.chip]) p.chip = null;
+      if (p && p.chip && (st.chips[p.chip] || D.rounds[r].skip)) p.chip = null;
       if (!p || planErrors(st, p, { budget: false }).length) {
         if (!prev) continue; // no squad yet: the manager joins later
         p = { squad: prev.squad.slice(), captain: prev.captain, chip: null }; carried = true;
