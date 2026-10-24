@@ -1283,7 +1283,7 @@ html.glass .filters input[type=search],html.glass .filters select,html.glass inp
 html.glass .tbl tbody tr,html.glass .tbl thead,html.glass th,html.glass td{background:transparent}
 html.glass .tbl tbody tr+tr td,html.glass th,html.glass td{border-color:rgba(15,23,42,.06)}
 html.glass .nav{background:rgba(255,255,255,.34)}
-html.glass .modal .sheet{background:rgba(255,255,255,.5);-webkit-backdrop-filter:blur(34px) saturate(200%) brightness(1.06);backdrop-filter:blur(34px) saturate(200%) brightness(1.06)}
+html.glass .modal .sheet{background:rgba(255,255,255,.82);-webkit-backdrop-filter:blur(34px) saturate(200%) brightness(1.06);backdrop-filter:blur(34px) saturate(200%) brightness(1.06)}
 html.glass .btn:not(.on):not(.go):not(.light):not(.quiet),html.glass .boost:not(.on),html.glass .sqc-ctl .sw,html.glass .sqc-ctl .rm{
   background:linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.3));-webkit-backdrop-filter:blur(12px) saturate(180%);backdrop-filter:blur(12px) saturate(180%)}
 @media (max-width:760px){html.glass .tabbar{background:rgba(255,255,255,.26)}html.glass .tabbar .ind{background:rgba(255,255,255,.5)}}
@@ -1306,7 +1306,31 @@ html.glass .btn:not(.on):not(.go):not(.light):not(.quiet),html.glass .boost:not(
 .delbox{margin-top:12px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--warn) 9%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 35%,transparent)}
 .btn.danger{background:#dc2626;color:#fff;box-shadow:0 8px 18px -10px #dc2626}
 .adm-row.col{flex-direction:column;align-items:stretch;gap:8px}
+.flagtag{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;color:#b91c1c;background:rgba(220,38,38,.1)}
 .card.admin details summary{cursor:pointer;color:var(--text-2);font-size:14px}
+
+/* the forced rename: red and serious. A blood-red sheet over a red-tinted page, a pulsing warning sign, one shake. */
+.modal:has(.sheet[data-key="rename"]){background:rgba(69,10,10,.62)!important;-webkit-backdrop-filter:blur(6px) saturate(140%);backdrop-filter:blur(6px) saturate(140%)}
+#modal .sheet[data-key="rename"],html.glass #modal .sheet[data-key="rename"]{color:#fff;background:radial-gradient(120% 70% at 50% 0%,#dc2626 0%,#991b1b 45%,#450a0a 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 0 0 1px rgba(254,202,202,.25),0 0 0 2px #ef4444,0 0 60px -6px rgba(239,68,68,.75),0 30px 60px -20px rgba(0,0,0,.6)}
+.sheet[data-key="rename"] .rn-warn{display:grid;justify-items:center;text-align:center;gap:4px;margin:4px 0 14px}
+.sheet[data-key="rename"] .rn-warn svg{width:64px;height:64px;color:#fecaca;filter:drop-shadow(0 0 14px rgba(254,202,202,.7))}
+.sheet[data-key="rename"] .rn-k{font:700 11px/1.4 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#fecaca}
+.sheet[data-key="rename"] h2{margin:0;font-size:38px;line-height:1;color:#fff;text-transform:uppercase;text-shadow:0 2px 0 rgba(0,0,0,.35),0 0 24px rgba(254,202,202,.45)}
+.sheet[data-key="rename"] .rn-p{margin:0 0 16px;color:#fee2e2;text-align:center}
+.sheet[data-key="rename"] .rn-p b{color:#fff}
+.sheet[data-key="rename"] label{color:#fecaca}
+.sheet[data-key="rename"] input.name{background:rgba(0,0,0,.28)!important;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(254,202,202,.55)!important}
+.sheet[data-key="rename"] input.name:focus{box-shadow:inset 0 0 0 2px #fff,0 0 0 4px rgba(255,255,255,.18)!important;outline:none}
+.sheet[data-key="rename"] .row{justify-content:center}
+.sheet[data-key="rename"] #rnSave{background:#fff!important;color:#991b1b!important;font-weight:800;padding:13px 34px;box-shadow:0 10px 26px -8px rgba(0,0,0,.55)!important}
+.sheet[data-key="rename"] .note{color:#fff!important;text-align:center;font-weight:600}
+@media (prefers-reduced-motion:no-preference){
+  .sheet[data-key="rename"]{animation:rnShake .55s cubic-bezier(.36,.07,.19,.97) .35s both}
+  .sheet[data-key="rename"] .rn-warn svg{animation:rnPulse 1.6s ease-in-out infinite}
+  @keyframes rnShake{10%,90%{translate:-2px 0}20%,80%{translate:4px 0}30%,50%,70%{translate:-7px 0}40%,60%{translate:7px 0}}
+  @keyframes rnPulse{0%,100%{scale:1;opacity:1}50%{scale:1.1;opacity:.82}}
+}
 </style>
 </head>
 <body>
@@ -2309,6 +2333,7 @@ function closeModal(){const md=document.querySelector("#modal .modal");if(!md)re
   if(RM||!getComputedStyle(md).animationName){$("#modal").innerHTML="";return}
   md.classList.add("closing");const end=()=>{if(md.isConnected&&md.classList.contains("closing"))$("#modal").innerHTML=""};md.addEventListener("animationend",e=>{if(e.target===md.querySelector(".sheet"))end()});setTimeout(end,320)}
 function showSheet(key,label,inner,wide){
+  if(myFlag&&key!=="rename")return renameSheet();   /* a flagged name comes first */
   const cur=document.querySelector("#modal .sheet");
   if(cur&&cur.dataset.key===key){cur.innerHTML=inner;return}
   $("#modal").innerHTML=`<div class="modal" data-close="1"><div class="sheet" data-key="${esc(key)}" role="dialog" aria-modal="true" aria-label="${esc(label)}"${wide?' style="max-width:820px"':""}>${inner}</div></div>`;
@@ -2601,6 +2626,7 @@ let ovr=[],ovrMsg="",ovrBusy=false,ovrAdd="",applyMsg="",applyBusy=false;
 const BADW=/(fitta|fittor|knull|fuck|cunt|nigg|whore|slut|pussy|penis|vagina|porn|våldt|hitler|nazi|bitch)/,BADS=/(^|[^a-zåäö])(kuk|snopp|hora|horor|bög|rape|cock|porr|neger|balle|slyn)/;
 const nameOk=t=>{if(!t)return true;const x=String(t).toLowerCase().replace(/[013457@$]/g,c=>({"0":"o","1":"i","3":"e","4":"a","5":"s","7":"t","@":"a","$":"s"})[c]);return !BADW.test(x)&&!BADS.test(x)};
 /* admin: removal requests and managers' names */
+let myFlag=null,myPf={name:"",team:""},rnF={name:"",team:""},rnMsg="",rnBusy=false;
 let rmReqs=[],allPf=[],modMsg="",rmF={runner:"",msg:"",contact:""},rmStat="",rmBusy=false,delAsk=false,delBusy=false,delMsg="";
 /* "Apply now": a server function checks you are an admin and starts the data refresh on GitHub straight away */
 async function applyNow(){
@@ -2612,7 +2638,7 @@ async function applyNow(){
   applyBusy=false;render();
 }
 async function loadOvr(){if(!cloud.admin)return;try{const [q,r,p]=await Promise.all([cloud.sb.from("game_overrides").select("id,kind,ref,label,created_at").order("created_at"),
-  cloud.sb.from("removal_requests").select("id,runner,message,contact,created_at").eq("handled",false).order("created_at"),cloud.sb.from("profiles").select("id,name,team").order("created_at").limit(2000)]);
+  cloud.sb.from("removal_requests").select("id,runner,message,contact,created_at").eq("handled",false).order("created_at"),cloud.sb.from("profiles").select("id,name,team,name_flag").order("created_at").limit(2000)]);
   if(!q.error)ovr=q.data||[];if(!r.error)rmReqs=r.data||[];if(!p.error)allPf=p.data||[]}catch(e){}render()}
 async function modProfile(id,patch,what){try{const q=await cloud.sb.from("profiles").update(patch).eq("id",id);modMsg=q.error?"Could not save: "+q.error.message:what;pfCache.delete(id)}catch(e){modMsg="Could not save."}await loadOvr()}
 async function rmDone(id){try{await cloud.sb.from("removal_requests").update({handled:true}).eq("id",id)}catch(e){}await loadOvr()}
@@ -2671,11 +2697,14 @@ function adminModCard(){
   const match=t=>{const w=String(t).toLowerCase().split(/[\s,]+/).filter(x=>x.length>1);if(!w.length)return [];const out=[];D.runners.forEach((r,i)=>{const n=(r.n+" "+r.c).toLowerCase();if(w.filter(x=>n.includes(x)).length>=Math.min(2,w.length))out.push(i)});return out.slice(0,6)};
   const req=x=>`<div class="adm-row col"><div><b>${esc(x.runner)}</b> <span class="sub">${esc(dshort(String(x.created_at).slice(0,10)))}${x.contact?" · "+esc(x.contact):""}</span>${x.message?`<p class="note" style="margin:4px 0 0">${esc(x.message)}</p>`:""}</div>
     <div class="row">${match(x.runner).map(i=>`<button class="btn" data-rmhide="${esc(D.runners[i].id)}" data-rmlabel="${esc(nameOf(i)+", "+clubOf(i))}">Hide ${esc(nameOf(i))} · ${esc(clubOf(i))} · ${esc(D.runners[i].k)}</button>`).join("")||'<span class="note">No runner with that name in the game.</span>'}<button class="btn quiet" data-rmdone="${x.id}">Done</button></div></div>`;
-  const bad=allPf.filter(p=>!nameOk(p.name)||!nameOk(p.team)),pf=p=>`<div class="adm-row"><div><b>${esc(p.team||"No team name")}</b> <span class="sub">${esc(p.name||"")}</span></div><div class="row">${p.team?`<button class="btn" data-pfteam="${esc(p.id)}">Clear team name</button>`:""}${p.name!=="Manager"?`<button class="btn" data-pfname="${esc(p.id)}">Reset name</button>`:""}</div></div>`;
+  const bad=allPf.filter(p=>!nameOk(p.name)||!nameOk(p.team)||p.name_flag),pf=p=>{const f=p.name_flag,tf=f==="team"||f==="both",nf=f==="name"||f==="both",flag=(t,n)=>t&&n?"both":t?"team":n?"name":"";
+    return `<div class="adm-row col"><div><b>${esc(p.team||"No team name")}</b> <span class="sub">${esc(p.name||"")}</span>${f?` <span class="flagtag">Must choose a new ${f==="both"?"name and team name":f==="team"?"team name":"name"}</span>`:""}</div><div class="row">
+      ${p.team?`<button class="btn ${tf?"on":""}" data-pfflag="${esc(p.id)}" data-flag="${flag(!tf,nf)}">${tf?"Team name: undo":"Team name not allowed"}</button>`:""}
+      <button class="btn ${nf?"on":""}" data-pfflag="${esc(p.id)}" data-flag="${flag(tf,!nf)}">${nf?"Name: undo":"Name not allowed"}</button></div></div>`};
   return `<div class="card admin"><h3>Admin · runners and managers</h3>
    <h4>Asked to be left out (${rmReqs.length})</h4><div class="adm-list">${rmReqs.map(req).join("")||'<p class="note">No requests.</p>'}</div>
    ${hidden.length?`<h4>Hidden runners</h4><div class="adm-list">${hidden.map(o=>`<div class="adm-row"><div><b>${esc(o.label||o.ref)}</b> <span class="sub">Left out of the game</span></div><button class="btn" data-rmshow="${esc(o.ref)}">Undo</button></div>`).join("")}</div>`:""}
-   <h4>Names that break the rules (${bad.length})</h4><div class="adm-list">${bad.map(pf).join("")||'<p class="note">None.</p>'}</div>
+   <h4>Names to look at (${bad.length})</h4><p class="note" style="margin:0 0 8px">Mark a name as not allowed and that manager must choose a new one the next time they open the game. Until then others see "Manager".</p><div class="adm-list">${bad.map(pf).join("")||'<p class="note">None.</p>'}</div>
    <details style="margin-top:10px"><summary>All managers (${allPf.length})</summary><div class="adm-list">${allPf.map(pf).join("")}</div></details>
    ${modMsg?`<p class="note" style="margin:10px 0 0">${esc(modMsg)}</p>`:""}</div>`;
 }
@@ -2780,6 +2809,7 @@ document.addEventListener("click",ev=>{
   const mg=ev.target.closest("[data-mgr]");
   if(mg&&!ev.target.closest("button")){const [c,id]=mg.dataset.mgr.split("|");managerSheet(c,id,null);return}
   const t=ev.target.closest("button,.modal");if(!t)return;const d=t.dataset;
+  if(d.close&&myFlag&&document.querySelector('#modal .sheet[data-key="rename"]'))return;
   if(d.close&&(ev.target===t||t.tagName==="BUTTON")){closeModal();profileOpen=null;phForm=null;phMsg="";return}
   if(d.prof!==undefined){profile(+d.prof);return}
   if(d.week!==undefined){weekSheet(+d.week);return}
@@ -2789,11 +2819,11 @@ document.addEventListener("click",ev=>{
   if(d.rmhide){setOvr("runner_hide",d.rmhide,d.rmlabel||"",true);return}
   if(d.rmshow){setOvr("runner_hide",d.rmshow,"",false);return}
   if(d.rmdone){rmDone(+d.rmdone);return}
-  if(d.pfteam){modProfile(d.pfteam,{team:null},"Team name cleared.");return}
-  if(d.pfname){modProfile(d.pfname,{name:"Manager"},"Name reset to Manager.");return}
+  if(d.pfflag){modProfile(d.pfflag,{name_flag:d.flag||null},d.flag?"Saved. They must choose a new name the next time they open the game.":"Flag removed.");return}
   if(d.rcadd){setOvr("race_add",d.rcadd,"",false);return}
   if(t.id==="applyNow"){applyNow();return}
   if(t.id==="rmSend"){sendRemoval();return}
+  if(t.id==="rnSave"){saveRename();return}
   if(t.id==="delAcc"){delAsk=true;delMsg="";render();return}
   if(t.id==="delNo"){delAsk=false;render();return}
   if(t.id==="delYes"){deleteAccount();return}
@@ -2854,7 +2884,7 @@ document.addEventListener("click",ev=>{
   if(d.leave){const c=d.leave;myLeagues=myLeagues.filter(x=>x!==c);delete myLgn[c];if(leagueUnsubs[c]){try{leagueUnsubs[c]()}catch(e){}delete leagueUnsubs[c]}if(cloud.sb&&cloud.uid)cloud.sb.from("league_members").delete().eq("code",c).eq("user_id",cloud.uid).then(()=>{});leagueMsg="";save();render();return}
 });
 document.addEventListener("keydown",ev=>{
-  if(ev.key==="Escape"){closeModal();profileOpen=null;phForm=null;phMsg=""}
+  if(ev.key==="Escape"&&!(myFlag&&document.querySelector('#modal .sheet[data-key="rename"]'))){closeModal();profileOpen=null;phForm=null;phMsg=""}
   if((ev.key==="Enter"||ev.key===" ")&&ev.target.matches&&ev.target.matches("[data-mgr]")){ev.preventDefault();const [c,id]=ev.target.dataset.mgr.split("|");managerSheet(c,id,null);return}
   if((ev.key==="Enter"||ev.key===" ")&&ev.target.matches&&ev.target.matches("[data-ctrl]")){ev.preventDefault();ev.target.dispatchEvent(new MouseEvent("click",{bubbles:true}))}
 });
@@ -2863,6 +2893,8 @@ document.addEventListener("input",ev=>{const t=ev.target;
   if(t.id==="mgrName"){mgrName=t.value.slice(0,24);nameNote();save()}
   if(t.id==="teamName"){myTeam=t.value.slice(0,30);nameNote();save()}
   if(t.id==="rmRunner")rmF.runner=t.value.slice(0,120);
+  if(t.id==="rnName")rnF.name=t.value.slice(0,24);
+  if(t.id==="rnTeam")rnF.team=t.value.slice(0,30);
   if(t.id==="rmMsg")rmF.msg=t.value.slice(0,1000);
   if(t.id==="rmContact")rmF.contact=t.value.slice(0,200);
   if(t.id==="newLeague")newLeague=t.value;
@@ -2901,6 +2933,30 @@ function welcomeSheet(kind){
 const SB_URL="https://hjpfmubvpvftxyyemltn.supabase.co",SB_KEY="sb_publishable_Ent2RuVrh-iKyjT1or8gOw_UFdZ74ch";
 let authEmail="",authPw="",authName="",authMode=pendingJoin?"up":"in",authMsg="",authBusy=false,copied="";
 function queueCloud(){if(!cloud.ready)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,1200)}
+/* an admin has flagged this manager's name: a sheet that stays until they choose a new one */
+function renameSheet(){
+  if(!myFlag)return;const nf=myFlag==="name"||myFlag==="both",tf=myFlag==="team"||myFlag==="both";
+  const what=nf&&tf?"Your manager name and team name":nf?"Your manager name":"Your team name";
+  showSheet("rename","Choose a new name",`<div class="rn-warn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 1.6 21h20.8z" fill="currentColor"/><path d="M12 9v5.5M12 17.6v.4" stroke="#7f1d1d" stroke-width="2.4" stroke-linecap="round"/></svg>
+   <span class="rn-k">Warning · rules broken</span><h2>Name not allowed</h2></div>
+   <p class="rn-p">${what} ${nf&&tf?"break":"breaks"} the terms of Orienteering Fantasy. Names everyone can see must not be crude, offensive or hurtful. <b>Choose a new one to keep playing.</b> Breaking the rules again can get your account removed.</p>
+   ${nf?`<div class="field"><label for="rnName">New manager name</label><input class="name" id="rnName" maxlength="24" value="${esc(rnF.name)}" autocapitalize="words" autocomplete="off"></div>`:""}
+   ${tf?`<div class="field"><label for="rnTeam">New team name</label><input class="name" id="rnTeam" maxlength="30" value="${esc(rnF.team)}" autocapitalize="words" autocomplete="off"></div>`:""}
+   <div class="row" style="margin-top:12px"><button class="btn on" id="rnSave" ${rnBusy?"disabled":""}>${rnBusy?"Saving…":"Save"}</button></div>
+   ${rnMsg?`<p class="note" style="margin:10px 0 0;color:var(--warn)">${esc(rnMsg)}</p>`:""}`);
+}
+async function saveRename(){
+  if(rnBusy||!myFlag)return;const nf=myFlag==="name"||myFlag==="both",tf=myFlag==="team"||myFlag==="both",up={name_flag:null};
+  const nm=rnF.name.trim(),tm=rnF.team.trim();
+  if(nf){if(!nm){rnMsg="Write a new manager name.";return renameSheet()}if(nm.toLowerCase()===myPf.name.toLowerCase()){rnMsg="Choose a different manager name.";return renameSheet()}if(!nameOk(nm)){rnMsg="That name is not allowed either.";return renameSheet()}up.name=nm.slice(0,24)}
+  if(tf){if(!tm){rnMsg="Write a new team name.";return renameSheet()}if(tm.toLowerCase()===myPf.team.toLowerCase()){rnMsg="Choose a different team name.";return renameSheet()}if(!nameOk(tm)){rnMsg="That team name is not allowed either.";return renameSheet()}up.team=tm.slice(0,30)}
+  rnBusy=true;rnMsg="";renameSheet();
+  try{const q=await cloud.sb.from("profiles").update(up).eq("id",cloud.uid);if(q.error)throw q.error;
+    if(up.name){mgrName=up.name;myPf.name=up.name}if(up.team){myTeam=up.team;myPf.team=up.team}myFlag=null;rnF={name:"",team:""};pfCache.delete(cloud.uid);
+    rnBusy=false;closeModal();save();render();return}
+  catch(e){rnMsg=/not allowed/.test(e.message||"")?"That name is not allowed either.":"Could not save. Try again."}
+  rnBusy=false;renameSheet();
+}
 function nameNote(){const e=document.getElementById("nameMsg");if(e)e.textContent=nameOk(mgrName)&&nameOk(myTeam)?"":"That name is not allowed here. Pick another one: everyone in the game sees it."}
 function setStat(m){cloudMsg=m;const e=document.getElementById("cloudstat");if(e)e.textContent=m}
 async function pushCloud(){
@@ -2975,7 +3031,7 @@ const sqUsers=()=>{const u=new Set();for(let r=LIVE;r<openRound()&&r<E.R;r++){co
 const pfCache=new Map();
 async function profilesFor(ids){
   const sb=cloud.sb,now=Date.now(),need=ids.filter(id=>id!==cloud.uid&&(!pfCache.has(id)||now-pfCache.get(id).t>6e5));
-  for(let k=0;k<need.length;k+=200){const q=await sb.from("profiles").select("id,name,team,avatar").in("id",need.slice(k,k+200));if(q.error)return false;(q.data||[]).forEach(p=>pfCache.set(p.id,{t:now,name:p.name,team:p.team,avatar:p.avatar}))}
+  for(let k=0;k<need.length;k+=200){const q=await sb.from("profiles").select("id,name,team,avatar,name_flag").in("id",need.slice(k,k+200));if(q.error)return false;(q.data||[]).forEach(p=>{const f=p.name_flag;pfCache.set(p.id,{t:now,name:f==="name"||f==="both"?"Manager":p.name,team:f==="team"||f==="both"?null:p.team,avatar:p.avatar})})}
   return true;
 }
 function buildRows(ids){
@@ -3032,7 +3088,7 @@ async function onSession(session){
   cloud.uid=session.user.id;cloud.email=session.user.email||"";dbOk=true;cloud.canWrite=true;localUid=cloud.uid;
   let loaded=false;
   try{
-    const [sv,pf,mb]=await Promise.all([cloud.sb.from("saves").select("state").eq("user_id",cloud.uid).maybeSingle(),cloud.sb.from("profiles").select("name,team,avatar").eq("id",cloud.uid).maybeSingle(),cloud.sb.from("league_members").select("code").eq("user_id",cloud.uid)]);
+    const [sv,pf,mb]=await Promise.all([cloud.sb.from("saves").select("state").eq("user_id",cloud.uid).maybeSingle(),cloud.sb.from("profiles").select("name,team,avatar,name_flag").eq("id",cloud.uid).maybeSingle(),cloud.sb.from("league_members").select("code").eq("user_id",cloud.uid)]);
     if(sv.error||pf.error||mb.error)throw new Error("load");
     const v=sv.data&&sv.data.state;
     /* the account's save wins over a game played signed out; between two copies of the same account's game, the newer one wins */
@@ -3043,7 +3099,7 @@ async function onSession(session){
       if(state.squad.length&&!plan.squad.length)startRound();fixLeaders();if(lock)lock.vice=null;
     }
     if(!mgrName&&pf.data&&pf.data.name)mgrName=pf.data.name;
-    if(pf.data){if(!myTeam&&pf.data.team)myTeam=pf.data.team;myAv=typeof pf.data.avatar==="string"&&pf.data.avatar.startsWith(cloud.uid+"/")?pf.data.avatar:null}
+    if(pf.data){myFlag=pf.data.name_flag||null;myPf={name:pf.data.name||"",team:pf.data.team||""};if(!myTeam&&pf.data.team)myTeam=pf.data.team;myAv=typeof pf.data.avatar==="string"&&pf.data.avatar.startsWith(cloud.uid+"/")?pf.data.avatar:null}
     try{await mergeLineups()}catch(e){throw new Error("lineups")}
     if(isLive())liveSync();
     (mb.data||[]).forEach(r=>{if(!myLeagues.includes(r.code))myLeagues.push(r.code)});
@@ -3058,6 +3114,7 @@ async function onSession(session){
   if(pendingJoin){const c=pendingJoin;if(myLeagues.includes(c)){clearPending();leagueMsg="You are already in "+lgName(c)+"."}
     else{const ok=await joinLeague(c,"");if(ok||/No league has that code|look right/.test(leagueMsg))clearPending()}tab="leagues"}
   render();
+  if(myFlag){renameSheet();return}
   if(AUTH_BACK.ok&&!welcomed){welcomed=true;welcomeSheet("ok")}
 }
 async function initCloud(){
