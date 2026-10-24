@@ -969,7 +969,7 @@ body{font-feature-settings:"tnum" 0;-webkit-font-smoothing:antialiased}
 .lc .av.lg::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 2cqw 3cqw -1cqw rgba(0,0,0,.28),inset 0 -1cqw 2cqw -1cqw rgba(255,255,255,.4);pointer-events:none;z-index:1}
 .lc-cap i{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 4px -1px rgba(0,0,0,.35)}
 .lineup,.squadwrap .squad.ab{perspective:900px}
-.lc{transform-style:preserve-3d;will-change:transform}
+.lc{transform-style:flat}
 @media (prefers-reduced-motion:no-preference){.lineup .lc{transition:transform .5s var(--spring)}.sqc .lc{transition:transform .5s var(--spring)}}
 /* cursor: cards lean hard toward it and the glare slides with it; panels get a soft light under it */
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
@@ -1107,6 +1107,24 @@ nav.tabs .ind.on{opacity:1}
 .sqc-sh:has(.fifa-bronze){--glow:rgba(190,105,45,.5)}
 .sqc.boosted .sqc-sh{--glow:color-mix(in srgb,var(--accent) 60%,transparent)}
 .sqc.tilt .sqc-sh{filter:drop-shadow(0 4px 4px var(--cs1)) drop-shadow(0 26px 24px var(--cs2)) drop-shadow(0 8px 26px var(--glow))}
+/* card shadow and glow: soft layers behind each card instead of a CSS filter, so phones (Safari) show them too */
+.sqc-sh,.sqc.tilt .sqc-sh,.sqc.boosted .sqc-sh{filter:none}
+.sqc-sh{position:relative;isolation:isolate}
+.sqc-sh::before{content:"";position:absolute;inset:4% -7% -2%;z-index:-1;pointer-events:none;background:radial-gradient(50% 50% at 50% 52%,var(--glow) 0,transparent 100%);opacity:.75;transition:opacity .45s var(--ease-out),transform .45s var(--ease-out)}
+.sqc-sh::after{content:"";position:absolute;left:16%;right:16%;bottom:-6%;height:12%;z-index:-1;pointer-events:none;background:radial-gradient(50% 50% at 50% 50%,rgba(15,23,42,.34) 0,transparent 100%);transition:transform .45s var(--ease-out),opacity .45s}
+.sqc.tilt .sqc-sh::before{opacity:1;transform:scale(1.05)}
+.sqc.tilt .sqc-sh::after{transform:translateY(8px) scaleX(1.1);opacity:.8}
+.sqc.sel .sqc-sh::before{--glow:color-mix(in srgb,var(--accent) 65%,transparent);opacity:1}
+/* the runner list fits a phone: fixed columns, the name takes what is left and long names end in … */
+@media (max-width:620px){
+  .mkt table{table-layout:fixed;width:100%}
+  .mkt th:nth-child(3),.mkt td:nth-child(3){width:58px}
+  .mkt th:nth-child(7),.mkt td:nth-child(7){width:40px}
+  .mkt th:nth-child(10),.mkt td:nth-child(10){width:66px}
+  .mkt td:first-child{max-width:none}
+  .mkt .who-wrap>div{max-width:none;min-width:0;overflow:hidden}
+  .mkt td:last-child .btn{padding:8px 9px;font-size:14px}
+}
 </style>
 </head>
 <body>
@@ -1173,14 +1191,40 @@ function setTheme(name,from){
 {const t=THEMES.find(x=>x[0]===curTheme());const m=document.getElementById("themeColor");if(t&&m)m.content=t[2]}
 /* ---------- the map behind the page: contour lines around a few hills, every fifth one an index contour ---------- */
 function drawTerrain(){
+  /* contour lines traced (marching squares) from one height field made of a few hills and gentle ridges, the way a
+     real map works: lines of different heights can never cross. Every fifth line is an index contour. */
   const el=document.getElementById("terrain");if(!el)return;
-  const W=1600,H=1000,rnd=Math.random;let out="";
-  const blob=(cx,cy,r,ph)=>{let d="";for(let k=0;k<=72;k++){const a=k/72*Math.PI*2,rr=r*(1+.14*Math.sin(2*a+ph[0])+.08*Math.sin(3*a+ph[1])+.05*Math.sin(5*a+ph[2]));d+=(k?"L":"M")+(cx+Math.cos(a)*rr*1.25).toFixed(1)+" "+(cy+Math.sin(a)*rr).toFixed(1)}return d+"Z"};
-  for(let v=0;v<5;v++){const ph=[rnd()*6,rnd()*6,rnd()*6];out+=`<path class="veg" d="${blob(rnd()*W,rnd()*H,60+rnd()*120,ph)}"/>`}
-  {const ph=[rnd()*6,rnd()*6,rnd()*6];out+=`<path class="lake" d="${blob(rnd()*W,rnd()*H,40+rnd()*50,ph)}"/>`}
-  for(let h=0;h<6;h++){
-    const cx=rnd()*W,cy=rnd()*H,n=5+Math.floor(rnd()*8),step=22+rnd()*14,ph=[rnd()*6,rnd()*6,rnd()*6];
-    for(let l=1;l<=n;l++){const q=ph.map((p,i)=>p+l*.09*(i+1));out+=`<path class="${l%5===0?"ix":""}" d="${blob(cx,cy,l*step,q)}"/>`}
+  const W=1600,H=1000,G=14,nx=Math.ceil(W/G)+1,ny=Math.ceil(H/G)+1,rnd=Math.random;
+  const hills=[];for(let k=0;k<7;k++)hills.push({x:rnd()*W,y:rnd()*H,a:(rnd()<.8?1:-.6)*(60+rnd()*90),sx:140+rnd()*260,sy:120+rnd()*220,r:rnd()*Math.PI});
+  const ph=[rnd()*6,rnd()*6];
+  const h=new Float32Array(nx*ny);let lo=1e9,hi=-1e9;
+  for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const x=i*G,y=j*G;let v=12*Math.sin(x/430+ph[0])+10*Math.cos(y/370+ph[1]);
+    for(const q of hills){const c=Math.cos(q.r),s2=Math.sin(q.r),dx=x-q.x,dy=y-q.y,u=(dx*c+dy*s2)/q.sx,w=(-dx*s2+dy*c)/q.sy;v+=q.a*Math.exp(-(u*u+w*w))}
+    h[j*nx+i]=v;if(v<lo)lo=v;if(v>hi)hi=v}
+  const step=(hi-lo)/26;let out="";
+  for(let L=1;L<26;L++){
+    const z=lo+L*step,segs=[];
+    const P=(i1,j1,i2,j2)=>{const a=h[j1*nx+i1],b=h[j2*nx+i2],t=(z-a)/(b-a);return [(i1+(i2-i1)*t)*G,(j1+(j2-j1)*t)*G]};
+    for(let j=0;j<ny-1;j++)for(let i=0;i<nx-1;i++){
+      const a=h[j*nx+i]>z,b=h[j*nx+i+1]>z,c=h[(j+1)*nx+i+1]>z,d=h[(j+1)*nx+i]>z,k=(a?8:0)|(b?4:0)|(c?2:0)|(d?1:0);
+      if(k===0||k===15)continue;
+      const T=()=>P(i,j,i+1,j),R=()=>P(i+1,j,i+1,j+1),B=()=>P(i,j+1,i+1,j+1),Lf=()=>P(i,j,i,j+1);
+      switch(k){case 1:case 14:segs.push([Lf(),B()]);break;case 2:case 13:segs.push([B(),R()]);break;case 3:case 12:segs.push([Lf(),R()]);break;
+        case 4:case 11:segs.push([T(),R()]);break;case 6:case 9:segs.push([T(),B()]);break;case 7:case 8:segs.push([Lf(),T()]);break;
+        case 5:segs.push([Lf(),T()],[B(),R()]);break;case 10:segs.push([T(),R()],[Lf(),B()]);break}
+    }
+    /* join the little pieces into lines and draw them as smooth curves */
+    const key=p=>p[0].toFixed(1)+","+p[1].toFixed(1),ends=new Map();
+    segs.forEach((sg,n)=>{for(const e of [0,1]){const kk=key(sg[e]);(ends.get(kk)||ends.set(kk,[]).get(kk)).push(n)}});
+    const used=new Uint8Array(segs.length);let d="";
+    for(let n=0;n<segs.length;n++){if(used[n])continue;used[n]=1;let line=[segs[n][0],segs[n][1]];
+      for(const dir of [1,0]){let grow=true;while(grow){grow=false;const endp=dir?line[line.length-1]:line[0];for(const m of ends.get(key(endp))||[]){if(used[m])continue;used[m]=1;const sg=segs[m],nxt=key(sg[0])===key(endp)?sg[1]:sg[0];dir?line.push(nxt):line.unshift(nxt);grow=true;break}}}
+      if(line.length<4)continue;
+      d+="M"+line[0][0].toFixed(1)+" "+line[0][1].toFixed(1);
+      for(let q=1;q<line.length-1;q++){const m0=(line[q][0]+line[q+1][0])/2,m1=(line[q][1]+line[q+1][1])/2;d+="Q"+line[q][0].toFixed(1)+" "+line[q][1].toFixed(1)+" "+m0.toFixed(1)+" "+m1.toFixed(1)}
+      d+="L"+line[line.length-1][0].toFixed(1)+" "+line[line.length-1][1].toFixed(1);
+    }
+    if(d)out+=`<path class="${L%5===0?"ix":""}" d="${d}"/>`;
   }
   el.setAttribute("viewBox",`0 0 ${W} ${H}`);el.innerHTML=out;
 }
