@@ -33,7 +33,10 @@ try{var t=localStorage.getItem("of-theme");if(t==="night"||t==="forest")t="dark"
   --accent:#059669; --accent-press:#047857; --accent-ink:#ffffff; --accent-tint:rgba(5,150,105,.09); --accent-line:rgba(5,150,105,.42);
   --c2:#0d9488; --c3:#65a30d; --contour:#94a3b8;
   --good:#16a34a; --bad:#dc2626; --warn:#d97706;
-  --hdr:rgba(255,255,255,.85); --shadow:0 1px 2px rgba(15,23,42,.05),0 8px 24px -16px rgba(15,23,42,.25);
+  --hdr:rgba(255,255,255,.85); --shadow:inset 0 1px 0 rgba(255,255,255,.95),0 1px 1px rgba(15,23,42,.06),0 3px 6px -2px rgba(15,23,42,.07),0 14px 28px -12px rgba(15,23,42,.2),0 34px 64px -32px rgba(15,23,42,.24);
+  --shadow-lift:inset 0 1px 0 rgba(255,255,255,.95),0 2px 3px rgba(15,23,42,.07),0 10px 18px -6px rgba(15,23,42,.14),0 30px 50px -18px rgba(15,23,42,.3);
+  --surface-grad:linear-gradient(180deg,#ffffff 0%,#fbfcfd 60%,#f6f8fb 100%);
+  --cs1:rgba(15,23,42,.28);--cs2:rgba(15,23,42,.22);
   --contour-op:.35; color-scheme:light;
 }
 /* DARK: the same, with the lights off */
@@ -44,7 +47,10 @@ try{var t=localStorage.getItem("of-theme");if(t==="night"||t==="forest")t="dark"
   --accent:#34d399; --accent-press:#10b981; --accent-ink:#04261a; --accent-tint:rgba(52,211,153,.12); --accent-line:rgba(52,211,153,.5);
   --c2:#2dd4bf; --c3:#a3e635; --contour:#475569;
   --good:#4ade80; --bad:#f87171; --warn:#fbbf24;
-  --hdr:rgba(11,17,32,.85); --shadow:0 10px 30px -18px rgba(0,0,0,.8);
+  --hdr:rgba(11,17,32,.85); --shadow:inset 0 1px 0 rgba(255,255,255,.07),0 1px 1px rgba(0,0,0,.5),0 4px 8px -2px rgba(0,0,0,.4),0 16px 30px -12px rgba(0,0,0,.7),0 36px 64px -30px rgba(0,0,0,.8);
+  --shadow-lift:inset 0 1px 0 rgba(255,255,255,.09),0 2px 4px rgba(0,0,0,.5),0 12px 22px -6px rgba(0,0,0,.6),0 34px 56px -18px rgba(0,0,0,.85);
+  --surface-grad:linear-gradient(180deg,#172133 0%,#121a2b 55%,#0f1726 100%);
+  --cs1:rgba(0,0,0,.6);--cs2:rgba(0,0,0,.55);
   --contour-op:.4; color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -486,8 +492,7 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 .lu-col{display:grid;gap:8px;min-width:0}
 /* FIFA-style cards: a shield cut from metal, the week's points as the big rating, class and multiplier under it.
    Everything inside is sized from the card's own width (cqw), so it is the same card on a phone and a desktop. */
-.lineup{filter:drop-shadow(0 8px 12px rgba(15,23,42,.26))}
-[data-theme="dark"] .lineup{filter:drop-shadow(0 10px 16px rgba(0,0,0,.6))}
+.lineup{filter:drop-shadow(0 2px 2px var(--cs1)) drop-shadow(0 14px 16px var(--cs2))}
 .lc{--sh:polygon(0 7%,13% 1.5%,33% 3%,50% 0,67% 3%,87% 1.5%,100% 7%,100% 84%,50% 100%,0 84%);container-type:inline-size;
   position:relative;display:block;width:100%;border:0;padding:0;font:inherit;cursor:pointer;min-width:0;
   clip-path:var(--sh);background:var(--rim);color:var(--ink);text-align:center;aspect-ratio:.72}
@@ -530,8 +535,7 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 @media (max-width:1400px){.squadwrap .squad.ab{grid-template-columns:repeat(6,minmax(0,1fr));gap:14px 10px;max-width:620px}.squadwrap .squad.ab>*{grid-column:span 2}.squadwrap .squad.ab>:nth-child(4){grid-column:2/4}}
 @media (max-width:620px){.squadwrap .squad.ab{grid-template-columns:repeat(6,minmax(0,1fr));gap:12px 6px}.squadwrap .squad.ab>*{grid-column:span 2}.squadwrap .squad.ab>:nth-child(4){grid-column:2/4}}
 .sqc{position:relative;min-width:0;display:grid;gap:6px;align-content:start;transition:transform .25s var(--ease-out)}
-.sqc-sh{filter:drop-shadow(0 8px 12px rgba(15,23,42,.24));transition:filter .3s}
-[data-theme="dark"] .sqc-sh{filter:drop-shadow(0 10px 16px rgba(0,0,0,.6))}
+.sqc-sh{filter:drop-shadow(0 2px 2px var(--cs1)) drop-shadow(0 14px 16px var(--cs2));transition:filter .3s}
 .sqc .lc{display:block}
 .sqc .lc-rate b{font-size:13.5cqw;font-weight:600;margin-top:2cqw}.sqc .lc-rate small{font-size:8cqw}
 .sqc .lc-rate small.hi{color:var(--accent-ink);background:var(--accent);border-radius:99px;padding:1.2cqw 2.4cqw .8cqw;border:0}
@@ -553,7 +557,8 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
   .sqc.hit .sqc-sh{animation:fxHit 1.6s var(--spring) both}
   .sqc.chipped .sqc-sh{animation:auraSh 2.8s ease-in-out infinite}
   @keyframes auraSh{0%,100%{filter:drop-shadow(0 8px 12px rgba(15,23,42,.24))}50%{filter:drop-shadow(0 0 10px var(--accent)) drop-shadow(0 8px 12px rgba(15,23,42,.24))}}
-  .sqc.tilt .lc{transform:perspective(700px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(1.03);transition:transform .12s linear}
+  .sqc.tilt .lc,.lineup .lc.tilt{transform:perspective(700px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateZ(0) scale(1.04);transition:transform .12s linear}
+  .sqc.tilt .sqc-sh{filter:drop-shadow(0 4px 4px var(--cs1)) drop-shadow(0 26px 24px var(--cs2))}
 }
 @media (hover:hover) and (pointer:fine){.sqc .lc{transition:transform .3s var(--ease-out)}}
 /* phones: smaller headings so the page is not oversized */
@@ -901,6 +906,43 @@ h3{font-weight:650;letter-spacing:-.01em}
 body{font-feature-settings:"tnum" 0;-webkit-font-smoothing:antialiased}
 .eyebrow,.next-k,.facts span,th,.stats span,.hl>span:first-child,.kv span,.bd-stats span,.field label{font-weight:600;letter-spacing:.04em}
 @media (max-width:640px){h2{font-size:30px}.intro h1{font-size:46px}}
+/* ---------- depth: light comes from the top left, everything has a lit edge and sits on a shadow ---------- */
+.card,.side,.board,.facts>div,.kv>div,.hl,.livestrip,.tbl,.modal .sheet,.rc:not([class*="tier-"]):not(.slot){background:var(--surface-grad)}
+.nav{box-shadow:0 1px 0 var(--line),0 10px 24px -18px rgba(15,23,42,.35)}
+.board{box-shadow:var(--shadow-lift),inset 0 0 0 1px var(--line)}
+/* buttons are raised: lit top, darker lower edge; they sink when pressed */
+.btn{box-shadow:inset 0 0 0 1.5px var(--line-2),inset 0 1px 0 rgba(255,255,255,.7),0 1px 2px rgba(15,23,42,.08),0 4px 10px -6px rgba(15,23,42,.25)}
+[data-theme="dark"] .btn{box-shadow:inset 0 0 0 1.5px var(--line-2),inset 0 1px 0 rgba(255,255,255,.06),0 1px 2px rgba(0,0,0,.5),0 4px 10px -6px rgba(0,0,0,.6)}
+.btn.on,.btn.light,.btn.go,.boost.on,.chipc.on,.bd-tabs button.on{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 82%,#fff) 0%,var(--accent) 55%,var(--accent-press) 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(0,0,0,.14),0 1px 2px rgba(0,0,0,.18),0 8px 18px -8px var(--accent)}
+.btn:active:not(:disabled),.boost:active:not(:disabled),.sqc-ctl .sw:active,.sqc-ctl .rm:active{transform:translateY(1px) scale(.97);box-shadow:inset 0 2px 4px rgba(0,0,0,.18)}
+.sqc-ctl .sw,.sqc-ctl .rm,.boost:not(.on){background:var(--surface-grad);box-shadow:inset 0 0 0 1.5px var(--line-2),inset 0 1px 0 rgba(255,255,255,.7),0 1px 2px rgba(15,23,42,.08),0 3px 8px -5px rgba(15,23,42,.3)}
+[data-theme="dark"] .sqc-ctl .sw,[data-theme="dark"] .sqc-ctl .rm,[data-theme="dark"] .boost:not(.on){box-shadow:inset 0 0 0 1.5px var(--line-2),inset 0 1px 0 rgba(255,255,255,.06),0 1px 2px rgba(0,0,0,.5),0 3px 8px -5px rgba(0,0,0,.6)}
+.facts>div,.kv>div,.hl{transition:transform .25s var(--ease-out),box-shadow .25s}
+@media (hover:hover) and (pointer:fine){.facts>div:hover,.kv>div:hover,.card:hover{box-shadow:var(--shadow-lift),inset 0 0 0 1px var(--line)}.facts>div:hover,.kv>div:hover{transform:translateY(-2px)}}
+/* the cards: a two-tone rim, metal lit from the top left with a shadowed lower edge, a glare where you point,
+   and the print stamped into the metal */
+.fifa-gold{--rim2:#a87a26}.fifa-silver{--rim2:#8a94a3}.fifa-bronze{--rim2:#9a5630}
+.lc{background:linear-gradient(155deg,#fff 0%,var(--rim) 30%,var(--rim) 55%,var(--rim2) 100%)}
+.lc.cap{background:linear-gradient(155deg,color-mix(in srgb,var(--accent) 55%,#fff) 0%,var(--accent) 45%,var(--accent-press) 100%)}
+.lc::before{background:radial-gradient(circle at var(--mx,28%) var(--my,12%),rgba(255,255,255,.55),rgba(255,255,255,0) 42%),linear-gradient(160deg,rgba(255,255,255,.45) 0%,rgba(255,255,255,0) 28%,rgba(255,255,255,0) 62%,rgba(0,0,0,.2) 100%),var(--metal);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.lc-rate b,.lc-name,.lc-st b{text-shadow:0 1px 0 rgba(255,255,255,.38)}
+.lc-name{border-bottom-color:transparent;background:linear-gradient(var(--soft),var(--soft)) bottom/100% max(1px,.6cqw) no-repeat;box-shadow:0 1px 0 rgba(255,255,255,.35)}
+.lc .av.lg{box-shadow:0 0 0 1.6cqw var(--rim),0 0 0 calc(1.6cqw + 1px) rgba(0,0,0,.12),0 2cqw 4cqw -1cqw rgba(0,0,0,.45)}
+.lc .av.lg::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 2cqw 3cqw -1cqw rgba(0,0,0,.28),inset 0 -1cqw 2cqw -1cqw rgba(255,255,255,.4);pointer-events:none;z-index:1}
+.lc-cap i{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 4px -1px rgba(0,0,0,.35)}
+.lineup,.squadwrap .squad.ab{perspective:900px}
+.lc{transform-style:preserve-3d;will-change:transform}
+@media (prefers-reduced-motion:no-preference){.lineup .lc{transition:transform .5s var(--spring)}.sqc .lc{transition:transform .5s var(--spring)}}
+/* cursor: cards lean hard toward it and the glare slides with it; panels get a soft light under it */
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .sqc.tilt .lc,.lineup .lc.tilt{transform:perspective(600px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-6px) scale(1.06);transition:transform .1s linear}
+  .sqc.tilt .sqc-sh,.lineup:has(.lc.tilt){filter:drop-shadow(0 4px 4px var(--cs1)) drop-shadow(0 30px 26px var(--cs2))}
+  .sqc.tilt .lc::before,.lineup .lc.tilt::before{background:radial-gradient(circle at var(--mx,28%) var(--my,12%),rgba(255,255,255,.85),rgba(255,255,255,.2) 22%,rgba(255,255,255,0) 48%),linear-gradient(160deg,rgba(255,255,255,.45) 0%,rgba(255,255,255,0) 28%,rgba(255,255,255,0) 62%,rgba(0,0,0,.2) 100%),var(--metal)}
+  .sqc.tilt .lc::after,.lineup .lc.tilt::after{animation:none;background:linear-gradient(calc(var(--ry,0deg) * 4 + 115deg),transparent 30%,rgba(255,255,255,.5) 46%,rgba(170,220,255,.25) 52%,transparent 66%) no-repeat;background-size:200% 100%;background-position:calc(100% - var(--mx,50%)) 0;opacity:1}
+  .card,.side,.board,.facts>div,.kv>div,.hl,.livestrip{background:radial-gradient(420px circle at var(--sx,-500px) var(--sy,-500px),color-mix(in srgb,var(--accent) 8%,transparent),transparent 65%),var(--surface-grad)}
+  .lit{transition:box-shadow .3s}
+}
 </style>
 </head>
 <body>
@@ -1024,11 +1066,24 @@ function armReveals(){
 if(!RM&&matchMedia("(hover:hover) and (pointer:fine)").matches){
   let tcard=null;
   /* runner cards and runner rows: rows are wide, so they lean less sideways */
-  addEventListener("pointermove",e=>{let c=e.target.closest&&e.target.closest('.rc:not(.slot),.sqc,#mrows tr,#view .grid2>.card');if(c&&c.matches(".card")&&!c.querySelector(".av"))c=null;
+  addEventListener("pointermove",e=>{let c=e.target.closest&&e.target.closest('.rc:not(.slot),.sqc,.lineup .lc,#mrows tr,#view .grid2>.card');if(c&&c.matches(".card")&&!c.querySelector(".av"))c=null;
     if(tcard&&tcard!==c){tcard.classList.remove("tilt");tcard.style.removeProperty("--rx");tcard.style.removeProperty("--ry")}
     tcard=c;if(!c)return;const b=c.getBoundingClientRect(),x=(e.clientX-b.left)/b.width,y=(e.clientY-b.top)/b.height,row=c.tagName==="TR";
-    c.classList.add("tilt");c.style.setProperty("--rx",((.5-y)*(row?9:10)).toFixed(2)+"deg");c.style.setProperty("--ry",((x-.5)*(row?2.4:12)).toFixed(2)+"deg");c.style.setProperty("--mx",(x*100).toFixed(1)+"%");c.style.setProperty("--my",(y*100).toFixed(1)+"%")},{passive:true});
+    const fifa=c.matches(".sqc,.lineup .lc");c.classList.add("tilt");c.style.setProperty("--rx",((.5-y)*(row?9:fifa?16:10)).toFixed(2)+"deg");c.style.setProperty("--ry",((x-.5)*(row?2.4:fifa?20:12)).toFixed(2)+"deg");c.style.setProperty("--mx",(x*100).toFixed(1)+"%");c.style.setProperty("--my",(y*100).toFixed(1)+"%")},{passive:true});
   document.addEventListener("pointerleave",()=>{if(tcard){tcard.classList.remove("tilt");tcard=null}});
+  /* panels: a soft light follows the cursor across them */
+  let sp=null;
+  addEventListener("pointermove",e=>{const c=e.target.closest&&e.target.closest(".card,.side,.board,.facts>div,.kv>div,.hl,.livestrip");
+    if(sp&&sp!==c)sp.classList.remove("lit");sp=c;if(!c)return;const b=c.getBoundingClientRect();c.classList.add("lit");c.style.setProperty("--sx",(e.clientX-b.left).toFixed(0)+"px");c.style.setProperty("--sy",(e.clientY-b.top).toFixed(0)+"px")},{passive:true});
+}
+/* phones: a pressed card leans toward the finger and catches the light there, then springs back */
+if(!RM){
+  let tc=null;const lean=(c,e)=>{const b=c.getBoundingClientRect(),x=Math.max(0,Math.min(1,(e.clientX-b.left)/b.width)),y=Math.max(0,Math.min(1,(e.clientY-b.top)/b.height));
+    c.classList.add("tilt");c.style.setProperty("--rx",((.5-y)*14).toFixed(2)+"deg");c.style.setProperty("--ry",((x-.5)*16).toFixed(2)+"deg");c.style.setProperty("--mx",(x*100).toFixed(1)+"%");c.style.setProperty("--my",(y*100).toFixed(1)+"%")};
+  const off=()=>{if(tc){tc.classList.remove("tilt");tc=null}};
+  addEventListener("pointerdown",e=>{if(e.pointerType==="mouse")return;const c=e.target.closest&&e.target.closest(".sqc-sh,.lineup .lc");if(!c)return;tc=c.matches(".sqc-sh")?c.parentElement:c;lean(tc,e)},{passive:true});
+  addEventListener("pointermove",e=>{if(tc&&e.pointerType!=="mouse")lean(tc,e)},{passive:true});
+  ["pointerup","pointercancel","scroll"].forEach(t=>addEventListener(t,off,{passive:true}));
 }
 let lastPX=innerWidth/2,lastPY=innerHeight/2;
 addEventListener("pointerdown",e=>{lastPX=e.clientX;lastPY=e.clientY},{passive:true,capture:true});
