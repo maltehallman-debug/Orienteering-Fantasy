@@ -1107,14 +1107,15 @@ nav.tabs .ind.on{opacity:1}
 .sqc-sh:has(.fifa-bronze){--glow:rgba(190,105,45,.5)}
 .sqc.boosted .sqc-sh{--glow:color-mix(in srgb,var(--accent) 60%,transparent)}
 .sqc.tilt .sqc-sh{filter:drop-shadow(0 4px 4px var(--cs1)) drop-shadow(0 26px 24px var(--cs2)) drop-shadow(0 8px 26px var(--glow))}
-/* card shadow and glow: soft layers behind each card instead of a CSS filter, so phones (Safari) show them too */
+/* card shadow: a blurred copy of the card's shield shape right behind it (its own layer, not a CSS filter on the card,
+   so phones draw it too). It follows the card's outline like a real shadow and deepens when the card lifts. */
 .sqc-sh,.sqc.tilt .sqc-sh,.sqc.boosted .sqc-sh{filter:none}
 .sqc-sh{position:relative;isolation:isolate}
-.sqc-sh::before{content:"";position:absolute;inset:4% -7% -2%;z-index:-1;pointer-events:none;background:radial-gradient(50% 50% at 50% 52%,var(--glow) 0,transparent 100%);opacity:.75;transition:opacity .45s var(--ease-out),transform .45s var(--ease-out)}
-.sqc-sh::after{content:"";position:absolute;left:16%;right:16%;bottom:-6%;height:12%;z-index:-1;pointer-events:none;background:radial-gradient(50% 50% at 50% 50%,rgba(15,23,42,.34) 0,transparent 100%);transition:transform .45s var(--ease-out),opacity .45s}
-.sqc.tilt .sqc-sh::before{opacity:1;transform:scale(1.05)}
-.sqc.tilt .sqc-sh::after{transform:translateY(8px) scaleX(1.1);opacity:.8}
-.sqc.sel .sqc-sh::before{--glow:color-mix(in srgb,var(--accent) 65%,transparent);opacity:1}
+.lc-shd{position:absolute;inset:0;z-index:-1;pointer-events:none;filter:blur(9px);opacity:.42;transform:translate3d(0,9px,0) scale(.97);transition:transform .45s var(--ease-out),opacity .45s var(--ease-out)}
+.lc-shd::before{content:"";position:absolute;inset:0;background:#0f172a;clip-path:polygon(0 7%,13% 1.5%,33% 3%,50% 0,67% 3%,87% 1.5%,100% 7%,100% 84%,50% 100%,0 84%)}
+.sqc.tilt .lc-shd{transform:translate3d(0,18px,0) scale(.99);opacity:.5}
+.sqc.boosted .lc-shd::before{background:color-mix(in srgb,var(--accent) 55%,#0f172a)}
+.sqc.sel .lc-shd::before{background:var(--accent)}
 /* the runner list fits a phone: fixed columns, the name takes what is left and long names end in … */
 @media (max-width:620px){
   .mkt table{table-layout:fixed;width:100%}
@@ -1514,7 +1515,7 @@ function squadCard(i,k,show,locked,team){
   const sq=ordered(show),mult=multOf(i,sq,show.chip,show.captain),hit=chipHits(i,team,show),other=swapSel!==null&&swapSel!==i&&plan.a.includes(swapSel)!==(team==="A");
   /* the same FIFA card as the week board: class and multiplier up top, price and points per week big at the bottom */
   return `<div class="sqc ${on?"boosted":""} ${justAdded===i?"pop":""} ${justBoosted===i?"zap":""} ${swapSel===i?"sel":""} ${hit&&show.chip?"chipped":""} ${hit&&justChip?"hit":""}" style="--i:${k}" data-card="${i}">
-   <div class="sqc-sh"><button class="lc fifa-${TIERS[tierOf(i,r)][0]} ${on?"cap":""}" style="--k:${k%5}" data-prof="${i}" aria-label="${esc(nameOf(i))}">
+   <div class="sqc-sh"><span class="lc-shd" aria-hidden="true"></span><button class="lc fifa-${TIERS[tierOf(i,r)][0]} ${on?"cap":""}" style="--k:${k%5}" data-prof="${i}" aria-label="${esc(nameOf(i))}">
     <span class="lc-rate"><b>${D.runners[i].k}</b><small class="${mult>(team==="A"?2:1)?"hi":""}" title="This runner's points count ×${mult} this round">×${mult}</small></span>
     <span class="lc-ph"><span class="avw">${avatar(i,"lg")}${idleTag(i)}${entTag(i)}</span></span>
     ${on?`<span class="lc-cap"><i>Boost ×${m}</i></span>`:""}
