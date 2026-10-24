@@ -46,6 +46,8 @@ try{var t=localStorage.getItem("of-theme");if(t==="night"||t==="forest")t="dark"
   --contour-op:.4; color-scheme:dark;
 }
 *{box-sizing:border-box}
+/* nothing may make the page wider than the screen: a wider page makes phones zoom out and lets it scroll sideways */
+html,body{overflow-x:hidden;max-width:100%}@supports (overflow:clip){html,body{overflow-x:clip}}
 html{background:var(--bg);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;scroll-padding-top:80px}
 body{margin:0;background:transparent;color:var(--text);font:16px/1.5 var(--font);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;padding-bottom:calc(64px + var(--tabbar));transition:color .3s}
 .container{width:100%;max-width:1140px;margin:0 auto;padding-left:max(var(--gutter),env(safe-area-inset-left,0px));padding-right:max(var(--gutter),env(safe-area-inset-right,0px));position:relative}
@@ -157,6 +159,7 @@ main#view{padding-top:20px}
 .course{margin:8px 0 4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
 .course:empty{display:none}
 .course svg{display:block;min-width:700px;width:100%;height:auto}
+@media (max-width:640px){.course{overflow:visible}.course svg{min-width:0}}
 .course .leg{fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linecap:round}
 .course .leg.todo{stroke-opacity:.35;stroke-dasharray:1 7}
 .course .ctl{cursor:pointer;transform-box:fill-box;transform-origin:center}
@@ -435,6 +438,20 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 .legend{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:-6px 0 10px;font-size:12.5px;color:var(--text-2)}
 .legend .idle{margin:0 0 0 8px;cursor:default}.legend .idle:first-child{margin-left:0}
 @media (prefers-reduced-motion:no-preference){.idle.r{animation:idlePulse 2.4s ease-in-out infinite}@keyframes idlePulse{0%,100%{box-shadow:0 0 0 2px var(--surface),0 0 0 2px rgba(220,38,38,.5)}50%{box-shadow:0 0 0 2px var(--surface),0 0 0 6px rgba(220,38,38,0)}}}
+/* phones: the runner list keeps runner, price, form, per week and the button (the tier shows as the coloured edge);
+   a runner's race list keeps race, place and points. No table scrolls sideways. */
+@media (max-width:640px){
+  .mkt th:nth-child(2),.mkt td:nth-child(2),.mkt th:nth-child(4),.mkt td:nth-child(4),.mkt th:nth-child(6),.mkt td:nth-child(6),
+  .mkt th:nth-child(8),.mkt td:nth-child(8),.mkt th:nth-child(9),.mkt td:nth-child(9),.mkt th:nth-child(5),.mkt td:nth-child(5){display:none}
+  .mkt table,.rtab table{width:100%;min-width:0}
+  .mkt th,.mkt td{padding-left:6px;padding-right:6px}
+  .mkt td:first-child{max-width:44vw}.mkt th{letter-spacing:.04em;font-size:10px;white-space:normal}.mkt th button{white-space:normal;text-align:left}.mkt .who-wrap{gap:8px;min-width:0}.mkt .who-wrap>div{min-width:0}
+  .mkt .who{display:inline;font-size:14px}.mkt td .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mkt td:last-child .btn{padding:8px 10px}
+  .rtab th:nth-child(3),.rtab td:nth-child(3),.rtab th:nth-child(4),.rtab td:nth-child(4){display:none}
+  .rtab table{table-layout:fixed}.rtab td,.rtab th{white-space:normal;overflow-wrap:anywhere;padding-left:8px;padding-right:8px}
+  .rtab th:nth-child(2),.rtab td:nth-child(2){width:62px}.rtab th:nth-child(5),.rtab td:nth-child(5){width:52px;text-align:right}
+}
 .lgt tr.gap td{text-align:center;color:var(--text-3);padding:4px}
 .lgmembers{display:flex;flex-wrap:wrap;gap:6px}.lgmembers .tag{display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:999px}.lgmembers .mdot{width:26px;height:26px;font-size:12px}
 .lghead{display:grid;gap:8px;margin-bottom:14px}.lgtitle{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.lgtitle h2{margin:0}
@@ -551,6 +568,15 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
   tr.rv{transform:translateX(-32px);filter:blur(4px)}
   tr.rv.rv-up{transform:translateX(32px)}
   tr.rv.rv-in{transform:none;filter:none}
+  /* phones: a plain rise and fade. A 3D tilt or a sideways slide makes things briefly wider than the screen, and
+     phones answer that by zooming the page in and out while you scroll. */
+  @media (max-width:760px),(pointer:coarse){
+    .rv,.rv.rv-up,tr.rv,tr.rv.rv-up{transform:translateY(28px);filter:none}
+    .rv.rv-up,tr.rv.rv-up{transform:translateY(-22px)}
+    h2.rv{clip-path:none;transform:translateY(16px)}
+    h2.rv.rv-up{clip-path:none;transform:translateY(-12px)}
+    .rv.rv-in,tr.rv.rv-in,h2.rv.rv-in{transform:none}
+  }
   /* how far down the page you are */
   #prog{position:fixed;left:0;right:0;top:0;height:2.5px;z-index:70;background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#fde68a));transform-origin:0 50%;transform:scaleX(var(--p,0));opacity:var(--po,0);transition:opacity .4s;pointer-events:none}
   .ripple{animation:ripple 1s var(--ease-cine) forwards}
@@ -1004,8 +1030,11 @@ let swapSel=null,justChip=null,justSwapped=[];
 
 /* ---------- course strip ---------- */
 function courseSvg(){
-  const W=1000,H=132,x0=46,x1=W-46,cr=15;
-  const w0=isLive()?LIVE:Math.min(Math.max(0,state.round-1),E.R-9),w1=Math.min(E.R,w0+(isLive()?E.R-LIVE:9)),n=w1-w0;
+  /* phones: the four rounds around the current one, drawn narrower so it fits without sideways scrolling */
+  const narrow=matchMedia("(max-width:640px)").matches;
+  const W=narrow?500:1000,H=132,x0=narrow?34:46,x1=W-x0,cr=15;
+  const w0=narrow?Math.max(isLive()?LIVE:0,Math.min(state.round-1,E.R-4)):isLive()?LIVE:Math.min(Math.max(0,state.round-1),E.R-9),
+    w1=Math.min(E.R,w0+(narrow?4:isLive()?E.R-LIVE:9)),n=w1-w0;
   const step=(x1-x0)/(n+1);
   const P=[];for(let k=0;k<=n+1;k++){P.push([x0+k*step,58+Math.sin(k*1.15)*20+(k%2?6:-6)])}
   let legs="";
@@ -1136,7 +1165,7 @@ function marketHtml(){
    <select id="clubF" aria-label="Club"><option value="">All clubs</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
    <label><input type="checkbox" id="afford" ${afford?"checked":""}> Affordable only</label></div>
   <p class="legend"><span class="idle y" aria-hidden="true">!</span> no race last week <span class="idle r" aria-hidden="true">!</span> none in 10 weeks</p>
-  <div class="tbl"><table><thead><tr>${th("name","Runner")}<th>Tier</th>${th("price","Price")}<th>Change</th>${th("form","Form","Average of the last 3 race weeks")}<th title="Points in each of the last 6 weeks they raced">Last 6 race weeks</th>${th("avg","Per week","Average of the last 5 race weeks")}${th("total","Points")}${th("starts","Starts")}<th></th></tr></thead><tbody id="mrows">
+  <div class="tbl mkt"><table><thead><tr>${th("name","Runner")}<th>Tier</th>${th("price","Price")}<th>Change</th>${th("form","Form","Average of the last 3 race weeks")}<th title="Points in each of the last 6 weeks they raced">Last 6 race weeks</th>${th("avg","Per week","Average of the last 5 race weeks")}${th("total","Points")}${th("starts","Starts")}<th></th></tr></thead><tbody id="mrows">
   ${marketBody(rows)}
   </tbody></table></div>
   <p id="mmore">${moreBtn(rows)}</p>
@@ -1475,8 +1504,8 @@ function profile(i){
    <div class="hd"><div style="display:flex;gap:16px;align-items:center;min-width:0">${avatar(i,"lg")}<div style="min-width:0"><h2>${esc(nameOf(i))}${idleTag(i)}</h2><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}${idle(i)?" · "+(idle(i)===2?"no race in 10 weeks":"did not race last week"):""}</div></div></div><button class="btn" data-close="1">Close</button></div>
    <div class="stats"><div><b>${D.runners[i].p?fm(E.price(i,pr())):"–"}</b><span>Price · ${TIERS[tierOf(i)][1]}</span></div><div><b>${s.starts}</b><span>Starts</span></div><div><b>${fp(s.total)}</b><span>Points</span></div><div><b>${s.weeks?fp(s.perWeek):"–"}</b><span>Per week, last 5</span></div>${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Class rating</span></div>`:""}</div>
    ${hist}
-   <div class="tbl" style="margin-top:12px"><table><thead><tr><th>Race</th><th>Place</th><th>Behind</th><th>Time</th><th>Points</th></tr></thead><tbody>
-   ${groups.map(g=>{const tot=g.list.reduce((a,h)=>a+h.pts,0);return `<tr class="wkhead"><td colspan="4"><b>${g.q<0?"Before round 1":"Round "+D.rounds[g.q].n}</b> <span class="sub">${g.q<0?"not part of a game week":dshort(D.rounds[g.q].start)+" – "+dshort(D.rounds[g.q].end)+", "+g.list.length+" race"+(g.list.length>1?"s":"")}</span></td><td class="${tot<0?"neg":"pos"}"><b>${sg(tot)}</b></td></tr>`+g.list.map(h=>{const e=D.events[h.ev];return `<tr><td>${esc(e.name)}<div class="sub">${dshort(e.date)}${e.tier>1?", x"+e.tier:""}</div></td><td>${h.kind?["","DNF","MP","DSQ"][h.kind]:h.rank+" of "+e.n}</td><td>${h.kind?"–":(h.gap/100).toFixed(1)+"%"}</td><td>${h.kind?"–":tm(h.t)}</td><td class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</td></tr>`}).join("")}).join("")||`<tr><td colspan="5" class="note">No results yet.</td></tr>`}
+   <div class="tbl rtab" style="margin-top:12px"><table><thead><tr><th>Race</th><th>Place</th><th>Behind</th><th>Time</th><th>Points</th></tr></thead><tbody>
+   ${groups.map(g=>{const tot=g.list.reduce((a,h)=>a+h.pts,0);return `<tr class="wkhead"><td colspan="2"><b>${g.q<0?"Before round 1":"Round "+D.rounds[g.q].n}</b> <span class="sub">${g.q<0?"not part of a game week":dshort(D.rounds[g.q].start)+" – "+dshort(D.rounds[g.q].end)+", "+g.list.length+" race"+(g.list.length>1?"s":"")}</span></td><td></td><td></td><td class="${tot<0?"neg":"pos"}"><b>${sg(tot)}</b></td></tr>`+g.list.map(h=>{const e=D.events[h.ev];return `<tr><td>${esc(e.name)}<div class="sub">${dshort(e.date)}${e.tier>1?", x"+e.tier:""}</div></td><td>${h.kind?["","DNF","MP","DSQ"][h.kind]:h.rank+" of "+e.n}</td><td>${h.kind?"–":(h.gap/100).toFixed(1)+"%"}</td><td>${h.kind?"–":tm(h.t)}</td><td class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</td></tr>`}).join("")}).join("")||`<tr><td colspan="5" class="note">No results yet.</td></tr>`}
    </tbody></table></div>${!isLive()&&!done()?`<p class="note">Showing races before round ${D.rounds[R()].n}.</p>`:""}
    ${photoSection(i)}`);
 }
