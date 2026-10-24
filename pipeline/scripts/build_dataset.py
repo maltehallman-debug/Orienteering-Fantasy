@@ -338,19 +338,31 @@ PTAU, PBETA = float(os.environ.get("PTAU", "37.6")), float(os.environ.get("PBETA
 # one put juniors who often run H21 into H21). A class counts when it is at least 2 starts or a third of them. Anyone
 # seen in an H10-H14 class is young and goes in the game's youngest class, 16.
 YOUNG = re.compile(r"^[DH](10|11|12|13|14)$")
-_young = collections.defaultdict(set)   # (name, sex) -> clubs seen in youth classes
+# (name, sex) -> {club: the oldest they can be this year}. A runner in H12 in 2026 is at most 12 that year, 13 in 2027.
+_young = collections.defaultdict(dict)
 for p in glob.glob(f"{S}/data/results/*.json"):
     j = json.load(open(p)); cn = norm(j.get("className", ""))
     if not YOUNG.match(cn): continue
+    yr = int((comps.get(j.get("id"), {}).get("date") or str(TODAY.year))[:4]); bound = int(cn[1:]) + TODAY.year - yr
     for r in j.get("rows", []):
         if r.get("name") and started(r):   # raced (an entry alone is not enough: some camps list everyone in any class)
-            c = nclub(r.get("club"))
-            _young[(r["name"].strip().lower(), cn[0])] |= {c} | {x.strip() for x in JOINT.split(c)}
+            c = nclub(r.get("club")); d = _young[(r["name"].strip().lower(), cn[0])]
+            for x in {c} | {x.strip() for x in JOINT.split(c)}: d[x] = min(d.get(x, 99), bound)
 AGES = ["16", "18", "20", "21"]
-def class_of(k):
+def youth_bound(k):
+    # the oldest a runner seen in a youth class can be this year (None when never seen in one)
     n, g = k.split("|")[0], k.rsplit("|", 1)[1]
-    yc = _young.get((n, g))
-    if yc and ({nclub(c) for c in clubs[k]} | {k.split("|")[1]}) & yc: return g + "16"
+    yc = _young.get((n, g)) or {}
+    b = [yc[c] for c in {nclub(c) for c in clubs[k]} | {k.split("|")[1]} if c in yc]
+    return min(b) if b else None
+# Runners under 15 are not in the game, nor anyone an admin has hidden (a runner or parent asked to be left out)
+HIDE = {o["ref"] for o in OVR if o["kind"] == "runner_hide"}
+_under = {k for k in pool if (youth_bound(k) or 99) <= 14}
+pool = [k for k in pool if k not in _under and k not in HIDE]
+print("left out: under 15", len(_under), sorted(names[k].most_common(1)[0][0] for k in _under)[:15], "hidden by an admin", len(HIDE))
+def class_of(k):
+    g = k.rsplit("|", 1)[1]
+    if youth_bound(k) is not None: return g + "16"
     cc = clsc[k]; tot = sum(cc.values())
     for a in AGES:
         x = cc.get(g + a, 0)

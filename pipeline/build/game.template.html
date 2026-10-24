@@ -1301,6 +1301,12 @@ html.glass .btn:not(.on):not(.go):not(.light):not(.quiet),html.glass .boost:not(
   .tabbar button.hov{color:var(--accent)}
   .tabbar.dragging button{transition:color .12s}
 }
+
+/* privacy: deleting an account asks once more, in red */
+.delbox{margin-top:12px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--warn) 9%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 35%,transparent)}
+.btn.danger{background:#dc2626;color:#fff;box-shadow:0 8px 18px -10px #dc2626}
+.adm-row.col{flex-direction:column;align-items:stretch;gap:8px}
+.card.admin details summary{cursor:pointer;color:var(--text-2);font-size:14px}
 </style>
 </head>
 <body>
@@ -2067,7 +2073,7 @@ function authCard(){
 function profileView(){
   if(!dbOk)return `<p class="eyebrow pg-k">05 · Your account</p><h2 style="margin-top:0">Profile</h2>${inviteBanner()}<div class="grid2">${authCard()}
    <div class="card"><h3>Why an account</h3><ol class="steps"><li>Your squad is saved and works on every device.</li><li>Host a league or join one with a code.</li><li>See your friends' teams and points every round.</li><li>Add your own photo to your runner card.</li></ol></div></div>
-   ${practiceCard()}`;
+   ${practiceCard()}${privacyCard()}`;
   const me={id:cloud.uid,name:mgrName||cloud.email.split("@")[0],av:myAv};
   const L=state.log,best=L.slice().sort((a,b)=>b.total-a.total)[0];
   const live=isLive();
@@ -2082,11 +2088,20 @@ function profileView(){
     ${avMsg?`<p class="note" style="margin:0 0 10px;color:var(--warn)">${esc(avMsg)}</p>`:""}
     <div class="field"><label for="teamName">Team name</label><input class="name" id="teamName" maxlength="30" value="${esc(myTeam)}" placeholder="Shown in your leagues" autocapitalize="words" enterkeyhint="done"></div>
     <div class="field"><label for="mgrName">Manager name</label><input class="name" id="mgrName" maxlength="24" value="${esc(mgrName)}" autocapitalize="words" enterkeyhint="done"></div>
+    <p class="note" id="nameMsg" style="margin:6px 0 0;color:var(--warn)">${nameOk(mgrName)&&nameOk(myTeam)?"":"That name is not allowed here. Pick another one: everyone in the game sees it."}</p>
     <p class="note" id="cloudstat" style="margin:10px 0 0">${esc(cloudMsg||"Saved to your account automatically.")}</p>
     <div class="row" style="margin-top:12px"><button class="btn" id="authOut">Sign out</button></div></div>
    <div class="card"><h3>Your leagues</h3>${myLeagues.length?`<div class="lglist">${myLeagues.map(c=>`<button class="lgi" data-lgopen="${esc(c)}"><span>${esc(lgName(c))}${myOwn[c]?'<span class="host">Host</span>':""}</span><span class="sub">Open →</span></button>`).join("")}</div>`:`<p class="note" style="margin:0 0 12px">You are not in a league yet.</p><button class="btn on" data-tab="leagues">Host or join a league</button>`}</div>
   </div>
-  ${practiceCard()}`;
+  ${practiceCard()}${privacyCard()}`;
+}
+/* privacy, leaving a runner out, and deleting your account */
+function privacyCard(){
+  return `<div class="card" style="margin-top:12px"><h3>Privacy</h3><p class="note" style="margin:0 0 12px">What the game shows about runners and stores about you, and how to have a runner left out.</p>
+   <div class="row"><button class="btn" data-info="privacy">Privacy and removal</button>${dbOk&&!delAsk?`<button class="btn quiet" id="delAcc">Delete my account</button>`:""}</div>
+   ${dbOk&&delAsk?`<div class="delbox"><p style="margin:0 0 10px"><b>Delete your account for good?</b> Your squads, points, leagues you host and your picture are deleted. This cannot be undone.</p>
+     <div class="row"><button class="btn danger" id="delYes" ${delBusy?"disabled":""}>${delBusy?"Deleting…":"Delete for good"}</button><button class="btn" id="delNo" ${delBusy?"disabled":""}>Keep it</button></div></div>`:""}
+   ${delMsg?`<p class="note" style="margin:10px 0 0;color:${dbOk?"var(--warn)":"var(--good)"}">${esc(delMsg)}</p>`:""}</div>`;
 }
 function seasonBars(){
   const L=state.log,mx=Math.max(100,...L.map(l=>l.total));
@@ -2260,7 +2275,7 @@ function rulesView(){
   <li>Points for finishing, for every runner you beat, for being close to the winner and for a podium.</li>
   <li>Stronger fields and championships are worth more. A mispunch costs a little.</li>
   <li>A good week for a whole team is around 100.</li></ul></div></div>
-  <div class="info-row"><button class="btn" data-info="points">How points are counted</button><button class="btn" data-info="more">Chips, tiers and leagues</button><button class="btn" data-info="data">About the data</button></div>`;
+  <div class="info-row"><button class="btn" data-info="points">How points are counted</button><button class="btn" data-info="more">Chips, tiers and leagues</button><button class="btn" data-info="data">About the data</button><button class="btn" data-info="privacy">Privacy</button></div>`;
 }
 /* the details live in small sheets so the rules page stays short */
 function infoSheet(k){
@@ -2288,6 +2303,17 @@ function infoSheet(k){
   <li>Data is current to ${dshort(D.asof)}. Prices for every round come only from races before it. The page refreshes itself with new races every day.</li><li>Races that are still being run, or that are not on liveresultat yet (like O-Event, 6 to 8 November), are shown in the schedule and count once they have 3 or more finishers in a class.</li>
   <li>A price comes from a runner's rank in their class (H16, D21 and so on) by a weighted average of past points, with recent races counting more. In every class the best runner costs 22k, the top three 20k or more, about the 15th best 14.5k, and the rest of the field down to 2.5k. Runners with no history cost 2.5k.</li>
   <li>The pool is the ${D.runners.filter(x=>x.p).length} runners with at least 3 starts.</li></ul></div>`};
+  body.privacy=()=>hd("Privacy and removal","Privacy")+`<div class="info"><ul class="rules">
+  <li><b>Runners:</b> the game shows runners' names, clubs, classes and race results in D/H 16 to 21. These are the public results from Eventor and liveresultat.orientering.se. Nothing else about a runner is used: no birth dates, addresses or contact details. Runners under 15 are not in the game.</li>
+  <li><b>Photos</b> of runners are only shown after a runner (or for a junior, a parent) has sent one in and an admin has approved it. They can be withdrawn at any time.</li>
+  <li><b>Your account:</b> your email address, manager name, team name, picture, squads and points. They are stored with Supabase in Frankfurt (EU) and used only to run the game. Other managers see your manager name, team name, picture, squads and points, never your email.</li>
+  <li><b>Free and non-profit:</b> no ads, no tracking, and nothing is sold or shared.</li>
+  <li><b>Delete your account</b> on the Profile page at any time; everything in it is deleted.</li></ul></div>
+  <div class="info"><h3>Leave a runner out of the game</h3><p class="note" style="margin:4px 0 10px">A runner, or a parent of a junior, can ask for the runner to be taken out of the game. No account needed.</p>
+   <div class="field"><label for="rmRunner">Runner's name and club</label><input class="name" id="rmRunner" maxlength="120" value="${esc(rmF.runner)}" autocomplete="off"></div>
+   <div class="field"><label for="rmMsg">Message (optional)</label><input class="name" id="rmMsg" maxlength="1000" value="${esc(rmF.msg)}" autocomplete="off"></div>
+   <div class="field"><label for="rmContact">Email or phone, if you want an answer (optional)</label><input class="name" id="rmContact" maxlength="200" value="${esc(rmF.contact)}" autocomplete="email"></div>
+   <div class="row" style="margin-top:10px"><button class="btn on" id="rmSend" ${rmBusy?"disabled":""}>Send</button>${rmStat?`<span class="note">${esc(rmStat)}</span>`:""}</div></div>`;
   showSheet("info|"+k,"Rules",(body[k]||body.points)());
 }
 /* cards glide from where they were to where they are now (swaps between A and B, adds, removals) */
@@ -2402,6 +2428,11 @@ async function approvePhoto(id){
 }
 /* admins: add or remove competitions and force game weeks on or off (applied by the nightly data refresh) */
 let ovr=[],ovrMsg="",ovrBusy=false,ovrAdd="",applyMsg="",applyBusy=false;
+/* names everyone can see: the same check as the database's name_ok(), so the page can say no before saving */
+const BADW=/(fitta|fittor|knull|fuck|cunt|nigg|whore|slut|pussy|penis|vagina|porn|våldt|hitler|nazi|bitch)/,BADS=/(^|[^a-zåäö])(kuk|snopp|hora|horor|bög|rape|cock|porr|neger|balle|slyn)/;
+const nameOk=t=>{if(!t)return true;const x=String(t).toLowerCase().replace(/[013457@$]/g,c=>({"0":"o","1":"i","3":"e","4":"a","5":"s","7":"t","@":"a","$":"s"})[c]);return !BADW.test(x)&&!BADS.test(x)};
+/* admin: removal requests and managers' names */
+let rmReqs=[],allPf=[],modMsg="",rmF={runner:"",msg:"",contact:""},rmStat="",rmBusy=false,delAsk=false,delBusy=false,delMsg="";
 /* "Apply now": a server function checks you are an admin and starts the data refresh on GitHub straight away */
 async function applyNow(){
   if(applyBusy)return;applyBusy=true;applyMsg="Starting…";render();
@@ -2411,7 +2442,29 @@ async function applyNow(){
   }catch(e){applyMsg="Could not start the refresh."}
   applyBusy=false;render();
 }
-async function loadOvr(){if(!cloud.admin)return;try{const q=await cloud.sb.from("game_overrides").select("id,kind,ref,label,created_at").order("created_at");if(!q.error)ovr=q.data||[]}catch(e){}render()}
+async function loadOvr(){if(!cloud.admin)return;try{const [q,r,p]=await Promise.all([cloud.sb.from("game_overrides").select("id,kind,ref,label,created_at").order("created_at"),
+  cloud.sb.from("removal_requests").select("id,runner,message,contact,created_at").eq("handled",false).order("created_at"),cloud.sb.from("profiles").select("id,name,team").order("created_at").limit(2000)]);
+  if(!q.error)ovr=q.data||[];if(!r.error)rmReqs=r.data||[];if(!p.error)allPf=p.data||[]}catch(e){}render()}
+async function modProfile(id,patch,what){try{const q=await cloud.sb.from("profiles").update(patch).eq("id",id);modMsg=q.error?"Could not save: "+q.error.message:what;pfCache.delete(id)}catch(e){modMsg="Could not save."}await loadOvr()}
+async function rmDone(id){try{await cloud.sb.from("removal_requests").update({handled:true}).eq("id",id)}catch(e){}await loadOvr()}
+/* someone asks for a runner to be left out of the game (no account needed) */
+async function sendRemoval(){
+  if(rmBusy)return;const f={runner:rmF.runner.trim(),message:rmF.msg.trim()||null,contact:rmF.contact.trim()||null};
+  if(f.runner.length<2){rmStat="Write the runner's name and club.";infoSheet("privacy");return}
+  rmBusy=true;rmStat="Sending…";infoSheet("privacy");
+  try{const q=await cloud.sb.from("removal_requests").insert(f);if(q.error)throw q.error;rmF={runner:"",msg:"",contact:""};rmStat="Thanks. We will take the runner out of the game within a few days."}
+  catch(e){rmStat="Could not send. Try again in a moment."}
+  rmBusy=false;infoSheet("privacy");
+}
+/* the account and everything in it, for good: a server function checks it is your own account and deletes it */
+async function deleteAccount(){
+  if(delBusy)return;delBusy=true;delMsg="Deleting…";render();
+  try{const r=await cloud.sb.functions.invoke("delete-account",{method:"POST"});if(r.error||!r.data||!r.data.ok)throw new Error("delete");
+    delAsk=false;delMsg="";cloud.ready=false;resetLocal();sqStore={};sqMem={};pfCache.clear();try{localStorage.removeItem(SQK)}catch(e){}localUid=null;try{localStorage.removeItem(KEY)}catch(e){}
+    tab="profile";cloudMsg="";await cloud.sb.auth.signOut().catch(()=>{});leagueRows={};delMsg="Your account is deleted."}
+  catch(e){delMsg="Could not delete the account. Try again."}
+  delBusy=false;render();
+}
 const hasOvr=(k,ref)=>ovr.some(o=>o.kind===k&&String(o.ref)===String(ref));
 async function setOvr(kind,ref,label,on){
   if(ovrBusy)return;ovrBusy=true;ovrMsg="";render();
@@ -2441,7 +2494,21 @@ function adminGameCard(){
    <h4>Add a competition</h4>
    <div class="row"><input class="name" id="ovrAdd" placeholder="Eventor link or event id" value="${esc(ovrAdd)}" inputmode="url" autocomplete="off"><button class="btn on" id="ovrAddBtn" ${ovrBusy?"disabled":""}>Add</button></div>
    ${added.length?`<div class="adm-list">${added.map(o=>`<div class="adm-row"><div><b>${esc(o.label||"Eventor "+o.ref)}</b> <span class="sub">Added · counts as big</span></div><button class="btn" data-rcadd="${esc(o.ref)}">Remove</button></div>`).join("")}</div>`:""}
-   ${ovrMsg?`<p class="note" style="margin:10px 0 0">${esc(ovrMsg)}</p>`:""}</div>`;
+   ${ovrMsg?`<p class="note" style="margin:10px 0 0">${esc(ovrMsg)}</p>`:""}</div>${adminModCard()}`;
+}
+/* admin: requests to leave a runner out, hidden runners, and managers' names */
+function adminModCard(){
+  const hidden=ovr.filter(o=>o.kind==="runner_hide");
+  const match=t=>{const w=String(t).toLowerCase().split(/[\s,]+/).filter(x=>x.length>1);if(!w.length)return [];const out=[];D.runners.forEach((r,i)=>{const n=(r.n+" "+r.c).toLowerCase();if(w.filter(x=>n.includes(x)).length>=Math.min(2,w.length))out.push(i)});return out.slice(0,6)};
+  const req=x=>`<div class="adm-row col"><div><b>${esc(x.runner)}</b> <span class="sub">${esc(dshort(String(x.created_at).slice(0,10)))}${x.contact?" · "+esc(x.contact):""}</span>${x.message?`<p class="note" style="margin:4px 0 0">${esc(x.message)}</p>`:""}</div>
+    <div class="row">${match(x.runner).map(i=>`<button class="btn" data-rmhide="${esc(D.runners[i].id)}" data-rmlabel="${esc(nameOf(i)+", "+clubOf(i))}">Hide ${esc(nameOf(i))} · ${esc(clubOf(i))} · ${esc(D.runners[i].k)}</button>`).join("")||'<span class="note">No runner with that name in the game.</span>'}<button class="btn quiet" data-rmdone="${x.id}">Done</button></div></div>`;
+  const bad=allPf.filter(p=>!nameOk(p.name)||!nameOk(p.team)),pf=p=>`<div class="adm-row"><div><b>${esc(p.team||"No team name")}</b> <span class="sub">${esc(p.name||"")}</span></div><div class="row">${p.team?`<button class="btn" data-pfteam="${esc(p.id)}">Clear team name</button>`:""}${p.name!=="Manager"?`<button class="btn" data-pfname="${esc(p.id)}">Reset name</button>`:""}</div></div>`;
+  return `<div class="card admin"><h3>Admin · runners and managers</h3>
+   <h4>Asked to be left out (${rmReqs.length})</h4><div class="adm-list">${rmReqs.map(req).join("")||'<p class="note">No requests.</p>'}</div>
+   ${hidden.length?`<h4>Hidden runners</h4><div class="adm-list">${hidden.map(o=>`<div class="adm-row"><div><b>${esc(o.label||o.ref)}</b> <span class="sub">Left out of the game</span></div><button class="btn" data-rmshow="${esc(o.ref)}">Undo</button></div>`).join("")}</div>`:""}
+   <h4>Names that break the rules (${bad.length})</h4><div class="adm-list">${bad.map(pf).join("")||'<p class="note">None.</p>'}</div>
+   <details style="margin-top:10px"><summary>All managers (${allPf.length})</summary><div class="adm-list">${allPf.map(pf).join("")}</div></details>
+   ${modMsg?`<p class="note" style="margin:10px 0 0">${esc(modMsg)}</p>`:""}</div>`;
 }
 function reviewCard(){
   if(!adminOn())return "";
@@ -2550,8 +2617,17 @@ document.addEventListener("click",ev=>{
   if(d.info){infoSheet(d.info);return}
   if(d.wkset){const r=d.wkref;if(d.wkset==="auto")setOvr("week_on",r,"",false);else setOvr(d.wkset==="on"?"week_on":"week_off",r,"Round week "+r,true);return}
   if(d.rcset){setOvr("race_remove",d.rcref,d.rclabel||"",d.rcset==="drop");return}
+  if(d.rmhide){setOvr("runner_hide",d.rmhide,d.rmlabel||"",true);return}
+  if(d.rmshow){setOvr("runner_hide",d.rmshow,"",false);return}
+  if(d.rmdone){rmDone(+d.rmdone);return}
+  if(d.pfteam){modProfile(d.pfteam,{team:null},"Team name cleared.");return}
+  if(d.pfname){modProfile(d.pfname,{name:"Manager"},"Name reset to Manager.");return}
   if(d.rcadd){setOvr("race_add",d.rcadd,"",false);return}
   if(t.id==="applyNow"){applyNow();return}
+  if(t.id==="rmSend"){sendRemoval();return}
+  if(t.id==="delAcc"){delAsk=true;delMsg="";render();return}
+  if(t.id==="delNo"){delAsk=false;render();return}
+  if(t.id==="delYes"){deleteAccount();return}
   if(t.id==="ovrAddBtn"){const v=($("#ovrAdd")||{}).value||"";const m=v.match(/(?:eventId=|Show\/|^\s*)(\d{3,7})/i);if(!m){ovrMsg="Paste an Eventor event link or its number.";render();return}ovrAdd="";setOvr("race_add",m[1],"Eventor "+m[1],true);return}
   if(d.tab){const nt=d.tab;if(d.focus)setTimeout(()=>{const f=document.getElementById(d.focus);if(f)f.focus()},700);if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
   if(d.add!==undefined){const i=+d.add;if(!canAddReason(i)){plan.squad.push(i);if(!Array.isArray(plan.a))plan.a=[];if(plan.a.length<AS)plan.a.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
@@ -2615,8 +2691,11 @@ document.addEventListener("keydown",ev=>{
 });
 document.addEventListener("input",ev=>{const t=ev.target;
   if(t.id==="q"){if(ev.isComposing)return;qRaw=t.value;shown=40;refreshMarket()}
-  if(t.id==="mgrName"){mgrName=t.value.slice(0,24);save()}
-  if(t.id==="teamName"){myTeam=t.value.slice(0,30);save()}
+  if(t.id==="mgrName"){mgrName=t.value.slice(0,24);nameNote();save()}
+  if(t.id==="teamName"){myTeam=t.value.slice(0,30);nameNote();save()}
+  if(t.id==="rmRunner")rmF.runner=t.value.slice(0,120);
+  if(t.id==="rmMsg")rmF.msg=t.value.slice(0,1000);
+  if(t.id==="rmContact")rmF.contact=t.value.slice(0,200);
   if(t.id==="newLeague")newLeague=t.value;
   if(t.id==="joinCode")joinCode=t.value;});
 document.addEventListener("compositionend",ev=>{if(ev.target.id==="q"){qRaw=ev.target.value;shown=40;refreshMarket()}});
@@ -2653,6 +2732,7 @@ function welcomeSheet(kind){
 const SB_URL="https://hjpfmubvpvftxyyemltn.supabase.co",SB_KEY="sb_publishable_Ent2RuVrh-iKyjT1or8gOw_UFdZ74ch";
 let authEmail="",authPw="",authName="",authMode=pendingJoin?"up":"in",authMsg="",authBusy=false,copied="";
 function queueCloud(){if(!cloud.ready)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,1200)}
+function nameNote(){const e=document.getElementById("nameMsg");if(e)e.textContent=nameOk(mgrName)&&nameOk(myTeam)?"":"That name is not allowed here. Pick another one: everyone in the game sees it."}
 function setStat(m){cloudMsg=m;const e=document.getElementById("cloudstat");if(e)e.textContent=m}
 async function pushCloud(){
   if(!cloud.sb||!cloud.uid||!cloud.ready)return;
@@ -2660,8 +2740,8 @@ async function pushCloud(){
     const rounds={};if(isLive())state.log.forEach(l=>{if(l.round>=LIVE)rounds[l.round]=Math.round(l.total)});
     const a=await cloud.sb.from("saves").upsert({user_id:cloud.uid,state:blob(),updated_at:new Date().toISOString()});
     if(a.error)throw a.error;
-    const p=await cloud.sb.from("profiles").update({name:(mgrName||"Manager").slice(0,24),team:myTeam.trim().slice(0,30)||null}).eq("id",cloud.uid);
-    if(p.error)throw p.error;
+    const nm=(mgrName||"Manager").slice(0,24),tm=myTeam.trim().slice(0,30)||null,up={};if(nameOk(nm))up.name=nm;if(nameOk(tm))up.team=tm;
+    if(Object.keys(up).length){const p=await cloud.sb.from("profiles").update(up).eq("id",cloud.uid);if(p.error)throw p.error}
     const rows=Object.entries(rounds).map(([k,v])=>({user_id:cloud.uid,round:+k,pts:v,updated_at:new Date().toISOString()}));
     if(rows.length){const r=await cloud.sb.from("scores").upsert(rows);if(r.error)throw r.error}
     setStat("Saved to your account");
