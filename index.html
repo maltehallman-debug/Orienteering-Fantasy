@@ -11,15 +11,17 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ffffff'/%3E%3Ccircle cx='32' cy='32' r='19' fill='none' stroke='%23059669' stroke-width='5'/%3E%3Cpath d='M22 22h20v20H22z' fill='%23fff'/%3E%3Cpath d='M42 22v20H22z' fill='%23f06a2b'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Martian+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap">
 <script>/* apply the saved theme before first paint, so the page never flashes the wrong colours */
 try{var t=localStorage.getItem("of-theme");if(t==="night"||t==="forest")t="dark";if(t==="map")t="light";if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
 /* Orienteering Fantasy. Classic colours: white and slate with one emerald, and a dark mode to match.
-   Familjen Grotesk (Stockholm) for words, Martian Mono for the small print, like a timing slip. */
+   Words in the phone's own system font (SF Pro, Roboto, Segoe), so it reads like an app, not a template.
+   Scores, headings and the cards in Barlow Condensed: a sports-broadcast face, close to the DIN on real player cards. */
 :root{
-  --font:"Familjen Grotesk",ui-sans-serif,system-ui,sans-serif;
-  --mono:"Martian Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;
+  --mono:var(--font);
+  --display:"Barlow Condensed","Arial Narrow",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   --ease-out:cubic-bezier(.23,1,.32,1); --ease-io:cubic-bezier(.77,0,.175,1); --ease-drawer:cubic-bezier(.32,.72,0,1); --spring:cubic-bezier(.34,1.56,.64,1);
   --r:16px; --r-sm:11px; --gutter:clamp(16px,4vw,32px); --tabbar:0px;
 }
@@ -496,16 +498,17 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 .fifa-silver{--rim:#ffffff;--ink:#111827;--soft:rgba(17,24,39,.6);--metal:linear-gradient(135deg,#ffffff 0%,#e3e8ef 25%,#a7b2c1 50%,#f1f4f8 75%,#7f8a9b 100%)}
 .fifa-bronze{--rim:#ffe9d6;--ink:#2f1405;--soft:rgba(47,20,5,.62);--metal:linear-gradient(135deg,#ffe4cc 0%,#e9a26a 25%,#b4642f 50%,#f2b98a 75%,#8a4520 100%)}
 .lc-rate{left:6%;top:12%;width:30%;display:grid;justify-items:center;line-height:1}
-.lc-rate b{font:800 18cqw/1 var(--font);letter-spacing:-.05em}
-.lc-rate small{font:700 7.5cqw/1.25 var(--font);margin-top:1.5cqw}.lc-rate small+small{color:var(--soft);margin-top:0}
+.lc-rate b{font:800 22cqw/.9 var(--display);letter-spacing:-.01em}
+.lc-rate small{font:700 8.5cqw/1.15 var(--display);letter-spacing:.02em;margin-top:1.5cqw}.lc-rate small+small{color:var(--soft);margin-top:0}
 .lc-ph{left:38%;top:9%;width:48cqw;height:48cqw;display:grid;place-items:center}
 .lc .av.lg{--s:44cqw;box-shadow:0 0 0 1.6cqw var(--rim),0 4px 10px -4px rgba(0,0,0,.4);font-size:15cqw}
 .lc-cap{left:38%;width:48cqw;top:calc(9% + 42cqw);display:flex;justify-content:center}
 .lc-cap i{font:700 6cqw/1 var(--mono);font-style:normal;letter-spacing:.04em;text-transform:uppercase;background:var(--accent);color:var(--accent-ink);padding:1.4cqw 3cqw;border-radius:999px;white-space:nowrap}
-.lc-name{left:10%;right:10%;top:52%;font:800 9.5cqw/1.15 var(--font);text-transform:uppercase;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:2cqw;border-bottom:1px solid var(--soft)}
-.lc-st{left:12%;right:12%;top:64%;display:grid;grid-template-columns:1fr 1fr;gap:1cqw 3cqw;font-size:7.5cqw;line-height:1.15}
-.lc-st span{display:flex;gap:1.2cqw;align-items:baseline;justify-content:center}.lc-st b{font-weight:800}.lc-st i{font-style:normal;font-weight:600;color:var(--soft);font-size:.82em}
-.lc-race{left:18%;right:18%;top:80.5%;font-size:6.2cqw;line-height:1.2;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc-name{left:10%;right:10%;top:51%;font:800 11cqw/1.1 var(--display);text-transform:uppercase;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:2cqw;border-bottom:1px solid var(--soft)}
+.lc-st{left:10%;right:10%;top:63%;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2cqw}
+.lc-st span{display:grid;justify-items:center;line-height:1}
+.lc-st b{font:800 16cqw/.95 var(--display);letter-spacing:-.01em}
+.lc-st i{font:700 5.6cqw/1 var(--display);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);margin-top:1.2cqw}
 .lc.cap{background:var(--accent)}
 @media (prefers-reduced-motion:no-preference){.lc::after{animation:fifaShine 5s ease-in-out infinite;animation-delay:calc(var(--k) * .6s)}@keyframes fifaShine{0%,55%{background-position:120% 0}100%{background-position:-120% 0}}}
 .bd-share{display:flex;flex-direction:column;align-items:center;gap:6px;margin:12px auto 4px;max-width:560px}
@@ -524,8 +527,8 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 .sqc-sh{filter:drop-shadow(0 8px 12px rgba(15,23,42,.24));transition:filter .3s}
 [data-theme="dark"] .sqc-sh{filter:drop-shadow(0 10px 16px rgba(0,0,0,.6))}
 .sqc .lc{display:block}
+.sqc .lc-rate b{font-size:15cqw;margin-top:1cqw}.sqc .lc-rate small{font-size:9cqw;margin-top:2cqw}
 .sqc .lc-rate small.hi{color:var(--ink);background:color-mix(in srgb,var(--accent) 22%,transparent);border-radius:99px;padding:0 1.6cqw}
-.sqc .lc-st b.up{color:#15803d}.sqc .lc-st b.dn{color:#b91c1c}
 .sqc .avw .idle{left:-1cqw;top:-1cqw;bottom:auto;width:13cqw;height:13cqw;font-size:8.5cqw;box-shadow:0 0 0 1.2cqw var(--rim)}
 .sqc-ctl{display:flex;gap:4px;justify-content:center;align-items:center}
 .sqc-ctl .boost{width:auto;flex:1;min-width:0;padding:7px 8px;font-size:12.5px;gap:5px}
@@ -614,7 +617,7 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 #reel .t{font:700 clamp(30px,6vw,56px)/1 var(--font);letter-spacing:-.045em;color:var(--text);display:flex;gap:.02em}
 #reel .t span{display:inline-block;animation:letterIn .9s var(--ease-cine) both;animation-delay:calc(1s + var(--i) * 45ms)}
 #reel .t em{font-style:normal;color:var(--accent);display:flex;gap:.02em}
-#reel .k{font:500 11px var(--mono);letter-spacing:.3em;text-transform:uppercase;color:var(--text-3);animation:fadeUp 1s var(--ease-cine) 1.7s both}
+#reel .k{font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);animation:fadeUp 1s var(--ease-cine) 1.7s both}
 #reel{animation:curtain 1.1s var(--ease-io) 2.5s forwards}
 #reel.skip{animation:curtain .45s var(--ease-out) forwards}
 @keyframes flagIn{from{transform:scale(0) rotate(-90deg);opacity:0}}
@@ -855,7 +858,7 @@ tbody tr.tr-bronze td:first-child{box-shadow:inset 4px 0 0 #ea580c}
 .chipc.none{grid-column:1/-1;justify-items:center;padding:9px}
 @media (hover:hover) and (pointer:fine){.chipc:not(:disabled):not(.on):hover{box-shadow:inset 0 0 0 1.5px var(--accent-line)}}
 .chipbanner{position:absolute;z-index:6;left:50%;top:50%;pointer-events:none;text-align:center;white-space:nowrap;font:700 clamp(34px,6vw,64px)/1 var(--font);letter-spacing:-.04em;color:var(--accent);text-shadow:0 2px 0 var(--surface),0 18px 40px rgba(0,0,0,.18);opacity:0}
-.chipbanner small{display:block;margin-top:8px;font:600 12px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--text-2);text-shadow:none}
+.chipbanner small{display:block;margin-top:8px;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text-2);text-shadow:none}
 .savest{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r-sm);font-size:14px;font-weight:600;background:var(--accent-tint);color:var(--text)}
 .savest i{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-style:normal;background:var(--accent);color:var(--accent-ink);font-size:13px}
 .savest.warn{background:rgba(217,119,6,.1)}.savest.warn i{background:var(--warn);color:#fff}
@@ -877,6 +880,21 @@ tbody tr.tr-bronze td:first-child{box-shadow:inset 4px 0 0 #ea580c}
 }
 /* theme switch: the new colours spread out from the button */
 ::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+/* type: system font for words, Barlow Condensed for the numbers and headings people look at.
+   Condensed faces need no negative tracking, so the tight -.04em the old face wanted goes */
+h1,h2,.intro h1,.welcome h2,.modal h2,#reel .t,.next-main b,.pts-big,.stats b,.kv b,.bd-score b,.bd-stats b,.bd-week b,.teamhead b,.price,.score,.bd-brand,.logo b{font-family:var(--display);letter-spacing:0;font-weight:800}
+h1,h2,.intro h1,.welcome h2,.modal h2,#reel .t,.bd-week b,.teamhead b,.logo b,.bd-brand{font-weight:700}
+.logo b{font-size:1.25em}.bd-brand{font-size:18px}
+h2{font-size:clamp(32px,4.2vw,46px);line-height:1}
+.intro h1{letter-spacing:-.005em;line-height:.9}
+.bd-score b{font-size:clamp(40px,13vw,60px);letter-spacing:-.01em}
+.bd-stats b{font-size:clamp(22px,6.4vw,28px)}
+.pts-big,.stats b,.kv b{font-size:1.2em}
+.facts b{font-family:var(--display);font-weight:800;letter-spacing:0;font-size:36px}@media (max-width:560px){.facts b{font-size:30px}}
+h3{font-weight:650;letter-spacing:-.01em}
+body{font-feature-settings:"tnum" 0;-webkit-font-smoothing:antialiased}
+.eyebrow,.next-k,.facts span,th,.stats span,.hl>span:first-child,.kv span,.bd-stats span,.field label{font-weight:600;letter-spacing:.04em}
+@media (max-width:640px){h2{font-size:30px}.intro h1{font-size:46px}}
 </style>
 </head>
 <body>
@@ -1365,17 +1383,17 @@ const SWAP=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-wi
 /* which runners a chip changes: they get the effect animation and a glowing edge */
 function chipHits(i,team,show){const c=show.chip;return c==="wc"||(c==="tc"&&show.captain===i)||(c==="ax"&&team==="A")||(c==="bb"&&team==="B")||(c==="yo"&&E.youth(i))}
 function squadCard(i,k,show,locked,team){
-  const r=pr(),s=E.stats(i,r),d=r>0?E.price(i,r)-E.price(i,r-1):0,on=show.captain===i,m=show.chip==="tc"?3:2;
+  const r=pr(),s=E.stats(i,r),on=show.captain===i,m=show.chip==="tc"?3:2;
   const sq=ordered(show),mult=multOf(i,sq,show.chip,show.captain),hit=chipHits(i,team,show),other=swapSel!==null&&swapSel!==i&&plan.a.includes(swapSel)!==(team==="A");
-  /* the same FIFA card as the week board: form as the big rating, the controls sit under the shield */
+  /* the same FIFA card as the week board: class and multiplier up top, price and points per week big at the bottom */
   return `<div class="sqc ${on?"boosted":""} ${justAdded===i?"pop":""} ${justBoosted===i?"zap":""} ${swapSel===i?"sel":""} ${hit&&show.chip?"chipped":""} ${hit&&justChip?"hit":""}" style="--i:${k}" data-card="${i}">
    <div class="sqc-sh"><button class="lc fifa-${TIERS[tierOf(i,r)][0]} ${on?"cap":""}" style="--k:${k%5}" data-prof="${i}" aria-label="${esc(nameOf(i))}">
-    <span class="lc-rate"><b>${fp(s.perWeek)}</b><small>${D.runners[i].k}</small><small class="${mult>(team==="A"?2:1)?"hi":""}" title="This runner's points count ×${mult} this round">×${mult}</small></span>
+    <span class="lc-rate"><b>${D.runners[i].k}</b><small class="${mult>(team==="A"?2:1)?"hi":""}" title="This runner's points count ×${mult} this round">×${mult}</small></span>
     <span class="lc-ph"><span class="avw">${avatar(i,"lg")}${idleTag(i)}</span></span>
     ${on?`<span class="lc-cap"><i>Boost ×${m}</i></span>`:""}
     <b class="lc-name">${esc(surname(nameOf(i)))}</b>
-    <span class="lc-st"><span><b>${fm(E.price(i,r)).replace("k","")}</b><i>PRI</i></span><span><b class="${d>0?"up":d<0?"dn":""}">${d?fmd(d).replace("k",""):"–"}</b><i>CHG</i></span><span><b>${fp(s.form)}</b><i>FRM</i></span><span><b>${s.starts}</b><i>RAC</i></span></span>
-    <span class="lc-race">${esc(clubOf(i))}</span></button></div>
+    <span class="lc-st"><span><b>${fm(E.price(i,r))}</b><i>Price</i></span><span><b>${fp(s.perWeek)}</b><i>Pts / week</i></span></span>
+    </button></div>
    <div class="sqc-ctl"><button class="boost ${on?"on":""}" data-boost="${i}" ${locked?"disabled":""} aria-pressed="${on}" aria-label="${on?esc(nameOf(i))+" is boosted":"Boost "+esc(nameOf(i))}" title="${on?"Boosted "+m+"x":"Boost"}">${BOLT}<span>Boost</span></button>${locked?"":`<button class="sw" data-swap="${i}" title="Swap between A and B" aria-label="Swap ${esc(nameOf(i))} to the other team">${SWAP}</button><button class="rm" data-sell="${i}" title="Remove from squad" aria-label="Remove ${esc(nameOf(i))}">&times;</button>`}</div>
    ${other?`<button class="swapto" data-swapwith="${i}">Swap with ${esc(nameOf(swapSel).split(" ")[0])}</button>`:""}</div>`;
 }
@@ -1564,8 +1582,7 @@ function fifaCard(c,k){
     <span class="lc-ph">${avatar(c.i,"lg")}</span>
     ${c.boost?`<span class="lc-cap"><i>Boost ×${c.boostX}</i></span>`:""}
     <b class="lc-name">${esc(c.name)}</b>
-    <span class="lc-st"><span><b>${c.price.replace("k","")}</b><i>PRI</i></span><span><b>${c.nraces}</b><i>RAC</i></span><span><b>${c.form}</b><i>FRM</i></span><span><b>${c.avg}</b><i>WK</i></span></span>
-    <span class="lc-race">${esc(c.race)}</span></button>`;
+    <span class="lc-st"><span><b>${c.price}</b><i>Price</i></span><span><b>${c.avg}</b><i>Pts / week</i></span></span></button>`;
 }
 function weekBoard(){
   const b=boardData();if(!b)return "";const {w,weeks,x,r,rd}=b;
@@ -1602,7 +1619,7 @@ async function drawFifa(c,card,x,y,w,h,font){
   if(card.boost){c.save();shieldPath(c,x,y,w,h);c.lineWidth=7;c.strokeStyle=css("--accent");c.stroke();c.restore()}
   c.fillStyle=T.ink;c.textAlign="center";c.textBaseline="alphabetic";
   const L=x+w*.2;
-  c.font=`800 ${Math.round(h*.13)}px ${font}`;c.fillText(card.pts,L,y+h*.24);
+  c.font=`800 ${Math.round(h*.16)}px ${font}`;c.fillText(card.pts,L,y+h*.25);
   c.font=`700 ${Math.round(h*.05)}px ${font}`;c.fillText(card.cls,L,y+h*.31);c.fillStyle=T.soft;c.fillText("×"+card.m,L,y+h*.37);
   const cx=x+w*.62,cy=y+h*.25,R=w*.24,im=await loadImg(card.ph);
   c.save();c.beginPath();c.arc(cx,cy,R,0,Math.PI*2);c.closePath();
@@ -1610,34 +1627,32 @@ async function drawFifa(c,card,x,y,w,h,font){
   else{c.fillStyle=`hsl(${card.hue} 45% 86%)`;c.fill();c.fillStyle=`hsl(${card.hue} 55% 28%)`;c.font=`700 ${Math.round(R*.8)}px ${font}`;c.textBaseline="middle";c.fillText(card.ini,cx,cy+2);c.textBaseline="alphabetic"}
   c.restore();c.beginPath();c.arc(cx,cy,R,0,Math.PI*2);c.lineWidth=5;c.strokeStyle=T.rim;c.stroke();
   if(card.boost){const t="BOOST ×"+card.boostX;c.font=`700 ${Math.round(h*.04)}px ${font}`;const tw=c.measureText(t).width+28;c.fillStyle=css("--accent");roundRect(c,cx-tw/2,cy+R-h*.03,tw,h*.06,h*.03);c.fill();c.fillStyle=css("--accent-ink");c.fillText(t,cx,cy+R+h*.012)}
-  c.fillStyle=T.ink;let fs=Math.round(h*.075);c.font=`800 ${fs}px ${font}`;const nm=card.name.toUpperCase();while(c.measureText(nm).width>w*.82&&fs>14){fs--;c.font=`800 ${fs}px ${font}`}
+  c.fillStyle=T.ink;let fs=Math.round(h*.085);c.font=`800 ${fs}px ${font}`;const nm=card.name.toUpperCase();while(c.measureText(nm).width>w*.82&&fs>14){fs--;c.font=`800 ${fs}px ${font}`}
   c.fillText(nm,x+w/2,y+h*.58);
   c.strokeStyle=T.soft;c.lineWidth=2;c.beginPath();c.moveTo(x+w*.14,y+h*.61);c.lineTo(x+w*.86,y+h*.61);c.stroke();
-  const st=[[card.price.replace("k",""),"PRI"],[card.nraces,"RAC"],[card.form,"FRM"],[card.avg,"WK"]];
-  st.forEach(([v,l],k)=>{const sx=x+w*(.29+(k%2)*.42),sy=y+h*(.68+Math.floor(k/2)*.07);c.textAlign="right";c.fillStyle=T.ink;c.font=`800 ${Math.round(h*.05)}px ${font}`;c.fillText(v,sx,sy);c.textAlign="left";c.fillStyle=T.soft;c.font=`600 ${Math.round(h*.038)}px ${font}`;c.fillText(l,sx+8,sy)});
-  c.textAlign="center";c.fillStyle=T.soft;c.font=`600 ${Math.round(h*.034)}px ${font}`;let rt=card.race;while(c.measureText(rt).width>w*.7&&rt.length>4)rt=rt.slice(0,-2)+"…";c.fillText(rt,x+w/2,y+h*.84);
+  [[card.price,"PRICE"],[card.avg,"PTS / WEEK"]].forEach(([v,l],k)=>{const sx=x+w*(.3+k*.4);c.textAlign="center";c.fillStyle=T.ink;c.font=`800 ${Math.round(h*.105)}px ${font}`;c.fillText(v,sx,y+h*.73);c.fillStyle=T.soft;c.font=`700 ${Math.round(h*.038)}px ${font}`;c.fillText(l,sx,y+h*.79)});
 }
 function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim()||"#059669";
 async function makeShareImage(){
   const b=boardData();if(!b||!b.cards.length)throw new Error("no team");
-  try{await document.fonts.ready}catch(e){}
+  try{await Promise.all(["800 40px","700 40px","600 40px"].map(f=>document.fonts.load(f+' "Barlow Condensed"')));await document.fonts.ready}catch(e){}
   const W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
-  const font=getComputedStyle(document.body).fontFamily||"sans-serif",acc=css("--accent"),bg=css("--bg"),surf=css("--surface"),text=css("--text"),t2=css("--text-2"),t3=css("--text-3"),line=css("--line-2");
+  const font=getComputedStyle(document.body).fontFamily||"sans-serif",dfont=css("--display")||font,acc=css("--accent"),bg=css("--bg"),surf=css("--surface"),text=css("--text"),t2=css("--text-2"),t3=css("--text-3"),line=css("--line-2");
   c.fillStyle=bg;c.fillRect(0,0,W,H);
   c.save();c.strokeStyle=acc;c.globalAlpha=.08;c.lineWidth=2;for(let k=1;k<26;k++){c.beginPath();c.arc(W/2,H*1.15,k*58,0,Math.PI*2);c.stroke()}c.restore();
   c.fillStyle=surf;c.globalAlpha=.86;roundRect(c,40,40,W-80,H-80,48);c.fill();c.globalAlpha=1;
-  c.textBaseline="alphabetic";c.textAlign="left";c.fillStyle=text;c.font=`700 40px ${font}`;c.fillText("Orienteering",88,124);const ow=c.measureText("Orienteering ").width;c.fillStyle=acc;c.fillText("Fantasy",88+ow,124);
-  c.textAlign="right";c.fillStyle=text;c.font=`700 38px ${font}`;let me=b.me;while(c.measureText(me).width>380&&me.length>3)me=me.slice(0,-2)+"…";c.fillText(me,W-88,118);if(b.mgr){c.fillStyle=t2;c.font=`500 26px ${font}`;c.fillText(b.mgr,W-88,152)}
+  c.textBaseline="alphabetic";c.textAlign="left";c.fillStyle=text;c.font=`800 48px ${dfont}`;c.fillText("Orienteering",88,124);const ow=c.measureText("Orienteering ").width;c.fillStyle=acc;c.fillText("Fantasy",88+ow,124);
+  c.textAlign="right";c.fillStyle=text;c.font=`800 44px ${dfont}`;let me=b.me;while(c.measureText(me).width>380&&me.length>3)me=me.slice(0,-2)+"…";c.fillText(me,W-88,118);if(b.mgr){c.fillStyle=t2;c.font=`500 26px ${font}`;c.fillText(b.mgr,W-88,152)}
   const gx=245,gy=310,gr=135;c.lineCap="round";c.lineWidth=24;c.strokeStyle=line;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*2.25);c.stroke();
   if(b.frac>0){c.strokeStyle=acc;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*(.75+1.5*b.frac));c.stroke()}
-  c.textAlign="center";c.fillStyle=acc;c.font=`800 ${b.x&&fp(b.score).length>3?94:124}px ${font}`;c.fillText(b.x?fp(b.score):"–",gx,gy+38);c.fillStyle=t2;c.font=`500 30px ${font}`;c.fillText(b.x?"points":"not played",gx,gy+86);
+  c.textAlign="center";c.fillStyle=acc;c.font=`800 ${b.x&&fp(b.score).length>3?120:150}px ${dfont}`;c.fillText(b.x?fp(b.score):"–",gx,gy+38);c.fillStyle=t2;c.font=`500 30px ${font}`;c.fillText(b.x?"points":"not played",gx,gy+86);
   const S=[["TRANSFERS",String(b.tr)],["TOTAL",fp(b.total)],["PLAYERS",b.players?String(b.players):"–"],["HIGHEST",b.best!==null?fp(b.best):"–"]];
-  S.forEach(([l,v],k)=>{const sx=520+(k%2)*250,sy=240+Math.floor(k/2)*130;c.textAlign="left";c.fillStyle=t3;c.font=`600 22px ${font}`;c.fillText(l,sx,sy);c.fillStyle=text;c.font=`800 54px ${font}`;c.fillText(v,sx,sy+62)});
-  c.textAlign="center";c.fillStyle=text;c.font=`800 46px ${font}`;c.fillText("Round "+b.rd.n+" · "+(b.team==="B"?"B team ×1":"A team ×2"),W/2,518);
+  S.forEach(([l,v],k)=>{const sx=520+(k%2)*250,sy=240+Math.floor(k/2)*130;c.textAlign="left";c.fillStyle=t3;c.font=`600 22px ${font}`;c.fillText(l,sx,sy);c.fillStyle=text;c.font=`800 64px ${dfont}`;c.fillText(v,sx,sy+62)});
+  c.textAlign="center";c.fillStyle=text;c.font=`800 54px ${dfont}`;c.fillText("Round "+b.rd.n+" · "+(b.team==="B"?"B team ×1":"A team ×2"),W/2,518);
   c.fillStyle=t2;c.font=`500 28px ${font}`;c.fillText(b.when+(b.x&&b.x.chip?" · "+CHIPINFO[b.x.chip][0]:""),W/2,556);
   const ch=340,cw=Math.round(ch*.72),y0=592,gap=18,sx=Math.round((W-3*cw)/4),pos=[[sx,y0],[W-sx-cw,y0],[(W-cw)/2,y0+(ch+gap)/2],[sx,y0+ch+gap],[W-sx-cw,y0+ch+gap]];
-  for(let k=0;k<b.cards.length;k++)await drawFifa(c,b.cards[k],pos[k][0],pos[k][1],cw,ch,font);
+  for(let k=0;k<b.cards.length;k++)await drawFifa(c,b.cards[k],pos[k][0],pos[k][1],cw,ch,dfont);
   c.textAlign="center";c.fillStyle=t3;c.font=`500 24px ${font}`;c.fillText(location.host?location.host+location.pathname.replace(/index\.html$/,""):"Orienteering Fantasy",W/2,H-58);
   return await new Promise((res,rej)=>cv.toBlob(bl=>bl?res(bl):rej(new Error("picture")),"image/png"));
 }
