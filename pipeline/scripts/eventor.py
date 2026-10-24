@@ -22,7 +22,7 @@ C = f"{S}/data/eventor"; os.makedirs(f"{C}/classes", exist_ok=True); os.makedirs
 # Kept deliberately light on Eventor's servers: one request at a time with a pause between them, results only for
 # races in the last RECENT days (the season's history already comes from liveresultat), and everything cached so a
 # finished race's results and class lists are fetched once and never again. A normal night is a few dozen requests.
-TODAY = dt.date.today(); RECENT = 10; AHEAD = 14; SEASON_END = "2026-12-31"
+TODAY = dt.date.today(); RECENT = 10; AHEAD = 21; SEASON_END = "2026-12-31"
 FROM = (TODAY - dt.timedelta(days=RECENT)).isoformat()
 PAUSE = 1.0
 OFFSET = 9_000_000
@@ -297,7 +297,8 @@ jsave(f"{C}/weeks.json", wk); jsave(f"{S}/data/eventor_weeks.json", dict(sorted(
 print("upcoming races", len(up), "big competitions per week ahead:", {k: len(v) for k, v in sorted(weeks.items()) if k >= monday(TODAY).isoformat()})
 
 # ---- entries for the races in this game week and the next: who is running ----
-horizon = (monday(TODAY) + dt.timedelta(days=13)).isoformat()
+# this game week and all of the next one (on a Saturday, the coming game week starts in two days)
+horizon = (monday(TODAY) + dt.timedelta(days=20)).isoformat()
 want = sorted({u["eid"] for u in up if u["date"] <= horizon})
 entries = []
 for i in range(0, len(want), 15):
