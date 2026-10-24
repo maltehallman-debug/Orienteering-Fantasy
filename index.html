@@ -480,24 +480,36 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 .bd-tabs button.on{background:var(--accent);color:var(--accent-ink)}.bd-tabs small{font-size:11px;opacity:.8}
 .bd-empty{text-align:center;color:var(--text-2);font-size:13.5px;margin:8px 0}
 /* five runners in a 2-1-2 pattern, in the site's gold/silver/bronze */
-.lineup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:auto;column-gap:8px;row-gap:0}
-.lineup>.lc:nth-child(1){grid-column:1;grid-row:1/3}.lineup>.lc:nth-child(2){grid-column:3;grid-row:1/3}
-.lineup>.lc:nth-child(3){grid-column:2;grid-row:2/4;margin:10px 0}
-.lineup>.lc:nth-child(4){grid-column:1;grid-row:3/5;margin-top:10px}.lineup>.lc:nth-child(5){grid-column:3;grid-row:3/5;margin-top:10px}
-.lc{position:relative;display:grid;border:0;padding:0;border-radius:14px;overflow:hidden;text-align:center;color:var(--text);background:var(--tbg,var(--surface-2));box-shadow:var(--shadow),inset 0 0 0 1.5px color-mix(in srgb,var(--t2,var(--line)) 45%,transparent),inset 0 3px 0 var(--t2,var(--line));font:inherit;cursor:pointer;min-width:0}
-.lc-top{position:relative;display:grid;place-items:center;padding:8px 4px 7px}
-.lc .av.lg{--s:clamp(40px,12vw,56px)}.lc .av:not(.ph){box-shadow:0 0 0 2.5px var(--t2),0 6px 14px -6px var(--tg)}.lc .av.ph{box-shadow:0 0 0 2.5px var(--t2)}
-.lc-cls,.lc-m{position:absolute;top:7px;font:700 9.5px/1 var(--mono);color:var(--t1);background:var(--t3);padding:3px 4px;border-radius:4px}.lc-cls{left:6px}.lc-m{right:6px}
-.lc-cap{position:absolute;left:50%;top:calc(clamp(40px,12vw,56px) + 8px);transform:translate(-50%,-30%);z-index:2;font:700 9px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--accent);color:var(--accent-ink);padding:4px 7px;border-radius:999px;white-space:nowrap}
-.lc-mid{display:grid;gap:2px;padding:9px 4px 5px}
-.lc-name{font:700 clamp(13px,3.9vw,16px)/1.05 var(--font);letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
-[data-theme="dark"] .lc-name{color:#fff}
-.lc-nums{display:flex;justify-content:center;gap:8px;align-items:baseline}
-.lc-p{font:700 clamp(17px,5vw,22px)/1 var(--font);color:var(--accent)}.lc-k{font:700 clamp(13px,3.8vw,16px)/1 var(--font);color:var(--t1)}
-.lc-nums small{font-size:9.5px;font-weight:600;margin-left:1px;opacity:.75}
-.lc-foot{display:grid;gap:1px;padding:5px 5px 6px;background:color-mix(in srgb,var(--surface) 55%,transparent);font-size:10.5px;line-height:1.15}
-.lc-foot span{display:flex;justify-content:space-between;gap:4px;min-width:0}.lc-foot i{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-2)}.lc-foot b{flex:none}
-.lc.cap{box-shadow:var(--shadow),0 0 0 2.5px var(--accent),0 0 18px -4px var(--accent)}
+.lineup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 6px;align-items:center;max-width:470px;margin:4px auto 0}
+.lu-col{display:grid;gap:8px;min-width:0}
+/* FIFA-style cards: a shield cut from metal, the week's points as the big rating, class and multiplier under it.
+   Everything inside is sized from the card's own width (cqw), so it is the same card on a phone and a desktop. */
+.lineup{filter:drop-shadow(0 8px 12px rgba(15,23,42,.26))}
+[data-theme="dark"] .lineup{filter:drop-shadow(0 10px 16px rgba(0,0,0,.6))}
+.lc{--sh:polygon(0 7%,13% 1.5%,33% 3%,50% 0,67% 3%,87% 1.5%,100% 7%,100% 84%,50% 100%,0 84%);container-type:inline-size;
+  position:relative;display:block;width:100%;border:0;padding:0;font:inherit;cursor:pointer;min-width:0;
+  clip-path:var(--sh);background:var(--rim);color:var(--ink);text-align:center;aspect-ratio:.72}
+.lc::before{content:"";position:absolute;inset:3.5% 3.5% 3%;clip-path:var(--sh);background:var(--metal);z-index:0}
+.lc::after{content:"";position:absolute;inset:0;clip-path:var(--sh);background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.55) 45%,transparent 58%) no-repeat;background-size:250% 100%;background-position:120% 0;z-index:1;pointer-events:none;mix-blend-mode:soft-light}
+.lc>*{position:absolute;z-index:2}
+.fifa-gold{--rim:#fff3c4;--ink:#3d2a00;--soft:rgba(61,42,0,.62);--metal:linear-gradient(135deg,#fff6cf 0%,#f3d36b 25%,#c99a2e 50%,#f7e09a 75%,#a8781f 100%)}
+.fifa-silver{--rim:#ffffff;--ink:#111827;--soft:rgba(17,24,39,.6);--metal:linear-gradient(135deg,#ffffff 0%,#e3e8ef 25%,#a7b2c1 50%,#f1f4f8 75%,#7f8a9b 100%)}
+.fifa-bronze{--rim:#ffe9d6;--ink:#2f1405;--soft:rgba(47,20,5,.62);--metal:linear-gradient(135deg,#ffe4cc 0%,#e9a26a 25%,#b4642f 50%,#f2b98a 75%,#8a4520 100%)}
+.lc-rate{left:6%;top:12%;width:30%;display:grid;justify-items:center;line-height:1}
+.lc-rate b{font:800 18cqw/1 var(--font);letter-spacing:-.05em}
+.lc-rate small{font:700 7.5cqw/1.25 var(--font);margin-top:1.5cqw}.lc-rate small+small{color:var(--soft);margin-top:0}
+.lc-ph{left:38%;top:9%;width:48cqw;height:48cqw;display:grid;place-items:center}
+.lc .av.lg{--s:44cqw;box-shadow:0 0 0 1.6cqw var(--rim),0 4px 10px -4px rgba(0,0,0,.4);font-size:15cqw}
+.lc-cap{left:38%;width:48cqw;top:calc(9% + 42cqw);display:flex;justify-content:center}
+.lc-cap i{font:700 6cqw/1 var(--mono);font-style:normal;letter-spacing:.04em;text-transform:uppercase;background:var(--accent);color:var(--accent-ink);padding:1.4cqw 3cqw;border-radius:999px;white-space:nowrap}
+.lc-name{left:10%;right:10%;top:52%;font:800 9.5cqw/1.15 var(--font);text-transform:uppercase;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:2cqw;border-bottom:1px solid var(--soft)}
+.lc-st{left:12%;right:12%;top:64%;display:grid;grid-template-columns:1fr 1fr;gap:1cqw 3cqw;font-size:7.5cqw;line-height:1.15}
+.lc-st span{display:flex;gap:1.2cqw;align-items:baseline;justify-content:center}.lc-st b{font-weight:800}.lc-st i{font-style:normal;font-weight:600;color:var(--soft);font-size:.82em}
+.lc-race{left:18%;right:18%;top:80.5%;font-size:6.2cqw;line-height:1.2;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc.cap{background:var(--accent)}
+@media (prefers-reduced-motion:no-preference){.lc::after{animation:fifaShine 5s ease-in-out infinite;animation-delay:calc(var(--k) * .6s)}@keyframes fifaShine{0%,55%{background-position:120% 0}100%{background-position:-120% 0}}}
+.bd-share{display:flex;flex-direction:column;align-items:center;gap:6px;margin:12px auto 4px;max-width:560px}
+.bd-share .btn{width:100%;max-width:360px}
 @media (prefers-reduced-motion:no-preference){
   .bd-gauge .g1{transition:stroke-dasharray 1.2s var(--ease-cine)}
   .board .lc{animation:lcIn .7s var(--ease-cine) both;animation-delay:calc(.15s + var(--k) * 80ms)}
@@ -1489,40 +1501,122 @@ function evLines(i,rd){
 let lpTeam="A";
 const surname=n=>{const w=n.trim().split(/\s+/);return w.length>1?w.slice(1).join(" "):w[0]};
 const shortRace=e=>{const n=compName(e.name).replace(/\((?:[DH]\d\d[^)]*|[^)]*relay)\)/g,"").replace(/^(DM|GM|SM)[, ]+/i,"$1 ").split(/[,:–-]/)[0].trim();return n.length>14?n.slice(0,13)+"…":n};
-function weekBoard(){
+/* everything the board shows, worked out once: the page and the share picture are drawn from the same numbers */
+function boardData(){
   const L=state.log,weeks=L.map((x,k)=>({k,x,r:x.round}));if(!done())weeks.push({k:L.length,x:null,r:R()});
-  if(!weeks.length)return "";
+  if(!weeks.length)return null;
   const w=weeks[Math.max(0,Math.min(viewRound,weeks.length-1))],x=w.x,r=w.r,rd=D.rounds[r];
   const sq=x?x.squad.slice():(picks[r]&&isLive()?picks[r].squad.slice():ordered(plan));
   const cap=x?x.capLive:(picks[r]&&isLive()?picks[r].captain:plan.captain),chip=x?x.chip:(picks[r]&&isLive()?picks[r].chip:plan.chip);
   const total=x?L.slice(0,w.k+1).reduce((a,l)=>a+l.total,0):state.total;
   const tr=x?x.transfers:(state.squad.length?E.transfersFor(state,sq).n:0);
   const G=isLive()&&r>=LIVE?(leagueRows.GLOBAL||[]):[],gs=G.map(m=>m.by[r]?m.by[r].total:null).filter(v=>v!==null);
-  const best=gs.length?Math.max(...gs):null;
-  const score=x?x.total:0,frac=Math.max(0,Math.min(1,score/Math.max(best||0,1000)));
+  const best=gs.length?Math.max(...gs):null,score=x?x.total:0;
   const when=isFinal(r)?"Ended Sunday "+dshort(rd.end):hasStarted(r)?"Ends Sunday "+dshort(rd.end):"Starts Monday "+dshort(rd.start);
-  const team=lpTeam==="B"?sq.slice(AS):sq.slice(0,AS);
-  const card=(i,k)=>{
-    const kk=sq.indexOf(i),m=multOf(i,sq,chip,cap),boost=i===cap&&(!x||E.starts[r][i]>0),played=!!x;
-    const races=played?E.hist[i].filter(h=>rd.ev.includes(h.ev)):[];
-    const pts=played?(E.starts[r][i]?fp(E.pts[r][i]*m):"–"):"–";
-    const foot=played?(races.length?races.slice(0,2).map(h=>`<span><i>${esc(shortRace(D.events[h.ev]))}</i><b>${h.kind?["","DNF","MP","DSQ"][h.kind]:fp(h.pts*m)+"p"}</b></span>`).join(""):`<span><i>No race</i><b>0p</b></span>`)
-      :`<span><i>Form</i><b>${fp(E.stats(i,pr()).form)}</b></span><span><i>Per week</i><b>${fp(E.stats(i,pr()).perWeek)}</b></span>`;
-    return `<button class="lc lt-${TIERS[tierOf(i,r)][0]} ${boost?"cap":""}" style="--k:${k}" data-prof="${i}" aria-label="${esc(nameOf(i))}">
-      <span class="lc-top"><span class="lc-cls">${D.runners[i].k}</span><span class="lc-m">×${m}</span>${avatar(i,"lg")}</span>
-      ${boost?`<span class="lc-cap">Boost ×${chip==="tc"?3:2}</span>`:""}
-      <span class="lc-mid"><b class="lc-name">${esc(surname(nameOf(i)))}</b><span class="lc-nums"><span class="lc-p">${pts}<small>p</small></span><span class="lc-k">${fm(E.price(i,Math.min(r,E.R-1))).replace("k","")}<small>k</small></span></span></span>
-      <span class="lc-foot">${foot}</span></button>`};
-  const me=dbOk?(myTeam||mgrName||"My team"):(mgrName||"My team");
+  const team=sq.length===D.squad?(lpTeam==="B"?sq.slice(AS):sq.slice(0,AS)):[];
+  const cards=team.map(i=>{
+    const m=multOf(i,sq,chip,cap),played=!!x,st=E.stats(i,pr()),races=played?E.hist[i].filter(h=>rd.ev.includes(h.ev)):[];
+    const ph=photoUrl.get(D.runners[i].id)||D.runners[i].ph||null;
+    return {i,m,boost:i===cap&&(!x||E.starts[r][i]>0),boostX:chip==="tc"?3:2,tier:TIERS[tierOf(i,r)][0],cls:D.runners[i].k,name:surname(nameOf(i)),full:nameOf(i),
+      pts:played?(E.starts[r][i]?fp(E.pts[r][i]*m):"–"):"–",price:fm(E.price(i,Math.min(r,E.R-1))),nraces:played?String(races.length):"–",form:fp(st.form),avg:fp(st.perWeek),
+      race:played?(races.length?shortRace(D.events[races[0].ev])+" "+(races[0].kind?["","DNF","MP","DSQ"][races[0].kind]:fp(races[0].pts*m)+"p"):"No race"):"Not raced yet",
+      ph,ini:nameOf(i).split(/\s+/).filter(Boolean).map(w=>w[0]).filter((c,k,a)=>k===0||k===a.length-1).join("").toUpperCase(),hue:hsh(D.runners[i].c)%360}});
+  const me=myTeam||mgrName||"My team";
+  return {w,weeks,x,r,rd,sq,cap,chip,total,tr,players:G.length,best,score,frac:Math.max(0,Math.min(1,score/Math.max(best||0,1000))),when,cards,me,mgr:myTeam&&mgrName?mgrName:"",team:lpTeam==="B"?"B":"A"};
+}
+function fifaCard(c,k){
+  return `<button class="lc fifa-${c.tier} ${c.boost?"cap":""}" style="--k:${k}" data-prof="${c.i}" aria-label="${esc(c.full)}">
+    <span class="lc-rate"><b>${c.pts}</b><small>${c.cls}</small><small>×${c.m}</small></span>
+    <span class="lc-ph">${avatar(c.i,"lg")}</span>
+    ${c.boost?`<span class="lc-cap"><i>Boost ×${c.boostX}</i></span>`:""}
+    <b class="lc-name">${esc(c.name)}</b>
+    <span class="lc-st"><span><b>${c.price.replace("k","")}</b><i>PRI</i></span><span><b>${c.nraces}</b><i>RAC</i></span><span><b>${c.form}</b><i>FRM</i></span><span><b>${c.avg}</b><i>WK</i></span></span>
+    <span class="lc-race">${esc(c.race)}</span></button>`;
+}
+function weekBoard(){
+  const b=boardData();if(!b)return "";const {w,weeks,x,r,rd}=b;
   return `<section class="board" aria-label="Round ${rd.n}">
-   <div class="bd-head"><span class="bd-brand">Orienteering<em>Fantasy</em></span><span class="bd-me"><span><b>${esc(me)}</b>${dbOk&&myTeam&&mgrName?`<small>${esc(mgrName)}</small>`:""}</span>${dbOk?mgrDot({id:cloud.uid,name:mgrName||"M",av:myAv}):""}</span></div>
-   <div class="bd-top"><div class="bd-gauge"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="g0" cx="100" cy="100" r="80" pathLength="100"/>${frac>0?`<circle class="g1" cx="100" cy="100" r="80" pathLength="100" style="--f:${(frac*75).toFixed(2)}"/>`:""}</svg>
-    <div class="bd-score"><b class="score" data-count="${score/10}" data-key="board${r}">${x?fp(score):"–"}</b><span>${x?(isFinal(r)?"points":"so far"):"not played"}</span></div></div>
-   <div class="bd-stats"><div><span>Transfers</span><b>${tr}</b></div><div><span>Total</span><b>${fp(total)}</b></div><div><span>Players</span><b>${G.length||"–"}</b></div><div><span>Highest</span><b>${best!==null?fp(best):"–"}</b></div></div></div>
-   <div class="bd-week"><button class="bd-arr" data-round="${w.k-1}" ${w.k<=0?"disabled":""} aria-label="Previous round">‹</button><div><b>Round ${rd.n}</b><span>${when}${x&&x.chip?" · "+esc(CHIPINFO[x.chip][0]):""}${x&&x.carried?" · last round's squad":""}</span></div><button class="bd-arr" data-round="${w.k+1}" ${w.k>=weeks.length-1?"disabled":""} aria-label="Next round">›</button></div>
+   <div class="bd-head"><span class="bd-brand">Orienteering<em>Fantasy</em></span><span class="bd-me"><span><b>${esc(b.me)}</b>${b.mgr?`<small>${esc(b.mgr)}</small>`:""}</span>${dbOk?mgrDot({id:cloud.uid,name:mgrName||"M",av:myAv}):""}</span></div>
+   <div class="bd-top"><div class="bd-gauge"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="g0" cx="100" cy="100" r="80" pathLength="100"/>${b.frac>0?`<circle class="g1" cx="100" cy="100" r="80" pathLength="100" style="--f:${(b.frac*75).toFixed(2)}"/>`:""}</svg>
+    <div class="bd-score"><b class="score" data-count="${b.score/10}" data-key="board${r}">${x?fp(b.score):"–"}</b><span>${x?(isFinal(r)?"points":"so far"):"not played"}</span></div></div>
+   <div class="bd-stats"><div><span>Transfers</span><b>${b.tr}</b></div><div><span>Total</span><b>${fp(b.total)}</b></div><div><span>Players</span><b>${b.players||"–"}</b></div><div><span>Highest</span><b>${b.best!==null?fp(b.best):"–"}</b></div></div></div>
+   <div class="bd-week"><button class="bd-arr" data-round="${w.k-1}" ${w.k<=0?"disabled":""} aria-label="Previous round">‹</button><div><b>Round ${rd.n}</b><span>${b.when}${x&&x.chip?" · "+esc(CHIPINFO[x.chip][0]):""}${x&&x.carried?" · last round's squad":""}</span></div><button class="bd-arr" data-round="${w.k+1}" ${w.k>=weeks.length-1?"disabled":""} aria-label="Next round">›</button></div>
    <div class="bd-tabs"><button data-lteam="A" class="${lpTeam!=="B"?"on":""}">A team <small>×2</small></button><button data-lteam="B" class="${lpTeam==="B"?"on":""}">B team <small>×1</small></button></div>
-   ${sq.length===D.squad?`<div class="lineup">${team.map(card).join("")}</div>`:`<p class="bd-empty">${x?"":"Pick all "+D.squad+" runners on the Team tab and they show up here."}</p>`}
-  </section>`;
+   ${b.cards.length?`<div class="lineup">${[[0,3],[2],[1,4]].map(col=>`<div class="lu-col">${col.filter(k=>b.cards[k]).map(k=>fifaCard(b.cards[k],k)).join("")}</div>`).join("")}</div>`:`<p class="bd-empty">${x?"":"Pick all "+D.squad+" runners on the Team tab and they show up here."}</p>`}
+  </section>
+  ${b.cards.length?`<div class="bd-share"><button class="btn on" id="shareBoard" ${shareBusy?"disabled":""}>${SHAREIC}${shareBusy?"Making the picture…":"Share "+(b.team==="B"?"B team":"A team")+" and points"}</button>${shareMsg?`<span class="note">${esc(shareMsg)}</span>`:""}</div>`:""}`;
+}
+/* ---------- the share picture: drawn on a canvas (1080x1350, 4:5) from the same data, so it is sharp and exact ---------- */
+let shareBusy=false,shareMsg="";
+const SHAREIC=`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>`;
+const FIFA={gold:{stops:["#fff6cf","#f3d36b","#c99a2e","#f7e09a","#a8781f"],rim:"#fff3c4",ink:"#3d2a00",soft:"rgba(61,42,0,.62)"},
+  silver:{stops:["#ffffff","#e3e8ef","#a7b2c1","#f1f4f8","#7f8a9b"],rim:"#ffffff",ink:"#111827",soft:"rgba(17,24,39,.6)"},
+  bronze:{stops:["#ffe4cc","#e9a26a","#b4642f","#f2b98a","#8a4520"],rim:"#ffe9d6",ink:"#2f1405",soft:"rgba(47,20,5,.62)"}};
+function shieldPath(c,x,y,w,h){
+  const P=[[0,.07],[.13,.015],[.33,.03],[.5,0],[.67,.03],[.87,.015],[1,.07],[1,.84],[.5,1],[0,.84]];
+  c.beginPath();P.forEach(([u,v],k)=>{const X=x+u*w,Y=y+v*h;k?c.lineTo(X,Y):c.moveTo(X,Y)});c.closePath();
+}
+function loadImg(src){return new Promise(res=>{if(!src)return res(null);const im=new Image();im.crossOrigin="anonymous";im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src})}
+async function drawFifa(c,card,x,y,w,h,font){
+  const T=FIFA[card.tier]||FIFA.bronze;
+  c.save();c.shadowColor="rgba(0,0,0,.28)";c.shadowBlur=26;c.shadowOffsetY=12;
+  shieldPath(c,x,y,w,h);c.fillStyle=T.rim;c.fill();c.restore();
+  const g=c.createLinearGradient(x,y,x+w,y+h);T.stops.forEach((col,k)=>g.addColorStop(k/(T.stops.length-1),col));
+  c.save();shieldPath(c,x+w*.035,y+h*.03,w*.93,h*.94);c.fillStyle=g;c.fill();c.clip();
+  const sh=c.createLinearGradient(x,y,x+w,y+h*.6);sh.addColorStop(.25,"rgba(255,255,255,0)");sh.addColorStop(.42,"rgba(255,255,255,.55)");sh.addColorStop(.55,"rgba(255,255,255,0)");c.fillStyle=sh;c.fillRect(x,y,w,h);
+  c.restore();
+  if(card.boost){c.save();shieldPath(c,x,y,w,h);c.lineWidth=7;c.strokeStyle=css("--accent");c.stroke();c.restore()}
+  c.fillStyle=T.ink;c.textAlign="center";c.textBaseline="alphabetic";
+  const L=x+w*.2;
+  c.font=`800 ${Math.round(h*.13)}px ${font}`;c.fillText(card.pts,L,y+h*.24);
+  c.font=`700 ${Math.round(h*.05)}px ${font}`;c.fillText(card.cls,L,y+h*.31);c.fillStyle=T.soft;c.fillText("×"+card.m,L,y+h*.37);
+  const cx=x+w*.62,cy=y+h*.25,R=w*.24,im=await loadImg(card.ph);
+  c.save();c.beginPath();c.arc(cx,cy,R,0,Math.PI*2);c.closePath();
+  if(im){c.clip();const s=Math.max(2*R/im.width,2*R/im.height);c.drawImage(im,cx-im.width*s/2,cy-im.height*s/2,im.width*s,im.height*s)}
+  else{c.fillStyle=`hsl(${card.hue} 45% 86%)`;c.fill();c.fillStyle=`hsl(${card.hue} 55% 28%)`;c.font=`700 ${Math.round(R*.8)}px ${font}`;c.textBaseline="middle";c.fillText(card.ini,cx,cy+2);c.textBaseline="alphabetic"}
+  c.restore();c.beginPath();c.arc(cx,cy,R,0,Math.PI*2);c.lineWidth=5;c.strokeStyle=T.rim;c.stroke();
+  if(card.boost){const t="BOOST ×"+card.boostX;c.font=`700 ${Math.round(h*.04)}px ${font}`;const tw=c.measureText(t).width+28;c.fillStyle=css("--accent");roundRect(c,cx-tw/2,cy+R-h*.03,tw,h*.06,h*.03);c.fill();c.fillStyle=css("--accent-ink");c.fillText(t,cx,cy+R+h*.012)}
+  c.fillStyle=T.ink;let fs=Math.round(h*.075);c.font=`800 ${fs}px ${font}`;const nm=card.name.toUpperCase();while(c.measureText(nm).width>w*.82&&fs>14){fs--;c.font=`800 ${fs}px ${font}`}
+  c.fillText(nm,x+w/2,y+h*.58);
+  c.strokeStyle=T.soft;c.lineWidth=2;c.beginPath();c.moveTo(x+w*.14,y+h*.61);c.lineTo(x+w*.86,y+h*.61);c.stroke();
+  const st=[[card.price.replace("k",""),"PRI"],[card.nraces,"RAC"],[card.form,"FRM"],[card.avg,"WK"]];
+  st.forEach(([v,l],k)=>{const sx=x+w*(.29+(k%2)*.42),sy=y+h*(.68+Math.floor(k/2)*.07);c.textAlign="right";c.fillStyle=T.ink;c.font=`800 ${Math.round(h*.05)}px ${font}`;c.fillText(v,sx,sy);c.textAlign="left";c.fillStyle=T.soft;c.font=`600 ${Math.round(h*.038)}px ${font}`;c.fillText(l,sx+8,sy)});
+  c.textAlign="center";c.fillStyle=T.soft;c.font=`600 ${Math.round(h*.034)}px ${font}`;let rt=card.race;while(c.measureText(rt).width>w*.7&&rt.length>4)rt=rt.slice(0,-2)+"…";c.fillText(rt,x+w/2,y+h*.84);
+}
+function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim()||"#059669";
+async function makeShareImage(){
+  const b=boardData();if(!b||!b.cards.length)throw new Error("no team");
+  try{await document.fonts.ready}catch(e){}
+  const W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
+  const font=getComputedStyle(document.body).fontFamily||"sans-serif",acc=css("--accent"),bg=css("--bg"),surf=css("--surface"),text=css("--text"),t2=css("--text-2"),t3=css("--text-3"),line=css("--line-2");
+  c.fillStyle=bg;c.fillRect(0,0,W,H);
+  c.save();c.strokeStyle=acc;c.globalAlpha=.08;c.lineWidth=2;for(let k=1;k<26;k++){c.beginPath();c.arc(W/2,H*1.15,k*58,0,Math.PI*2);c.stroke()}c.restore();
+  c.fillStyle=surf;c.globalAlpha=.86;roundRect(c,40,40,W-80,H-80,48);c.fill();c.globalAlpha=1;
+  c.textBaseline="alphabetic";c.textAlign="left";c.fillStyle=text;c.font=`700 40px ${font}`;c.fillText("Orienteering",88,124);const ow=c.measureText("Orienteering ").width;c.fillStyle=acc;c.fillText("Fantasy",88+ow,124);
+  c.textAlign="right";c.fillStyle=text;c.font=`700 38px ${font}`;let me=b.me;while(c.measureText(me).width>380&&me.length>3)me=me.slice(0,-2)+"…";c.fillText(me,W-88,118);if(b.mgr){c.fillStyle=t2;c.font=`500 26px ${font}`;c.fillText(b.mgr,W-88,152)}
+  const gx=245,gy=310,gr=135;c.lineCap="round";c.lineWidth=24;c.strokeStyle=line;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*2.25);c.stroke();
+  if(b.frac>0){c.strokeStyle=acc;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*(.75+1.5*b.frac));c.stroke()}
+  c.textAlign="center";c.fillStyle=acc;c.font=`800 ${b.x&&fp(b.score).length>3?94:124}px ${font}`;c.fillText(b.x?fp(b.score):"–",gx,gy+38);c.fillStyle=t2;c.font=`500 30px ${font}`;c.fillText(b.x?"points":"not played",gx,gy+86);
+  const S=[["TRANSFERS",String(b.tr)],["TOTAL",fp(b.total)],["PLAYERS",b.players?String(b.players):"–"],["HIGHEST",b.best!==null?fp(b.best):"–"]];
+  S.forEach(([l,v],k)=>{const sx=520+(k%2)*250,sy=240+Math.floor(k/2)*130;c.textAlign="left";c.fillStyle=t3;c.font=`600 22px ${font}`;c.fillText(l,sx,sy);c.fillStyle=text;c.font=`800 54px ${font}`;c.fillText(v,sx,sy+62)});
+  c.textAlign="center";c.fillStyle=text;c.font=`800 46px ${font}`;c.fillText("Round "+b.rd.n+" · "+(b.team==="B"?"B team ×1":"A team ×2"),W/2,518);
+  c.fillStyle=t2;c.font=`500 28px ${font}`;c.fillText(b.when+(b.x&&b.x.chip?" · "+CHIPINFO[b.x.chip][0]:""),W/2,556);
+  const ch=340,cw=Math.round(ch*.72),y0=592,gap=18,sx=Math.round((W-3*cw)/4),pos=[[sx,y0],[W-sx-cw,y0],[(W-cw)/2,y0+(ch+gap)/2],[sx,y0+ch+gap],[W-sx-cw,y0+ch+gap]];
+  for(let k=0;k<b.cards.length;k++)await drawFifa(c,b.cards[k],pos[k][0],pos[k][1],cw,ch,font);
+  c.textAlign="center";c.fillStyle=t3;c.font=`500 24px ${font}`;c.fillText(location.host?location.host+location.pathname.replace(/index\.html$/,""):"Orienteering Fantasy",W/2,H-58);
+  return await new Promise((res,rej)=>cv.toBlob(bl=>bl?res(bl):rej(new Error("picture")),"image/png"));
+}
+async function shareBoard(){
+  if(shareBusy)return;shareBusy=true;shareMsg="";render();
+  try{
+    const b=boardData(),blob=await makeShareImage(),name=`orienteering-fantasy-round-${b.rd.n}-${b.team}-team.png`;
+    const file=new File([blob],name,{type:"image/png"}),text=`${b.me}: ${b.x?fp(b.score)+" points in round "+b.rd.n:"my team for round "+b.rd.n} · Orienteering Fantasy`;
+    if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:"Orienteering Fantasy",text})}catch(e){if(e&&e.name!=="AbortError")throw e}}
+    else{const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);shareMsg="Picture saved to your downloads."}
+    window.__lastShare={size:blob.size,name};
+  }catch(e){shareMsg="Could not make the picture. Try again."}
+  shareBusy=false;render();
 }
 function roundsView(){
   const board=weekBoard();
@@ -1949,6 +2043,7 @@ document.addEventListener("click",ev=>{
   if(d.sort){if(sortKey===d.sort)sortDir=-sortDir;else{sortKey=d.sort;sortDir=d.sort==="name"?1:-1}render();return}
   if(d.round!==undefined){viewRound=+d.round;render();return}
   if(d.lteam){lpTeam=d.lteam;render();return}
+  if(t.id==="shareBoard"){shareBoard();return}
   if(t.id==="more"){shown+=40;refreshMarket();return}
   if(t.id==="play"){try{
       const [bx,by]=centerOf(t);
