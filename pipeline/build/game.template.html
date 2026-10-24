@@ -1871,6 +1871,25 @@ function nav(apply){
   const done=()=>{if(!leaving)return;leaving=false;try{window.scrollTo(0,0)}catch(e){}render();leaveAnim.cancel();leaveAnim=null};
   leaveAnim.onfinish=done;setTimeout(done,700); /* never get stuck if the animation is interrupted */
 }
+/* a small DOM morph: keeps every node that is still there, changes only what differs */
+let lastTab=null;
+const KEEPCLS=["rv","rv-in","rv-up","settled","tilt"];
+function morphNode(a,b){
+  if(a.nodeType!==b.nodeType||a.nodeName!==b.nodeName||(a.nodeType===1&&(a.dataset.card||"")!==(b.dataset.card||""))){a.replaceWith(b);return}
+  if(a.nodeType!==1){if(a.nodeValue!==b.nodeValue)a.nodeValue=b.nodeValue;return}
+  for(const at of [...a.attributes])if(!b.hasAttribute(at.name))a.removeAttribute(at.name);
+  for(const at of [...b.attributes]){let v=at.value;
+    if(at.name==="class"){const keep=KEEPCLS.filter(c=>a.classList.contains(c));if(keep.length)v=(v+" "+keep.join(" ")).trim()}
+    if(a.getAttribute(at.name)!==v)a.setAttribute(at.name,v)}
+  if((a.tagName==="INPUT"||a.tagName==="TEXTAREA")&&a!==document.activeElement&&a.value!==b.value)a.value=b.value;
+  if(a.tagName==="INPUT"&&a.checked!==b.checked)a.checked=b.checked;
+  morphKids(a,b);
+}
+function morphKids(a,b){
+  const na=[...a.childNodes],nb=[...b.childNodes];
+  for(let k=0;k<nb.length;k++){if(k<na.length)morphNode(na[k],nb[k]);else a.appendChild(nb[k])}
+  for(let k=nb.length;k<na.length;k++)na[k].remove();
+}
 function render(){
   if(leaving)return; /* the page change will draw the latest state when it lands */
   flipCapture();
@@ -1880,7 +1899,10 @@ function render(){
   animNext=false;document.body.classList.toggle("enter",now<enterUntil);
   renderHero();renderTicker();renderCourse();renderTabs();renderFacts();
   if(tab==="season")tab="profile";
-  $("#view").innerHTML=tab==="team"?teamView():tab==="rounds"?roundsView():tab==="leagues"?leaguesView():tab==="profile"?profileView():rulesView();
+  const html=tab==="team"?teamView():tab==="rounds"?roundsView():tab==="leagues"?leaguesView():tab==="profile"?profileView():rulesView();
+  /* on the same tab, patch the page in place: the cards stay painted (and their photos loaded) instead of being rebuilt,
+     which phones showed as the cards blinking out for a moment after a tap */
+  const v=$("#view");if(tab===lastTab&&!opening&&v.firstChild){const t=document.createElement("div");t.innerHTML=html;morphKids(v,t)}else v.innerHTML=html;lastTab=tab;
   justAdded=null;justBoosted=null;justLocked=false;justChip=null;countUp();flip();
   armReveals();watchMore();
 }
