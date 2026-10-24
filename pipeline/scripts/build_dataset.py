@@ -306,11 +306,11 @@ if EVINFO is not None:
     EVWEEKS = {}
     wk = SEASON_START
     while wk <= LAST_ROUND_START:
-        k = wk.isoformat(); started = wk <= TODAY
-        if started and k in final: EVWEEKS[k] = final[k]
+        k = wk.isoformat(); wk_started = wk <= TODAY
+        if wk_started and k in final: EVWEEKS[k] = final[k]
         else:
-            EVWEEKS[k] = {"big": len(weeks_now.get(k, ())), "final": started}
-            if started: final[k] = EVWEEKS[k]
+            EVWEEKS[k] = {"big": len(weeks_now.get(k, ())), "final": wk_started}
+            if wk_started: final[k] = EVWEEKS[k]
         wk += dt.timedelta(days=7)
     os.makedirs(os.path.dirname(fp), exist_ok=True); json.dump(final, open(fp, "w"))
     print("races ahead (name, date, competitors, top runners entered):", [(ev["name"], ev["dates"][0], EVBIG[ev["eid"]]["n"], EVBIG[ev["eid"]]["top"]) for ev in sorted(EVINFO, key=lambda x: x["dates"][0]) if ev["dates"] and ev["dates"][0] >= TODAY.isoformat()])
