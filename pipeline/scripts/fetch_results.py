@@ -6,13 +6,15 @@ def norm(n): return re.sub(r"[\s_-]", "", n.upper())
 PAT = re.compile(r"^[DH](15|16|18|20|21)(E|ELIT|A|B|K|KORT|L|LÅNG|LANG|ELITE)?$")
 # split classes: relay legs ("H21-1", "H21-2", ...), heats ("D16-1", "D16-2" at 25mannamedeln) and stages
 PART = re.compile(r"^\s*[DH]\s*(15|16|18|20|21)\s*-?\s*(E|ELIT|ELITE)?\s*-\s*[1-9]\s*$", re.I)
+# youth classes (H10-H14) never score; they only tell that a runner is young (a 14-year-old who also runs H21)
+YOUNG = re.compile(r"^[DH](10|11|12|13|14)$")
 jobs = []
 TODAY = dt.date.today().isoformat()
 FRESH = (dt.date.today() - dt.timedelta(days=3)).isoformat()   # results this recent may still change, so refetch them
 for cid, names in classes.items():
     if comps.get(int(cid), {}).get("date", "9999") > TODAY: continue
     for n in names or []:
-        if PAT.match(norm(n)) or PART.match(n):
+        if PAT.match(norm(n)) or PART.match(n) or YOUNG.match(norm(n)):
             jobs.append((int(cid), n))
 print("jobs", len(jobs))
 def get(job):

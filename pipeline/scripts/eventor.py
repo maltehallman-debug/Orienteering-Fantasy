@@ -29,6 +29,7 @@ FROM = (TODAY - dt.timedelta(days=RECENT)).isoformat()
 PAUSE = 1.0
 OFFSET = 9_000_000
 REAL = re.compile(r"^([DH])(15|16|18|20|21)(E|ELIT|ELITE)?$")
+YOUNG = re.compile(r"^[DH](10|11|12|13|14)$")   # never scored, only tells that a runner is young
 def norm(n): return re.sub(r"[\s_-]", "", (n or "").upper())
 def strip(t): return t.split("}", 1)[-1]
 def kids(e, name): return [c for c in e if strip(c.tag) == name]
@@ -158,7 +159,7 @@ def parse_results(raw):
     out = collections.defaultdict(dict)   # race number -> class -> rows
     for cr in kids(root, "ClassResult"):
         cn = text(cr, "Class", "ShortName") or text(cr, "Class", "Name")
-        if not REAL.match(norm(cn)): continue
+        if not (REAL.match(norm(cn)) or YOUNG.match(norm(cn))): continue
         cn = norm(cn)
         teams = kids(cr, "TeamResult")
         if teams:
@@ -199,14 +200,14 @@ def results_of(ev):
     p = f"{C}/results/{ev['id']}.json"
     fresh = ev["end"] >= (TODAY - dt.timedelta(days=4)).isoformat()
     old = jload(p, None) if os.path.exists(p) else None
-    if old and old.get("v") != 2: fresh = True; os.utime(p, (0, 0))   # cached before H15/D15 counted: read once more
+    if old and old.get("v") != 3: fresh = True; os.utime(p, (0, 0))   # cached before H15/D15 counted: read once more
     if os.path.exists(p) and not fresh: return old
     if os.path.exists(p) and time.time() - os.path.getmtime(p) < 20 * 3600: return jload(p, None)
     raw = get("results/event/iofxml", eventId=ev["id"], includeSplitTimes="false")
     if raw is None: return jload(p, None)
     try: races, out = parse_results(raw)
     except ET.ParseError: return jload(p, None)
-    o = {"races": races, "classes": out, "v": 2}; jsave(p, o); return o
+    o = {"races": races, "classes": out, "v": 3}; jsave(p, o); return o
 past = [e for e in yev if e["date"] and e["date"] < TODAY.isoformat()]
 R = {e["id"]: results_of(e) for e in past}
 # races fetched on earlier nights stay in the cache and keep counting after they drop out of the window
@@ -214,7 +215,7 @@ for f in glob.glob(f"{C}/results/*.json"):
     eid = int(os.path.basename(f)[:-5])
     if eid not in R:
         o = jload(f, None); m = jload(f"{C}/results_meta.json", {}).get(str(eid))
-        if o and m: past.append(m); R[eid] = results_of(m) if o.get("v") != 2 and "end" in m else o
+        if o and m: past.append(m); R[eid] = results_of(m) if o.get("v") != 3 and "end" in m else o
 _rm = jload(f"{C}/results_meta.json", {}); _rm.update({str(e["id"]): e for e in past if R.get(e["id"])}); jsave(f"{C}/results_meta.json", _rm)
 
 # ---- into the shared data files ----

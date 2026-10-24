@@ -63,6 +63,8 @@ data = {"runners": runners, "events": out_events, "rounds": out_rounds, "res": r
         "asof": ASOF, "upcoming": [dict({"name": u["name"], "date": u["date"]}, **({"lr": u["id"]} if u.get("id") else {}), **({"eo": u["eo"]} if u.get("eo") else {}), **({"big": 1} if u.get("big") else {})) for u in upcoming], "liveStart": live_start,
         # runner index -> the upcoming races (indexes into "upcoming") they have entered in Eventor
         "entered": entered,
+        # old runner keys (a joint relay club used to count as a club) -> runner index, so saved squads still load
+        "alias": {a: ridx[k] for a, k in D.get("alias", {}).items() if k in ridx},
         # money is in tenths of a thousand (205 = 20.5k); ten runners, the first five are the A team and score double
         "budget": 1000, "squad": 10, "aSize": 5, "clubMax": 3, "freeTransfers": 2, "penalty": 200, "dnfPts": -30,
         # price tiers (lower bounds): gold from 17.5k (about the top 8 in a class), silver from 10k; the rest is bronze

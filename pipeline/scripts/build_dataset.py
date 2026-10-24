@@ -144,10 +144,17 @@ for e in events:
         c = nclub(r["club"])
         if started(r) and not NONCLUB.search(c): _real[(r["name"].strip().lower(), e["g"])].add(c)
 # spellings of one club ("1900 Orientering" and "Aarhus 1900 Orientering"): a name that sits whole inside the other is the same club
+# A joint relay team ("IFK Lidingö SOK / Täby OK") is never a runner's club: it maps to the part the runner also
+# races for on their own, and a club name never maps into a joint name.
+JOINT = re.compile(r"\s*/\s*|\s+&\s+")
 _canon = {}
 for nk, cs in _real.items():
     for c in cs:
-        longer = [o for o in cs if o != c and len(c) >= 6 and re.search(r"(^|\s)" + re.escape(c) + r"($|\s)", o)]
+        if JOINT.search(c):
+            own = [x for x in JOINT.split(c) if x.strip() in cs]
+            if len(own) == 1: _canon[(nk, c)] = own[0].strip()
+            continue
+        longer = [o for o in cs if o != c and len(c) >= 6 and not JOINT.search(o) and re.search(r"(^|\s)" + re.escape(c) + r"($|\s)", o)]
         if len(longer) == 1: _canon[(nk, c)] = longer[0]
 for nk in list(_real): _real[nk] = {_canon.get((nk, c), c) for c in _real[nk]}
 def rkey(r, e):
@@ -262,7 +269,8 @@ for e in events:
     for k, s in e["scores"].items(): series[k].append((e["date"], s["pts"]))
 def pick_club(cn):
     nondist = [(c, n) for c, n in cn.most_common() if c and not re.search(r"\bOF$|Orienteringsförbund|^\s*$", c)]
-    return (nondist or cn.most_common())[0][0]
+    own = [(c, n) for c, n in nondist if not JOINT.search(c)]   # a joint relay team is not the runner's club
+    return (own or nondist or cn.most_common())[0][0]
 starts = {k: len(series[k]) for k in names}
 POOL_MIN = 3
 pool = sorted([k for k in names if starts[k] >= POOL_MIN], key=lambda k: (names[k].most_common(1)[0][0], k))
@@ -325,7 +333,46 @@ print("skipped live weeks", [r["start"] for r in rounds if r.get("skip")], "big 
 
 # ---- prices ----
 PTAU, PBETA = float(os.environ.get("PTAU", "37.6")), float(os.environ.get("PBETA", "0.816"))
-CLS = {k: clsc[k].most_common(1)[0][0] for k in pool}
+# ---- each runner's class: the youngest one they really race in ----
+# You can race up an age class but never down, so the youngest class someone races in is their class (the most common
+# one put juniors who often run H21 into H21). A class counts when it is at least 2 starts or a third of them. Anyone
+# seen in an H10-H14 class is young and goes in the game's youngest class, 16.
+YOUNG = re.compile(r"^[DH](10|11|12|13|14)$")
+_young = collections.defaultdict(set)   # (name, sex) -> clubs seen in youth classes
+for p in glob.glob(f"{S}/data/results/*.json"):
+    j = json.load(open(p)); cn = norm(j.get("className", ""))
+    if not YOUNG.match(cn): continue
+    for r in j.get("rows", []):
+        if r.get("name") and started(r):   # raced (an entry alone is not enough: some camps list everyone in any class)
+            c = nclub(r.get("club"))
+            _young[(r["name"].strip().lower(), cn[0])] |= {c} | {x.strip() for x in JOINT.split(c)}
+AGES = ["16", "18", "20", "21"]
+def class_of(k):
+    n, g = k.split("|")[0], k.rsplit("|", 1)[1]
+    yc = _young.get((n, g))
+    if yc and ({nclub(c) for c in clubs[k]} | {k.split("|")[1]}) & yc: return g + "16"
+    cc = clsc[k]; tot = sum(cc.values())
+    for a in AGES:
+        x = cc.get(g + a, 0)
+        if x >= 2 or (x and x * 3 >= tot): return g + a
+    return cc.most_common(1)[0][0]
+CLS = {k: class_of(k) for k in pool}
+# saved squads name runners by key; keys made from a joint relay club before it stopped counting as a club still work
+ALIAS = {}
+for k in pool:
+    n, g = k.split("|")[0], k.rsplit("|", 1)[1]
+    for c in clubs[k]:
+        if JOINT.search(c or ""): ALIAS.setdefault(f"{n}|{nclub(c)}|{g}", k)
+for (n, g), cs in _real.items():
+    for c in cs:
+        if JOINT.search(c) and f"{n}|{c}|{g}" not in pool:
+            for part in JOINT.split(c):
+                k = f"{n}|{part.strip()}|{g}"
+                if k in pool: ALIAS.setdefault(f"{n}|{c}|{g}", k); break
+ALIAS = {a: k for a, k in ALIAS.items() if a not in pool}
+print("old keys kept as aliases", len(ALIAS))
+_moved = [(names[k].most_common(1)[0][0], clsc[k].most_common(1)[0][0], CLS[k]) for k in pool if CLS[k] != clsc[k].most_common(1)[0][0]]
+print("runners in a younger class than their most common one", len(_moved), _moved[:12], "seen in youth classes", len(_young))
 W0, DECAY = 2.0, 0.9
 allpts = [s["pts"] for e in events for s in e["scores"].values()]
 league_mean = sum(allpts) / len(allpts)
@@ -394,7 +441,7 @@ json.dump({"entered": entered, "upcoming": upcoming, "events": [{k: v for k, v i
            "rounds": rounds, "pool": pool,
            "names": {k: names[k].most_common(1)[0][0] for k in pool},
            "clubs": {k: pick_club(clubs[k]) for k in pool},
-           "cls": {k: clsc[k].most_common(1)[0][0] for k in pool},
+           "cls": CLS, "alias": ALIAS,
            "starts": {k: starts[k] for k in pool}, "strength": {k: round(STR.get(k, 0.05), 3) for k in pool},
            "prices": price_by_round}, open(f"{S}/data/dataset_full.json", "w"), ensure_ascii=False)
 pset = set(pool)
@@ -406,4 +453,4 @@ for r in rounds:
             if k in pset: tot[k] += s["pts"]
 print("league mean pts/start", round(league_mean, 2))
 for k, v in tot.most_common(10):
-    print(f"  {names[k].most_common(1)[0][0]:26s} {clsc[k].most_common(1)[0][0]} starts={starts[k]:2d} pts={v:6.1f}")
+    print(f"  {names[k].most_common(1)[0][0]:26s} {CLS[k]} starts={starts[k]:2d} pts={v:6.1f}")
