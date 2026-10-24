@@ -61,7 +61,7 @@ data = {"runners": runners, "events": out_events, "rounds": out_rounds, "res": r
         # runner index -> the upcoming races (indexes into "upcoming") they have entered in Eventor
         "entered": entered,
         # money is in tenths of a thousand (205 = 20.5k); ten runners, the first five are the A team and score double
-        "budget": 1000, "squad": 10, "aSize": 5, "clubMax": 3, "freeTransfers": 3, "penalty": 40, "dnfPts": -30,
+        "budget": 1000, "squad": 10, "aSize": 5, "clubMax": 3, "freeTransfers": 2, "penalty": 200, "dnfPts": -30,
         # price tiers (lower bounds): gold from 17.5k (about the top 8 in a class), silver from 10k; the rest is bronze
         "tiers": [175, 100]}
 json.dump(data, open(f"{S}/build/data.json", "w"), ensure_ascii=False, separators=(",", ":"))

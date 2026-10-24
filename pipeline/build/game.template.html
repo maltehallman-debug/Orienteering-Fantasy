@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&display=swap">
 <script>/* apply the saved theme before first paint, so the page never flashes the wrong colours */
-try{var t=localStorage.getItem("of-theme");if(t==="night"||t==="forest")t="dark";if(t==="map")t="light";if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+document.documentElement.dataset.theme="light";try{localStorage.removeItem("of-theme")}catch(e){}</script>
 <style>
 /* Orienteering Fantasy. Classic colours: white and slate with one emerald, and a dark mode to match.
    Words in the phone's own system font (SF Pro, Roboto, Segoe), so it reads like an app, not a template.
@@ -1054,6 +1054,20 @@ nav.tabs .ind.on{opacity:1}
 .skipnote{margin:0 0 14px;padding:12px 14px;border-radius:var(--r-sm);background:color-mix(in srgb,var(--warn) 12%,var(--surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 35%,transparent);color:var(--text-2);font-size:14px}
 .skipnote b{color:var(--text)}
 .next.skip .next-main b{color:var(--warn)}
+/* ---------- blocks: the page is divided into raised panels on the map ---------- */
+.panel{position:relative;background:var(--surface-grad);border-radius:22px;box-shadow:var(--shadow),inset 0 0 0 1px var(--line);padding:clamp(16px,2.4vw,26px);margin:0 0 22px}
+.panel>h2:first-child,.panel>.pg-k:first-child{margin-top:0}
+.panel>.pg-k:first-child+h2{margin-top:0}
+.squad-panel{align-self:start}
+.mkt-panel{margin-top:26px}
+.mkt-panel .tbl{box-shadow:inset 0 0 0 1px var(--line);border-radius:16px}
+.next{background:var(--surface-grad);border-radius:22px;box-shadow:var(--shadow),inset 0 0 0 1px var(--line);padding:clamp(16px,2.4vw,24px) clamp(16px,2.6vw,28px);margin-bottom:22px;overflow:hidden;position:relative}
+.next::after{display:none}
+.next::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(var(--accent),var(--c2))}
+.next.skip::before{background:var(--warn)}
+.facts{margin-bottom:22px}
+#view>.card,#view .grid2>.card,#view>.grid2>div>.card{border-radius:20px}
+@media (max-width:640px){.panel{border-radius:18px;padding:16px 12px;margin-left:-4px;margin-right:-4px}.next{border-radius:18px}}
 </style>
 </head>
 <body>
@@ -1063,7 +1077,7 @@ nav.tabs .ind.on{opacity:1}
     <svg width="30" height="30" viewBox="0 0 28 28" aria-hidden="true"><circle class="ring" cx="14" cy="14" r="12.5" fill="none" stroke="var(--accent)" stroke-width="2.6"/><g class="flag"><path d="M8 8h12v12H8z" fill="#fff"/><path d="M20 8v12H8z" fill="#f06a2b"/><path d="M8 8h12v12H8z" fill="none" stroke="rgba(0,0,0,.25)" stroke-width=".8"/></g></svg>
     <b>Orienteering<span> Fantasy</span></b></button>
   <nav class="tabs" id="tabs" aria-label="Sections"></nav>
-  <div class="hdr-r"><button id="themeBtn" type="button" aria-label="Change theme" title="Change theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M12 3a9 9 0 0 1 0 18" fill="currentColor"/></svg></button><button id="mgr" type="button"></button></div>
+  <div class="hdr-r"><button id="mgr" type="button"></button></div>
 </div></header>
 <div class="container">
 <section id="hero"></section>
@@ -1481,7 +1495,7 @@ function refreshMarket(){const rows=marketRows(),b=document.getElementById("mrow
 function marketHtml(){
   const rows=marketRows();const clubs=[...new Set(D.runners.filter(x=>x.p&&x.c).map(x=>x.c))].sort((a,b)=>a.localeCompare(b,"sv"));
   const th=(k,l,t)=>`<th${t?` title="${t}"`:""}><button data-sort="${k}">${l}${sortKey===k?(sortDir<0?" ↓":" ↑"):""}</button></th>`;
-  return `<h2 id="market">Runners</h2>
+  return `<section class="panel mkt-panel"><h2 id="market">Runners</h2>
   <div class="filters"><input type="search" id="q" placeholder="Search runner or club" value="${esc(qRaw)}" aria-label="Search runners" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
    <select id="tierF" aria-label="Tier"><option value="">All tiers</option>${TIERS.map(([k,l])=>`<option value="${k}" ${k===tierF?"selected":""}>${l}</option>`).join("")}</select>
    <select id="clsF" aria-label="Class"><option value="">All classes</option>${["H","D","H16","H18","H20","H21","D16","D18","D20","D21"].map(c=>`<option value="${c}" ${c===clsF?"selected":""}>${c==="H"?"All men (H)":c==="D"?"All women (D)":c}</option>`).join("")}</select>
@@ -1491,7 +1505,7 @@ function marketHtml(){
   <div class="tbl mkt"><table><thead><tr>${th("name","Runner")}<th>Tier</th>${th("price","Price")}<th>Change</th>${th("form","Form","Average of the last 3 race weeks")}<th title="Points in each of the last 6 weeks they raced">Last 6 race weeks</th>${th("avg","Per week","Average of the last 5 race weeks")}${th("total","Points")}${th("starts","Starts")}<th></th></tr></thead><tbody id="mrows">
   ${marketBody(rows)}
   </tbody></table></div>
-  <p id="mmore">${moreBtn(rows)}</p>
+  <p id="mmore">${moreBtn(rows)}</p></section>
 `;
 }
 /* one entry per competition: results are stored per class ("Name (H16)") and some organisers publish a race twice */
@@ -1557,7 +1571,7 @@ function teamView(){
   const lead=locked?(frozen?"Locked. Points come in as the results do.":"Locked for round "+rd.n+"."):
      (!state.squad.length?"Pick "+D.squad+" runners for "+fm(D.budget)+", at most "+D.clubMax+" per club.":D.freeTransfers+" free transfers this round.");
   const chipsHtml=`<div class="chipgrid"><button class="chipc none ${!plan.chip?"on":""}" data-chip="" ${locked?"disabled":""}><b>No chip</b></button>${E.CHIPS.map(c=>{const used=state.chips[c],off=locked||used||rd.skip||(c==="wc"&&!state.squad.length);return `<button class="chipc ${plan.chip===c?"on":""} ${used?"used":""}" data-chip="${c}" ${off?"disabled":""} title="${esc(CHIPINFO[c][1])}">${chipSvg(c)}<b>${CHIPINFO[c][0]}</b><small>${CHIPINFO[c][1]}</small></button>`}).join("")}</div>`;
-  return `${hero(r)}${liveNow()}<div class="two"><div>
+  return `${hero(r)}${liveNow()}<div class="two"><div class="panel squad-panel">
    <p class="eyebrow pg-k">01 · Build your ten</p><h2 style="margin-top:0">Your squad</h2>
    <p class="lead">${lead}</p>
    <div class="squadwrap">
@@ -1738,7 +1752,7 @@ function authCard(){
 function profileView(){
   if(!dbOk)return `<p class="eyebrow pg-k">05 · Your account</p><h2 style="margin-top:0">Profile</h2>${inviteBanner()}<div class="grid2">${authCard()}
    <div class="card"><h3>Why an account</h3><ol class="steps"><li>Your squad is saved and works on every device.</li><li>Host a league or join one with a code.</li><li>See your friends' teams and points every round.</li><li>Add your own photo to your runner card.</li></ol></div></div>
-   ${themeCard()}${practiceCard()}`;
+   ${practiceCard()}`;
   const me={id:cloud.uid,name:mgrName||cloud.email.split("@")[0],av:myAv};
   const L=state.log,best=L.slice().sort((a,b)=>b.total-a.total)[0];
   const live=isLive();
@@ -1756,7 +1770,7 @@ function profileView(){
     <div class="row" style="margin-top:12px"><button class="btn" id="authOut">Sign out</button></div></div>
    <div class="card"><h3>Your leagues</h3>${myLeagues.length?`<div class="lglist">${myLeagues.map(c=>`<button class="lgi" data-lgopen="${esc(c)}"><span>${esc(lgName(c))}${myOwn[c]?'<span class="host">Host</span>':""}</span><span class="sub">Open →</span></button>`).join("")}</div>`:`<p class="note" style="margin:0 0 12px">You are not in a league yet.</p><button class="btn on" data-tab="leagues">Host or join a league</button>`}</div>
   </div>
-  ${themeCard()}${practiceCard()}`;
+  ${practiceCard()}`;
 }
 function seasonBars(){
   const L=state.log,mx=Math.max(100,...L.map(l=>l.total));
