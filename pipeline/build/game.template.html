@@ -1252,6 +1252,18 @@ html.glass #mgr:not(.out){background:rgba(255,255,255,.6);-webkit-backdrop-filte
   .next-side .num{font-size:24px}
   .next-side .sub{font-size:12px}
 }
+
+/* admins: one switch on the profile shows or hides the admin tools (hidden by default) */
+.admsw{display:inline-flex;align-items:center;gap:12px;margin:0 0 16px;padding:8px 16px 8px 10px;border-radius:999px;cursor:pointer;-webkit-user-select:none;user-select:none;
+  background:rgba(255,255,255,.6);box-shadow:inset 0 0 0 1px rgba(15,23,42,.08),inset 0 1px 0 #fff}
+.admsw input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.admsw .trk{position:relative;flex:none;width:46px;height:28px;border-radius:999px;background:rgba(120,120,128,.24);transition:background-color .2s ease}
+.admsw .trk::after{content:"";position:absolute;left:2px;top:2px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.2),0 0 0 .5px rgba(0,0,0,.05);transition:transform .25s cubic-bezier(.3,1.3,.5,1)}
+.admsw input:checked+.trk{background:var(--accent)}
+.admsw input:checked+.trk::after{transform:translateX(18px)}
+.admsw input:focus-visible+.trk{outline:2px solid var(--accent);outline-offset:2px}
+.admsw b{display:block;font-size:14px;line-height:1.2}.admsw .sub{font-size:12px}
+@media (prefers-reduced-motion:reduce){.admsw .trk::after{transition:none}}
 </style>
 </head>
 <body>
@@ -1456,6 +1468,8 @@ const packPl=p=>p&&mapIds(p,rk), unpackPl=p=>p&&mapIds(p,ri);
 const TODAY=(()=>{try{return new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Stockholm"})}catch(e){return D.asof}})();
 const LIVE=D.liveStart;
 let state=E.newState(LIVE), plan={squad:[],captain:null,vice:null,chip:null};
+let showAdmin=(()=>{try{return localStorage.getItem("of-admin")==="1"}catch(e){return false}})();
+const adminOn=()=>cloud.admin&&showAdmin;
 let lock=null,tab="team",viewRound=0,sortKey="total",sortDir=-1,q="",clubF="",clsF="",afford=false,entF=false,shown=40,confirmAuto=false,confirmReset=false,confirmMode=false,mgrName="",myTeam="",myAv=null,avBusy=false,avMsg="",dbOk=false,drawn=false,localTs=0,cloudTimer=null,cloudMsg="",leagueRows={},leagueUnsubs={},leagueMsg="",newLeague="",joinCode="";
 let cloud={sb:null,uid:null,email:"",canWrite:false,ready:false};
 let myLeagues=[],myLgn={},myOwn={};
@@ -1616,7 +1630,7 @@ function renderTabs(){
     el.querySelectorAll("[data-tab]").forEach(b=>{const on=b.dataset.tab===tab;b.setAttribute("aria-selected",on);b.setAttribute("aria-current",on?"page":"false")})});
   placeInd();
   const m=$("#mgr");
-  if(dbOk){const nm=mgrName||cloud.email.split("@")[0]||"Account";m.className="";m.innerHTML=`${myAv?`<span class="dot ph"><img src="${esc(avPublic(myAv))}" alt=""></span>`:`<span class="dot">${esc(nm.slice(0,1).toUpperCase())}</span>`}<span class="nm">${esc(nm)}</span>${cloud.admin&&pendingPhotos.length?`<span class="badge" title="Photos waiting for approval">${pendingPhotos.length}</span>`:""}`;m.title="Your profile";m.setAttribute("aria-label","Account: "+nm)}
+  if(dbOk){const nm=mgrName||cloud.email.split("@")[0]||"Account";m.className="";m.innerHTML=`${myAv?`<span class="dot ph"><img src="${esc(avPublic(myAv))}" alt=""></span>`:`<span class="dot">${esc(nm.slice(0,1).toUpperCase())}</span>`}<span class="nm">${esc(nm)}</span>${adminOn()&&pendingPhotos.length?`<span class="badge" title="Photos waiting for approval">${pendingPhotos.length}</span>`:""}`;m.title="Your profile";m.setAttribute("aria-label","Account: "+nm)}
   else{m.className="out";m.textContent="Sign in";m.title="Sign in or create an account";m.setAttribute("aria-label","Sign in or create an account")}
 }
 function renderFacts(){
@@ -1976,6 +1990,7 @@ function profileView(){
   const L=state.log,best=L.slice().sort((a,b)=>b.total-a.total)[0];
   const live=isLive();
   return `<div class="pfhead">${mgrDot(me,1)}<div><h2>${esc(myTeam||me.name)}</h2><div class="sub">${myTeam?esc(me.name)+" · ":""}${esc(cloud.email)}</div></div></div>
+  ${cloud.admin?`<label class="admsw"><input type="checkbox" role="switch" id="admSw" ${showAdmin?"checked":""}><span class="trk" aria-hidden="true"></span><span><b>Admin tools</b><span class="sub">${showAdmin?"Shown":"Hidden"}</span></span></label>`:""}
   ${adminGameCard()}${reviewCard()}
   <div class="kv"><div><span>Points</span><b>${fp(state.total)}</b></div><div><span>Rounds</span><b>${L.length}</b></div><div><span>Best round</span><b>${best?fp(best.total):"–"}</b></div><div><span>Chips left</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length}</b></div></div>
   ${L.length?seasonBars():""}
@@ -2230,7 +2245,7 @@ function photoSection(i){
   const f=phForm,youth=/16$/.test(D.runners[i].k),rel=[];
   if(!youth)rel.push(["self",D.runners[i].k.endsWith("18")?"This is me, and I am 18 or older":"This is me"]);
   rel.push(["guardian","I am this runner's parent or guardian"]);
-  if(cloud.admin)rel.push(["admin","Admin: I have the runner's permission"]);
+  if(adminOn())rel.push(["admin","Admin: I have the runner's permission"]);
   return `<div class="phbox"><h3>Add a photo of ${esc(nameOf(i))}</h3>
    <div class="phprev">${f.url?`<img src="${f.url}" alt="Preview">`:`<div class="ph0"></div>`}<div><input type="file" id="phFile" accept="image/*" aria-label="Choose a photo"><p class="note" style="margin:6px 0 0">A clear photo of the face works best. It is cropped to a square and location data is removed.</p></div></div>
    <div style="display:grid;gap:8px">${rel.map(([k,l])=>`<label><input type="radio" name="phRel" value="${k}" ${f.rel===k?"checked":""}> ${l}</label>`).join("")}</div>
@@ -2327,7 +2342,7 @@ async function setOvr(kind,ref,label,on){
   ovrBusy=false;await loadOvr();
 }
 function adminGameCard(){
-  if(!cloud.admin)return "";
+  if(!adminOn())return "";
   const live=D.rounds.map((rd,r)=>({rd,r})).filter(x=>x.r>=LIVE);
   const st=rd=>rd.forced==="on"?"Forced on":rd.forced==="off"?"Forced off":rd.skip?"Skipped":rd.pending?((rd.big||0)>=2?"Game (provisional)":"May be skipped"):"Game";
   const wk=({rd})=>{const ref=rd.start,on=hasOvr("week_on",ref),off=hasOvr("week_off",ref);return `<div class="adm-row"><div><b>Round ${rd.n}</b> <span class="sub">${dshort(rd.start)} – ${dshort(rd.end)} · ${rd.big??"–"} big · ${st(rd)}</span></div>
@@ -2347,7 +2362,7 @@ function adminGameCard(){
    ${ovrMsg?`<p class="note" style="margin:10px 0 0">${esc(ovrMsg)}</p>`:""}</div>`;
 }
 function reviewCard(){
-  if(!cloud.admin)return "";
+  if(!adminOn())return "";
   const byId=RI;
   return `<div class="card"><h3>Photos waiting for approval (${pendingPhotos.length})</h3>
    <p class="note" style="margin:0 0 10px">Approve only photos that clearly show this runner. Runners in D/H 16 and 18 need a parent or guardian to send them.</p>
@@ -2532,6 +2547,7 @@ document.addEventListener("change",ev=>{const t=ev.target;
   if(t.id==="clubF"){clubF=t.value;shown=40;render()}
   if(t.id==="clsF"){clsF=t.value;shown=40;render()}
   if(t.id==="afford"){afford=t.checked;render()}
+  if(t.id==="admSw"){showAdmin=t.checked;try{localStorage.setItem("of-admin",showAdmin?"1":"0")}catch(e){}renderTabs();render()}
   if(t.id==="entF"){entF=t.checked;shown=40;render()}});
 
 
