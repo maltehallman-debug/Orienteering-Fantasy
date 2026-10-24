@@ -25,11 +25,16 @@ jobs:
       - name: Restore result cache
         uses: actions/cache@v4
         with:
-          path: |
-            pipeline/data/results
-            pipeline/data/eventor
+          path: pipeline/data/results
           key: results-${{ github.run_id }}
           restore-keys: results-
+      # Eventor's cache is kept apart, so the liveresultat cache above stays the same and is never thrown away
+      - name: Restore Eventor cache
+        uses: actions/cache@v4
+        with:
+          path: pipeline/data/eventor
+          key: eventor-${{ github.run_id }}
+          restore-keys: eventor-
       - name: Build
         env:
           TZ: Europe/Stockholm
