@@ -1046,6 +1046,7 @@ nav.tabs .ind.on{opacity:1}
 }
 @media (prefers-reduced-motion:reduce){.modal.closing{display:none}}
 /* Eventor: entered markers, big races and skipped weeks */
+.nm{display:flex;align-items:center;gap:5px;min-width:0}.nm .who{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.nm .idle,.nm .entered{margin:0;vertical-align:0;flex:none}
 .entered{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;font:800 11px/1 var(--font);margin-left:6px;vertical-align:2px;background:var(--good);color:#fff;box-shadow:0 0 0 2px var(--surface);cursor:help;flex:none;user-select:none}
 .avw .entered{position:absolute;right:-4px;bottom:-3px;margin:0;z-index:3}
 .sqc .avw .entered{right:-1cqw;bottom:-1cqw;width:13cqw;height:13cqw;font-size:8.5cqw;box-shadow:0 0 0 1.2cqw var(--rim)}
@@ -1127,7 +1128,16 @@ nav.tabs .ind.on{opacity:1}
   .mkt td:first-child{max-width:none}
   .mkt .who-wrap>div{max-width:none;min-width:0;overflow:hidden}
   .mkt td:last-child .btn{padding:8px 9px;font-size:14px}
+  /* the name gives way, its badges never do; the list never moves sideways, whatever the browser measures */
+  .mkt .tbl{overflow-x:hidden;touch-action:pan-y}
+  .mkt th:nth-child(3),.mkt td:nth-child(3){width:56px}
+  .mkt th:nth-child(7),.mkt td:nth-child(7){width:38px}
+  .mkt th:nth-child(10),.mkt td:nth-child(10){width:60px}
+  .mkt td:last-child .btn{padding:7px 8px;font-size:13.5px}
+  .mkt .nm .who{max-width:none;flex:0 1 auto}
+  .mkt .nm .idle,.mkt .nm .entered{width:15px;height:15px;font-size:10px}
 }
+@media (max-width:380px){.mkt .who-wrap{gap:6px}.mkt .who-wrap>.av{width:28px;height:28px;font-size:11px;flex:none}.mkt th,.mkt td{padding-left:4px;padding-right:4px}}
 .card.admin .apply{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 6px}.card.admin .apply .note{margin:0}
 /* ================= Liquid Glass (iPhone / iPad) =================
    Floating, translucent chrome that refracts the page behind it: a capsule tab bar with a glass lens that springs
@@ -1600,7 +1610,7 @@ function marketBody(rows){mRows=rows;
   return (rows.slice(0,shown).map(rowHtml).join("")||`<tr><td colspan="10" class="note">No runners match. Clear the search or a filter.</td></tr>`);
 }
 function rowHtml(x){const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
-   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}<div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
+   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
    <td>${inS?`<button class="btn" data-sell="${x.i}">Remove</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Add</button>`}</td></tr>`}
 /* the runner list grows as you scroll: a marker under it loads the next runners before you reach the end, and each
    new runner rises in on its own. A button stays as a fallback where the browser cannot watch the marker. */
