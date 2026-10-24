@@ -521,13 +521,51 @@ input.name{width:100%;max-width:380px}
   .rc.boosted::after{content:"";position:absolute;inset:-40% auto -40% -60%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-18deg);animation:sweep 5.5s var(--ease-io) 1s infinite;pointer-events:none}
   [data-theme="dark"] .rc.boosted::after{background:linear-gradient(100deg,transparent,rgba(255,255,255,.09),transparent)}
   @keyframes sweep{0%{left:-60%}35%,100%{left:130%}}
-  /* scroll reveals */
-  .rv{opacity:0;transform:translateY(40px);filter:blur(8px);transition:opacity 1.1s var(--ease-cine),transform 1.2s var(--ease-cine),filter 1.1s var(--ease-cine);transition-delay:var(--rd,0s)}
-  .rv.in{opacity:1;transform:none;filter:none}
-  .rv.up{transform:translateY(-40px);transition-delay:0s}
+  /* scroll reveals: things rise out of a tilt and a blur as they come into view, lift away the same way when they
+     leave at the top, and sink when they leave at the bottom. Rows slide in from the side, headings wipe in. */
+  .rv{opacity:0;transform:perspective(1000px) translateY(56px) rotateX(12deg) scale(.96);transform-origin:50% 0;filter:blur(10px);
+    transition:opacity .9s var(--ease-cine),transform 1.2s var(--ease-cine),filter .9s var(--ease-cine);transition-delay:var(--rd,0s)}
+  .rv.rv-up{transform:perspective(1000px) translateY(-44px) rotateX(-10deg) scale(.96);transform-origin:50% 100%}
+  .rv.rv-in{opacity:1;transform:none;filter:none}
+  /* once in, hover and press feel quick again */
+  .rv.rv-in.settled{transition:opacity .3s,transform .25s var(--ease-out),filter .3s,box-shadow .25s}
+  h2.rv{transform:translateY(20px);filter:none;clip-path:inset(-20% 100% -20% 0);transition:clip-path 1.1s var(--ease-cine),transform 1.1s var(--ease-cine),opacity .5s;transition-delay:var(--rd,0s)}
+  h2.rv.rv-up{transform:translateY(-14px);clip-path:inset(-20% 0 -20% 100%)}
+  h2.rv.rv-in{clip-path:inset(-20% -4% -20% 0);transform:none}
+  tr.rv{transform:translateX(-32px);filter:blur(4px)}
+  tr.rv.rv-up{transform:translateX(32px)}
+  tr.rv.rv-in{transform:none;filter:none}
+  /* how far down the page you are */
+  #prog{position:fixed;left:0;right:0;top:0;height:2.5px;z-index:70;background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#fde68a));transform-origin:0 50%;transform:scaleX(var(--p,0));opacity:var(--po,0);transition:opacity .4s;pointer-events:none}
   .ripple{animation:ripple 1s var(--ease-cine) forwards}
 }
 @media (prefers-reduced-motion:no-preference) and (max-width:640px){.modal .sheet{animation:sheetUp .7s var(--ease-drawer)}}
+/* runners react to the mouse: in the runner list the photo pops and spins a little, the name underlines itself, the
+   last-six bars grow again one by one and the row warms to its tier's colour; on cards the photo lifts with a ring
+   of light, the price bounces and the tier badge shimmers faster */
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  #mrows .av,.rc:not(.slot) .av,#view .grid2>.card .av{transition:transform .55s var(--spring),box-shadow .35s}
+  #mrows tr:hover .av{transform:scale(1.2) rotate(-7deg);box-shadow:0 8px 18px -6px rgba(0,0,0,.35)}
+  #mrows .who{background:linear-gradient(currentColor,currentColor) no-repeat 0 100%/0 2px;transition:background-size .35s var(--ease-out),color .25s;padding-bottom:1px}
+  #mrows tr:hover .who{background-size:100% 2px;color:var(--accent)}
+  #mrows tr:hover .spark rect{transform-box:fill-box;transform-origin:50% 100%;animation:barUp .55s var(--spring) both;animation-delay:calc(var(--k,0) * 45ms)}
+  @keyframes barUp{from{transform:scaleY(.15)}to{transform:none}}
+  #mrows tr td{transition:background-color .3s}
+  #mrows tr.tr-gold:hover td{background:color-mix(in srgb,#f59e0b 11%,var(--surface))}
+  #mrows tr.tr-silver:hover td{background:color-mix(in srgb,#94a3b8 14%,var(--surface))}
+  #mrows tr.tr-bronze:hover td{background:color-mix(in srgb,#ea580c 9%,var(--surface))}
+  #mrows tr:hover td:first-child{box-shadow:inset 7px 0 0 var(--tedge,var(--accent))}
+  #mrows tr.tr-gold{--tedge:#f59e0b}#mrows tr.tr-silver{--tedge:#94a3b8}#mrows tr.tr-bronze{--tedge:#ea580c}
+  #mrows tr:hover .tier{animation-duration:1.1s}
+  .rc:not(.slot):hover .av,#view .grid2>.card:hover .av{transform:translateY(-5px) scale(1.14);animation:avRing 1.1s var(--ease-out)}
+  @keyframes avRing{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--t2,var(--accent)) 70%,transparent)}100%{box-shadow:0 0 0 16px transparent}}
+  .rc:not(.slot):hover .price{animation:pricePop .6s var(--spring)}
+  @keyframes pricePop{40%{transform:scale(1.18)}}
+  .rc:not(.slot):hover .tier{animation-duration:1.1s}
+  .rc:not(.slot):hover .cls{transform:translateY(-1px)}
+  #view .grid2>.card{transition:transform .35s var(--ease-out),box-shadow .35s}
+  #view .grid2>.card:has(.av):hover{transform:translateY(-4px);box-shadow:0 18px 40px -20px rgba(15,23,42,.35),var(--shadow)}
+}
 /* ================= A/B teams, tiers, chips ================= */
 .teamhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:18px 0 10px}
 .teamhead:first-of-type{margin-top:4px}
@@ -933,18 +971,32 @@ drawTerrain();
   evs.forEach(e=>addEventListener(e,skip,{capture:true,passive:true}));setTimeout(off,3800);
 })();
 /* the map moves slower than the page: depth */
-if(!RM){let raf=0;addEventListener("scroll",()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const p=document.getElementById("par");if(p)p.style.transform=`translate3d(0,${(-scrollY*.18).toFixed(1)}px,0)`})},{passive:true})}
+if(!RM){let raf=0;const prog=document.createElement("div");prog.id="prog";prog.setAttribute("aria-hidden","true");document.body.appendChild(prog);
+  addEventListener("scroll",()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const p=document.getElementById("par");if(p)p.style.transform=`translate3d(0,${(-scrollY*.18).toFixed(1)}px,0)`;
+    const max=document.documentElement.scrollHeight-innerHeight;prog.style.setProperty("--p",max>0?Math.min(1,scrollY/max).toFixed(4):0);prog.style.setProperty("--po",scrollY>40&&max>300?1:0);
+    /* a fast scroll can jump past something without it ever counting as on screen: whatever is above comes back from above, whatever is below from below */
+    document.querySelectorAll("#view .rv:not(.rv-in)").forEach(el=>{const r=el.getBoundingClientRect();if(r.bottom<0)el.classList.add("rv-up");else if(r.top>innerHeight)el.classList.remove("rv-up")})})},{passive:true})}
 /* things further down the page fade up out of focus when they scroll into view */
 /* and fade out again as they leave, in whichever direction you scroll: below the fold they sink, above it they lift away */
-const revealIO=(!RM&&"IntersectionObserver" in window)?new IntersectionObserver(es=>es.forEach(e=>{const el=e.target;
-  if(e.isIntersecting){el.classList.remove("up");el.classList.add("in")}
-  else if(el.classList.contains("in")||el.classList.contains("up")){el.classList.remove("in");el.classList.toggle("up",e.boundingClientRect.top<(e.rootBounds?e.rootBounds.top:0)+1)}
-}),{rootMargin:"-3% 0px -6% 0px"}):null;
+const revealIO=(!RM&&"IntersectionObserver" in window)?new IntersectionObserver(es=>{
+  let k=0;
+  es.slice().sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top).forEach(e=>{const el=e.target;
+    if(e.isIntersecting){if(el.classList.contains("rv-in"))return;
+      /* things that arrive together come in one after another, top first */
+      el.style.setProperty("--rd",Math.min(k++*.07,.49).toFixed(2)+"s");el.classList.remove("rv-up");el.classList.add("rv-in");
+      clearTimeout(el._rv);el._rv=setTimeout(()=>{el.classList.add("settled");el.style.removeProperty("--rd")},1700)}
+    else{const above=e.boundingClientRect.top<(e.rootBounds?e.rootBounds.top:0)+1;
+      /* also catches something a fast scroll carried past without it ever being on screen */
+      if(el.classList.contains("rv-in")||el.classList.contains("rv-up")||above){clearTimeout(el._rv);el.style.setProperty("--rd","0s");el.classList.remove("rv-in","settled");el.classList.toggle("rv-up",above)}}
+  });
+},{rootMargin:"-3% 0px -6% 0px"}):null;
+/* every page, and every redraw of it: what is already on screen stays as it is, everything below waits to be revealed */
+const REVEAL="#view h2,#view .card,#view .rc:not(.slot),#view .filters,#view .hl,#view .two>aside,#view .next,#view .kv>div,#view tbody tr,#view .lgi,#view .teamhead,#view .rnav,#view .chips,#view .lghead";
 function armReveals(){
-  if(!revealIO)return;revealIO.disconnect();let n=0;
-  document.querySelectorAll("#view h2,#view .card,#view .rc,#view .tbl,#view .filters,#view .hl,#view .two>aside,#view .next,#view .kv>div").forEach(el=>{
-    const r=el.getBoundingClientRect(),seen=r.top<innerHeight*.92&&r.bottom>0;
-    el.classList.add("rv");if(seen)el.classList.add("in");else el.style.setProperty("--rd",((n++%4)*.08)+"s");revealIO.observe(el)});
+  if(!revealIO)return;revealIO.disconnect();
+  document.querySelectorAll(REVEAL).forEach(el=>{
+    const r=el.getBoundingClientRect(),seen=r.top<innerHeight*.94&&r.bottom>0;
+    el.classList.add("rv");if(seen)el.classList.add("rv-in","settled");revealIO.observe(el)});
 }
 /* tier cards lean towards the pointer and catch the light where it is */
 if(!RM&&matchMedia("(hover:hover) and (pointer:fine)").matches){
@@ -1131,7 +1183,7 @@ function renderFacts(){
 function spark(i,r){
   const h=E.visible(i,r).slice(-6).map(x=>x.pts);if(!h.length)return `<span class="note">no results</span>`;
   const w=60,ht=24,bw=w/6;
-  return `<svg class="spark" width="${w}" height="${ht}" viewBox="0 0 ${w} ${ht}" aria-hidden="true"><line x1="0" x2="${w}" y1="${ht-.5}" y2="${ht-.5}"/>${h.map((p,k)=>{const v=Math.max(0,Math.min(1,p/300)),bh=Math.max(1.5,v*(ht-3));return `<rect ${p<=0?'class="z" ':""}x="${(k+(6-h.length))*bw+1}" y="${ht-1-bh}" width="${bw-2}" height="${bh}" rx="1"/>`}).join("")}</svg>`;
+  return `<svg class="spark" width="${w}" height="${ht}" viewBox="0 0 ${w} ${ht}" aria-hidden="true"><line x1="0" x2="${w}" y1="${ht-.5}" y2="${ht-.5}"/>${h.map((p,k)=>{const v=Math.max(0,Math.min(1,p/300)),bh=Math.max(1.5,v*(ht-3));return `<rect style="--k:${k}" ${p<=0?'class="z" ':""}x="${(k+(6-h.length))*bw+1}" y="${ht-1-bh}" width="${bw-2}" height="${bh}" rx="1"/>`}).join("")}</svg>`;
 }
 const SWAP=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M7 4 3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/></svg>`;
 /* which runners a chip changes: they get the effect animation and a glowing edge */
@@ -1180,7 +1232,7 @@ function marketBody(rows){
 }
 const moreBtn=rows=>rows.length>shown?`<button class="btn" id="more">Show ${Math.min(40,rows.length-shown)} more</button>`:"";
 /* typing only redraws the list, never the search box: no lost spaces, capitals or å/ä/ö mid-composition */
-function refreshMarket(){const rows=marketRows(),b=document.getElementById("mrows"),m=document.getElementById("mmore");if(b)b.innerHTML=marketBody(rows);if(m)m.innerHTML=moreBtn(rows)}
+function refreshMarket(){const rows=marketRows(),b=document.getElementById("mrows"),m=document.getElementById("mmore");if(b)b.innerHTML=marketBody(rows);if(m)m.innerHTML=moreBtn(rows);armReveals()}
 function marketHtml(){
   const rows=marketRows();const clubs=[...new Set(D.runners.filter(x=>x.p&&x.c).map(x=>x.c))].sort((a,b)=>a.localeCompare(b,"sv"));
   const th=(k,l)=>`<th><button data-sort="${k}">${l}${sortKey===k?(sortDir<0?" ↓":" ↑"):""}</button></th>`;
@@ -1675,7 +1727,7 @@ function render(){
   if(tab==="season")tab="profile";
   $("#view").innerHTML=tab==="team"?teamView():tab==="rounds"?roundsView():tab==="leagues"?leaguesView():tab==="profile"?profileView():rulesView();
   justAdded=null;justBoosted=null;justLocked=false;justChip=null;countUp();flip();
-  if(opening)armReveals();
+  armReveals();
 }
 function doPlay(chip){
   const o=E.play(state,{squad:ordered(plan),captain:plan.captain,vice:null,chip:chip});
