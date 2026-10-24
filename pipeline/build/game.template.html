@@ -426,6 +426,15 @@ input.name{width:100%;max-width:380px}
 .wkbars b{font:600 9.5px var(--mono);color:var(--text-2);min-height:12px}.wkbars small{font:500 10px var(--mono);color:var(--text-3)}
 tr.wkhead td{background:var(--surface-2);padding-top:9px;padding-bottom:9px}
 #mmore{min-height:24px;text-align:center}#msent{display:block;height:1px}.mload{font-size:12.5px}
+.idle{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;font:800 11.5px/1 var(--font);margin-left:7px;vertical-align:2px;cursor:help;flex:none;user-select:none}
+.idle.y{background:#facc15;color:#422006;box-shadow:0 0 0 2px var(--surface)}
+.idle.r{background:#dc2626;color:#fff;box-shadow:0 0 0 2px var(--surface)}
+.avw{position:relative;display:inline-block}
+.avw .idle{position:absolute;left:-6px;top:-3px;margin:0;z-index:3}
+h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
+.legend{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:-6px 0 10px;font-size:12.5px;color:var(--text-2)}
+.legend .idle{margin:0 0 0 8px;cursor:default}.legend .idle:first-child{margin-left:0}
+@media (prefers-reduced-motion:no-preference){.idle.r{animation:idlePulse 2.4s ease-in-out infinite}@keyframes idlePulse{0%,100%{box-shadow:0 0 0 2px var(--surface),0 0 0 2px rgba(220,38,38,.5)}50%{box-shadow:0 0 0 2px var(--surface),0 0 0 6px rgba(220,38,38,0)}}}
 .lgt tr.gap td{text-align:center;color:var(--text-3);padding:4px}
 .lgmembers{display:flex;flex-wrap:wrap;gap:6px}.lgmembers .tag{display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:999px}.lgmembers .mdot{width:26px;height:26px;font-size:12px}
 .lghead{display:grid;gap:8px;margin-bottom:14px}.lgtitle{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.lgtitle h2{margin:0}
@@ -950,6 +959,11 @@ const fmd=x=>(x>0?"+":x<0?"-":"")+(Math.abs(x)/10).toFixed(1)+"k";
 const TIERS=[["gold","Gold"],["silver","Silver"],["bronze","Bronze"]];
 const tierOf=(i,r)=>{const p=E.price(i,r==null?pr():r),t=D.tiers||[140,60];return p>=t[0]?0:p>=t[1]?1:2};
 const GEM=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z" fill="currentColor"/></svg>`;
+/* the last game week that is over: in the live season the latest round that has ended, in a replay the round before */
+const lastWeek=()=>{if(!isLive())return Math.min(R(),E.R)-1;let w=-1;for(let r=0;r<E.R;r++)if(D.rounds[r].end<TODAY)w=r;return w};
+/* 0 raced last game week, 1 did not (yellow), 2 no race in the last 10 game weeks (red) */
+function idle(i){const lw=lastWeek();if(lw<0)return 0;if(E.starts[lw][i])return 0;for(let r=Math.max(0,lw-9);r<lw;r++)if(E.starts[r][i])return 1;return 2}
+const idleTag=i=>{const k=idle(i);if(!k)return "";const t=k===2?"No race in the last 10 game weeks":"Did not race last game week (round "+D.rounds[lastWeek()].n+")";return `<span class="idle ${k===2?"r":"y"}" title="${t}" aria-label="${t}" role="img">!</span>`};
 const tierTag=(i,r)=>{const t=tierOf(i,r);return `<span class="tier t-${TIERS[t][0]}">${GEM}${TIERS[t][1]}</span>`};
 /* the A team is plan.a (up to five runners), the rest of plan.squad is the B team; ordered squads put the A team first */
 const ordered=p=>{const a=(p.a||[]).filter(i=>p.squad.includes(i));return [...a,...p.squad.filter(i=>!a.includes(i))]};
@@ -1055,7 +1069,7 @@ function squadCard(i,k,show,locked,team){
   const sq=ordered(show),mult=multOf(i,sq,show.chip,show.captain),hit=chipHits(i,team,show),other=swapSel!==null&&swapSel!==i&&plan.a.includes(swapSel)!==(team==="A");
   return `<div class="rc tier-${TIERS[tierOf(i,r)][0]} ${on?"boosted":""} ${justAdded===i?"pop":""} ${justBoosted===i?"zap":""} ${swapSel===i?"sel":""} ${hit&&show.chip?"chipped":""} ${hit&&justChip?"hit":""}" style="--i:${k}" data-card="${i}">
    <span class="tm ${mult>(team==="A"?2:1)?"hi":""}" title="This runner's points count ×${mult} this round">×${mult}</span>${on?`<span class="mult">${m}x</span>`:""}
-   <div class="top"><span style="width:30px"></span>${avatar(i)}${locked?"":`<span class="ctrl"><button class="sw" data-swap="${i}" title="Swap between A and B" aria-label="Swap ${esc(nameOf(i))} to the other team">${SWAP}</button><button class="rm" data-sell="${i}" title="Remove from squad" aria-label="Remove ${esc(nameOf(i))}">&times;</button></span>`}</div>
+   <div class="top"><span style="width:30px"></span><span class="avw">${avatar(i)}${idleTag(i)}</span>${locked?"":`<span class="ctrl"><button class="sw" data-swap="${i}" title="Swap between A and B" aria-label="Swap ${esc(nameOf(i))} to the other team">${SWAP}</button><button class="rm" data-sell="${i}" title="Remove from squad" aria-label="Remove ${esc(nameOf(i))}">&times;</button></span>`}</div>
    <div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button><div class="sub">${esc(clubOf(i))}</div></div>
    <div class="meta"><span class="cls">${D.runners[i].k}</span>${tierTag(i,r)}</div>
    <div class="meta"><span class="sub">form ${fp(s.form)}</span><span class="price">${fm(E.price(i,r))}<small class="${d>0?"up":d<0?"dn":""}">${d?fmd(d):"same"}</small></span></div>
@@ -1091,7 +1105,7 @@ function marketBody(rows){mRows=rows;
   return (rows.slice(0,shown).map(rowHtml).join("")||`<tr><td colspan="10" class="note">No runners match. Clear the search or a filter.</td></tr>`);
 }
 function rowHtml(x){const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
-   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><button class="who" data-prof="${x.i}">${esc(x.n)}</button><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
+   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}<div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
    <td>${inS?`<button class="btn" data-sell="${x.i}">Remove</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Add</button>`}</td></tr>`}
 /* the runner list grows as you scroll: a marker under it loads the next runners before you reach the end, and each
    new runner rises in on its own. A button stays as a fallback where the browser cannot watch the marker. */
@@ -1114,18 +1128,19 @@ function growMarket(){
 function refreshMarket(){const rows=marketRows(),b=document.getElementById("mrows"),m=document.getElementById("mmore");if(b)b.innerHTML=marketBody(rows);if(m)m.innerHTML=moreBtn(rows);armReveals();watchMore()}
 function marketHtml(){
   const rows=marketRows();const clubs=[...new Set(D.runners.filter(x=>x.p&&x.c).map(x=>x.c))].sort((a,b)=>a.localeCompare(b,"sv"));
-  const th=(k,l)=>`<th><button data-sort="${k}">${l}${sortKey===k?(sortDir<0?" ↓":" ↑"):""}</button></th>`;
+  const th=(k,l,t)=>`<th${t?` title="${t}"`:""}><button data-sort="${k}">${l}${sortKey===k?(sortDir<0?" ↓":" ↑"):""}</button></th>`;
   return `<h2 id="market">Runners</h2>
   <div class="filters"><input type="search" id="q" placeholder="Search runner or club" value="${esc(qRaw)}" aria-label="Search runners" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
    <select id="tierF" aria-label="Tier"><option value="">All tiers</option>${TIERS.map(([k,l])=>`<option value="${k}" ${k===tierF?"selected":""}>${l}</option>`).join("")}</select>
    <select id="clsF" aria-label="Class"><option value="">All classes</option>${["H","D","H16","H18","H20","H21","D16","D18","D20","D21"].map(c=>`<option value="${c}" ${c===clsF?"selected":""}>${c==="H"?"All men (H)":c==="D"?"All women (D)":c}</option>`).join("")}</select>
    <select id="clubF" aria-label="Club"><option value="">All clubs</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
    <label><input type="checkbox" id="afford" ${afford?"checked":""}> Affordable only</label></div>
-  <div class="tbl"><table><thead><tr>${th("name","Runner")}<th>Tier</th>${th("price","Price")}<th>Change</th>${th("form","Form")}<th>Last 6 race weeks</th>${th("avg","Per week")}${th("total","Points")}${th("starts","Starts")}<th></th></tr></thead><tbody id="mrows">
+  <p class="legend"><span class="idle y" aria-hidden="true">!</span> no race last week <span class="idle r" aria-hidden="true">!</span> none in 10 weeks</p>
+  <div class="tbl"><table><thead><tr>${th("name","Runner")}<th>Tier</th>${th("price","Price")}<th>Change</th>${th("form","Form","Average of the last 3 race weeks")}<th title="Points in each of the last 6 weeks they raced">Last 6 race weeks</th>${th("avg","Per week","Average of the last 5 race weeks")}${th("total","Points")}${th("starts","Starts")}<th></th></tr></thead><tbody id="mrows">
   ${marketBody(rows)}
   </tbody></table></div>
   <p id="mmore">${moreBtn(rows)}</p>
-  <p class="note">Points are per game week, like you would score them: all of a runner's races in a week added up. Form is the average of their last 3 race weeks, per week the average of their last 5. Prices and stats only count races before this round.</p>`;
+`;
 }
 /* one entry per competition: results are stored per class ("Name (H16)") and some organisers publish a race twice */
 const compName=n=>n.replace(/ \([DH]\d+[A-Z]*\)$/,"").replace(/\s*\((lokal kopia|local copy)[^)]*\)?\s*$/i,"").trim();
@@ -1149,7 +1164,7 @@ function weekSheet(r){
   showSheet("week","Races in round "+rd.n,`<div class="hd"><div><span class="eyebrow">Round ${rd.n}</span><h2 style="margin:4px 0 0">${n} race${n===1?"":"s"}</h2><div class="sub">${dshort(rd.start)} – ${dshort(rd.end)}</div></div><button class="btn" data-close="1">Close</button></div>
    <div class="rnav" style="margin:14px 0"><button class="btn" data-week="${r-1}" ${r<=0?"disabled":""}>Previous week</button><b>${r===R()?"This round":r===R()+1?"Next round":"Round "+rd.n}</b><button class="btn" data-week="${r+1}" ${r>=E.R-1?"disabled":""}>Next week</button></div>
    ${weekList(r)}
-   <p class="note" style="margin:14px 0 0">Races show up here once organisers list them on liveresultat, usually a few days before. Every D/H 16–21 class counts. Tap a race to open it on liveresultat.</p>`);
+`);
 }
 function raceTags(r){
   const c=comps(r);
@@ -1180,7 +1195,7 @@ function teamView(){
   const fin=isFinal(r);
   const saved=isLive()&&isSaved(),cd=dshort(rd.start);
   const lead=locked?(frozen?"Locked. Points come in as the results do.":"Locked for round "+rd.n+"."):
-     (!state.squad.length?"Pick "+D.squad+" runners for "+fm(D.budget)+", at most "+D.clubMax+" per club. The first five are your A team and score double.":D.freeTransfers+" free transfers this round. Prices follow the latest results.");
+     (!state.squad.length?"Pick "+D.squad+" runners for "+fm(D.budget)+", at most "+D.clubMax+" per club.":D.freeTransfers+" free transfers this round.");
   const chipsHtml=`<div class="chipgrid"><button class="chipc none ${!plan.chip?"on":""}" data-chip="" ${locked?"disabled":""}><b>No chip</b></button>${E.CHIPS.map(c=>{const used=state.chips[c],off=locked||used||(c==="wc"&&!state.squad.length);return `<button class="chipc ${plan.chip===c?"on":""} ${used?"used":""}" data-chip="${c}" ${off?"disabled":""} title="${esc(CHIPINFO[c][1])}">${chipSvg(c)}<b>${CHIPINFO[c][0]}</b><small>${CHIPINFO[c][1]}</small></button>`}).join("")}</div>`;
   return `${hero(r)}${liveNow()}<div class="two"><div>
    <h2 style="margin-top:0">Your squad</h2>
@@ -1192,7 +1207,6 @@ function teamView(){
    <div class="squad ab">${teamRows(B,D.squad-AS,"B",AS)}</div>
    ${justChip&&plan.chip?`<div class="chipbanner go" aria-hidden="true">${esc(CHIPINFO[plan.chip][0])}<small>${esc(CHIPINFO[plan.chip][1])}</small></div>`:""}
    ${justLocked&&locked?'<div class="stamp" aria-hidden="true">LOCKED</div>':""}</div>
-   <p class="note" style="margin-top:10px">A team ×2, B team ×1. Your boosted runner's points double again, or triple with 3x Boost. Tap ${SWAP.replace('<svg','<svg style="width:14px;height:14px;vertical-align:-2px"')} to swap a runner between the teams.</p>
   </div>
   <aside class="side">
    <div><span class="eyebrow">Races this round</span><div class="fixtures" style="margin-top:10px">${raceTags(r)}</div></div>
@@ -1200,7 +1214,7 @@ function teamView(){
    <div><span class="eyebrow">Chips · one use each</span><div style="margin-top:10px">${chipsHtml}</div></div>
    ${errs.length&&!locked?`<ul class="errs">${errs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
    ${isLive()?(saved?`<div class="savest" id="savest"><i>✓</i><span>Saved for round ${rd.n}<small>Locks automatically Monday ${cd}</small></span></div>`
-       :`<div class="savest warn" id="savest"><i>!</i><span>${plan.squad.length?"Not saved yet":"No squad yet"}<small>${picks[r]?"Your last complete squad plays until this one is complete.":state.squad.length?"Last round's squad plays until this one is complete.":"It saves by itself once all "+D.squad+" runners are picked."}</small></span></div>`)
+       :`<div class="savest warn" id="savest"><i>!</i><span>${plan.squad.length?"Not saved yet":"No squad yet"}<small>${picks[r]||state.squad.length?"Your last complete squad plays until then":"Saves when all "+D.squad+" are picked"}</small></span></div>`)
      :`<button class="btn go" id="play" ${errs.length||hasStarted(r)&&!fin?"disabled":""}>Play round ${rd.n}</button>`}
    ${isLive()&&syncMsg?`<p class="note" style="margin:0;color:var(--warn)">${esc(syncMsg)}</p>`:""}
    ${fin&&state.squad.length&&!errs.length?`<button class="btn quiet" id="auto">${confirmAuto?"Confirm: play all finished rounds":"Auto-play finished rounds with this squad"}</button>`:""}
@@ -1348,10 +1362,10 @@ function leagueDetail(code){
   const sub=(k,l)=>`<button class="btn ${lgSub===k?"on":""}" data-lgsub="${k}">${l}</button>`;
   const head=`<div class="lghead"><button class="btn quiet" data-lgback="1">← All leagues</button>
    <div class="lgtitle"><h2 style="margin:0">${esc(lgName(code))}</h2>${myOwn[code]?`<span class="host">You host</span>`:""}</div>
-   ${code==="GLOBAL"?`<p class="note" style="margin:6px 0 0">Every player in the game, ranked on the live season. The top 20 are shown, plus you if you are further down${(leagueRows.GLOBAL||[]).length?" ("+leagueRows.GLOBAL.length+" players)":""}.</p>`:`<div class="codebox"><code>${esc(code)}</code><button class="btn on" data-copy="${esc(code)}">${copied===code?"Link copied":"Copy invite link"}</button>${navigator.share?`<button class="btn" data-share="${esc(code)}">Share</button>`:""}</div>`}
-   ${dbOk&&!myTeam?`<div class="nudge"><span><b>Give your team a name</b><span class="sub">Your league-mates see it in the table, with your profile picture.</span></span><button class="btn on" data-tab="profile" data-focus="teamName">Name your team</button></div>`:""}
+   ${code==="GLOBAL"?`${(leagueRows.GLOBAL||[]).length?`<p class="note" style="margin:6px 0 0">${leagueRows.GLOBAL.length} players</p>`:""}`:`<div class="codebox"><code>${esc(code)}</code><button class="btn on" data-copy="${esc(code)}">${copied===code?"Link copied":"Copy invite link"}</button>${navigator.share?`<button class="btn" data-share="${esc(code)}">Share</button>`:""}</div>`}
+   ${dbOk&&!myTeam?`<div class="nudge"><span><b>Give your team a name</b></span><button class="btn on" data-tab="profile" data-focus="teamName">Name your team</button></div>`:""}
    ${cur!==undefined?`<div class="chips" style="margin-top:12px">${sub("table","Table")}${sub("round","Round")}${sub("teams","Teams")}</div>`:""}</div>`;
-  if(cur===undefined||lgSub==="table")return head+`<div class="card">${leagueTable(code)}${cur!==undefined?`<p class="note" style="margin:10px 0 0">Tap a manager to see their team. Squads show once a round has started.</p>`:""}</div>`;
+  if(cur===undefined||lgSub==="table")return head+`<div class="card">${leagueTable(code)}</div>`;
   const r=lgRound!==null&&rs.includes(lgRound)?lgRound:cur,ix=rs.indexOf(r),S=lgStats(code,r),live=!isFinal(r);
   const nav=`<div class="rnav"><button class="btn" data-lground="${rs[ix-1]}" ${ix<=0?"disabled":""}>Previous</button><b>Round ${D.rounds[r].n} <span class="sub">${dshort(D.rounds[r].start)}–${dshort(D.rounds[r].end)}</span>${live?' <span class="livedot">live</span>':""}</b><button class="btn" data-lground="${rs[ix+1]}" ${ix>=rs.length-1?"disabled":""}>Next</button></div>`;
   if(lgSub==="teams")return head+nav+`<div class="grid2">${S.rows.slice().sort((a,b)=>b.by[r].total-a.by[r].total).slice(0,code==="GLOBAL"?20:1e9).map((m,k)=>teamCard(code,m,r,k)).join("")||'<div class="card">Nobody had a squad in this round.</div>'}</div>`;
@@ -1402,7 +1416,7 @@ function globalCard(){
 }
 function leaguesView(){
   if(dbOk&&lgOpen&&(myLeagues.includes(lgOpen)||lgOpen==="GLOBAL"))return leagueDetail(lgOpen);
-  if(!dbOk)return `<h2 style="margin-top:0">Leagues</h2>${inviteBanner()}<div class="grid2"><div class="card"><h3>Play against your friends</h3><p class="note" style="margin:0 0 14px">Leagues need an account, so everyone's squad and points are saved.</p><button class="btn light" data-tab="profile">Sign in or create an account</button></div><div class="card"><h3>How leagues work</h3><ol class="steps"><li>Create an account and host a league.</li><li>Send the invite link. Friends sign up and land in your league.</li><li>Everyone locks a squad before Monday.</li><li>From then on you see each other's teams and points.</li></ol></div></div><div class="card global" style="margin-top:12px"><span class="eyebrow">Everyone</span><h3 style="margin:2px 0 6px">Global top 20</h3><p class="note" style="margin:0">Every player is ranked on one leaderboard. Sign in to see it and where you stand.</p></div>`;
+  if(!dbOk)return `<h2 style="margin-top:0">Leagues</h2>${inviteBanner()}<div class="grid2"><div class="card"><h3>Play against your friends</h3><p class="note" style="margin:0 0 14px">Leagues need an account.</p><button class="btn light" data-tab="profile">Sign in or create an account</button></div><div class="card"><h3>How leagues work</h3><ol class="steps"><li>Create an account and host a league.</li><li>Send the invite link. Friends sign up and land in your league.</li><li>Everyone locks a squad before Monday.</li><li>From then on you see each other's teams and points.</li></ol></div></div><div class="card global" style="margin-top:12px"><span class="eyebrow">Everyone</span><h3 style="margin:2px 0 6px">Global top 20</h3><p class="note" style="margin:0">Every player is ranked on one leaderboard. Sign in to see it and where you stand.</p></div>`;
   return `<h2 style="margin-top:0">Leagues</h2>${inviteBanner()}
   ${isLive()?"":`<p class="note" style="margin:0 0 12px;color:var(--warn)">You are in a practice replay. Leagues only count the live season.</p>`}
   <div class="grid2">
@@ -1418,6 +1432,7 @@ function rulesView(){
   <div class="grid2"><div class="card"><h3>Your team</h3><ul class="rules"><li>Pick ${D.squad} runners from D and H 16, 18, 20 and 21 for ${fm(D.budget)}, at most ${D.clubMax} from one club.</li>
   <li><b>A team and B team.</b> Your first five are the A team and score double. The other five are the B team and score normal points. Swap runners between them any time before the round starts.</li>
   <li><b>Boost</b> one runner each round to double their points again (an A-team runner then counts ×4). No race, no boost.</li>
+  <li><b>Warnings:</b> a yellow ! means a runner did not race last game week, a red ! that they have not raced in the last 10 game weeks.</li>
   <li><b>Tiers</b> follow price: Gold from ${fm(D.tiers[0])}, Silver from ${fm(D.tiers[1])}, Bronze below that. Prices move with form, so a runner can move up or down a tier.</li>
   <li>A round is one week, Monday to Sunday. Your squad saves itself and locks when the round starts. If it is not complete, your last complete squad plays. The live season runs ${dshort(D.rounds[LIVE].start)} to ${dshort(D.rounds[E.R-1].end)}.</li>
   <li>In a league, other managers see your team and points once a round has started, never before.</li>
@@ -1457,7 +1472,7 @@ function profile(i){
   const ev2r=new Map();D.rounds.forEach((rd,q)=>rd.ev.forEach(e=>ev2r.set(e,q)));
   const groups=[];vis.slice().reverse().forEach(h=>{const q=ev2r.has(h.ev)?ev2r.get(h.ev):-1;let g=groups[groups.length-1];if(!g||g.q!==q){g={q,list:[]};groups.push(g)}g.list.push(h)});
   showSheet("prof|"+i,nameOf(i),`
-   <div class="hd"><div style="display:flex;gap:16px;align-items:center;min-width:0">${avatar(i,"lg")}<div style="min-width:0"><h2>${esc(nameOf(i))}</h2><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}</div></div></div><button class="btn" data-close="1">Close</button></div>
+   <div class="hd"><div style="display:flex;gap:16px;align-items:center;min-width:0">${avatar(i,"lg")}<div style="min-width:0"><h2>${esc(nameOf(i))}${idleTag(i)}</h2><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}${idle(i)?" · "+(idle(i)===2?"no race in 10 weeks":"did not race last week"):""}</div></div></div><button class="btn" data-close="1">Close</button></div>
    <div class="stats"><div><b>${D.runners[i].p?fm(E.price(i,pr())):"–"}</b><span>Price · ${TIERS[tierOf(i)][1]}</span></div><div><b>${s.starts}</b><span>Starts</span></div><div><b>${fp(s.total)}</b><span>Points</span></div><div><b>${s.weeks?fp(s.perWeek):"–"}</b><span>Per week, last 5</span></div>${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Class rating</span></div>`:""}</div>
    ${hist}
    <div class="tbl" style="margin-top:12px"><table><thead><tr><th>Race</th><th>Place</th><th>Behind</th><th>Time</th><th>Points</th></tr></thead><tbody>
@@ -1568,7 +1583,7 @@ function renderHero(){
   const show=tab==="team"&&!dbOk&&!state.squad.length&&!plan.squad.length&&isLive();
   const w=(t,i0)=>t.split(" ").map((x,k)=>`<span class="w" style="--i:${i0+k}">${esc(x)}</span>`).join(" ");
   $("#hero").innerHTML=show?`<div class="intro"><div><span class="eyebrow">Fantasy orienteering · D/H 16–21</span><h1 style="margin-top:14px">${w("Pick ten.",0)}<br>${w("Double your A team.",2)}<br><em>${w("Beat everyone.",6)}</em></h1>
-   <p>Your runners score from their real results on liveresultat, every week until Christmas. Beat strong fields, win classes, take your league.</p>
+   <p>Real results from liveresultat, every week until Christmas.</p>
    <div class="row"><button class="btn go" style="width:auto" data-jump="market">Pick your squad</button><button class="btn" data-tab="profile">Create an account</button></div></div>${introCourse()}</div>`:"";
 }
 
