@@ -28,6 +28,13 @@ jobs:
           path: pipeline/data/results
           key: results-${{ github.run_id }}
           restore-keys: results-
+      # liveresultat class lists of finished races, kept so they are not asked for again every night
+      - name: Restore class list cache
+        uses: actions/cache@v4
+        with:
+          path: pipeline/data/classes.json
+          key: classes-${{ github.run_id }}
+          restore-keys: classes-
       # Eventor's cache is kept apart, so the liveresultat cache above stays the same and is never thrown away
       - name: Restore Eventor cache
         uses: actions/cache@v4
