@@ -1,0 +1,52 @@
+-- The season runs to the end of October 2027: rounds 34 to 77, Monday to Sunday, locking Monday 00:00 Swedish time.
+-- round numbers were capped at 60; the season now has 78 rounds (0-77)
+alter table public.season_rounds drop constraint if exists season_rounds_round_check;
+alter table public.season_rounds add constraint season_rounds_round_check check (round >= 0 and round <= 120);
+alter table public.scores drop constraint if exists scores_round_check;
+alter table public.scores add constraint scores_round_check check (round >= 0 and round <= 120);
+insert into public.season_rounds(round, starts_on, locks_at) values
+  (34,'2026-12-28', null),
+  (35,'2027-01-04', null),
+  (36,'2027-01-11', null),
+  (37,'2027-01-18', null),
+  (38,'2027-01-25', null),
+  (39,'2027-02-01', null),
+  (40,'2027-02-08', null),
+  (41,'2027-02-15', null),
+  (42,'2027-02-22', null),
+  (43,'2027-03-01', null),
+  (44,'2027-03-08', null),
+  (45,'2027-03-15', null),
+  (46,'2027-03-22', null),
+  (47,'2027-03-29', null),
+  (48,'2027-04-05', null),
+  (49,'2027-04-12', null),
+  (50,'2027-04-19', null),
+  (51,'2027-04-26', null),
+  (52,'2027-05-03', null),
+  (53,'2027-05-10', null),
+  (54,'2027-05-17', null),
+  (55,'2027-05-24', null),
+  (56,'2027-05-31', null),
+  (57,'2027-06-07', null),
+  (58,'2027-06-14', null),
+  (59,'2027-06-21', null),
+  (60,'2027-06-28', null),
+  (61,'2027-07-05', null),
+  (62,'2027-07-12', null),
+  (63,'2027-07-19', null),
+  (64,'2027-07-26', null),
+  (65,'2027-08-02', null),
+  (66,'2027-08-09', null),
+  (67,'2027-08-16', null),
+  (68,'2027-08-23', null),
+  (69,'2027-08-30', null),
+  (70,'2027-09-06', null),
+  (71,'2027-09-13', null),
+  (72,'2027-09-20', null),
+  (73,'2027-09-27', null),
+  (74,'2027-10-04', null),
+  (75,'2027-10-11', null),
+  (76,'2027-10-18', null),
+  (77,'2027-10-25', null)
+on conflict (round) do update set starts_on = excluded.starts_on, locks_at = excluded.locks_at;

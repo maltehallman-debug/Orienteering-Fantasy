@@ -24,7 +24,9 @@ for i, e in enumerate(events):
 out_rounds = [{"n": r["n"], "start": r["start"], "end": r["end"], "ev": [evpos[x] for x in r["events"]], "final": 1 if r["final"] else 0,
                **({"skip": 1} if r.get("skip") else {}), **({"big": r["big"]} if r.get("big") is not None else {}),
                **({"pending": 1} if r.get("pending") else {}), **({"forced": r["forced"]} if r.get("forced") else {})} for r in rounds]
-prices = [[int(round(p[k] * 10)) for k in pool] for p in D["prices"]]
+# prices only change with new results: rounds ahead all have today's prices, so only up to the next round is sent
+_upto = next((i for i, r in enumerate(rounds) if r["start"] > _dt.date.today().isoformat()), len(rounds) - 1) + 1
+prices = [[int(round(p[k] * 10)) for k in pool] for p in D["prices"][:max(1, _upto)]]
 runners = [{"n": D["names"][k], "c": D["clubs"][k], "p": 1, "s": int(round(D["strength"].get(k, 0.05) * 100)), "k": D["cls"][k], "id": k} for k in pool]
 # runner photos: photos.json maps a runner id ("name|H" or "name|D") to a file in data/photos, embedded so the page stays one file
 import base64

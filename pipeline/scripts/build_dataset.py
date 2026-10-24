@@ -21,7 +21,7 @@ for o in _j("game_overrides.json", []):
 print("eventor races", len(EVMETA), "liveresultat copies replaced", len(EXCLUDE) - 7)
 SEASON_START = dt.date(2026, 5, 4)
 TODAY = dt.date.today()
-LAST_ROUND_START = dt.date(2026, 12, 21)
+LAST_ROUND_START = dt.date(2027, 10, 25)   # the season runs to the end of October 2027
 def norm(n): return re.sub(r"[\s_-]", "", n.upper())
 def _pos(x):
     try: return int(x) > 0
@@ -357,7 +357,7 @@ hc = {int(k) for k, v in _cl.items() if v and any(age_of(n) for n in v)}
 done_cids = {e["cid"] for e in events}
 upcoming = []
 for c in comps.values():
-    if TODAY.isoformat() <= c["date"] <= "2026-12-31" and c["id"] in hc and c["id"] not in EXCLUDE and real_comp(c):
+    if TODAY.isoformat() <= c["date"] <= "2027-10-31" and c["id"] in hc and c["id"] not in EXCLUDE and real_comp(c):
         upcoming.append({"id": c["id"], "name": clean_name(c["name"]), "date": c["date"]})
 upcoming.sort(key=lambda x: (x["date"], x["id"]))
 _seen = set(); upcoming = [u for u in upcoming if not ((u["name"].lower(), u["date"]) in _seen or _seen.add((u["name"].lower(), u["date"])))]

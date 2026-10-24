@@ -22,7 +22,9 @@ C = f"{S}/data/eventor"; os.makedirs(f"{C}/classes", exist_ok=True); os.makedirs
 # Kept deliberately light on Eventor's servers: one request at a time with a pause between them, results only for
 # races in the last RECENT days (the season's history already comes from liveresultat), and everything cached so a
 # finished race's results and class lists are fetched once and never again. A normal night is a few dozen requests.
-TODAY = dt.date.today(); RECENT = 10; AHEAD = 21; SEASON_END = "2026-12-31"
+TODAY = dt.date.today(); RECENT = 10; AHEAD = 21
+# the race list reaches two months ahead: big competitions are judged on entries, which only exist close to the race
+SEASON_END = min("2027-10-31", (TODAY + dt.timedelta(days=60)).isoformat())
 FROM = (TODAY - dt.timedelta(days=RECENT)).isoformat()
 PAUSE = 1.0
 OFFSET = 9_000_000

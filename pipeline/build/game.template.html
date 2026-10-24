@@ -1126,6 +1126,7 @@ nav.tabs .ind.on{opacity:1}
   .mkt .who-wrap>div{max-width:none;min-width:0;overflow:hidden}
   .mkt td:last-child .btn{padding:8px 9px;font-size:14px}
 }
+.card.admin .apply{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 6px}.card.admin .apply .note{margin:0}
 </style>
 </head>
 <body>
@@ -1440,8 +1441,8 @@ function courseSvg(){
   /* phones: the four rounds around the current one, drawn narrower so it fits without sideways scrolling */
   const narrow=matchMedia("(max-width:640px)").matches;
   const W=narrow?500:1000,H=132,x0=narrow?34:46,x1=W-x0,cr=15;
-  const w0=narrow?Math.max(isLive()?LIVE:0,Math.min(state.round-1,E.R-4)):isLive()?LIVE:Math.min(Math.max(0,state.round-1),E.R-9),
-    w1=Math.min(E.R,w0+(narrow?4:isLive()?E.R-LIVE:9)),n=w1-w0;
+  const w0=narrow?Math.max(isLive()?LIVE:0,Math.min(state.round-1,E.R-4)):Math.max(isLive()?LIVE:0,Math.min(Math.max(0,state.round-1),E.R-9)),
+    w1=Math.min(E.R,w0+(narrow?4:9)),n=w1-w0;
   const step=(x1-x0)/(n+1);
   const P=[];for(let k=0;k<=n+1;k++){P.push([x0+k*step,58+Math.sin(k*1.15)*20+(k%2?6:-6)])}
   let legs="";
@@ -2171,7 +2172,16 @@ async function approvePhoto(id){
   await loadPhotos();
 }
 /* admins: add or remove competitions and force game weeks on or off (applied by the nightly data refresh) */
-let ovr=[],ovrMsg="",ovrBusy=false,ovrAdd="";
+let ovr=[],ovrMsg="",ovrBusy=false,ovrAdd="",applyMsg="",applyBusy=false;
+/* "Apply now": a server function checks you are an admin and starts the data refresh on GitHub straight away */
+async function applyNow(){
+  if(applyBusy)return;applyBusy=true;applyMsg="Starting…";render();
+  try{const r=await cloud.sb.functions.invoke("apply-now",{method:"POST"});const o=r.data||{};
+    applyMsg=o.msg||(r.error?"Could not start the refresh: "+(r.error.message||"error"):"Started.");
+    if(r.error&&r.error.context){try{const j=await r.error.context.json();if(j&&j.msg)applyMsg=j.msg}catch(e){}}
+  }catch(e){applyMsg="Could not start the refresh."}
+  applyBusy=false;render();
+}
 async function loadOvr(){if(!cloud.admin)return;try{const q=await cloud.sb.from("game_overrides").select("id,kind,ref,label,created_at").order("created_at");if(!q.error)ovr=q.data||[]}catch(e){}render()}
 const hasOvr=(k,ref)=>ovr.some(o=>o.kind===k&&String(o.ref)===String(ref));
 async function setOvr(kind,ref,label,on){
@@ -2180,7 +2190,7 @@ async function setOvr(kind,ref,label,on){
     if(kind==="week_on"||kind==="week_off")await cloud.sb.from("game_overrides").delete().in("kind",["week_on","week_off"]).eq("ref",ref);
     else await cloud.sb.from("game_overrides").delete().eq("kind",kind).eq("ref",ref);
     if(on){const q=await cloud.sb.from("game_overrides").insert({kind,ref:String(ref),label:(label||"").slice(0,120)});if(q.error)throw q.error}
-    ovrMsg="Saved. It takes effect at the next data refresh (every night).";
+    ovrMsg="Saved. Press Apply now to update the site straight away, or it happens tonight.";
   }catch(e){ovrMsg="Could not save: "+(e.message||"error")}
   ovrBusy=false;await loadOvr();
 }
@@ -2194,7 +2204,8 @@ function adminGameCard(){
   const added=ovr.filter(o=>o.kind==="race_add"),removed=ovr.filter(o=>o.kind==="race_remove");
   const race=u=>{const off=hasOvr("race_remove",u.eo);return `<div class="adm-row"><div><b>${esc(compName(u.name))}</b> <span class="sub">${dshort(u.date)}${u.big?" · big":""}</span></div><button class="btn ${off?"on":""}" data-rcset="${off?"keep":"drop"}" data-rcref="${u.eo}" data-rclabel="${esc(compName(u.name))}">${off?"Removed · undo":"Remove"}</button></div>`};
   return `<div class="card admin"><h3>Admin · competitions and game weeks</h3>
-   <p class="note" style="margin:0 0 12px">Changes are saved now and take effect at the next data refresh (every night). A forced week ignores the big-competition rule.</p>
+   <p class="note" style="margin:0 0 12px">Changes are saved at once. They reach the site at the next data refresh: every night, or press Apply now. A forced week ignores the big-competition rule.</p>
+   <div class="row apply"><button class="btn on" id="applyNow" ${applyBusy?"disabled":""}>Apply now</button><span class="note">${esc(applyMsg||"Rebuilds the site with your changes, about 5 to 8 minutes.")}</span></div>
    <h4>Game weeks</h4><div class="adm-list">${live.map(wk).join("")}</div>
    <h4>Competitions ahead</h4><div class="adm-list">${soon.map(race).join("")||'<p class="note">No races from Eventor yet.</p>'}</div>
    ${removed.filter(o=>!soon.some(u=>String(u.eo)===String(o.ref))).length?`<h4>Removed</h4><div class="adm-list">${removed.filter(o=>!soon.some(u=>String(u.eo)===String(o.ref))).map(o=>`<div class="adm-row"><div><b>${esc(o.label||o.ref)}</b> <span class="sub">Eventor ${esc(o.ref)}</span></div><button class="btn" data-rcset="keep" data-rcref="${esc(o.ref)}">Undo</button></div>`).join("")}</div>`:""}
@@ -2225,7 +2236,7 @@ function renderHero(){
   const show=tab==="team"&&!dbOk&&!state.squad.length&&!plan.squad.length&&isLive();
   const w=(t,i0)=>t.split(" ").map((x,k)=>`<span class="w" style="--i:${i0+k}">${esc(x)}</span>`).join(" ");
   $("#hero").innerHTML=show?`<div class="intro"><div><span class="eyebrow">Fantasy orienteering · D/H 16–21</span><h1 style="margin-top:14px">${w("Pick ten.",0)}<br>${w("Double your A team.",2)}<br><em>${w("Beat everyone.",6)}</em></h1>
-   <p>Official results from Eventor, every week until Christmas.</p>
+   <p>Official results from Eventor, every week until October 2027.</p>
    <div class="row"><button class="btn go" style="width:auto" data-jump="market">Pick your squad</button><button class="btn" data-tab="profile">Create an account</button></div></div>${introCourse()}</div>`:"";
 }
 
@@ -2311,6 +2322,7 @@ document.addEventListener("click",ev=>{
   if(d.wkset){const r=d.wkref;if(d.wkset==="auto")setOvr("week_on",r,"",false);else setOvr(d.wkset==="on"?"week_on":"week_off",r,"Round week "+r,true);return}
   if(d.rcset){setOvr("race_remove",d.rcref,d.rclabel||"",d.rcset==="drop");return}
   if(d.rcadd){setOvr("race_add",d.rcadd,"",false);return}
+  if(t.id==="applyNow"){applyNow();return}
   if(t.id==="ovrAddBtn"){const v=($("#ovrAdd")||{}).value||"";const m=v.match(/(?:eventId=|Show\/|^\s*)(\d{3,7})/i);if(!m){ovrMsg="Paste an Eventor event link or its number.";render();return}ovrAdd="";setOvr("race_add",m[1],"Eventor "+m[1],true);return}
   if(d.tab){const nt=d.tab;if(d.focus)setTimeout(()=>{const f=document.getElementById(d.focus);if(f)f.focus()},700);if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
   if(d.add!==undefined){const i=+d.add;if(!canAddReason(i)){plan.squad.push(i);if(!Array.isArray(plan.a))plan.a=[];if(plan.a.length<AS)plan.a.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}

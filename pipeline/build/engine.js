@@ -20,7 +20,7 @@ function makeEngine(D) {
     const avg = l => l.length ? l.reduce((a, x) => a + x.pts, 0) / l.length : 0;
     return { starts: h.length, weeks: w.length, total, form: avg(w.slice(-3)), perWeek: avg(w.slice(-5)), last: w.length ? w[w.length - 1].pts : 0 };
   }
-  const price = (i, r) => D.prices[Math.min(r, R - 1)][i];
+  const price = (i, r) => D.prices[Math.min(r, D.prices.length - 1)][i];   // rounds ahead share the latest prices
   const clubOf = i => D.runners[i].c;
   function errors(squad, r) {
     const e = [];
