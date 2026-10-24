@@ -452,6 +452,61 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
   .rtab table{table-layout:fixed}.rtab td,.rtab th{white-space:normal;overflow-wrap:anywhere;padding-left:8px;padding-right:8px}
   .rtab th:nth-child(2),.rtab td:nth-child(2){width:62px}.rtab th:nth-child(5),.rtab td:nth-child(5){width:52px;text-align:right}
 }
+/* the week board: always the dark broadcast look, compact enough to fit a phone screenshot */
+.board{--bw:#fff;color:#e2e8f0;background:radial-gradient(120% 70% at 50% 0%,#1e3a5f 0%,#0f1d33 55%,#0a1424 100%);border-radius:22px;padding:14px 12px 14px;box-shadow:0 30px 60px -30px rgba(2,6,23,.55);max-width:560px;margin:0 auto 6px;overflow:hidden;position:relative}
+.board::before{content:"";position:absolute;inset:0;background:repeating-radial-gradient(circle at 50% 120%,transparent 0 22px,rgba(255,255,255,.025) 22px 23px);pointer-events:none}
+.board>*{position:relative}
+.bd-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.bd-brand{font:800 15px/1 var(--font);letter-spacing:-.02em;color:#fff;font-style:italic;text-transform:uppercase}.bd-brand em{color:#34d399;margin-left:4px}
+.bd-me{display:flex;align-items:center;gap:8px;text-align:right;min-width:0}.bd-me>span{display:grid;min-width:0}.bd-me b{font-size:14px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bd-me small{font-size:11.5px;color:#94a3b8}
+.bd-top{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;margin-top:10px}
+.bd-gauge{position:relative;width:clamp(112px,32vw,150px);aspect-ratio:1;margin-bottom:-12%}
+.bd-gauge svg{width:100%;height:100%;transform:rotate(135deg)}
+.bd-gauge circle{fill:none;stroke-width:9;stroke-linecap:round}
+.bd-gauge .g0{stroke:rgba(148,163,184,.18);stroke-dasharray:75 100}
+.bd-gauge .g1{stroke:#34d399;stroke-dasharray:var(--f) 100;filter:drop-shadow(0 0 8px rgba(52,211,153,.45))}
+.bd-score{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.bd-score b{font:800 clamp(30px,10vw,46px)/1 var(--font);letter-spacing:-.05em;color:#34d399;font-variant-numeric:tabular-nums}
+.bd-score span{font-size:11px;color:#cbd5e1;margin-top:2px}
+.bd-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px 8px;text-align:left}
+.bd-stats span{display:block;font:600 9.5px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#94a3b8}
+.bd-stats b{display:block;margin-top:2px;font-size:clamp(16px,4.8vw,20px);color:#60a5fa;font-variant-numeric:tabular-nums}
+.bd-week{display:grid;grid-template-columns:32px 1fr 32px;align-items:center;gap:8px;margin:10px 0 8px;text-align:center}
+.bd-week b{display:block;font-size:15px;color:#fff;text-transform:uppercase;letter-spacing:.02em}.bd-week span{font-size:12px;color:#cbd5e1}
+.bd-arr{width:32px;height:32px;border-radius:50%;border:0;background:#3b82f6;color:#fff;font-size:22px;line-height:1;display:grid;place-items:center;padding:0 0 2px}
+.bd-arr:disabled{background:rgba(148,163,184,.2);color:rgba(255,255,255,.35)}
+.bd-tabs{display:grid;grid-template-columns:1fr 1fr;background:rgba(2,6,23,.55);border-radius:10px;padding:3px;margin-bottom:10px}
+.bd-tabs button{border:0;background:none;color:#94a3b8;font:700 12.5px/1 var(--font);text-transform:uppercase;letter-spacing:.04em;padding:9px 6px;border-radius:8px}
+.bd-tabs button.on{background:#1e3a5f;color:#fff}.bd-tabs small{font-size:11px;opacity:.75}
+.bd-empty{text-align:center;color:#cbd5e1;font-size:13.5px;margin:8px 0}
+/* five runners in a 2-1-2 pattern */
+.lineup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:auto;column-gap:8px;row-gap:0}
+.lineup>.lc:nth-child(1){grid-column:1;grid-row:1/3}.lineup>.lc:nth-child(2){grid-column:3;grid-row:1/3}
+.lineup>.lc:nth-child(3){grid-column:2;grid-row:2/4;margin:10px 0}
+.lineup>.lc:nth-child(4){grid-column:1;grid-row:3/5;margin-top:10px}.lineup>.lc:nth-child(5){grid-column:3;grid-row:3/5;margin-top:10px}
+.lc{position:relative;display:grid;border:0;padding:0;border-radius:14px;overflow:hidden;text-align:center;color:#0f172a;background:#cbd5e1;box-shadow:0 10px 20px -12px rgba(0,0,0,.6),inset 0 0 0 2px rgba(255,255,255,.35);font:inherit;cursor:pointer;min-width:0}
+.lc-top{position:relative;display:grid;place-items:center;padding:8px 4px 7px;background:linear-gradient(160deg,#334155,#1e293b)}
+.lc .av.lg{--s:clamp(40px,12vw,56px);box-shadow:0 0 0 2.5px rgba(255,255,255,.75)}
+.lc-cls{position:absolute;left:6px;top:6px;font:700 9.5px/1 var(--mono);color:#fff;background:rgba(2,6,23,.45);padding:3px 4px;border-radius:4px}
+.lc-m{position:absolute;right:6px;top:6px;font:700 9.5px/1 var(--mono);color:#0f172a;background:#fff;padding:3px 4px;border-radius:4px}
+.lc-cap{position:absolute;left:50%;top:calc(clamp(40px,12vw,56px) + 8px);transform:translate(-50%,-30%);z-index:2;font:800 9px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;background:#fff;color:#0f172a;padding:4px 7px;border-radius:999px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.lc-mid{display:grid;gap:2px;padding:9px 4px 5px}
+.lc-name{font:800 clamp(13px,3.9vw,16px)/1.05 var(--font);text-transform:uppercase;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
+.lc-nums{display:flex;justify-content:center;gap:8px;align-items:baseline}
+.lc-p{font:800 clamp(17px,5vw,22px)/1 var(--font);color:#059669}.lc-k{font:700 clamp(13px,3.8vw,16px)/1 var(--font);color:#334155}
+.lc-nums small{font-size:9.5px;font-weight:600;margin-left:1px;opacity:.75}
+.lc-foot{display:grid;gap:1px;padding:5px 5px 6px;background:rgba(255,255,255,.55);font-size:10.5px;line-height:1.15}
+.lc-foot span{display:flex;justify-content:space-between;gap:4px;min-width:0}.lc-foot i{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#334155}.lc-foot b{flex:none}
+.lc.t-gold{background:linear-gradient(170deg,#fde68a,#fbbf24)}.lc.t-silver{background:linear-gradient(170deg,#f1f5f9,#cbd5e1)}.lc.t-bronze{background:linear-gradient(170deg,#fed7aa,#fb923c)}
+.lc.cap{box-shadow:0 10px 20px -12px rgba(0,0,0,.6),0 0 0 2.5px #34d399,0 0 18px -2px rgba(52,211,153,.6)}
+@media (prefers-reduced-motion:no-preference){
+  .bd-gauge .g1{transition:stroke-dasharray 1.2s var(--ease-cine)}
+  .board .lc{animation:lcIn .7s var(--ease-cine) both;animation-delay:calc(.15s + var(--k) * 80ms)}
+  @keyframes lcIn{from{opacity:0;transform:translateY(16px) scale(.96)}}
+}
+@media (hover:hover) and (pointer:fine){.lc{transition:transform .25s var(--ease-out)}.lc:hover{transform:translateY(-3px)}}
+/* phones: smaller headings so the page is not oversized */
+@media (max-width:640px){h2{font-size:26px;margin:28px 0 12px}.next-main b{font-size:30px}.modal h2{font-size:24px}.intro h1{font-size:40px}}
 .lgt tr.gap td{text-align:center;color:var(--text-3);padding:4px}
 .lgmembers{display:flex;flex-wrap:wrap;gap:6px}.lgmembers .tag{display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:999px}.lgmembers .mdot{width:26px;height:26px;font-size:12px}
 .lghead{display:grid;gap:8px;margin-bottom:14px}.lgtitle{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.lgtitle h2{margin:0}
@@ -1264,11 +1319,52 @@ function evLines(i,rd){
     const row=D.res[h.ev].find(x=>x[0]===i);const topb=row?row[6]:0;
     return `<div class="ev"><span>${esc(e.name)} <span class="sub">${dshort(e.date)}</span></span><span>${h.kind?`<span class="neg">${["","Did not finish","Mispunch","Disqualified"][h.kind]}</span>`:`place ${h.rank} of ${e.n}, ${(h.gap/100).toFixed(1)}% behind${topb?", beat "+topb+" top "+(topb===1?"runner":"runners"):""}`}, <span class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</span></span></div>`}).join("")||`<div class="ev sub">Did not race this round</div>`;
 }
+/* ---------- the week board: score, numbers and your five, made to screenshot ---------- */
+let lpTeam="A";
+const surname=n=>{const w=n.trim().split(/\s+/);return w.length>1?w.slice(1).join(" "):w[0]};
+const shortRace=e=>{const n=compName(e.name).replace(/\((?:[DH]\d\d[^)]*|[^)]*relay)\)/g,"").replace(/^(DM|GM|SM)[, ]+/i,"$1 ").split(/[,:–-]/)[0].trim();return n.length>14?n.slice(0,13)+"…":n};
+function weekBoard(){
+  const L=state.log,weeks=L.map((x,k)=>({k,x,r:x.round}));if(!done())weeks.push({k:L.length,x:null,r:R()});
+  if(!weeks.length)return "";
+  const w=weeks[Math.max(0,Math.min(viewRound,weeks.length-1))],x=w.x,r=w.r,rd=D.rounds[r];
+  const sq=x?x.squad.slice():(picks[r]&&isLive()?picks[r].squad.slice():ordered(plan));
+  const cap=x?x.capLive:(picks[r]&&isLive()?picks[r].captain:plan.captain),chip=x?x.chip:(picks[r]&&isLive()?picks[r].chip:plan.chip);
+  const total=x?L.slice(0,w.k+1).reduce((a,l)=>a+l.total,0):state.total;
+  const tr=x?x.transfers:(state.squad.length?E.transfersFor(state,sq).n:0);
+  const G=isLive()&&r>=LIVE?(leagueRows.GLOBAL||[]):[],gs=G.map(m=>m.by[r]?m.by[r].total:null).filter(v=>v!==null);
+  const best=gs.length?Math.max(...gs):null;
+  const score=x?x.total:0,frac=Math.max(0,Math.min(1,score/Math.max(best||0,1000)));
+  const when=isFinal(r)?"Ended Sunday "+dshort(rd.end):hasStarted(r)?"Ends Sunday "+dshort(rd.end):"Starts Monday "+dshort(rd.start);
+  const team=lpTeam==="B"?sq.slice(AS):sq.slice(0,AS);
+  const card=(i,k)=>{
+    const kk=sq.indexOf(i),m=multOf(i,sq,chip,cap),boost=i===cap&&(!x||E.starts[r][i]>0),played=!!x;
+    const races=played?E.hist[i].filter(h=>rd.ev.includes(h.ev)):[];
+    const pts=played?(E.starts[r][i]?fp(E.pts[r][i]*m):"–"):"–";
+    const foot=played?(races.length?races.slice(0,2).map(h=>`<span><i>${esc(shortRace(D.events[h.ev]))}</i><b>${h.kind?["","DNF","MP","DSQ"][h.kind]:fp(h.pts*m)+"p"}</b></span>`).join(""):`<span><i>No race</i><b>0p</b></span>`)
+      :`<span><i>Form</i><b>${fp(E.stats(i,pr()).form)}</b></span><span><i>Per week</i><b>${fp(E.stats(i,pr()).perWeek)}</b></span>`;
+    return `<button class="lc t-${TIERS[tierOf(i,r)][0]} ${boost?"cap":""}" style="--k:${k}" data-prof="${i}" aria-label="${esc(nameOf(i))}">
+      <span class="lc-top"><span class="lc-cls">${D.runners[i].k}</span><span class="lc-m">×${m}</span>${avatar(i,"lg")}</span>
+      ${boost?`<span class="lc-cap">Boost ×${chip==="tc"?3:2}</span>`:""}
+      <span class="lc-mid"><b class="lc-name">${esc(surname(nameOf(i)))}</b><span class="lc-nums"><span class="lc-p">${pts}<small>p</small></span><span class="lc-k">${fm(E.price(i,Math.min(r,E.R-1))).replace("k","")}<small>k</small></span></span></span>
+      <span class="lc-foot">${foot}</span></button>`};
+  const me=dbOk?(myTeam||mgrName||"My team"):(mgrName||"My team");
+  return `<section class="board" aria-label="Round ${rd.n}">
+   <div class="bd-head"><span class="bd-brand">Orienteering<em>Fantasy</em></span><span class="bd-me"><span><b>${esc(me)}</b>${dbOk&&myTeam&&mgrName?`<small>${esc(mgrName)}</small>`:""}</span>${dbOk?mgrDot({id:cloud.uid,name:mgrName||"M",av:myAv}):""}</span></div>
+   <div class="bd-top"><div class="bd-gauge"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="g0" cx="100" cy="100" r="80" pathLength="100"/>${frac>0?`<circle class="g1" cx="100" cy="100" r="80" pathLength="100" style="--f:${(frac*75).toFixed(2)}"/>`:""}</svg>
+    <div class="bd-score"><b class="score" data-count="${score/10}" data-key="board${r}">${x?fp(score):"–"}</b><span>${x?(isFinal(r)?"points":"so far"):"not played"}</span></div></div>
+   <div class="bd-stats"><div><span>Transfers</span><b>${tr}</b></div><div><span>Total</span><b>${fp(total)}</b></div><div><span>Players</span><b>${G.length||"–"}</b></div><div><span>Highest</span><b>${best!==null?fp(best):"–"}</b></div></div></div>
+   <div class="bd-week"><button class="bd-arr" data-round="${w.k-1}" ${w.k<=0?"disabled":""} aria-label="Previous round">‹</button><div><b>Round ${rd.n}</b><span>${when}${x&&x.chip?" · "+esc(CHIPINFO[x.chip][0]):""}${x&&x.carried?" · last round's squad":""}</span></div><button class="bd-arr" data-round="${w.k+1}" ${w.k>=weeks.length-1?"disabled":""} aria-label="Next round">›</button></div>
+   <div class="bd-tabs"><button data-lteam="A" class="${lpTeam!=="B"?"on":""}">A team <small>×2</small></button><button data-lteam="B" class="${lpTeam==="B"?"on":""}">B team <small>×1</small></button></div>
+   ${sq.length===D.squad?`<div class="lineup">${team.map(card).join("")}</div>`:`<p class="bd-empty">${x?"":"Pick all "+D.squad+" runners on the Team tab and they show up here."}</p>`}
+  </section>`;
+}
 function roundsView(){
-  if(!state.log.length)return `<div class="card">No rounds played yet. ${lock?"Your squad is locked for round "+D.rounds[lock.round].n+". Points appear here when the results are in.":"Lock in your squad on the Team tab."}</div>`;
+  const board=weekBoard();
+  if(!state.log.length)return board||`<div class="card">No rounds played yet.</div>`;
   const li=Math.min(viewRound,state.log.length-1),L=state.log[li],rd=L.round;
-  return `${!isFinal(rd)?`<p class="next-k" style="margin:0 0 6px">Live · points so far, more results may come in</p>`:""}${L.carried?`<p class="note" style="margin:0 0 6px">No squad was locked for this round, so the squad from the round before played.</p>`:""}<div class="rhead"><div><div class="score" data-count="${L.total/10}" data-key="score${li}">${fp(L.total)}</div><div class="note">Round ${D.rounds[rd].n}, ${dshort(D.rounds[rd].start)} to ${dshort(D.rounds[rd].end)}. ${fp(L.base)} from runners${L.capLive===null?", boosted runner did not race":", "+sg(L.capExtra)+" boost from "+esc(nameOf(L.capLive))+(L.chip==="tc"?" (3x)":" (2x)")}${L.penalty?", -"+fp(L.penalty)+" for "+L.transfers+" transfers":""}${L.chip==="wc"?", Wildcard played":""}</div></div>
-   <div class="pn"><button class="btn" data-round="${li-1}" ${li===0?"disabled":""}>Previous</button><button class="btn" data-round="${li+1}" ${li>=state.log.length-1?"disabled":""}>Next</button></div></div>
+  if(viewRound>=state.log.length)return board;
+  return `${board}${!isFinal(rd)?`<p class="next-k" style="margin:18px 0 6px">Live · points so far, more results may come in</p>`:""}${L.carried?`<p class="note" style="margin:0 0 6px">No squad was locked for this round, so the squad from the round before played.</p>`:""}
+  <p class="note" style="margin:18px 0 12px">${fp(L.base)} from runners${L.capLive===null?", boosted runner did not race":", "+sg(L.capExtra)+" boost from "+esc(nameOf(L.capLive))+(L.chip==="tc"?" (3x)":" (2x)")}${L.penalty?", -"+fp(L.penalty)+" for "+L.transfers+" transfers":""}${L.chip==="wc"?", Wildcard played":""}</p>
   <div class="grid2">${L.squad.map((i,k)=>{const m=multOf(i,L.squad,L.chip,L.capLive),raw=E.pts[rd][i],p=raw*m,b=L.captain===i;return `<div class="card" style="--i:${k}${b?";box-shadow:0 0 0 1px var(--accent-line) inset":""}"><div class="ev" style="border:0;padding:0 0 4px;align-items:center"><div style="display:flex;gap:12px;align-items:center;min-width:0">${avatar(i,"sm")}<div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${k<AS?"A team":"B team"}, ${esc(clubOf(i))}${b?`, <b style="color:var(--accent)">boosted</b>`:""}</span></div></div><span class="pts-big ${p<0?"neg":""}">${sg(p)}${E.starts[rd][i]?` <span class="sub" style="font-size:12px">${sg(raw)} ×${m}</span>`:""}</span></div>${evLines(i,rd)}</div>`}).join("")}</div>
   <div class="card"><h3>Best scores this round</h3>${E.roundBest(rd,5).map(([i,p],k)=>`<div class="ev"><span>${k+1}. <button class="who" style="font-size:15px" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${esc(clubOf(i))}</span></span><b class="pos">${sg(p)}</b></div>`).join("")||'<div class="sub">No counted races this round.</div>'}</div>
   ${!done()&&li===state.log.length-1?`<p><button class="btn on" data-tab="team" id="next">Plan round ${D.rounds[R()].n}</button></p>`:""}`;
@@ -1686,6 +1782,7 @@ document.addEventListener("click",ev=>{
   if(d.chip!==undefined){const c=d.chip||null;if(c!==plan.chip){plan.chip=c;justChip=c;save()}render();if(c){const [x,y]=centerOf(t);burst(x,y)}return}
   if(d.sort){if(sortKey===d.sort)sortDir=-sortDir;else{sortKey=d.sort;sortDir=d.sort==="name"?1:-1}render();return}
   if(d.round!==undefined){viewRound=+d.round;render();return}
+  if(d.lteam){lpTeam=d.lteam;render();return}
   if(t.id==="more"){shown+=40;refreshMarket();return}
   if(t.id==="play"){try{
       const [bx,by]=centerOf(t);
