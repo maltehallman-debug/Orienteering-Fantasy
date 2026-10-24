@@ -25,21 +25,34 @@ def tier_of(c):
 # no other sports, no club-internal or training races, and at least two of the four age groups
 # unless it is a championship (Ungdoms-SM and Unionsmatchen only have 16).
 REAL = re.compile(r"^([DH])(16|18|20|21)(E|ELIT|ELITE)?$")
+# a class name split into parts: relay legs ("H21-1"), heats ("D16-1", "D18E-2" at 25mannamedeln) or stages
+PART = re.compile(r"^\s*([DH])\s*(16|18|20|21)\s*-?\s*(E|ELIT|ELITE)?\s*-\s*([1-9])\s*$", re.I)
+def age_of(n):
+    m = REAL.match(norm(n)) or PART.match(n)
+    return m.group(2) if m else None
 OTHER_SPORT = re.compile(r"mtbo|mtb-o|ol-skytte|skidorient|\bvtt\b|trail-?o\b|precision", re.I)
 TRAINING = re.compile(r"\bkm\b|klubbmästerskap|klubbmatch|träning|^test\b|\btest \d|fasttest|testløb|ungdomsserie|u-serie|u-ringen|totalresultat", re.I)
 _cl = json.load(open(f"{S}/data/classes.json"))
 def clean_name(n): return re.sub(r"\s*\((lokal kopia|local copy)[^)]*\)?\s*$", "", n.strip(), flags=re.I).strip()
+# Danish and Norwegian races: Swedish never writes ø or æ, and "stafet", "løb", "løp" are Danish/Norwegian words.
+# (Eventor, once connected, decides this properly: only Swedish events count.)
+FOREIGN = re.compile(r"[øæ]|\bstafet\b|\bløb|\bløp|bornholm|kolding|aarhus|århus|odense|aalborg|ålborg|esbjerg|silkeborg|horsens|vejle|herning|viborg|randers|roskilde|allerød|farum|tisvilde|københavn|copenhagen|danmark|denmark|oslo\b|bergen\b|trondheim|stavanger|kristiansand|drammen|lillehammer|tromsø|norge\b|norway", re.I)
 def real_comp(c):
-    if not c["name"].strip() or OTHER_SPORT.search(c["name"]) or TRAINING.search(c["name"]): return False
-    ages = {REAL.match(norm(n)).group(2) for n in (_cl.get(str(c["id"])) or []) if REAL.match(norm(n))}
+    if not c["name"].strip() or OTHER_SPORT.search(c["name"]) or TRAINING.search(c["name"]) or FOREIGN.search(c["name"]): return False
+    ages = {age_of(n) for n in (_cl.get(str(c["id"])) or []) if age_of(n)}
     return len(ages) >= 2 or (len(ages) >= 1 and tier_of(c) > 1)
 
 events = []
 seen_ek = set()
+parts = collections.defaultdict(dict)   # (competition, D/H, age, elite) -> {part number: result file}
 for p in glob.glob(f"{S}/data/results/*.json"):
     j = json.load(open(p))
     cid = j["id"]; cn = norm(j.get("className", "H16"))
     if cid in EXCLUDE or cid not in comps: continue
+    pm = PART.match(j.get("className", ""))
+    if pm and real_comp(comps[cid]) and dt.date.fromisoformat(comps[cid]["date"]) < TODAY:
+        parts[(cid, pm.group(1).upper(), pm.group(2), (pm.group(3) or "").upper())][int(pm.group(4))] = j
+        continue
     m = REAL.match(cn)
     if not m or not real_comp(comps[cid]): continue
     ek = f"{cid}:{cn}"
@@ -55,6 +68,42 @@ for p in glob.glob(f"{S}/data/results/*.json"):
     # the label keeps the real class (H21 and H21E are different races in the same competition)
     events.append({"id": ek, "cid": cid, "name": f'{clean_name(c["name"])} ({cn})', "date": c["date"], "d": d, "tier": tier_of(c),
                    "g": g, "cls": g + age, "rows": rows, "fin": fin})
+# ---- split classes ----
+# A relay lists each leg as its own class. The same numbered team names ("OK Linné 1") come back on every leg with a
+# different runner each time, and the last leg holds the team's final place and total time. Heats and stages are
+# scored like any race: heats have no team names in common, stages have the same runners in every part.
+TEAMNO = re.compile(r"\s+\d{1,2}$")
+RELAYNAME = re.compile(r"stafett|relay|relais|staffel|kavle|tiomila|jukola|venla|budkavle", re.I)
+def _rows(j): return [r for r in j["rows"] if r["name"] and r["name"].strip().lower() != "vacant"]
+for (cid, g, age, el), P in parts.items():
+    c = comps[cid]; d = dt.date.fromisoformat(c["date"]); legs = sorted(P); cls = g + age + el
+    relay = False
+    if len(legs) >= 2:
+        a, b = _rows(P[legs[0]]), _rows(P[legs[1]])
+        ca, cb = {r["club"] for r in a}, {r["club"] for r in b}
+        na, nb = {r["name"].strip().lower() for r in a}, {r["name"].strip().lower() for r in b}
+        numbered = sum(1 for r in a if TEAMNO.search(r["club"] or "")) / max(1, len(a))
+        relay = len(ca & cb) >= .6 * max(1, min(len(ca), len(cb))) and len(na & nb) <= .2 * max(1, min(len(na), len(nb))) and (numbered >= .6 or bool(RELAYNAME.search(c["name"])))
+    if not relay:
+        for k in legs:
+            rows = _rows(P[k]); fin = [r for r in rows if finished(r)]
+            if len(fin) < MIN_FIN: continue
+            events.append({"id": f"{cid}:{cls}-{k}", "cid": cid, "name": f'{clean_name(c["name"])} ({cls}-{k})', "date": c["date"], "d": d,
+                           "tier": tier_of(c), "g": g, "cls": g + age, "rows": rows, "fin": fin})
+        continue
+    final = {r["club"]: r for r in _rows(P[legs[-1]])}
+    rows = []
+    for k in legs:
+        for r in _rows(P[k]):
+            t = final.get(r["club"])
+            if not t: continue
+            rows.append({"name": r["name"], "club": TEAMNO.sub("", r["club"] or ""), "team": r["club"], "leg": k, "own": r["status"],
+                         "result": t["result"], "status": r["status"] if r["status"] in (2, 3, 4) else (0 if finished(t) else 2), "teamok": finished(t)})
+    teams_fin = {r["team"] for r in rows if r["teamok"]}
+    if len(teams_fin) < MIN_FIN: continue
+    events.append({"id": f"{cid}:{cls}:relay", "cid": cid, "name": f'{clean_name(c["name"])} ({cls}, relay)', "date": c["date"], "d": d,
+                   "tier": tier_of(c), "g": g, "cls": g + age, "rows": rows, "fin": [r for r in rows if r["teamok"] and finished(r)], "relay": True})
+print("relays", sum(1 for e in events if e.get("relay")), "split heats/stages", sum(1 for e in events if not e.get("relay") and e["id"].count("-") and ":" in e["id"] and e["id"].split(":")[1][-2:-1] == "-"))
 # some organisers publish the same race as two competitions: keep one copy per race, date and class
 _best = {}
 for e in events:
@@ -91,6 +140,7 @@ keys_all = sorted({rkey(r, e) for e in events for r in e["fin"]})
 kix = {k: i for i, k in enumerate(keys_all)}
 ev_i, run_i, perf = [], [], []
 for ei, e in enumerate(events):
+    if e.get("relay"): continue
     lt = np.array([np.log(int(r["result"])) for r in e["fin"]])
     m = np.median(lt)
     for r, x in zip(e["fin"], lt):
@@ -118,7 +168,35 @@ def beat_w(s): return 0.1 + 1.9 * s ** 3
 
 # ---- scoring ----
 FIN, CAP_BEAT = 2.0, 35.0
+def score_relay(e):
+    # every runner gets the team's result: its place, the teams it beat (worth their runners' average class) and its
+    # margin to the winning team as a share of the winning time, so 3 minutes behind in a 4-hour relay is close
+    T = {}
+    for r in e["rows"]:
+        t = T.setdefault(r["team"], {"keys": [], "rows": [], "time": int(r["result"]) if _pos(r["result"]) else 0, "ok": r["teamok"]})
+        t["keys"].append(rkey(r, e)); t["rows"].append(r)
+    tstr = {n: sum(STR.get(k, 0.05) for k in t["keys"]) / len(t["keys"]) for n, t in T.items()}
+    fin = sorted(((n, t["time"]) for n, t in T.items() if t["ok"]), key=lambda x: x[1])
+    win = fin[0][1]; times = [x for _, x in fin]
+    top10 = sorted((tstr[n] for n, _ in fin), reverse=True)[:10]
+    qf = 0.75 + 0.75 * (sum(top10) / len(top10))
+    sizef = min(1.0, 0.4 + 0.6 * (len(fin) - 3) / 17)
+    out = {}
+    for n, t in T.items():
+        for r, key in zip(t["rows"], t["keys"]):
+            if r["own"] in (2, 3, 4): out[key] = {"k": {2: "DNF", 3: "MP", 4: "DSQ"}[r["own"]], "pts": -5.0}; continue
+            if not t["ok"]: out[key] = {"k": "DNF", "pts": 0.0}; continue   # a teammate did not finish: no points, no penalty
+            rank = 1 + bisect.bisect_left(times, t["time"])
+            beaten = [m for m, x in fin if x > t["time"]]
+            wsum = sum(beat_w(tstr[m]) for m in beaten)
+            gap = (t["time"] - win) / win
+            speed = max(0.0, 18 - 80 * gap) * qf * sizef
+            pod = {1: 12, 2: 7, 3: 4}.get(rank, 0) * qf * sizef
+            raw = FIN + min(CAP_BEAT, wsum) + speed + pod
+            out[key] = {"k": "F", "rank": rank, "beaten": len(beaten), "t": t["time"], "gap": round(gap, 4), "pts": round(raw * e["tier"], 1), "topb": 0}
+    return out
 def score_event(e):
+    if e.get("relay"): return score_relay(e)
     fin = sorted(e["fin"], key=lambda r: int(r["result"]))
     win = int(fin[0]["result"])
     fk = [(rkey(r, e), int(r["result"])) for r in fin]
@@ -145,7 +223,7 @@ def score_event(e):
             out[key] = {"k": {2: "DNF", 3: "MP", 4: "DSQ"}[r["status"]], "pts": -5.0}
     return out
 for e in events:
-    e["scores"] = score_event(e); e["n"] = len(e["fin"])
+    e["scores"] = score_event(e); e["n"] = len({r["team"] for r in e["fin"]}) if e.get("relay") else len(e["fin"])
 
 # ---- runners ----
 names = collections.defaultdict(collections.Counter)
@@ -212,7 +290,7 @@ for r in rounds:
     price_by_round.append({k: pr.get(k, 2.5) for k in pool})
     r["rated"] = len(pr)
 
-hc = {int(k) for k, v in _cl.items() if v and any(REAL.match(norm(n)) for n in v)}
+hc = {int(k) for k, v in _cl.items() if v and any(age_of(n) for n in v)}
 done_cids = {e["cid"] for e in events}
 upcoming = []
 for c in comps.values():
