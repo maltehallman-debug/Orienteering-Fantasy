@@ -24,11 +24,11 @@ function makeEngine(D) {
   const clubOf = i => D.runners[i].c;
   function errors(squad, r) {
     const e = [];
-    if (squad.length !== D.squad) e.push(`Pick exactly ${D.squad} runners`);
-    if (new Set(squad).size !== squad.length) e.push("Duplicate runner");
+    if (squad.length !== D.squad) e.push(`Välj exakt ${D.squad} löpare`);
+    if (new Set(squad).size !== squad.length) e.push("Samma löpare två gånger");
     const cc = {};
-    squad.forEach(i => { cc[clubOf(i)] = (cc[clubOf(i)] || 0) + 1; if (!D.runners[i].p) e.push("Runner not in pool"); });
-    Object.entries(cc).forEach(([c, n]) => { if (n > D.clubMax) e.push(`Max ${D.clubMax} runners from ${c}`); });
+    squad.forEach(i => { cc[clubOf(i)] = (cc[clubOf(i)] || 0) + 1; if (!D.runners[i].p) e.push("Löparen finns inte i spelet"); });
+    Object.entries(cc).forEach(([c, n]) => { if (n > D.clubMax) e.push(`Högst ${D.clubMax} löpare från ${c}`); });
     return e;
   }
   // chips, one use each per season: wc wildcard (free transfers), tc 3x boost, ax A team double, bb B team plays like the A team, yo youth (16) double
@@ -57,13 +57,13 @@ function makeEngine(D) {
   // affordable when it was locked must still count when the round is scored
   function planErrors(state, plan, opts) {
     const r = state.round, e = errors(plan.squad, r);
-    if (!plan.squad.includes(plan.captain)) e.push("Pick a runner to boost");
-    if (plan.chip && !CHIPS.includes(plan.chip)) e.push("Unknown chip");
-    if (plan.chip && state.chips[plan.chip]) e.push("Chip already used");
-    if (plan.chip && D.rounds[r] && D.rounds[r].skip) e.push("No chips in a skipped week");
-    if (plan.chip === "wc" && !state.squad.length) e.push("Wildcard cannot be used for the opening squad");
+    if (!plan.squad.includes(plan.captain)) e.push("Välj en löpare att boosta");
+    if (plan.chip && !CHIPS.includes(plan.chip)) e.push("Okänt chip");
+    if (plan.chip && state.chips[plan.chip]) e.push("Chipet är redan använt");
+    if (plan.chip && D.rounds[r] && D.rounds[r].skip) e.push("Inga chips en vecka som hoppas över");
+    if (plan.chip === "wc" && !state.squad.length) e.push("Vägval kan inte användas till första truppen");
     // a bank that went negative only because prices moved never blocks keeping the same squad
-    if (!(opts && opts.budget === false)) { const b = bankAfter(state, plan.squad); if (b < 0 && b < state.bank) e.push("Over budget"); }
+    if (!(opts && opts.budget === false)) { const b = bankAfter(state, plan.squad); if (b < 0 && b < state.bank) e.push("Över budget"); }
     return e;
   }
   function play(state, plan, opts) {
