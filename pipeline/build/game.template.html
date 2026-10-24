@@ -1373,6 +1373,7 @@ nav.tabs .ind{background:var(--gul)!important;height:4px!important;bottom:0!impo
 .btn.danger{background:#c81e1e!important;color:#fff!important}
 /* surfaces: grey boxes with square corners and the navy corner triangle, white cards with big round corners */
 .panel,.side{background:#f2f2f2!important;border-radius:0!important;box-shadow:none!important}.panel{position:relative}
+@media (max-width:900px){.side{position:relative!important;top:auto!important}}   /* the corner triangle needs a positioned box */
 .panel::before,.side::before{content:"";position:absolute;right:0;top:0;width:34px;height:34px;background:linear-gradient(225deg,var(--navy) 50%,transparent 50%);pointer-events:none}
 .card,.kv>div,.hl,.livestrip,.rc:not([class*="tier-"]):not(.slot){background:#fff!important;border-radius:30px!important;box-shadow:none!important}
 #view>.card,#view .grid2>.card{background:#f2f2f2!important}
