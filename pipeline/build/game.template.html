@@ -339,8 +339,12 @@ tr.in td{background:var(--accent-tint)}
 }
 
 /* ---------- misc ---------- */
-ul.rules{padding-left:18px;margin:6px 0}ul.rules li{margin:9px 0;max-width:70ch;color:var(--text-2)}ul.rules li b{color:var(--text)}
-ul.rules li::marker{color:var(--accent)}
+/* the rules read like a catalogue: numbered entries between hairlines */
+ul.rules{list-style:none;padding:0;margin:4px 0 0;counter-reset:rl}
+ul.rules li{counter-increment:rl;position:relative;margin:0;padding:12px 0 12px 2.7em;max-width:70ch;color:var(--text-2);border-top:1px solid var(--line)}
+ul.rules li:first-child{border-top:0;padding-top:6px}ul.rules li:first-child::before{top:6px}
+ul.rules li::before{content:counter(rl,decimal-leading-zero);position:absolute;left:0;top:12px;font:600 15px/1.45 var(--display);letter-spacing:.04em;color:var(--accent)}
+ul.rules li b{color:var(--text)}
 .lb{list-style:none;padding:0;margin:8px 0 0}
 input.name{width:100%;max-width:380px}
 .field{display:grid;gap:6px;margin-bottom:10px}
@@ -454,7 +458,8 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
   .mkt table,.rtab table{width:100%;min-width:0}
   .mkt th,.mkt td{padding-left:6px;padding-right:6px}
   .mkt td:first-child{max-width:44vw}.mkt th{letter-spacing:.04em;font-size:10px;white-space:normal}.mkt th button{white-space:normal;text-align:left}.mkt .who-wrap{gap:8px;min-width:0}.mkt .who-wrap>div{min-width:0}
-  .mkt .who{display:inline;font-size:14px}.mkt td .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mkt .who{display:inline-block;max-width:calc(100% - 24px);vertical-align:bottom;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.mkt td .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mkt .who-wrap>div{max-width:calc(44vw - 46px)}.mkt .who-wrap .idle{vertical-align:6px}
   .mkt td:last-child .btn{padding:8px 10px}
   .rtab th:nth-child(3),.rtab td:nth-child(3),.rtab th:nth-child(4),.rtab td:nth-child(4){display:none}
   .rtab table{table-layout:fixed}.rtab td,.rtab th{white-space:normal;overflow-wrap:anywhere;padding-left:8px;padding-right:8px}
@@ -679,8 +684,15 @@ body.reel-hold>:not(#reel),body.reel-hold>:not(#reel) *,body.reel-hold>:not(#ree
   .course .ctl{animation:ctlIn .8s var(--spring) both;animation-delay:calc(.3s + var(--k,0) * 70ms)}
   .enter .sbars i{animation:grow 1.2s var(--spring) both;animation-delay:calc(.4s + var(--k) * 80ms)}
   .modal{animation:fade .45s ease-out}
-  .modal .sheet{animation:sheetZoom .7s var(--ease-cine)}
-  @keyframes sheetZoom{from{opacity:0;transform:scale(.55);filter:blur(10px)}}
+  .modal .sheet{animation:sheetZoom .42s var(--ease-out)}
+  @keyframes sheetZoom{from{opacity:0;transform:scale(.9);filter:blur(4px)}}
+  .modal.closing{animation:fade .22s ease-out reverse forwards}
+  .modal.closing .sheet{animation:sheetZoom .22s var(--ease-out) reverse forwards}
+  @media (max-width:640px){
+    .modal .sheet{animation:sheetUp .46s var(--ease-drawer)}
+    .modal.closing .sheet{animation:sheetUp .26s var(--ease-out) reverse forwards}
+    @keyframes sheetUp{from{transform:translateY(100%)}}
+  }
   .stamp{animation:stampIn .8s var(--spring) both,stampOut .7s ease-in 2.4s forwards}
   .rc.pop{animation:popIn .9s var(--spring) both}
   .rc.zap .av{animation:punch .8s var(--spring)}
@@ -968,6 +980,70 @@ body{font-feature-settings:"tnum" 0;-webkit-font-smoothing:antialiased}
   .card,.side,.board,.facts>div,.kv>div,.hl,.livestrip{background:radial-gradient(420px circle at var(--sx,-500px) var(--sy,-500px),color-mix(in srgb,var(--accent) 8%,transparent),transparent 65%),var(--surface-grad)}
   .lit{transition:box-shadow .3s}
 }
+/* ================= gallery finish ================= */
+/* the wall: a fine paper grain on the map, under every panel (static, no blending, so it costs nothing on scroll) */
+.terrain::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.07;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E") 0 0/180px 180px}
+[data-theme="dark"] .terrain::after{opacity:.09;filter:invert(1)}
+/* tabs: the old per-tab underline gives way to one indicator that glides */
+nav.tabs button[aria-selected="true"]::after{content:none}
+nav.tabs .ind{position:absolute;left:0;bottom:3px;width:1px;height:2.5px;border-radius:2px;background:var(--accent);transform-origin:0 50%;pointer-events:none;opacity:0}
+nav.tabs .ind.on{opacity:1}
+.tabbar .ind{display:none}
+@media (max-width:760px){
+  .tabbar{position:fixed}
+  .tabbar button{position:relative;z-index:1}
+  .tabbar .ind{display:block;position:absolute;left:0;top:7px;width:56px;height:32px;border-radius:16px;background:var(--accent-tint);box-shadow:inset 0 0 0 1px var(--accent-line);pointer-events:none;opacity:0;z-index:0}
+  .tabbar .ind.on{opacity:1}
+  .tabbar button:active svg{transform:scale(.9)}
+}
+@media (prefers-reduced-motion:no-preference){
+  nav.tabs .ind.on,.tabbar .ind.on{transition:transform .34s var(--ease-io),opacity .2s}
+}
+/* placards: each page opens with its room number */
+.pg-k{display:block;margin:0 0 6px;color:var(--accent)}
+/* headings get a short accent rule, drawn in after the heading */
+#view h2::after{content:"";display:block;width:34px;height:3px;border-radius:2px;background:var(--accent);margin-top:12px;transform-origin:0 50%}
+.lgtitle h2::after,.pfhead h2::after{display:none}
+/* league podium */
+.medal{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;font:700 14px/1 var(--display);color:#3d2a00;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -2px 0 rgba(0,0,0,.15),0 2px 6px -2px rgba(0,0,0,.35)}
+.medal.m1{background:linear-gradient(135deg,#fff6cf,#f3d36b 35%,#c99a2e 70%,#f7e09a)}
+.medal.m2{background:linear-gradient(135deg,#fff,#e3e8ef 35%,#a7b2c1 70%,#f1f4f8);color:#111827}
+.medal.m3{background:linear-gradient(135deg,#ffe4cc,#e9a26a 35%,#b4642f 70%,#f2b98a);color:#2f1405}
+.lgt tr.pod td:nth-child(n+3){font-size:19px}
+/* links and quiet buttons: the underline takes the accent on hover */
+@media (hover:hover) and (pointer:fine){.btn.quiet{transition:color .2s,text-decoration-color .2s}.btn.quiet:hover{color:var(--text);text-decoration-color:var(--accent)}}
+@media (prefers-reduced-motion:no-preference){
+  /* the page arrives from the side you moved towards (--dx/--dy are set on each page change) */
+  @keyframes viewIn{from{opacity:0;transform:translate3d(var(--dx,0px),var(--dy,26px),0);filter:blur(6px)}}
+  /* squad cards are dealt onto the table, one after another */
+  .enter #view .sqc{animation:dealIn .9s var(--ease-cine) both;animation-delay:calc(.18s + var(--i,0) * 55ms)}
+  @keyframes dealIn{from{opacity:0;transform:translate3d(0,46px,0) rotate(-7deg) scale(.94)}}
+  .enter #view .sqc:nth-child(even){animation-name:dealIn2}
+  @keyframes dealIn2{from{opacity:0;transform:translate3d(0,46px,0) rotate(6deg) scale(.94)}}
+  /* the coloured edge of each fact tile draws up */
+  .enter .facts>div::before{transform-origin:50% 100%;animation:barUp .9s var(--ease-cine) both;animation-delay:calc(.35s + var(--i,0) * 90ms)}
+  .enter .facts>div:nth-child(2){--i:1}.enter .facts>div:nth-child(3){--i:2}.enter .facts>div:nth-child(4){--i:3}
+  @keyframes barUp{from{transform:scaleY(0)}}
+  /* heading rules draw after their heading */
+  .enter #view h2::after{animation:ruleDraw .9s var(--ease-cine) .45s both}
+  #view h2.rv::after{transform:scaleX(0);transition:transform .9s var(--ease-cine) .35s}
+  #view h2.rv.rv-in::after{transform:none}
+  @keyframes ruleDraw{from{transform:scaleX(0)}}
+  .enter .pg-k{animation:viewIn .8s var(--ease-cine) both}
+  /* the podium: medals turn in */
+  .lgt tr.pod .medal{animation:medalIn .8s var(--spring) both;animation-delay:calc(.3s + var(--i,0) * 120ms)}
+  @keyframes medalIn{from{opacity:0;transform:scale(.6) rotate(-90deg)}}
+  /* scroll reveals, a touch calmer */
+  .rv{transform:perspective(1000px) translateY(40px) rotateX(8deg) scale(.97);filter:blur(6px)}
+  .rv.rv-up{transform:perspective(1000px) translateY(-32px) rotateX(-7deg) scale(.97)}
+  /* primary buttons: a light passes over on hover */
+  @media (hover:hover) and (pointer:fine){
+    .btn.on,.btn.go,.btn.light{position:relative;overflow:hidden;isolation:isolate}
+    .btn.on::before,.btn.go::before,.btn.light::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.35) 50%,transparent 65%);transform:translateX(-100%);transition:transform .7s var(--ease-out)}
+    .btn.on:hover::before,.btn.go:hover::before,.btn.light:hover::before{transform:translateX(100%)}
+  }
+}
+@media (prefers-reduced-motion:reduce){.modal.closing{display:none}}
 </style>
 </head>
 <body>
@@ -1286,10 +1362,20 @@ function courseSvg(){
 function renderCourse(){$("#course").innerHTML=(tab==="rounds"&&state.log.length)||(tab==="team"&&isLive()&&!done())?courseSvg():""}
 
 /* ---------- chrome ---------- */
+/* the tab indicator: one bar (desktop) or pill (phone) that glides to the selected tab, transform only */
+function placeInd(){
+  ["#tabs","#tabbar"].forEach(sel=>{const el=$(sel),ind=el&&el.querySelector(".ind"),b=el&&el.querySelector('[aria-selected="true"]');if(!ind||!b||!el.offsetWidth)return;
+    if(sel==="#tabs"){ind.style.transform=`translateX(${b.offsetLeft+13}px) scaleX(${Math.max(0,b.offsetWidth-26)})`}
+    else{ind.style.transform=`translateX(${(b.offsetLeft+(b.offsetWidth-56)/2).toFixed(1)}px)`}
+    if(!ind.classList.contains("on"))requestAnimationFrame(()=>ind.classList.add("on"))});
+}
+addEventListener("resize",()=>placeInd(),{passive:true});try{document.fonts.ready.then(()=>placeInd())}catch(e){}
 function renderTabs(){
   const t=[["team","Team"],["rounds","Rounds"],["leagues","Leagues"],["rules","Rules"],["profile","Profile"]],I={team:'<path d="M4 20c0-3.3 3.6-5 8-5s8 1.7 8 5"/><circle cx="12" cy="8" r="4"/>',rounds:'<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>',leagues:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 6h3v1a3 3 0 0 1-3 3M7 6H4v1a3 3 0 0 0 3 3"/>',rules:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',profile:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5c1.2-2 3.2-3 5.5-3s4.3 1 5.5 3"/>'};
-  const html=t.map(([k,l])=>`<button aria-current="${tab===k?"page":"false"}" aria-selected="${tab===k}" data-tab="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>${l}</button>`).join("");
-  $("#tabs").innerHTML=html;$("#tabbar").innerHTML=html;
+  const html=t.map(([k,l])=>`<button aria-current="${tab===k?"page":"false"}" aria-selected="${tab===k}" data-tab="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg><span>${l}</span></button>`).join("");
+  ["#tabs","#tabbar"].forEach(sel=>{const el=$(sel);if(!el.querySelector("[data-tab]"))el.innerHTML=html+'<i class="ind" aria-hidden="true"></i>';
+    el.querySelectorAll("[data-tab]").forEach(b=>{const on=b.dataset.tab===tab;b.setAttribute("aria-selected",on);b.setAttribute("aria-current",on?"page":"false")})});
+  placeInd();
   const m=$("#mgr");
   if(dbOk){const nm=mgrName||cloud.email.split("@")[0]||"Account";m.className="";m.innerHTML=`${myAv?`<span class="dot ph"><img src="${esc(avPublic(myAv))}" alt=""></span>`:`<span class="dot">${esc(nm.slice(0,1).toUpperCase())}</span>`}<span class="nm">${esc(nm)}</span>${cloud.admin&&pendingPhotos.length?`<span class="badge" title="Photos waiting for approval">${pendingPhotos.length}</span>`:""}`;m.title="Your profile";m.setAttribute("aria-label","Account: "+nm)}
   else{m.className="out";m.textContent="Sign in";m.title="Sign in or create an account";m.setAttribute("aria-label","Sign in or create an account")}
@@ -1454,7 +1540,7 @@ function teamView(){
      (!state.squad.length?"Pick "+D.squad+" runners for "+fm(D.budget)+", at most "+D.clubMax+" per club.":D.freeTransfers+" free transfers this round.");
   const chipsHtml=`<div class="chipgrid"><button class="chipc none ${!plan.chip?"on":""}" data-chip="" ${locked?"disabled":""}><b>No chip</b></button>${E.CHIPS.map(c=>{const used=state.chips[c],off=locked||used||(c==="wc"&&!state.squad.length);return `<button class="chipc ${plan.chip===c?"on":""} ${used?"used":""}" data-chip="${c}" ${off?"disabled":""} title="${esc(CHIPINFO[c][1])}">${chipSvg(c)}<b>${CHIPINFO[c][0]}</b><small>${CHIPINFO[c][1]}</small></button>`}).join("")}</div>`;
   return `${hero(r)}${liveNow()}<div class="two"><div>
-   <h2 style="margin-top:0">Your squad</h2>
+   <p class="eyebrow pg-k">01 · Build your ten</p><h2 style="margin-top:0">Your squad</h2>
    <p class="lead">${lead}</p>
    <div class="squadwrap">
    <div class="teamhead"><span><b>A team</b><span class="x">×2</span></span><span class="sub">${A.length} of ${AS}</span></div>
@@ -1632,7 +1718,7 @@ function authCard(){
    ${authMsg?`<p class="note" style="margin:12px 0 0;color:var(--warn)">${esc(authMsg)}</p>`:""}</div>`;
 }
 function profileView(){
-  if(!dbOk)return `<h2 style="margin-top:0">Profile</h2>${inviteBanner()}<div class="grid2">${authCard()}
+  if(!dbOk)return `<p class="eyebrow pg-k">05 · Your account</p><h2 style="margin-top:0">Profile</h2>${inviteBanner()}<div class="grid2">${authCard()}
    <div class="card"><h3>Why an account</h3><ol class="steps"><li>Your squad is saved and works on every device.</li><li>Host a league or join one with a code.</li><li>See your friends' teams and points every round.</li><li>Add your own photo to your runner card.</li></ol></div></div>
    ${themeCard()}${practiceCard()}`;
   const me={id:cloud.uid,name:mgrName||cloud.email.split("@")[0],av:myAv};
@@ -1686,6 +1772,10 @@ function seasonView(){
 }
 function lgName(code){if(code==="GLOBAL")return "Global top 20";return myLgn[code]||code.replace(/-[A-Z0-9]{4}$/,"").replace(/_/g," ")}
 /* open a sheet, or swap its content in place when the same sheet is already open (no replayed animation) */
+/* sheets leave the way they came (reverse of the entrance), then are removed */
+function closeModal(){const md=document.querySelector("#modal .modal");if(!md)return;
+  if(RM||!getComputedStyle(md).animationName){$("#modal").innerHTML="";return}
+  md.classList.add("closing");const end=()=>{if(md.isConnected&&md.classList.contains("closing"))$("#modal").innerHTML=""};md.addEventListener("animationend",e=>{if(e.target===md.querySelector(".sheet"))end()});setTimeout(end,320)}
 function showSheet(key,label,inner,wide){
   const cur=document.querySelector("#modal .sheet");
   if(cur&&cur.dataset.key===key){cur.innerHTML=inner;return}
@@ -1724,7 +1814,7 @@ function leagueTable(code){
    <div class="lgmembers">${rows.map(m=>`<span class="tag">${mgrDot(m)} <span><b>${esc(m.name)}</b>${m.id===cloud.uid?" (you)":""}${subName(m)}</span></span>`).join("")}</div>`;
   const live=!isFinal(cur);
   return `<div class="tbl lgt"><table><thead><tr><th>#</th><th>Team</th><th>R${D.rounds[cur].n}${live?' <span class="livedot">live</span>':""}</th>${prev!==undefined?`<th class="prevcol">R${D.rounds[prev].n}</th>`:""}<th>Total</th></tr></thead><tbody>
-   ${rows.map((m,k)=>`${code==="GLOBAL"&&k===20?'<tr class="gap"><td colspan="5">⋯</td></tr>':""}<tr class="${m.id===cloud.uid?"in":""}" data-mgr="${esc(code)}|${esc(m.id)}" tabindex="0"><td><b>${m.rank}</b> ${m.move>0?`<span class="mv up">▲${m.move}</span>`:m.move<0?`<span class="mv dn">▼${-m.move}</span>`:`<span class="mv">–</span>`}</td>
+   ${rows.map((m,k)=>`${code==="GLOBAL"&&k===20?'<tr class="gap"><td colspan="5">⋯</td></tr>':""}<tr class="${m.id===cloud.uid?"in":""} ${m.rank<=3?"pod":""}" style="--i:${k}" data-mgr="${esc(code)}|${esc(m.id)}" tabindex="0"><td>${m.rank<=3?`<b class="medal m${m.rank}">${m.rank}</b>`:`<b>${m.rank}</b>`} ${m.move>0?`<span class="mv up">▲${m.move}</span>`:m.move<0?`<span class="mv dn">▼${-m.move}</span>`:`<span class="mv">–</span>`}</td>
     <td><div class="who-wrap">${mgrDot(m)}<div><b>${esc(m.name)}</b>${m.id===cloud.uid?' <span class="sub">(you)</span>':""}${subName(m)}<div class="sub">${chipTags(m)}</div></div></div></td>
     <td>${ptsOf(m,cur)!==null?fp(ptsOf(m,cur)):"–"}</td>${prev!==undefined?`<td class="prevcol">${ptsOf(m,prev)!==null?fp(ptsOf(m,prev)):"–"}</td>`:""}<td><b>${fp(m.t)}</b></td></tr>`).join("")}
    </tbody></table></div>`;
@@ -1799,8 +1889,8 @@ function globalCard(){
 }
 function leaguesView(){
   if(dbOk&&lgOpen&&(myLeagues.includes(lgOpen)||lgOpen==="GLOBAL"))return leagueDetail(lgOpen);
-  if(!dbOk)return `<h2 style="margin-top:0">Leagues</h2>${inviteBanner()}<div class="grid2"><div class="card"><h3>Play against your friends</h3><p class="note" style="margin:0 0 14px">Leagues need an account.</p><button class="btn light" data-tab="profile">Sign in or create an account</button></div><div class="card"><h3>How leagues work</h3><ol class="steps"><li>Create an account and host a league.</li><li>Send the invite link. Friends sign up and land in your league.</li><li>Everyone locks a squad before Monday.</li><li>From then on you see each other's teams and points.</li></ol></div></div><div class="card global" style="margin-top:12px"><span class="eyebrow">Everyone</span><h3 style="margin:2px 0 6px">Global top 20</h3><p class="note" style="margin:0">Every player is ranked on one leaderboard. Sign in to see it and where you stand.</p></div>`;
-  return `<h2 style="margin-top:0">Leagues</h2>${inviteBanner()}
+  if(!dbOk)return `<p class="eyebrow pg-k">03 · Compete</p><h2 style="margin-top:0">Leagues</h2>${inviteBanner()}<div class="grid2"><div class="card"><h3>Play against your friends</h3><p class="note" style="margin:0 0 14px">Leagues need an account.</p><button class="btn light" data-tab="profile">Sign in or create an account</button></div><div class="card"><h3>How leagues work</h3><ol class="steps"><li>Create an account and host a league.</li><li>Send the invite link. Friends sign up and land in your league.</li><li>Everyone locks a squad before Monday.</li><li>From then on you see each other's teams and points.</li></ol></div></div><div class="card global" style="margin-top:12px"><span class="eyebrow">Everyone</span><h3 style="margin:2px 0 6px">Global top 20</h3><p class="note" style="margin:0">Every player is ranked on one leaderboard. Sign in to see it and where you stand.</p></div>`;
+  return `<p class="eyebrow pg-k">03 · Compete</p><h2 style="margin-top:0">Leagues</h2>${inviteBanner()}
   ${isLive()?"":`<p class="note" style="margin:0 0 12px;color:var(--warn)">You are in a practice replay. Leagues only count the live season.</p>`}
   <div class="grid2">
    <div class="card"><h3>Host a league</h3><div class="row"><input class="name" id="newLeague" maxlength="24" placeholder="League name" value="${esc(newLeague)}" aria-label="League name" style="flex:1;max-width:none"><button class="btn on" id="createLeague">Create</button></div></div>
@@ -1811,7 +1901,7 @@ function leaguesView(){
     <div class="codebox"><code>${esc(c)}</code><button class="btn" data-copy="${esc(c)}">${copied===c?"Link copied":"Copy invite link"}</button>${navigator.share?`<button class="btn" data-share="${esc(c)}">Share</button>`:""}</div></div><button class="btn quiet" data-leave="${esc(c)}">Leave</button></div>${leagueTable(c)}</div>`).join(""):`<div class="card" style="margin-top:12px"><h3>No leagues yet</h3><p class="note" style="margin:0">Host one above and send the invite link to your friends.</p></div>`}`;
 }
 function rulesView(){
-  return `<h2 style="margin-top:0">How it works</h2>
+  return `<p class="eyebrow pg-k">04 · The rules of the game</p><h2 style="margin-top:0">How it works</h2>
   <div class="grid2"><div class="card"><h3>Your team</h3><ul class="rules"><li>Pick ${D.squad} runners from D and H 16, 18, 20 and 21 for ${fm(D.budget)}, at most ${D.clubMax} from one club.</li>
   <li><b>A team and B team.</b> Your first five are the A team and score double. The other five are the B team and score normal points. Swap runners between them any time before the round starts.</li>
   <li><b>Boost</b> one runner each round to double their points again (an A-team runner then counts ×4). No race, no boost.</li>
@@ -1983,15 +2073,18 @@ function countUp(){
     el.textContent=a.toFixed(suf==="k"?1:0)+suf;requestAnimationFrame(step);
   });
 }
-/* page changes: the page you leave drifts up and out of focus, then the new one is built and its parts rise in.
+/* page changes follow the tab order: the page you leave slides away from where you are going and out of focus
+   (240ms, ease-out), then the new one is built and its parts come in from that side.
    Plain animations on the content (not the View Transitions API, which hides the new page until it is complete). */
 let leaving=false,leaveAnim=null;
 function nav(apply){
   if(RM||!Element.prototype.animate){apply();animNext=true;render();toTop();return}
   if(leaving){apply();animNext=true;return}
+  const ORD=["team","rounds","leagues","rules","profile"],from=ORD.indexOf(tab);
   apply();animNext=true;leaving=true;renderTabs();
+  const dir=Math.sign(ORD.indexOf(tab)-from)||0;document.body.style.setProperty("--dx",dir*44+"px");document.body.style.setProperty("--dy",dir?"0px":"26px");
   const c=document.querySelector("body>.container");
-  leaveAnim=c.animate([{opacity:1,transform:"none",filter:"blur(0px)"},{opacity:0,transform:"translateY(-18px) scale(.985)",filter:"blur(8px)"}],{duration:360,easing:"cubic-bezier(.45,0,.75,.35)",fill:"forwards"});
+  leaveAnim=c.animate([{opacity:1,transform:"none",filter:"blur(0px)"},{opacity:0,transform:`translate3d(${-dir*32}px,${dir?0:-14}px,0)`,filter:"blur(5px)"}],{duration:240,easing:"cubic-bezier(.23,1,.32,1)",fill:"forwards"});
   const done=()=>{if(!leaving)return;leaving=false;try{window.scrollTo(0,0)}catch(e){}render();leaveAnim.cancel();leaveAnim=null};
   leaveAnim.onfinish=done;setTimeout(done,700); /* never get stuck if the animation is interrupted */
 }
@@ -2019,7 +2112,7 @@ function render(){
   flipCapture();
   const now=performance.now();
   const opening=animNext&&!RM;
-  if(opening){const hold=Math.max(0,reelEnd-now);enterUntil=now+2600+hold;clearTimeout(enterTimer);enterTimer=setTimeout(()=>document.body.classList.remove("enter"),2650+hold)}
+  if(opening){const hold=Math.max(0,reelEnd-now);enterUntil=now+2600+hold;clearTimeout(enterTimer);enterTimer=setTimeout(()=>{document.body.classList.remove("enter");document.body.style.removeProperty("--dx");document.body.style.removeProperty("--dy")},2650+hold)}
   animNext=false;document.body.classList.toggle("enter",now<enterUntil);
   renderHero();renderTicker();renderCourse();renderTabs();renderFacts();
   if(tab==="season")tab="profile";
@@ -2042,7 +2135,7 @@ document.addEventListener("click",ev=>{
   const mg=ev.target.closest("[data-mgr]");
   if(mg&&!ev.target.closest("button")){const [c,id]=mg.dataset.mgr.split("|");managerSheet(c,id,null);return}
   const t=ev.target.closest("button,.modal");if(!t)return;const d=t.dataset;
-  if(d.close&&(ev.target===t||t.tagName==="BUTTON")){$("#modal").innerHTML="";profileOpen=null;phForm=null;phMsg="";return}
+  if(d.close&&(ev.target===t||t.tagName==="BUTTON")){closeModal();profileOpen=null;phForm=null;phMsg="";return}
   if(d.prof!==undefined){profile(+d.prof);return}
   if(d.week!==undefined){weekSheet(+d.week);return}
   if(d.tab){const nt=d.tab;if(d.focus)setTimeout(()=>{const f=document.getElementById(d.focus);if(f)f.focus()},700);if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
@@ -2101,7 +2194,7 @@ document.addEventListener("click",ev=>{
   if(d.leave){const c=d.leave;myLeagues=myLeagues.filter(x=>x!==c);delete myLgn[c];if(leagueUnsubs[c]){try{leagueUnsubs[c]()}catch(e){}delete leagueUnsubs[c]}if(cloud.sb&&cloud.uid)cloud.sb.from("league_members").delete().eq("code",c).eq("user_id",cloud.uid).then(()=>{});leagueMsg="";save();render();return}
 });
 document.addEventListener("keydown",ev=>{
-  if(ev.key==="Escape"){$("#modal").innerHTML="";profileOpen=null;phForm=null;phMsg=""}
+  if(ev.key==="Escape"){closeModal();profileOpen=null;phForm=null;phMsg=""}
   if((ev.key==="Enter"||ev.key===" ")&&ev.target.matches&&ev.target.matches("[data-mgr]")){ev.preventDefault();const [c,id]=ev.target.dataset.mgr.split("|");managerSheet(c,id,null);return}
   if((ev.key==="Enter"||ev.key===" ")&&ev.target.matches&&ev.target.matches("[data-ctrl]")){ev.preventDefault();ev.target.dispatchEvent(new MouseEvent("click",{bubbles:true}))}
 });
