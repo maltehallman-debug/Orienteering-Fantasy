@@ -376,12 +376,20 @@ _upix = {}
 for i, u in enumerate(upcoming):
     if u.get("eo"): _upix.setdefault(u["eo"], []).append(i)
 pset0 = set(pool)
+# Eventor's club name is not always the one in the result lists ("IFK Göteborg" / "IFK Göteborg Orientering"),
+# so a name and sex that fit exactly one runner in the pool is enough
+_byname = collections.defaultdict(list)
+for k in pool: _byname[(k.split("|")[0], k.rsplit("|", 1)[1])].append(k)
+_miss = []
 for en in _j("eventor_entries.json", []):
     k = rkey({"name": en["name"], "club": en["club"]}, {"g": en["cls"][0]})
-    if k in pset0:
-        for i in _upix.get(en["eid"], []):
-            if i not in entered[k]: entered[k].append(i)
-print("pool runners with entries", len(entered))
+    if k not in pset0:
+        c = _byname.get((en["name"].strip().lower(), en["cls"][0]), [])
+        if len(c) != 1: _miss.append((en["name"], en["club"], en["cls"])); continue
+        k = c[0]
+    for i in _upix.get(en["eid"], []):
+        if i not in entered[k]: entered[k].append(i)
+print("pool runners with entries", len(entered), "entries not matched to a pool runner", len(_miss), _miss[:15])
 json.dump({"entered": entered, "upcoming": upcoming, "events": [{k: v for k, v in e.items() if k not in ("rows", "fin", "d")} for e in events],
            "rounds": rounds, "pool": pool,
            "names": {k: names[k].most_common(1)[0][0] for k in pool},

@@ -15,7 +15,7 @@
 <script>/* apply the saved theme before first paint, so the page never flashes the wrong colours */
 document.documentElement.dataset.theme="light";try{localStorage.removeItem("of-theme")}catch(e){}
 /* iPhone and iPad (Safari's touch-callout support is iOS-only): Apple's Liquid Glass look. ?glass=1 previews it elsewhere */
-try{if((window.CSS&&CSS.supports("-webkit-touch-callout","none"))||/[?&]glass=1/.test(location.search))document.documentElement.classList.add("glass")}catch(e){}</script>
+try{if(!/[?&]glass=0/.test(location.search))document.documentElement.classList.add("glass")}catch(e){}</script>
 <style>
 /* Orienteering Fantasy. Classic colours: white and slate with one emerald, and a dark mode to match.
    Words in the phone's own system font (SF Pro, Roboto, Segoe), so it reads like an app, not a template.
@@ -998,7 +998,7 @@ nav.tabs .ind.on{opacity:1}
   .tabbar button:active svg{transform:scale(.9)}
 }
 @media (prefers-reduced-motion:no-preference){
-  nav.tabs .ind.on,.tabbar .ind.on{transition:transform .34s var(--ease-io),opacity .2s}
+  nav.tabs .ind.on{transition:transform .34s var(--ease-io),opacity .2s}.tabbar .ind.on{transition:opacity .2s}
 }
 /* placards: each page opens with its room number */
 .pg-k{display:block;margin:0 0 6px;color:var(--accent)}
@@ -1165,7 +1165,7 @@ html.glass #mgr.out{background:color-mix(in srgb,var(--accent) 88%,transparent);
 }
 @media (prefers-reduced-motion:no-preference){
   /* the lens springs to the new tab and stretches a little on the way, like iOS */
-  html.glass .tabbar .ind.on{transition:transform .55s cubic-bezier(.34,1.32,.64,1),opacity .2s}
+  html.glass .tabbar .ind.on{transition:opacity .2s}
   html.glass .tabbar button:active svg{transform:scale(.88)}
 }
 html.glass .modal{background:rgba(15,23,42,.28)}
@@ -1181,6 +1181,76 @@ html.glass .bd-tabs,html.glass .bd-tabs button{border-radius:999px}
 html.glass input.name,html.glass .filters input,html.glass .filters select{border-radius:16px}
 @media (prefers-reduced-transparency:reduce){
   html.glass .nav,html.glass .tabbar,html.glass .modal .sheet{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+
+/* ================= Liquid Glass, everywhere =================
+   Every surface is frosted glass over the map: translucent white, a strong blur, a bright specular rim on top and a
+   soft shadow under. Only the outermost surfaces blur (a blur inside a blur costs a lot and adds nothing); what sits
+   inside them is plain translucent white. Reduced transparency gets solid surfaces. */
+html.glass{--surface-grad:linear-gradient(165deg,rgba(255,255,255,.78) 0%,rgba(255,255,255,.58) 55%,rgba(250,252,255,.66) 100%);
+  --frost:saturate(170%) blur(18px);
+  --rim:inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(255,255,255,.6),inset 0 -1px 0 rgba(15,23,42,.05)}
+html.glass .panel,html.glass .next,html.glass .facts>div,html.glass #view>.card,html.glass #view>.grid2 .card,html.glass .side,html.glass .kv>div,
+html.glass .hl,html.glass .livestrip,html.glass .rc:not([class*="tier-"]):not(.slot),html.glass .lgi{
+  background:var(--surface-grad);-webkit-backdrop-filter:var(--frost);backdrop-filter:var(--frost);
+  box-shadow:var(--rim),0 1px 2px rgba(15,23,42,.05),0 12px 30px -14px rgba(15,23,42,.22),0 30px 60px -36px rgba(15,23,42,.22)}
+html.glass .panel .card,html.glass .panel .tbl,html.glass .side .card{background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.7),inset 0 0 0 1px rgba(15,23,42,.05)}
+html.glass .panel .tbl tbody tr{background:transparent}
+html.glass .filters input[type=search],html.glass .filters select,html.glass input.name{background:rgba(255,255,255,.7);box-shadow:inset 0 0 0 1px rgba(15,23,42,.1),inset 0 1px 2px rgba(15,23,42,.06)}
+html.glass #mgr:not(.out){background:rgba(255,255,255,.6);-webkit-backdrop-filter:var(--frost);backdrop-filter:var(--frost)}
+@media (prefers-reduced-transparency:reduce){
+  html.glass{--surface-grad:linear-gradient(180deg,#fff,#f8fafc)}
+  html.glass .panel,html.glass .next,html.glass .facts>div,html.glass #view>.card,html.glass #view>.grid2 .card,html.glass .side,html.glass .kv>div,
+  html.glass .hl,html.glass .livestrip,html.glass .rc,html.glass .lgi,html.glass #mgr{-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+
+/* ================= chips: five coins and one line of explanation ================= */
+.chipset{display:grid;gap:12px}
+.coins{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.coin{display:grid;justify-items:center;gap:7px;border:0;background:none;padding:6px 0 2px;margin:0;font:inherit;color:var(--text);cursor:pointer;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none;min-width:0}
+.coin.c-wc{--cc:#2563eb}.coin.c-tc{--cc:#d97706}.coin.c-ax{--cc:#059669}.coin.c-bb{--cc:#7c3aed}.coin.c-yo{--cc:#db2777}
+.chipdesc.c-wc{--cc:#2563eb}.chipdesc.c-tc{--cc:#d97706}.chipdesc.c-ax{--cc:#059669}.chipdesc.c-bb{--cc:#7c3aed}.chipdesc.c-yo{--cc:#db2777}
+.coin .disc{position:relative;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  background:radial-gradient(circle at 34% 26%,color-mix(in srgb,var(--cc) 45%,#fff) 0%,var(--cc) 55%,color-mix(in srgb,var(--cc) 72%,#000) 100%);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.75),inset 0 -4px 8px rgba(0,0,0,.22),0 0 0 3px rgba(255,255,255,.9),0 0 0 4px color-mix(in srgb,var(--cc) 25%,transparent),0 8px 16px -8px var(--cc);
+  transition:transform .28s cubic-bezier(.3,1.4,.5,1),box-shadow .28s var(--ease-out),filter .28s,opacity .28s}
+.coin .disc::before{content:"";position:absolute;inset:5px;border-radius:50%;border:1.5px dashed rgba(255,255,255,.5)}
+.coin .disc::after{content:"";position:absolute;left:18%;right:18%;top:7%;height:36%;border-radius:50%;background:linear-gradient(rgba(255,255,255,.6),rgba(255,255,255,0))}
+.coin svg{position:relative;z-index:1;width:22px;height:22px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.coin b{font-size:11.5px;font-weight:650;line-height:1.15;text-align:center;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;color:var(--text-2)}
+.coin.on b{color:var(--cc)}
+.coin.on .disc{transform:translateY(-3px) scale(1.08);box-shadow:inset 0 1px 1px rgba(255,255,255,.75),inset 0 -4px 8px rgba(0,0,0,.22),0 0 0 3px #fff,0 0 0 6px var(--cc),0 16px 26px -10px var(--cc)}
+.coin:active:not(:disabled) .disc{transform:scale(.92)}
+.coin:disabled{cursor:default}
+.coin:disabled .disc{filter:grayscale(.85);opacity:.4;box-shadow:inset 0 1px 1px rgba(255,255,255,.6),0 0 0 3px rgba(255,255,255,.9),0 0 0 4px rgba(15,23,42,.08)}
+.coin.used b{color:var(--text-3)}
+@media (hover:hover) and (pointer:fine){.coin:not(:disabled):not(.on):hover .disc{transform:translateY(-2px)}}
+.chipdesc{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:46px;padding:8px 8px 8px 14px;border-radius:16px;font-size:13.5px;line-height:1.35;color:var(--text-2);
+  background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 1px rgba(15,23,42,.06),inset 0 1px 0 #fff}
+.chipdesc[class*="c-"]{background:color-mix(in srgb,var(--cc) 9%,rgba(255,255,255,.7));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--cc) 28%,transparent),inset 0 1px 0 #fff}
+.chipdesc b{color:var(--cc,var(--text))}
+.chipdesc .btn{padding:8px 12px;font-size:13px;flex:none}
+@media (prefers-reduced-motion:reduce){.coin .disc{transition:box-shadow .2s,opacity .2s,filter .2s}.coin.on .disc,.coin:active:not(:disabled) .disc{transform:none}}
+
+/* ================= phones: the numbers strip and the next round card, compact ================= */
+@media (max-width:560px){
+  .facts{grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-radius:18px;margin:0 0 14px;position:relative;overflow:hidden;
+    background:var(--surface-grad);-webkit-backdrop-filter:var(--frost,none);backdrop-filter:var(--frost,none);
+    box-shadow:var(--rim,inset 0 0 0 1px var(--line)),0 12px 30px -14px rgba(15,23,42,.22)}
+  .facts>div,html.glass .facts>div{background:none;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;border-radius:0;padding:12px 6px 11px 10px}
+  .facts>div+div{box-shadow:inset 1px 0 0 rgba(15,23,42,.07)}
+  .facts>div::before{left:10px;right:auto;top:12px;bottom:auto;width:6px;height:6px;border-radius:50%}
+  .facts span{display:block;padding-left:10px;font-size:9px;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .facts b{font-size:20px;margin-top:5px;white-space:nowrap}
+  .next{flex-wrap:nowrap;align-items:center;gap:10px;padding:14px 14px 14px 18px;margin-bottom:14px}
+  .next-main{gap:3px}
+  .next-main b{font-size:24px;line-height:1.05;overflow-wrap:anywhere}
+  .next-main .wklink{font-size:13.5px;margin-top:2px}
+  .next-k{font-size:9.5px}
+  .next-side{flex:none;gap:1px}
+  .next-side .num{font-size:24px}
+  .next-side .sub{font-size:12px}
 }
 </style>
 </head>
@@ -1458,6 +1528,7 @@ const tierTag=(i,r)=>{const t=tierOf(i,r);return `<span class="tier t-${TIERS[t]
 const ordered=p=>{const a=(p.a||[]).filter(i=>p.squad.includes(i));return [...a,...p.squad.filter(i=>!a.includes(i))]};
 const CHIPINFO={wc:["Wildcard","Free transfers this round"],tc:["3x Boost","Boosted runner scores triple"],ax:["A-team double","A team scores ×4"],bb:["B-team boost","B team scores ×2"],yo:["Youth surge","D/H16 runners score double"]};
 const CHIPICON={wc:'<path d="M4 7h11l-3-3M20 17H9l3 3"/>',tc:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',ax:'<path d="M4 20 10 4h4l6 16M7 13h10"/>',bb:'<path d="M6 4h7a4 4 0 0 1 0 8H6zM6 12h8a4 4 0 0 1 0 8H6z"/>',yo:'<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/>'};
+const CHIPSHORT={wc:"Wildcard",tc:"3× Boost",ax:"A ×4",bb:"B ×2",yo:"Youth"};
 const chipSvg=c=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CHIPICON[c]||""}</svg>`;
 /* the multiplier a runner gets this round: their team, the chip, and the boost */
 function multOf(i,squad,chip,cap){const k=squad.indexOf(i);return E.teamMult(i,k,chip)*(i===cap?(chip==="tc"?3:2):1)}
@@ -1530,7 +1601,11 @@ function renderCourse(){$("#course").innerHTML=(tab==="rounds"&&state.log.length
 function placeInd(){
   ["#tabs","#tabbar"].forEach(sel=>{const el=$(sel),ind=el&&el.querySelector(".ind"),b=el&&el.querySelector('[aria-selected="true"]');if(!ind||!b||!el.offsetWidth)return;
     if(sel==="#tabs"){ind.style.transform=`translateX(${b.offsetLeft+13}px) scaleX(${Math.max(0,b.offsetWidth-26)})`}
-    else{ind.style.transform=`translateX(${(b.offsetLeft+(b.offsetWidth-(ind.offsetWidth||56))/2).toFixed(1)}px)`}
+    else{const x=b.offsetLeft+(b.offsetWidth-(ind.offsetWidth||56))/2,o=ind._x;ind._x=x;ind.style.transform=`translateX(${x.toFixed(1)}px)`;
+      /* the lens slides from tab to tab and stretches on the way, like iOS; reduced motion gets a short plain slide */
+      if(o!=null&&Math.abs(o-x)>1&&ind.classList.contains("on")&&ind.animate){if(ind._a)ind._a.cancel();const m=(o+x)/2;
+        ind._a=ind.animate(RM?[{transform:`translateX(${o}px)`},{transform:`translateX(${x}px)`}]:[{transform:`translateX(${o}px) scale(1,1)`},{transform:`translateX(${m}px) scale(1.22,.9)`,offset:.4},{transform:`translateX(${x}px) scale(1,1)`}],
+          {duration:RM?180:520,easing:RM?"ease-out":"cubic-bezier(.3,1.25,.5,1)"})}}
     if(!ind.classList.contains("on"))requestAnimationFrame(()=>ind.classList.add("on"))});
 }
 addEventListener("resize",()=>placeInd(),{passive:true});try{document.fonts.ready.then(()=>placeInd())}catch(e){}
@@ -1551,7 +1626,7 @@ function renderFacts(){
   const sv=plan.squad.reduce((a,i)=>a+E.price(i,pr()),0);
   $("#facts").innerHTML=`<div><span>Points</span><b data-count="${state.total/10}" data-key="pts">${fp(state.total)}</b></div>
    <div><span>In the bank</span><b class="${bank<0?"dn":""}" data-count="${bank/10}" data-key="bank" data-suf="k">${fm(bank)}</b></div>
-   <div><span>Squad, ${plan.squad.length} of ${D.squad}</span><b ${plan.squad.length?`data-count="${sv/10}" data-key="val" data-suf="k"`:""}>${plan.squad.length?fm(sv):"–"}</b></div>
+   <div><span>Squad ${plan.squad.length}/${D.squad}</span><b ${plan.squad.length?`data-count="${sv/10}" data-key="val" data-suf="k"`:""}>${plan.squad.length?fm(sv):"–"}</b></div>
    <div><span>Chips left</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length} of ${E.CHIPS.length}</b></div>`;
 }
 
@@ -1712,7 +1787,9 @@ function teamView(){
   const saved=isLive()&&isSaved(),cd=dshort(rd.start);
   const lead=locked?(frozen?"Locked. Points come in as the results do.":"Locked for round "+rd.n+"."):
      (!state.squad.length?"Pick "+D.squad+" runners for "+fm(D.budget)+", at most "+D.clubMax+" per club.":D.freeTransfers+" free transfers this round.");
-  const chipsHtml=`<div class="chipgrid"><button class="chipc none ${!plan.chip?"on":""}" data-chip="" ${locked?"disabled":""}><b>No chip</b></button>${E.CHIPS.map(c=>{const used=state.chips[c],off=locked||used||rd.skip||(c==="wc"&&!state.squad.length);return `<button class="chipc ${plan.chip===c?"on":""} ${used?"used":""}" data-chip="${c}" ${off?"disabled":""} title="${esc(CHIPINFO[c][1])}">${chipSvg(c)}<b>${CHIPINFO[c][0]}</b><small>${CHIPINFO[c][1]}</small></button>`}).join("")}</div>`;
+  const chipsHtml=`<div class="chipset"><div class="coins">${E.CHIPS.map(c=>{const used=state.chips[c],on=plan.chip===c,off=locked||used||rd.skip||(c==="wc"&&!state.squad.length);
+      return `<button class="coin c-${c} ${on?"on":""} ${used?"used":""}" data-chip="${on?"":c}" aria-pressed="${on}" ${off?"disabled":""} title="${esc(CHIPINFO[c][0]+": "+CHIPINFO[c][1])}"><span class="disc">${chipSvg(c)}</span><b>${used?"Used":CHIPSHORT[c]}</b></button>`}).join("")}</div>
+    <div class="chipdesc ${plan.chip?"c-"+plan.chip:""}">${plan.chip?`<span><b>${esc(CHIPINFO[plan.chip][0])}</b> ${esc(CHIPINFO[plan.chip][1].toLowerCase())}.</span>${locked?"":`<button class="btn quiet" data-chip="">Remove</button>`}`:`<span>${rd.skip?"No chips in a skipped week.":locked?"No chip this round.":"No chip this round. Tap one to play it."}</span>`}</div></div>`;
   return `${hero(r)}${liveNow()}<div class="two"><div class="panel squad-panel">
    <p class="eyebrow pg-k">01 · Build your ten</p><h2 style="margin-top:0">Your squad</h2>
    <p class="lead">${lead}</p>
