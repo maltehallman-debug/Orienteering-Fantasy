@@ -12,14 +12,19 @@
 #   eventor_entries.json   who has entered those races (D/H 16-21 classes only)
 #   eventor_weeks.json     big competitions per game week
 import os, sys, json, re, time, glob, collections, datetime as dt, urllib.request, urllib.parse, urllib.error
-import concurrent.futures as cf, xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET
 S = sys.argv[1]
 KEY = os.environ.get("EVENTOR_API_KEY", "").strip()
 if not KEY:
     print("eventor: no key, skipped"); sys.exit(0)
 BASE = "https://eventor.orientering.se/api/"
 C = f"{S}/data/eventor"; os.makedirs(f"{C}/classes", exist_ok=True); os.makedirs(f"{C}/results", exist_ok=True)
-TODAY = dt.date.today(); FROM = "2026-03-01"; SEASON_END = "2026-12-31"
+# Kept deliberately light on Eventor's servers: one request at a time with a pause between them, results only for
+# races in the last RECENT days (the season's history already comes from liveresultat), and everything cached so a
+# finished race's results and class lists are fetched once and never again. A normal night is a few dozen requests.
+TODAY = dt.date.today(); RECENT = 10; AHEAD = 14; SEASON_END = "2026-12-31"
+FROM = (TODAY - dt.timedelta(days=RECENT)).isoformat()
+PAUSE = 1.0
 OFFSET = 9_000_000
 REAL = re.compile(r"^([DH])(16|18|20|21)(E|ELIT|ELITE)?$")
 def norm(n): return re.sub(r"[\s_-]", "", (n or "").upper())
@@ -40,24 +45,25 @@ calls = collections.Counter()
 def get(p, **q):
     url = BASE + p + ("?" + urllib.parse.urlencode(q) if q else "")
     req = urllib.request.Request(url, headers={"ApiKey": KEY, "Accept": "application/xml"})
-    for attempt in range(4):
+    for attempt in range(3):
+        time.sleep(PAUSE)
         try:
             with urllib.request.urlopen(req, timeout=120) as r:
                 calls[p.split("/")[0]] += 1; return r.read()
         except urllib.error.HTTPError as e:
             if e.code in (400, 403, 404): calls[f"http{e.code}"] += 1; return None
-            time.sleep(2 + 3 * attempt)
+            time.sleep(10 * (attempt + 1))
         except Exception:
-            time.sleep(2 + 3 * attempt)
+            time.sleep(10 * (attempt + 1))
     calls["failed"] += 1; return None
 def jload(p, default):
     try: return json.load(open(p, encoding="utf-8"))
     except Exception: return default
 def jsave(p, o): json.dump(o, open(p, "w", encoding="utf-8"), ensure_ascii=False)
 
-# ---- organisations: which clubs are Swedish (refreshed weekly) ----
+# ---- organisations: which clubs are Swedish (refreshed monthly) ----
 op = f"{C}/orgs.json"; orgs = jload(op, {})
-if not orgs or time.time() - os.path.getmtime(op) > 6 * 86400:
+if not orgs or time.time() - os.path.getmtime(op) > 30 * 86400:
     raw = get("organisations")
     if raw:
         orgs = {}
@@ -83,11 +89,13 @@ for e in ET.fromstring(raw):
                    "races": [r for r in races if r["date"]]})
 print("eventor events (Swedish, foot-O, not cancelled)", len(events), dict(collections.Counter(e["cls"] for e in events)))
 
-# ---- classes per event: which have D/H 16-21 classes (cached; refetched while the event is ahead or just run) ----
+# ---- classes per event: which have D/H 16-21 classes. Only for races in the last RECENT days and the next AHEAD days
+# (results and entries are only needed there). Cached: a past event's classes are never fetched again, an upcoming
+# event's at most every third day. ----
 def classes_of(ev):
     p = f"{C}/classes/{ev['id']}.json"
-    fresh = ev["end"] >= (TODAY - dt.timedelta(days=3)).isoformat()
-    if os.path.exists(p) and not (fresh and time.time() - os.path.getmtime(p) > 20 * 3600): return jload(p, {})
+    upcoming = ev["end"] >= TODAY.isoformat()
+    if os.path.exists(p) and not (upcoming and time.time() - os.path.getmtime(p) > 3 * 86400): return jload(p, {})
     raw = get("eventclasses", eventId=ev["id"])
     if raw is None: return jload(p, {})
     out = {}
@@ -95,9 +103,10 @@ def classes_of(ev):
         if strip(c.tag) != "EventClass": continue
         out[text(c, "EventClassId")] = text(c, "ClassShortName") or text(c, "Name")
     jsave(p, out); return out
-with cf.ThreadPoolExecutor(6) as ex: cl = dict(zip([e["id"] for e in events], ex.map(classes_of, events)))
+near = [e for e in events if e["date"] <= (TODAY + dt.timedelta(days=AHEAD)).isoformat()]
+cl = {e["id"]: classes_of(e) for e in near}
 def youth_ages(ev): return {REAL.match(norm(n)).group(2) for n in cl.get(ev["id"], {}).values() if REAL.match(norm(n))}
-yev = [e for e in events if youth_ages(e)]
+yev = [e for e in near if youth_ages(e)]
 print("eventor events with D/H 16-21 classes", len(yev))
 
 # ---- results (IOF XML 3.0), parsed into the liveresultat row shape ----
@@ -154,17 +163,25 @@ def parse_results(raw):
                      "status": st, "timeplus": hund(text(res, "TimeBehind")), "progress": 100})
     return races, out
 def results_of(ev):
+    # a race's results are fetched each night for its first 4 days (corrections come in), then never again
     p = f"{C}/results/{ev['id']}.json"
-    fresh = ev["end"] >= (TODAY - dt.timedelta(days=5)).isoformat()
+    fresh = ev["end"] >= (TODAY - dt.timedelta(days=4)).isoformat()
     if os.path.exists(p) and not fresh: return jload(p, None)
-    if os.path.exists(p) and time.time() - os.path.getmtime(p) < 6 * 3600: return jload(p, None)
+    if os.path.exists(p) and time.time() - os.path.getmtime(p) < 20 * 3600: return jload(p, None)
     raw = get("results/event/iofxml", eventId=ev["id"], includeSplitTimes="false")
     if raw is None: return jload(p, None)
     try: races, out = parse_results(raw)
     except ET.ParseError: return jload(p, None)
     o = {"races": races, "classes": out}; jsave(p, o); return o
 past = [e for e in yev if e["date"] and e["date"] < TODAY.isoformat()]
-with cf.ThreadPoolExecutor(5) as ex: R = dict(zip([e["id"] for e in past], ex.map(results_of, past)))
+R = {e["id"]: results_of(e) for e in past}
+# races fetched on earlier nights stay in the cache and keep counting after they drop out of the window
+for f in glob.glob(f"{C}/results/*.json"):
+    eid = int(os.path.basename(f)[:-5])
+    if eid not in R:
+        o = jload(f, None); m = jload(f"{C}/results_meta.json", {}).get(str(eid))
+        if o and m: past.append(m); R[eid] = o
+_rm = jload(f"{C}/results_meta.json", {}); _rm.update({str(e["id"]): e for e in past if R.get(e["id"])}); jsave(f"{C}/results_meta.json", _rm)
 
 # ---- into the shared data files ----
 comps = jload(f"{S}/data/comps_clean.json", []); comps = [c for c in comps if c["id"] < OFFSET]
@@ -220,19 +237,24 @@ print("liveresultat competitions replaced by Eventor", len(replaces))
 # ---- upcoming races and big competitions per game week ----
 def monday(d): return d - dt.timedelta(days=d.weekday())
 up = []
-for ev in yev:
+far = [e for e in events if e["date"] > (TODAY + dt.timedelta(days=AHEAD)).isoformat() and big(e)]
+for ev in yev + far:
     for r in ev["races"]:
         if TODAY.isoformat() <= r["date"] <= SEASON_END:
             multi = len(ev["races"]) > 1
             up.append({"eid": ev["id"], "rid": r["id"], "name": ev["name"] + (f", {r['name']}" if multi and r["name"] and r["name"].lower() not in ev["name"].lower() else ""),
-                       "date": r["date"], "cls": ev["cls"], "big": big(ev), "ages": len(youth_ages(ev))})
+                       "date": r["date"], "cls": ev["cls"], "big": big(ev), "ages": len(youth_ages(ev)) if ev["id"] in cl else 4})
 up.sort(key=lambda u: (u["date"], u["name"]))
 jsave(f"{S}/data/eventor_upcoming.json", up)
 weeks = collections.defaultdict(set)
-for ev in yev:
-    if big(ev):
+for ev in events:
+    if big(ev) and (ev["id"] not in cl or youth_ages(ev)):
         for r in ev["races"]: weeks[monday(dt.date.fromisoformat(r["date"])).isoformat()].add(ev["id"])
-jsave(f"{S}/data/eventor_weeks.json", {k: len(v) for k, v in sorted(weeks.items())})
+# a week that has started keeps the count it had (the event list only reaches back RECENT days)
+wk = {k: len(v) for k, v in weeks.items()}
+for k, v in jload(f"{C}/weeks.json", {}).items():
+    if k < monday(TODAY).isoformat(): wk[k] = v
+jsave(f"{C}/weeks.json", wk); jsave(f"{S}/data/eventor_weeks.json", dict(sorted(wk.items())))
 print("upcoming races", len(up), "big competitions per week ahead:", {k: len(v) for k, v in sorted(weeks.items()) if k >= monday(TODAY).isoformat()})
 
 # ---- entries for the races in this game week and the next: who is running ----
