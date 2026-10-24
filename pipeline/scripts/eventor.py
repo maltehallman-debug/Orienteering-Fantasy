@@ -320,5 +320,6 @@ for i in range(0, len(want), 15):
         entries.append({"eid": eid, "rid": int(text(en, "EventRaceId") or 0), "name": re.sub(r"\s+", " ", f"{given} {text(pn, 'Family')}").strip(),
                         "club": (text(o, "ShortName") or text(o, "Name")) if o is not None else "", "cls": norm(cn)})
 jsave(f"{S}/data/eventor_entries.json", entries)
+print("entries per event:", dict(collections.Counter(e["eid"] for e in entries)), "classes known for:", {e: cl.get(e, {}).get("_n") for e in want})
 print("entries in D/H 16-21 for", len(want), "events:", len(entries))
 print("eventor calls", dict(calls))
