@@ -58,7 +58,7 @@ document.documentElement.dataset.theme="light";try{localStorage.removeItem("of-t
 html,body{overflow-x:hidden;max-width:100%}@supports (overflow:clip){html,body{overflow-x:clip}}
 html{background:var(--bg);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;scroll-padding-top:80px}
 body{margin:0;background:transparent;color:var(--text);font:16px/1.5 var(--font);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;padding-bottom:calc(64px + var(--tabbar));transition:color .3s}
-.container{width:100%;max-width:1140px;margin:0 auto;padding-left:max(var(--gutter),env(safe-area-inset-left,0px));padding-right:max(var(--gutter),env(safe-area-inset-right,0px));position:relative}
+.container{width:100%;max-width:1440px;margin:0 auto;padding-left:max(var(--gutter),env(safe-area-inset-left,0px));padding-right:max(var(--gutter),env(safe-area-inset-right,0px));position:relative}
 button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 button,[role="button"],.btn,.tag,nav button{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 ::selection{background:var(--accent);color:var(--accent-ink)}
@@ -537,7 +537,7 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 @media (hover:hover) and (pointer:fine){.lc{transition:transform .25s var(--ease-out)}.lc:hover{transform:translateY(-3px)}}
 /* squad cards on the Team tab: the board's FIFA shield with the controls under it */
 .squadwrap .squad.ab{grid-template-columns:repeat(5,minmax(0,1fr));gap:14px 10px}
-@media (max-width:1400px){.squadwrap .squad.ab{grid-template-columns:repeat(6,minmax(0,1fr));gap:14px 10px;max-width:620px}.squadwrap .squad.ab>*{grid-column:span 2}.squadwrap .squad.ab>:nth-child(4){grid-column:2/4}}
+@media (max-width:1439px){.squadwrap .squad.ab{grid-template-columns:repeat(6,minmax(0,1fr));gap:14px 10px;max-width:620px}.squadwrap .squad.ab>*{grid-column:span 2}.squadwrap .squad.ab>:nth-child(4){grid-column:2/4}}
 @media (max-width:620px){.squadwrap .squad.ab{grid-template-columns:repeat(6,minmax(0,1fr));gap:12px 6px}.squadwrap .squad.ab>*{grid-column:span 2}.squadwrap .squad.ab>:nth-child(4){grid-column:2/4}}
 .sqc{position:relative;min-width:0;display:grid;gap:6px;align-content:start;transition:transform .25s var(--ease-out)}
 .sqc-sh{filter:drop-shadow(0 2px 2px var(--cs1)) drop-shadow(0 14px 16px var(--cs2));transition:filter .3s}
@@ -562,7 +562,7 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
   .sqc.hit .sqc-sh{animation:fxHit 1.6s var(--spring) both}
   .sqc.chipped .sqc-sh{animation:auraSh 2.8s ease-in-out infinite}
   @keyframes auraSh{0%,100%{filter:drop-shadow(0 8px 12px rgba(15,23,42,.24))}50%{filter:drop-shadow(0 0 10px var(--accent)) drop-shadow(0 8px 12px rgba(15,23,42,.24))}}
-  .sqc.tilt .lc,.lineup .lc.tilt{transform:perspective(700px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateZ(0) scale(1.04);transition:transform .12s linear}
+  .sqc.tilt .lc,.lineup .lc.tilt{transform:perspective(700px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateZ(0) scale(1.04);transition:transform .35s var(--ease-out)}
   .sqc.tilt .sqc-sh{filter:drop-shadow(0 4px 4px var(--cs1)) drop-shadow(0 26px 24px var(--cs2))}
 }
 @media (hover:hover) and (pointer:fine){.sqc .lc{transition:transform .3s var(--ease-out)}}
@@ -973,10 +973,9 @@ body{font-feature-settings:"tnum" 0;-webkit-font-smoothing:antialiased}
 @media (prefers-reduced-motion:no-preference){.lineup .lc{transition:transform .5s var(--spring)}.sqc .lc{transition:transform .5s var(--spring)}}
 /* cursor: cards lean hard toward it and the glare slides with it; panels get a soft light under it */
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
-  .sqc.tilt .lc,.lineup .lc.tilt{transform:perspective(600px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-6px) scale(1.06);transition:transform .1s linear}
+  .sqc.tilt .lc,.lineup .lc.tilt{transform:perspective(600px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-6px) scale(1.06);transition:transform .35s var(--ease-out)}
   .sqc.tilt .sqc-sh,.lineup:has(.lc.tilt){filter:drop-shadow(0 4px 4px var(--cs1)) drop-shadow(0 30px 26px var(--cs2))}
-  .sqc.tilt .lc::before,.lineup .lc.tilt::before{background:radial-gradient(circle at var(--mx,28%) var(--my,12%),rgba(255,255,255,.85),rgba(255,255,255,.2) 22%,rgba(255,255,255,0) 48%),linear-gradient(160deg,rgba(255,255,255,.45) 0%,rgba(255,255,255,0) 28%,rgba(255,255,255,0) 62%,rgba(0,0,0,.2) 100%),var(--metal)}
-  .sqc.tilt .lc::after,.lineup .lc.tilt::after{animation:none;background:linear-gradient(calc(var(--ry,0deg) * 4 + 115deg),transparent 30%,rgba(255,255,255,.5) 46%,rgba(170,220,255,.25) 52%,transparent 66%) no-repeat;background-size:200% 100%;background-position:calc(100% - var(--mx,50%)) 0;opacity:1}
+  .sqc.tilt,.lineup .lc.tilt{--g:1}
   .card,.side,.board,.facts>div,.kv>div,.hl,.livestrip{background:radial-gradient(420px circle at var(--sx,-500px) var(--sy,-500px),color-mix(in srgb,var(--accent) 8%,transparent),transparent 65%),var(--surface-grad)}
   .lit{transition:box-shadow .3s}
 }
@@ -1068,6 +1067,25 @@ nav.tabs .ind.on{opacity:1}
 .facts{margin-bottom:22px}
 #view>.card,#view .grid2>.card,#view>.grid2>div>.card{border-radius:20px}
 @media (max-width:640px){.panel{border-radius:18px;padding:16px 12px;margin-left:-4px;margin-right:-4px}.next{border-radius:18px}}
+/* hover tilt, smooth both ways: the card eases toward the pointer, the glare (registered properties, so they can be
+   transitioned) fades in and slides with it, and on leaving everything eases back over about half a second */
+@property --g{syntax:"<number>";inherits:true;initial-value:0}
+@property --mx{syntax:"<percentage>";inherits:true;initial-value:28%}
+@property --my{syntax:"<percentage>";inherits:true;initial-value:12%}
+.lc::before{background:radial-gradient(circle at var(--mx) var(--my),rgba(255,255,255,calc(.5 + .35 * var(--g))),rgba(255,255,255,calc(.2 * var(--g))) 22%,rgba(255,255,255,0) 46%),linear-gradient(160deg,rgba(255,255,255,.45) 0%,rgba(255,255,255,0) 28%,rgba(255,255,255,0) 62%,rgba(0,0,0,.2) 100%),var(--metal)}
+@media (prefers-reduced-motion:no-preference){
+  .sqc{transition:transform .25s var(--ease-out),--g .45s var(--ease-out),--mx .3s var(--ease-out),--my .3s var(--ease-out)}
+  .lineup .lc{transition:transform .55s var(--ease-out),--g .45s var(--ease-out),--mx .3s var(--ease-out),--my .3s var(--ease-out)}
+  .sqc .lc{transition:transform .55s var(--ease-out)}
+  .sqc-sh{transition:filter .45s var(--ease-out)}
+  .lineup{transition:filter .45s var(--ease-out)}
+}
+/* card buttons never overflow the card: on a narrow card the boost button drops its word and keeps the bolt */
+.sqc{container-type:inline-size}
+.sqc-ctl{min-width:0}
+@container (max-width:200px){.sqc-ctl .boost span{display:none}.sqc-ctl .boost{flex:none;width:30px;height:30px;padding:0}.sqc-ctl{gap:4px}}
+.info-row{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 8px}
+.info{margin-top:14px}.info h3{margin-top:18px}
 </style>
 </head>
 <body>
@@ -1934,17 +1952,22 @@ function leaguesView(){
 }
 function rulesView(){
   return `<p class="eyebrow pg-k">04 · The rules of the game</p><h2 style="margin-top:0">How it works</h2>
-  <div class="grid2"><div class="card"><h3>Your team</h3><ul class="rules"><li>Pick ${D.squad} runners from D and H 16, 18, 20 and 21 for ${fm(D.budget)}, at most ${D.clubMax} from one club.</li>
-  <li><b>A team and B team.</b> Your first five are the A team and score double. The other five are the B team and score normal points. Swap runners between them any time before the round starts.</li>
-  <li><b>Boost</b> one runner each round to double their points again (an A-team runner then counts ×4). No race, no boost.</li>
-  <li><b>Warnings:</b> a yellow ! means a runner did not race last game week, a red ! that they have not raced in the last 10 game weeks.</li>
-  <li><b>Tiers</b> follow price: Gold from ${fm(D.tiers[0])}, Silver from ${fm(D.tiers[1])}, Bronze below that. Prices move with form, so a runner can move up or down a tier.</li>
-  <li>A game week needs at least two big competitions: championships and national events in Eventor, plus Helg utan älg and Novembertävlingarna. A week with fewer is skipped: nothing is scored, transfers are free and chips cannot be played. It is shown on the Team tab and in the week calendar as soon as it is known.</li>
-  <li>A round is one week, Monday to Sunday. Your squad saves itself and locks when the round starts. If it is not complete, your last complete squad plays. The live season runs ${dshort(D.rounds[LIVE].start)} to ${dshort(D.rounds[E.R-1].end)}.</li>
-  <li>In a league, other managers see your team and points once a round has started, never before.</li>
-  <li>${D.freeTransfers} free transfers a round after your first squad. Each extra one costs ${D.penalty/10} points. Runners sell at today's price.</li>
-  <li><b>Chips</b>, one use each and one per round: Wildcard (free transfers), 3x Boost, A-team double (A team ×4), B-team boost (B team ×2) and Youth surge (D16 and H16 runners score double).</li></ul></div>
-  <div class="card"><h3>Points for a race</h3><ul class="rules"><li><b>2</b> for a valid finish.</li>
+  <div class="grid2"><div class="card"><h3>Your team</h3><ul class="rules">
+  <li>Pick ${D.squad} runners from D and H 16 to 21 for ${fm(D.budget)}, at most ${D.clubMax} from one club.</li>
+  <li><b>A team</b> (your first five) scores double, the <b>B team</b> scores normal points.</li>
+  <li><b>Boost</b> one runner a round to double their points again.</li>
+  <li>${D.freeTransfers} free transfers a round. Each extra one costs ${D.penalty/10} points.</li>
+  <li>Rounds run Monday to Sunday and lock when they start. Weeks with fewer than two big competitions are skipped.</li></ul></div>
+  <div class="card"><h3>Points in short</h3><ul class="rules">
+  <li>Points for finishing, for every runner you beat, for being close to the winner and for a podium.</li>
+  <li>Stronger fields and championships are worth more. A mispunch costs a little.</li>
+  <li>A good week for a whole team is around 100.</li></ul></div></div>
+  <div class="info-row"><button class="btn" data-info="points">How points are counted</button><button class="btn" data-info="more">Chips, tiers and leagues</button><button class="btn" data-info="data">About the data</button></div>`;
+}
+/* the details live in small sheets so the rules page stays short */
+function infoSheet(k){
+  const hd=(t,e)=>`<div class="hd"><div><span class="eyebrow">${e}</span><h2 style="margin:4px 0 0">${t}</h2></div><button class="btn" data-close="1">Close</button></div>`;
+  const body={points:()=>hd("How points are counted","Scoring")+`<div class="info"><ul class="rules"><li><b>2</b> for a valid finish.</li>
   <li><b>Runners beaten:</b> each one is worth between 0.1 and 2.0, depending on the beaten runner's class. Beating one of the best H16 runners is worth about 20 times more than beating a newcomer. Capped at 35.</li>
   <li><b>Speed:</b> 18 minus 80 times the share behind the winner, never below 0. A runner 10% behind the winner earns 10 before field quality is applied.</li>
   <li><b>Podium:</b> 12 for a win, 7 for second, 4 for third.</li>
@@ -1952,13 +1975,22 @@ function rulesView(){
   <li><b>Small fields:</b> speed and podium points are scaled from 40% with 3 finishers up to 100% with 20 or more.</li>
   <li><b>Race weight:</b> Ungdoms-SM x1.4. Swedish League, DM and other championships x1.2. Everything else x1.</li>
   <li><b>Mispunch, did not finish, disqualified:</b> -5 before scaling. Did not start: 0.</li>
-  <li><b>Your points:</b> the race total is multiplied by 0.32 and rounded to a whole number. A finish is worth at least 1, a solid race 3 to 8, a win in a strong field 20 or more, a mispunch -2. A good week for a whole team is around 100.</li></ul></div></div>
-  <div class="card"><h3>Class rating</h3><p style="max-width:70ch;margin:6px 0">Each runner's class comes from how fast they run compared with the rest of the field, adjusted for how strong that field was, across all ${D.events.length} races in the data. It decides how much a beaten runner is worth. Class is only used to score races. Prices never use it, they only use results from before the round.</p></div>
-  <div class="card"><h3>Data</h3><ul class="rules"><li>D/H 16 to 21 results for ${D.events.length} races between ${dshort(D.events[0].date)} and ${dshort(D.events[D.events.length-1].date)}, each class in a race with at least 3 finishers. Only real competitions count: proper H/D 16, 18, 20 and 21 classes (plain or elite), at least two of those age groups in the race (one for championships), and no club championships, training races, youth series, MTBO or OL-skytte. Relays count on the team's result; patrol and aggregate results are left out.</li>
+  <li><b>Your points:</b> the race total is multiplied by 0.32 and rounded to a whole number. A finish is worth at least 1, a solid race 3 to 8, a win in a strong field 20 or more, a mispunch -2. A good week for a whole team is around 100.</li></ul></div><div class="info"><h3>Class rating</h3><p style="max-width:70ch;margin:6px 0">Each runner's class comes from how fast they run compared with the rest of the field, adjusted for how strong that field was, across all ${D.events.length} races in the data. It decides how much a beaten runner is worth. Class is only used to score races. Prices never use it, they only use results from before the round.</p></div>`,
+    more:()=>hd("Chips, tiers and leagues","More rules")+`<div class="info"><ul class="rules">
+  <li><b>Chips</b>, one use each and one per round: Wildcard (free transfers), 3x Boost, A-team double (A team ×4), B-team boost (B team ×2) and Youth surge (D16 and H16 runners score double).</li>
+  <li><b>Boost:</b> an A-team runner who is boosted counts ×4. No race, no boost.</li>
+  <li><b>Swaps:</b> move runners between the A and B team any time before the round starts.</li>
+  <li><b>Tiers</b> follow price: Gold from ${fm(D.tiers[0])}, Silver from ${fm(D.tiers[1])}, Bronze below that. Prices move with form, so a runner can move up or down a tier. Runners sell at today's price.</li>
+  <li><b>Warnings:</b> a yellow ! means a runner did not race last game week, a red ! that they have not raced in the last 10 game weeks. A green ✓ means they have entered a race this week.</li>
+  <li><b>Skipped weeks:</b> a game week needs at least two big competitions (championships and national events in Eventor, plus Helg utan älg and Novembertävlingarna). In a skipped week nothing is scored, transfers are free and chips cannot be played.</li>
+  <li><b>Locking:</b> your squad saves itself and locks when the round starts. If it is not complete, your last complete squad plays. The live season runs ${dshort(D.rounds[LIVE].start)} to ${dshort(D.rounds[E.R-1].end)}.</li>
+  <li><b>Leagues:</b> other managers see your team and points once a round has started, never before.</li></ul></div>`,
+    data:()=>hd("About the data","Data")+`<div class="info"><ul class="rules"><li>D/H 16 to 21 results for ${D.events.length} races between ${dshort(D.events[0].date)} and ${dshort(D.events[D.events.length-1].date)}, each class in a race with at least 3 finishers. Only real competitions count: proper H/D 16, 18, 20 and 21 classes (plain or elite), at least two of those age groups in the race (one for championships), and no club championships, training races, youth series, MTBO or OL-skytte. Relays count on the team's result; patrol and aggregate results are left out.</li>
   <li>Official results come from Eventor, the Swedish Orienteering Federation's system, for Swedish races only. Results that are not in Eventor yet come from liveresultat.orientering.se and are replaced by the official ones once they are published. Entries for the coming weeks also come from Eventor: a green ✓ marks a runner who has entered a race this week.</li>
   <li>Data is current to ${dshort(D.asof)}. Prices for every round come only from races before it. The page refreshes itself with new races every day.</li><li>Races that are still being run, or that are not on liveresultat yet (like O-Event, 6 to 8 November), are shown in the schedule and count once they have 3 or more finishers in a class.</li>
   <li>A price comes from a runner's rank in their class (H16, D21 and so on) by a weighted average of past points, with recent races counting more. In every class the best runner costs 22k, the top three 20k or more, about the 15th best 14.5k, and the rest of the field down to 2.5k. Runners with no history cost 2.5k.</li>
-  <li>The pool is the ${D.runners.filter(x=>x.p).length} runners with at least 3 starts.</li></ul></div>`;
+  <li>The pool is the ${D.runners.filter(x=>x.p).length} runners with at least 3 starts.</li></ul></div>`};
+  showSheet("info|"+k,"Rules",(body[k]||body.points)());
 }
 /* cards glide from where they were to where they are now (swaps between A and B, adds, removals) */
 let flipFrom=null;
@@ -2173,6 +2205,7 @@ document.addEventListener("click",ev=>{
   if(d.close&&(ev.target===t||t.tagName==="BUTTON")){closeModal();profileOpen=null;phForm=null;phMsg="";return}
   if(d.prof!==undefined){profile(+d.prof);return}
   if(d.week!==undefined){weekSheet(+d.week);return}
+  if(d.info){infoSheet(d.info);return}
   if(d.tab){const nt=d.tab;if(d.focus)setTimeout(()=>{const f=document.getElementById(d.focus);if(f)f.focus()},700);if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
   if(d.add!==undefined){const i=+d.add;if(!canAddReason(i)){plan.squad.push(i);if(!Array.isArray(plan.a))plan.a=[];if(plan.a.length<AS)plan.a.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
   if(d.sell!==undefined){const i=+d.sell;plan.squad=plan.squad.filter(j=>j!==i);plan.a=(plan.a||[]).filter(j=>j!==i);if(swapSel===i)swapSel=null;fixLeaders();save();render();return}

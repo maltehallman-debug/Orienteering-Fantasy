@@ -81,7 +81,7 @@ events = []
 for e in ET.fromstring(raw):
     if strip(e.tag) != "Event": continue
     if text(e, "DisciplineId") != "1" or text(e, "EventStatusId") == "10": continue
-    org_ids = [text(o) for o in kids(path(e, "Organiser") or e, "OrganisationId")]
+    _org = path(e, "Organiser"); org_ids = [text(o) for o in kids(_org if _org is not None else e, "OrganisationId")]
     if not org_ids or any(orgs.get(o, "752") != "752" for o in org_ids): continue
     races = [{"id": int(text(r, "EventRaceId")), "name": text(r, "Name"), "date": text(r, "RaceDate", "Date")} for r in kids(e, "EventRace")]
     events.append({"id": int(text(e, "EventId")), "name": text(e, "Name"), "cls": int(text(e, "EventClassificationId") or 4),
@@ -250,6 +250,12 @@ weeks = collections.defaultdict(set)
 for ev in events:
     if big(ev) and (ev["id"] not in cl or youth_ages(ev)):
         for r in ev["races"]: weeks[monday(dt.date.fromisoformat(r["date"])).isoformat()].add(ev["id"])
+# for deciding the rule: every week ahead, how many events of each kind (1 championship, 2 national, 3 district, 4 local)
+_kinds = collections.defaultdict(collections.Counter)
+for ev in events:
+    for r in ev["races"]:
+        if r["date"] >= TODAY.isoformat(): _kinds[monday(dt.date.fromisoformat(r["date"])).isoformat()][ev["cls"]] += 1
+print("events per week ahead by classification:", {k: dict(sorted(v.items())) for k, v in sorted(_kinds.items())})
 # a week that has started keeps the count it had (the event list only reaches back RECENT days)
 wk = {k: len(v) for k, v in weeks.items()}
 for k, v in jload(f"{C}/weeks.json", {}).items():
