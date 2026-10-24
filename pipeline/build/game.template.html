@@ -1954,7 +1954,7 @@ function marketBody(rows){mRows=rows;
 }
 function rowHtml(x){const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
    return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
-   <td>${inS?`<button class="btn" data-sell="${x.i}">Ta bort</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Lägg till</button>`}</td></tr>`}
+   <td>${inS?`<button class="btn" data-sell="${x.i}">Sälj</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Köp</button>`}</td></tr>`}
 /* the runner list grows as you scroll: a marker under it loads the next runners before you reach the end, and each
    new runner rises in on its own. A button stays as a fallback where the browser cannot watch the marker. */
 let mRows=[];
@@ -2312,7 +2312,7 @@ function profileView(){
   ${L.length?seasonBars():""}
   <div class="grid2" style="margin-top:12px">
    <div class="card"><h3>Ditt lag</h3>
-    <div class="avedit">${mgrDot({id:cloud.uid,name:me.name,av:myAv},1)}<div class="row"><label class="btn" for="avFile">${avBusy?"Uploading…":myAv?"Byt bild":"Lägg till en bild"}</label><input type="file" id="avFile" accept="image/*" hidden ${avBusy?"disabled":""}>${myAv?`<button class="btn quiet" id="avDel" ${avBusy?"disabled":""}>Ta bort</button>`:""}</div></div>
+    <div class="avedit">${mgrDot({id:cloud.uid,name:me.name,av:myAv},1)}<div class="row"><label class="btn" for="avFile">${avBusy?"Laddar upp…":myAv?"Byt bild":"Lägg till en bild"}</label><input type="file" id="avFile" accept="image/*" hidden ${avBusy?"disabled":""}>${myAv?`<button class="btn quiet" id="avDel" ${avBusy?"disabled":""}>Ta bort</button>`:""}</div></div>
     ${avMsg?`<p class="note" style="margin:0 0 10px;color:var(--warn)">${esc(avMsg)}</p>`:""}
     <div class="field"><label for="teamName">Lagnamn</label><input class="name" id="teamName" maxlength="30" value="${esc(myTeam)}" placeholder="Syns i dina ligor" autocapitalize="words" enterkeyhint="done"></div>
     <div class="field"><label for="mgrName">Managernamn</label><input class="name" id="mgrName" maxlength="24" value="${esc(mgrName)}" autocapitalize="words" enterkeyhint="done"></div>
