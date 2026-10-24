@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ffffff'/%3E%3Ccircle cx='32' cy='32' r='19' fill='none' stroke='%23059669' stroke-width='5'/%3E%3Cpath d='M22 22h20v20H22z' fill='%23fff'/%3E%3Cpath d='M42 22v20H22z' fill='%23f06a2b'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&display=swap">
 <script>/* apply the saved theme before first paint, so the page never flashes the wrong colours */
 try{var t=localStorage.getItem("of-theme");if(t==="night"||t==="forest")t="dark";if(t==="map")t="light";if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
@@ -500,9 +500,9 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 /* the card is laid out in its own width (cqw), one type family throughout: the big rating, then class and multiplier
    on a short rule, like the rating and position on a real player card */
 .lc-rate{left:7%;top:12%;width:29%;display:grid;justify-items:center;line-height:1;font-family:var(--display)}
-.lc-rate b{font:800 21cqw/.86 var(--display);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
-.lc-rate small{font:700 9cqw/1 var(--display);letter-spacing:.03em;margin-top:2cqw;padding-top:1.8cqw;border-top:max(1px,.6cqw) solid var(--soft);min-width:15cqw}
-.lc-rate small+small{font-size:7.5cqw;color:var(--soft);margin-top:1.2cqw;padding-top:0;border:0;min-width:0}
+.lc-rate b{font:600 18cqw/.86 var(--display);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.lc-rate small{font:500 8cqw/1 var(--display);letter-spacing:.04em;margin-top:2cqw;padding-top:1.8cqw;border-top:max(1px,.6cqw) solid var(--soft);min-width:15cqw}
+.lc-rate small+small{font-size:7cqw;color:var(--soft);margin-top:1.2cqw;padding-top:0;border:0;min-width:0}
 .lc-ph{left:39%;top:8.5%;width:46cqw;height:46cqw;display:grid;place-items:center}
 .lc .av.lg{--s:42cqw;box-shadow:0 0 0 1.6cqw var(--rim),0 4px 10px -4px rgba(0,0,0,.4);font:700 17cqw/1 var(--display);letter-spacing:.01em}
 .lc-cap{left:39%;width:46cqw;top:calc(8.5% + 40cqw);display:flex;justify-content:center}
@@ -511,10 +511,10 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 .lc-st{left:12%;right:12%;top:61.5%;display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
 .lc-st>span{display:grid;justify-items:center;align-content:start;line-height:1}
 .lc-st>span+span{border-left:max(1px,.6cqw) solid var(--soft)}
-.lc-club{left:19%;right:19%;top:79%;font:600 max(6.5px,7cqw)/1.1 var(--display);letter-spacing:.02em;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lc-st b{font:800 13cqw/.9 var(--display);letter-spacing:0;font-variant-numeric:tabular-nums}
+.lc-club{left:19%;right:19%;top:78.5%;font:500 max(6.5px,6.6cqw)/1.1 var(--display);letter-spacing:.02em;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc-st b{font:600 11cqw/.9 var(--display);letter-spacing:0;font-variant-numeric:tabular-nums}
 .lc-st b small{font-size:.66em;margin-left:.04em;letter-spacing:0}
-.lc-st i{font:700 max(6.5px,6cqw)/1 var(--display);font-style:normal;letter-spacing:.07em;text-transform:uppercase;color:var(--soft);margin-top:1.6cqw}
+.lc-st i{font:500 max(6.5px,5.8cqw)/1 var(--display);font-style:normal;letter-spacing:.07em;text-transform:uppercase;color:var(--soft);margin-top:1.6cqw}
 .lc.cap{background:var(--accent)}
 @media (prefers-reduced-motion:no-preference){.lc::after{animation:fifaShine 5s ease-in-out infinite;animation-delay:calc(var(--k) * .6s)}@keyframes fifaShine{0%,55%{background-position:120% 0}100%{background-position:-120% 0}}}
 .bd-share{display:flex;flex-direction:column;align-items:center;gap:6px;margin:12px auto 4px;max-width:560px}
@@ -533,7 +533,7 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 .sqc-sh{filter:drop-shadow(0 8px 12px rgba(15,23,42,.24));transition:filter .3s}
 [data-theme="dark"] .sqc-sh{filter:drop-shadow(0 10px 16px rgba(0,0,0,.6))}
 .sqc .lc{display:block}
-.sqc .lc-rate b{font-size:16cqw;margin-top:1.5cqw}.sqc .lc-rate small{font-size:9cqw}
+.sqc .lc-rate b{font-size:13.5cqw;font-weight:600;margin-top:2cqw}.sqc .lc-rate small{font-size:8cqw}
 .sqc .lc-rate small.hi{color:var(--accent-ink);background:var(--accent);border-radius:99px;padding:1.2cqw 2.4cqw .8cqw;border:0}
 .sqc .avw .idle{left:-1cqw;top:-1cqw;bottom:auto;width:13cqw;height:13cqw;font-size:8.5cqw;box-shadow:0 0 0 1.2cqw var(--rim)}
 .sqc-ctl{display:flex;gap:4px;justify-content:center;align-items:center}
@@ -1460,9 +1460,9 @@ async function drawFifa(c,card,x,y,w,h,font){
   if(card.boost){c.save();shieldPath(c,x,y,w,h);c.lineWidth=7;c.strokeStyle=css("--accent");c.stroke();c.restore()}
   c.fillStyle=T.ink;c.textAlign="center";c.textBaseline="alphabetic";
   const L=x+w*.2;
-  c.font=`800 ${Math.round(h*.155)}px ${font}`;c.fillText(card.pts,L,y+h*.235);
-  c.strokeStyle=T.soft;c.lineWidth=2;c.beginPath();c.moveTo(L-w*.08,y+h*.275);c.lineTo(L+w*.08,y+h*.275);c.stroke();
-  c.font=`700 ${Math.round(h*.075)}px ${font}`;c.fillText(card.cls,L,y+h*.345);c.fillStyle=T.soft;c.font=`700 ${Math.round(h*.064)}px ${font}`;c.fillText("×"+card.m,L,y+h*.405);
+  c.font=`600 ${Math.round(h*.13)}px ${font}`;c.fillText(card.pts,L,y+h*.225);
+  c.strokeStyle=T.soft;c.lineWidth=2;c.beginPath();c.moveTo(L-w*.07,y+h*.262);c.lineTo(L+w*.07,y+h*.262);c.stroke();
+  c.font=`500 ${Math.round(h*.058)}px ${font}`;c.fillText(card.cls,L,y+h*.33);c.fillStyle=T.soft;c.font=`500 ${Math.round(h*.05)}px ${font}`;c.fillText("×"+card.m,L,y+h*.38);
   const cx=x+w*.62,cy=y+h*.25,R=w*.24,im=await loadImg(card.ph);
   c.save();c.beginPath();c.arc(cx,cy,R,0,Math.PI*2);c.closePath();
   if(im){c.clip();const s=Math.max(2*R/im.width,2*R/im.height);c.drawImage(im,cx-im.width*s/2,cy-im.height*s/2,im.width*s,im.height*s)}
@@ -1473,17 +1473,17 @@ async function drawFifa(c,card,x,y,w,h,font){
   c.fillText(nm,x+w/2,y+h*.58);
   c.strokeStyle=T.soft;c.lineWidth=2;c.beginPath();c.moveTo(x+w*.14,y+h*.61);c.lineTo(x+w*.86,y+h*.61);c.stroke();
   c.strokeStyle=T.soft;c.lineWidth=2;c.beginPath();c.moveTo(x+w/2,y+h*.625);c.lineTo(x+w/2,y+h*.755);c.stroke();
-  [[card.price,"PRICE"],[card.avg,"PTS / WK"]].forEach(([v,l],k)=>{const sx=x+w*(.31+k*.38),big=Math.round(h*.096);c.fillStyle=T.ink;c.font=`800 ${big}px ${font}`;
-    const kk=/k$/.test(v),num=kk?v.slice(0,-1):v;c.textAlign="left";const nw=c.measureText(num).width;c.font=`800 ${Math.round(big*.62)}px ${font}`;const kw=kk?c.measureText("k").width:0;
-    c.font=`800 ${big}px ${font}`;c.fillText(num,sx-(nw+kw)/2,y+h*.695);if(kk){c.font=`800 ${Math.round(big*.62)}px ${font}`;c.fillText("k",sx-(nw+kw)/2+nw,y+h*.695)}
-    c.textAlign="center";c.fillStyle=T.soft;c.font=`700 ${Math.round(h*.044)}px ${font}`;c.fillText(l,sx,y+h*.745)});
-  {c.textAlign="center";c.fillStyle=T.soft;c.font=`600 ${Math.round(h*.05)}px ${font}`;let cl=card.club;while(c.measureText(cl).width>w*.6&&cl.length>4)cl=cl.slice(0,-2)+"…";c.fillText(cl,x+w/2,y+h*.825)}
+  [[card.price,"PRICE"],[card.avg,"PTS / WK"]].forEach(([v,l],k)=>{const sx=x+w*(.31+k*.38),big=Math.round(h*.08);c.fillStyle=T.ink;c.font=`600 ${big}px ${font}`;
+    const kk=/k$/.test(v),num=kk?v.slice(0,-1):v;c.textAlign="left";const nw=c.measureText(num).width;c.font=`600 ${Math.round(big*.62)}px ${font}`;const kw=kk?c.measureText("k").width:0;
+    c.font=`600 ${big}px ${font}`;c.fillText(num,sx-(nw+kw)/2,y+h*.695);if(kk){c.font=`600 ${Math.round(big*.62)}px ${font}`;c.fillText("k",sx-(nw+kw)/2+nw,y+h*.695)}
+    c.textAlign="center";c.fillStyle=T.soft;c.font=`500 ${Math.round(h*.04)}px ${font}`;c.fillText(l,sx,y+h*.735)});
+  {c.textAlign="center";c.fillStyle=T.soft;c.font=`500 ${Math.round(h*.045)}px ${font}`;let cl=card.club;while(c.measureText(cl).width>w*.6&&cl.length>4)cl=cl.slice(0,-2)+"…";c.fillText(cl,x+w/2,y+h*.825)}
 }
 function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim()||"#059669";
 async function makeShareImage(){
   const b=boardData();if(!b||!b.cards.length)throw new Error("no team");
-  try{await Promise.all(["800 40px","700 40px","600 40px"].map(f=>document.fonts.load(f+' "Barlow Condensed"')));await document.fonts.ready}catch(e){}
+  try{await Promise.all(["800 40px","700 40px","600 40px","500 40px"].map(f=>document.fonts.load(f+' "Barlow Condensed"')));await document.fonts.ready}catch(e){}
   const W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
   const font=getComputedStyle(document.body).fontFamily||"sans-serif",dfont=css("--display")||font,acc=css("--accent"),bg=css("--bg"),surf=css("--surface"),text=css("--text"),t2=css("--text-2"),t3=css("--text-3"),line=css("--line-2");
   c.fillStyle=bg;c.fillRect(0,0,W,H);
