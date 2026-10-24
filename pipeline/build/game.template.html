@@ -13,7 +13,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&display=swap">
 <script>/* apply the saved theme before first paint, so the page never flashes the wrong colours */
-document.documentElement.dataset.theme="light";try{localStorage.removeItem("of-theme")}catch(e){}</script>
+document.documentElement.dataset.theme="light";try{localStorage.removeItem("of-theme")}catch(e){}
+/* iPhone and iPad (Safari's touch-callout support is iOS-only): Apple's Liquid Glass look. ?glass=1 previews it elsewhere */
+try{if((window.CSS&&CSS.supports("-webkit-touch-callout","none"))||/[?&]glass=1/.test(location.search))document.documentElement.classList.add("glass")}catch(e){}</script>
 <style>
 /* Orienteering Fantasy. Classic colours: white and slate with one emerald, and a dark mode to match.
    Words in the phone's own system font (SF Pro, Roboto, Segoe), so it reads like an app, not a template.
@@ -462,7 +464,7 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
   .mkt .who-wrap>div{max-width:calc(44vw - 46px)}.mkt .who-wrap .idle{vertical-align:6px}
   .mkt td:last-child .btn{padding:8px 10px}
   .rtab th:nth-child(3),.rtab td:nth-child(3),.rtab th:nth-child(4),.rtab td:nth-child(4){display:none}
-  .rtab table{table-layout:fixed}.rtab td,.rtab th{white-space:normal;overflow-wrap:anywhere;padding-left:8px;padding-right:8px}
+  .rtab table{table-layout:fixed}.rtab th{overflow-wrap:normal;font-size:10px;letter-spacing:.03em}.rtab td{white-space:normal;overflow-wrap:anywhere}.rtab td,.rtab th{padding-left:8px;padding-right:8px}
   .rtab th:nth-child(2),.rtab td:nth-child(2){width:62px}.rtab th:nth-child(5),.rtab td:nth-child(5){width:52px;text-align:right}
 }
 /* the week board: always the dark broadcast look, compact enough to fit a phone screenshot */
@@ -1127,6 +1129,47 @@ nav.tabs .ind.on{opacity:1}
   .mkt td:last-child .btn{padding:8px 9px;font-size:14px}
 }
 .card.admin .apply{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 6px}.card.admin .apply .note{margin:0}
+/* ================= Liquid Glass (iPhone / iPad) =================
+   Floating, translucent chrome that refracts the page behind it: a capsule tab bar with a glass lens that springs
+   between tabs, a frosted header, glass sheets and capsule buttons with a bright specular edge. Content stays solid,
+   only the controls are glass, as on iOS. Reduced transparency gets solid surfaces. */
+html.glass{--glass-bg:rgba(255,255,255,.42);--glass-blur:saturate(190%) blur(22px) brightness(1.05);
+  --glass-edge:inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(255,255,255,.55),inset 0 -10px 18px -12px rgba(255,255,255,.7)}
+html.glass .nav{background:rgba(255,255,255,.55);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border-bottom:0;box-shadow:inset 0 -1px 0 rgba(255,255,255,.7),0 10px 26px -18px rgba(15,23,42,.35)}
+html.glass #mgr,html.glass #mgr.out{border-radius:999px;box-shadow:var(--glass-edge),0 6px 16px -8px rgba(15,23,42,.35)}
+html.glass #mgr.out{background:color-mix(in srgb,var(--accent) 88%,transparent);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+@media (max-width:760px){
+  html.glass body{padding-bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+  html.glass .tabbar{left:12px;right:12px;bottom:calc(8px + env(safe-area-inset-bottom,0px));padding:6px;border:0;border-radius:34px;
+    background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+    box-shadow:var(--glass-edge),0 16px 36px -12px rgba(15,23,42,.38),0 2px 6px rgba(15,23,42,.08)}
+  html.glass .tabbar::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
+    background:linear-gradient(165deg,rgba(255,255,255,.6),rgba(255,255,255,0) 36%,rgba(255,255,255,0) 72%,rgba(255,255,255,.3))}
+  html.glass .tabbar button{color:var(--text-2);border-radius:28px;padding:7px 2px 6px}
+  html.glass .tabbar button[aria-selected="true"]{color:var(--accent)}
+  html.glass .tabbar button[aria-selected="true"] svg{transform:none}
+  html.glass .tabbar .ind{top:6px;height:calc(100% - 12px);width:68px;border-radius:28px;background:rgba(255,255,255,.62);
+    box-shadow:inset 0 1px 0 #fff,inset 0 0 0 1px rgba(255,255,255,.85),inset 0 -6px 12px -8px rgba(5,150,105,.18),0 6px 16px -6px rgba(15,23,42,.28)}
+}
+@media (prefers-reduced-motion:no-preference){
+  /* the lens springs to the new tab and stretches a little on the way, like iOS */
+  html.glass .tabbar .ind.on{transition:transform .55s cubic-bezier(.34,1.32,.64,1),opacity .2s}
+  html.glass .tabbar button:active svg{transform:scale(.88)}
+}
+html.glass .modal{background:rgba(15,23,42,.28)}
+html.glass .modal .sheet{background:rgba(255,255,255,.76);-webkit-backdrop-filter:saturate(180%) blur(30px);backdrop-filter:saturate(180%) blur(30px);
+  box-shadow:var(--glass-edge),0 -12px 40px -12px rgba(15,23,42,.35);border-radius:30px 30px 0 0}
+@media (min-width:641px){html.glass .modal .sheet{border-radius:30px}}
+html.glass .btn,html.glass .boost,html.glass .sqc-ctl .sw,html.glass .sqc-ctl .rm,html.glass .seg{border-radius:999px}
+html.glass .btn:not(.on):not(.go):not(.light):not(.quiet),html.glass .boost:not(.on),html.glass .sqc-ctl .sw,html.glass .sqc-ctl .rm{
+  background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(246,248,251,.8));box-shadow:var(--glass-edge),inset 0 0 0 1px rgba(15,23,42,.08),0 4px 12px -6px rgba(15,23,42,.3)}
+html.glass .btn.on,html.glass .btn.go,html.glass .btn.light,html.glass .boost.on,html.glass .bd-tabs button.on,html.glass .chipc.on{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 78%,#fff),var(--accent) 60%);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 0 0 1px rgba(255,255,255,.25),inset 0 -6px 12px -8px rgba(0,0,0,.25),0 8px 20px -8px var(--accent)}
+html.glass .bd-tabs,html.glass .bd-tabs button{border-radius:999px}
+html.glass input.name,html.glass .filters input,html.glass .filters select{border-radius:16px}
+@media (prefers-reduced-transparency:reduce){
+  html.glass .nav,html.glass .tabbar,html.glass .modal .sheet{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}
+}
 </style>
 </head>
 <body>
@@ -1475,7 +1518,7 @@ function renderCourse(){$("#course").innerHTML=(tab==="rounds"&&state.log.length
 function placeInd(){
   ["#tabs","#tabbar"].forEach(sel=>{const el=$(sel),ind=el&&el.querySelector(".ind"),b=el&&el.querySelector('[aria-selected="true"]');if(!ind||!b||!el.offsetWidth)return;
     if(sel==="#tabs"){ind.style.transform=`translateX(${b.offsetLeft+13}px) scaleX(${Math.max(0,b.offsetWidth-26)})`}
-    else{ind.style.transform=`translateX(${(b.offsetLeft+(b.offsetWidth-56)/2).toFixed(1)}px)`}
+    else{ind.style.transform=`translateX(${(b.offsetLeft+(b.offsetWidth-(ind.offsetWidth||56))/2).toFixed(1)}px)`}
     if(!ind.classList.contains("on"))requestAnimationFrame(()=>ind.classList.add("on"))});
 }
 addEventListener("resize",()=>placeInd(),{passive:true});try{document.fonts.ready.then(()=>placeInd())}catch(e){}
