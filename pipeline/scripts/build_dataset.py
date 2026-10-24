@@ -3,7 +3,7 @@ import numpy as np
 S = sys.argv[1]
 comps = {c["id"]: c for c in json.load(open(f"{S}/data/comps_clean.json"))}
 MIN_FIN = 3
-EXCLUDE = {36940, 36892, 40850, 37141, 37143, 40373}   # aggregates, chase duplicates, patrol, some foreign pilots
+EXCLUDE = {36940, 36892, 40850, 37141, 37143, 40373, 40929}   # aggregates, chase duplicates, patrol, some foreign pilots, Natt-Njudung (small local night race)
 SEASON_START = dt.date(2026, 5, 4)
 TODAY = dt.date.today()
 LAST_ROUND_START = dt.date(2026, 12, 21)
