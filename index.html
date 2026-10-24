@@ -419,6 +419,13 @@ input.name{width:100%;max-width:380px}
 .card.global{box-shadow:var(--shadow),inset 0 0 0 1.5px var(--accent-line),inset 0 3px 0 var(--accent)}
 .mgrline{display:block;font-size:12.5px;line-height:1.3;color:var(--text-2);font-weight:500}
 .lgmembers .tag b{font-weight:600}.lgmembers .tag .mgrline{font-size:11px}
+.wkbars{display:flex;gap:4px;align-items:flex-end;overflow-x:auto;padding:12px 0 4px;margin-top:6px;overscroll-behavior-x:contain}
+.wkbars span{display:grid;justify-items:center;gap:2px;min-width:18px;flex:1 1 18px}
+.wkbars i{display:block;width:70%;border-radius:4px 4px 1px 1px;background:var(--accent)}
+.wkbars i.neg{background:var(--bad)}.wkbars i.none{background:var(--line-2)}
+.wkbars b{font:600 9.5px var(--mono);color:var(--text-2);min-height:12px}.wkbars small{font:500 10px var(--mono);color:var(--text-3)}
+tr.wkhead td{background:var(--surface-2);padding-top:9px;padding-bottom:9px}
+#mmore{min-height:24px;text-align:center}#msent{display:block;height:1px}.mload{font-size:12.5px}
 .lgt tr.gap td{text-align:center;color:var(--text-3);padding:4px}
 .lgmembers{display:flex;flex-wrap:wrap;gap:6px}.lgmembers .tag{display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:999px}.lgmembers .mdot{width:26px;height:26px;font-size:12px}
 .lghead{display:grid;gap:8px;margin-bottom:14px}.lgtitle{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.lgtitle h2{margin:0}
@@ -634,8 +641,17 @@ tbody tr.tr-bronze td:first-child{box-shadow:inset 4px 0 0 #ea580c}
   --tbg:linear-gradient(150deg,#151c27 0%,#253042 30%,#3a4759 60%,#556377 85%,#334155 100%)}
 [data-theme="dark"] .rc.tier-bronze{--t1:#fed7aa;--t2:#ea580c;--t3:rgba(254,215,170,.12);--tg:rgba(234,88,12,.4);
   --tbg:linear-gradient(150deg,#1f0f07 0%,#3b1a0b 30%,#6b2a0f 60%,#9a3412 85%,#5c220c 100%)}
+/* metal textures: brushed grain for gold and silver, a hammered surface for bronze, glitter on gold, fine machined
+   lines on silver. Layers: the light that follows the pointer, texture, texture, the plate. */
+:root{--brush:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.004 .75' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.1 -.42'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23n%29'/%3E%3C/svg%3E");--hammer:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.045' numOctaves='3' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .14 0 0 0 0 .03 0 0 0 1.1 -.5'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23n%29'/%3E%3C/svg%3E");--glitter:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Ccircle cx='45.3' cy='21.1' r='0.5' fill='white' opacity='0.49'/%3E%3Ccircle cx='75.0' cy='51.2' r='0.5' fill='white' opacity='0.95'/%3E%3Ccircle cx='30.1' cy='12.0' r='1.0' fill='white' opacity='0.49'/%3E%3Ccircle cx='12.7' cy='59.4' r='1.3' fill='white' opacity='0.52'/%3E%3Ccircle cx='31.3' cy='87.8' r='0.5' fill='white' opacity='0.77'/%3E%3Ccircle cx='55.5' cy='136.7' r='0.5' fill='white' opacity='0.76'/%3E%3Ccircle cx='18.6' cy='58.7' r='1.3' fill='white' opacity='0.51'/%3E%3Ccircle cx='43.2' cy='114.3' r='0.7' fill='white' opacity='0.51'/%3E%3Ccircle cx='80.0' cy='26.3' r='0.5' fill='white' opacity='0.75'/%3E%3Ccircle cx='8.8' cy='8.3' r='0.7' fill='white' opacity='0.72'/%3E%3Ccircle cx='74.4' cy='108.8' r='1.0' fill='white' opacity='0.77'/%3E%3Ccircle cx='63.4' cy='42.0' r='0.7' fill='white' opacity='0.83'/%3E%3Ccircle cx='34.2' cy='80.4' r='1.3' fill='white' opacity='0.72'/%3E%3Ccircle cx='48.1' cy='62.8' r='1.3' fill='white' opacity='0.99'/%3E%3Ccircle cx='16.5' cy='58.5' r='0.8' fill='white' opacity='0.53'/%3E%3Ccircle cx='68.5' cy='5.5' r='0.5' fill='white' opacity='0.87'/%3E%3Ccircle cx='80.2' cy='122.6' r='0.8' fill='white' opacity='0.64'/%3E%3Ccircle cx='49.0' cy='69.5' r='1.0' fill='white' opacity='0.49'/%3E%3Ccircle cx='13.1' cy='37.8' r='0.5' fill='white' opacity='0.48'/%3E%3Ccircle cx='98.2' cy='90.6' r='1.0' fill='white' opacity='0.61'/%3E%3Ccircle cx='54.0' cy='93.6' r='0.5' fill='white' opacity='0.97'/%3E%3Ccircle cx='49.8' cy='85.5' r='1.0' fill='white' opacity='0.48'/%3E%3C/svg%3E")}
+.rc.tier-gold{--tx1:var(--brush) 0 0/260px 260px;--tb1:soft-light;--tx2:var(--glitter) 0 0/140px 140px;--tb2:normal}
+.rc.tier-silver{--tx1:var(--brush) 0 0/220px 220px;--tb1:soft-light;--tx2:repeating-linear-gradient(90deg,rgba(255,255,255,.28) 0 1px,rgba(15,23,42,.045) 1px 2px,transparent 2px 4px) 0 0/auto;--tb2:normal}
+.rc.tier-bronze{--tx1:var(--hammer) 0 0/220px 220px;--tb1:soft-light;--tx2:var(--brush) 0 0/300px 300px;--tb2:soft-light}
+[data-theme="dark"] .rc.tier-bronze{--tb1:normal}
+[data-theme="dark"] .rc.tier-silver{--tx2:repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 1px,transparent 1px 4px) 0 0/auto}
 .rc[class*="tier-"]{overflow:hidden;isolation:isolate;
-  background:radial-gradient(circle at var(--mx,50%) var(--my,-40%),rgba(255,255,255,var(--spot,0)),transparent 46%) 0 0/100% 100% no-repeat,var(--tbg) 0 0/240% 240%;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,-40%),rgba(255,255,255,var(--spot,0)),transparent 46%) 0 0/100% 100% no-repeat,var(--tx1),var(--tx2),var(--tbg) 0 0/240% 240%;
+  background-blend-mode:normal,var(--tb1),var(--tb2),normal;
   box-shadow:0 1px 2px rgba(0,0,0,.06),0 16px 36px -16px var(--tg),inset 0 1px 0 rgba(255,255,255,.55);
   transition:transform .5s var(--ease-out),box-shadow .35s}
 [data-theme="dark"] .rc[class*="tier-"]{box-shadow:0 1px 2px rgba(0,0,0,.3),0 18px 40px -16px var(--tg),inset 0 1px 0 rgba(255,255,255,.08)}
@@ -662,7 +678,7 @@ tbody tr.tr-bronze td:first-child{box-shadow:inset 4px 0 0 #ea580c}
   .t-gold,.t-silver,.t-bronze{animation:chipSheen 4s linear infinite}
   @keyframes chipSheen{to{background-position:-220% 0}}
   .rc[class*="tier-"]{animation:metal 9s ease-in-out infinite alternate}
-  @keyframes metal{0%{background-position:0 0,0% 0%}100%{background-position:0 0,100% 100%}}
+  @keyframes metal{0%{background-position:0 0,0 0,0 0,0% 0%}100%{background-position:0 0,40px 0,70px 46px,100% 100%}}
   .rc[class*="tier-"]::before{animation:ring 6s linear infinite}
   .rc.tier-gold::before{animation-duration:3.6s}
   .rc.tier-bronze::before{animation-duration:8s}
@@ -681,6 +697,10 @@ tbody tr.tr-bronze td:first-child{box-shadow:inset 4px 0 0 #ea580c}
 @media (hover:hover) and (pointer:fine){
   .rc[class*="tier-"].tilt{transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-4px) scale(1.02);transition:transform .12s linear,box-shadow .35s;--spot:.55;box-shadow:0 2px 4px rgba(0,0,0,.08),0 28px 50px -18px var(--tg),inset 0 1px 0 rgba(255,255,255,.6)}
   [data-theme="dark"] .rc[class*="tier-"].tilt{--spot:.16}
+  .rc:not(.slot):not([class*="tier-"]).tilt,#view .grid2>.card.tilt{transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-4px) scale(1.02);transition:transform .12s linear,box-shadow .35s;box-shadow:0 26px 46px -20px rgba(15,23,42,.35),var(--shadow)}
+  #mrows tr{transform-origin:50% 50%}
+  #mrows tr.tilt{transform:perspective(1200px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-4px) scale(1.012);transition:transform .12s linear,filter .3s;position:relative;z-index:3;filter:drop-shadow(0 16px 18px rgba(15,23,42,.2))}
+  [data-theme="dark"] #mrows tr.tilt{filter:drop-shadow(0 16px 20px rgba(0,0,0,.55))}
 }
 /* chips */
 .chipgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -752,12 +772,18 @@ function makeEngine(D) {
   D.res.forEach((rows, ei) => rows.forEach(row => hist[row[0]].push({ ev: ei, kind: row[1], rank: row[2], t: row[3], gap: row[4], pts: row[5] })));
   const cutoff = r => (r >= R ? "9999-12-31" : D.rounds[r].start);
   const visible = (i, r) => hist[i].filter(h => D.events[h.ev].date < cutoff(r));
+  // a runner's points per game week (round) before round r: what they would have scored for you that week
+  function weeks(i, r) {
+    const out = [];
+    for (let q = 0; q < Math.min(r, R); q++) out.push({ round: q, pts: pts[q][i], races: starts[q][i] });
+    return out;
+  }
   function stats(i, r) {
-    const h = visible(i, r);
+    const h = visible(i, r), w = weeks(i, r).filter(x => x.races > 0);
     const total = h.reduce((a, x) => a + x.pts, 0);
-    const last3 = h.slice(-3);
-    const form = last3.length ? last3.reduce((a, x) => a + x.pts, 0) / last3.length : 0;
-    return { starts: h.length, total, form, last: h.length ? h[h.length - 1].pts : 0 };
+    // form: average of the last 3 weeks they raced; perWeek: average of the last 5 weeks they raced (recent form matters)
+    const avg = l => l.length ? l.reduce((a, x) => a + x.pts, 0) / l.length : 0;
+    return { starts: h.length, weeks: w.length, total, form: avg(w.slice(-3)), perWeek: avg(w.slice(-5)), last: w.length ? w[w.length - 1].pts : 0 };
   }
   const price = (i, r) => D.prices[Math.min(r, R - 1)][i];
   const clubOf = i => D.runners[i].c;
@@ -902,7 +928,7 @@ function makeEngine(D) {
     const a = []; for (let i = 0; i < N; i++) if (starts[r][i]) a.push([i, pts[r][i]]);
     return a.sort((x, y) => y[1] - x[1]).slice(0, k);
   }
-  return { R, N, pts, starts, hist, visible, stats, price, errors, newState, transfersFor, bankAfter, planErrors, play, season, teamMult, CHIPS, A, youth, bots, roundBest, greedy, rating, leagueMean };
+  return { R, N, pts, starts, hist, visible, weeks, stats, price, errors, newState, transfersFor, bankAfter, planErrors, play, season, teamMult, CHIPS, A, youth, bots, roundBest, greedy, rating, leagueMean };
 }
 if (typeof module !== "undefined") module.exports = { makeEngine };
 
@@ -1001,10 +1027,11 @@ function armReveals(){
 /* tier cards lean towards the pointer and catch the light where it is */
 if(!RM&&matchMedia("(hover:hover) and (pointer:fine)").matches){
   let tcard=null;
-  addEventListener("pointermove",e=>{const c=e.target.closest&&e.target.closest('.rc[class*="tier-"]');
+  /* runner cards and runner rows: rows are wide, so they lean less sideways */
+  addEventListener("pointermove",e=>{let c=e.target.closest&&e.target.closest('.rc:not(.slot),#mrows tr,#view .grid2>.card');if(c&&c.matches(".card")&&!c.querySelector(".av"))c=null;
     if(tcard&&tcard!==c){tcard.classList.remove("tilt");tcard.style.removeProperty("--rx");tcard.style.removeProperty("--ry")}
-    tcard=c;if(!c)return;const b=c.getBoundingClientRect(),x=(e.clientX-b.left)/b.width,y=(e.clientY-b.top)/b.height;
-    c.classList.add("tilt");c.style.setProperty("--rx",((.5-y)*10).toFixed(2)+"deg");c.style.setProperty("--ry",((x-.5)*12).toFixed(2)+"deg");c.style.setProperty("--mx",(x*100).toFixed(1)+"%");c.style.setProperty("--my",(y*100).toFixed(1)+"%")},{passive:true});
+    tcard=c;if(!c)return;const b=c.getBoundingClientRect(),x=(e.clientX-b.left)/b.width,y=(e.clientY-b.top)/b.height,row=c.tagName==="TR";
+    c.classList.add("tilt");c.style.setProperty("--rx",((.5-y)*(row?9:10)).toFixed(2)+"deg");c.style.setProperty("--ry",((x-.5)*(row?2.4:12)).toFixed(2)+"deg");c.style.setProperty("--mx",(x*100).toFixed(1)+"%");c.style.setProperty("--my",(y*100).toFixed(1)+"%")},{passive:true});
   document.addEventListener("pointerleave",()=>{if(tcard){tcard.classList.remove("tilt");tcard=null}});
 }
 let lastPX=innerWidth/2,lastPY=innerHeight/2;
@@ -1180,10 +1207,12 @@ function renderFacts(){
 }
 
 /* ---------- team ---------- */
+/* the runner's last six race weeks: what they scored for you in each of them */
 function spark(i,r){
-  const h=E.visible(i,r).slice(-6).map(x=>x.pts);if(!h.length)return `<span class="note">no results</span>`;
+  const wk=E.weeks(i,r).filter(x=>x.races).slice(-6);if(!wk.length)return `<span class="note">no races</span>`;
+  const h=wk.map(x=>x.pts);
   const w=60,ht=24,bw=w/6;
-  return `<svg class="spark" width="${w}" height="${ht}" viewBox="0 0 ${w} ${ht}" aria-hidden="true"><line x1="0" x2="${w}" y1="${ht-.5}" y2="${ht-.5}"/>${h.map((p,k)=>{const v=Math.max(0,Math.min(1,p/300)),bh=Math.max(1.5,v*(ht-3));return `<rect style="--k:${k}" ${p<=0?'class="z" ':""}x="${(k+(6-h.length))*bw+1}" y="${ht-1-bh}" width="${bw-2}" height="${bh}" rx="1"/>`}).join("")}</svg>`;
+  return `<svg class="spark" width="${w}" height="${ht}" viewBox="0 0 ${w} ${ht}" aria-hidden="true"><line x1="0" x2="${w}" y1="${ht-.5}" y2="${ht-.5}"/>${h.map((p,k)=>{const v=Math.max(0,Math.min(1,p/450)),bh=Math.max(1.5,v*(ht-3));return `<rect style="--k:${k}" ${p<=0?'class="z" ':""}x="${(k+(6-h.length))*bw+1}" y="${ht-1-bh}" width="${bw-2}" height="${bh}" rx="1"/>`}).join("")}</svg>`;
 }
 const SWAP=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M7 4 3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/></svg>`;
 /* which runners a chip changes: they get the effect animation and a glowing edge */
@@ -1219,20 +1248,37 @@ function marketRows(){
     if(clsF&&(clsF.length===1?D.runners[i].k[0]!==clsF:D.runners[i].k!==clsF))continue;
     const s=E.stats(i,r),p=E.price(i,r);
     if(afford&&!plan.squad.includes(i)&&E.bankAfter(state,[...plan.squad,i])<0)continue;
-    rows.push({i,s,p,d:r>0?p-E.price(i,r-1):0,n:nameOf(i),avg:s.starts?s.total/s.starts:0});
+    rows.push({i,s,p,d:r>0?p-E.price(i,r-1):0,n:nameOf(i),avg:s.perWeek});
   }
   const v={price:x=>x.p,form:x=>x.s.form,total:x=>x.s.total,avg:x=>x.avg,starts:x=>x.s.starts,name:x=>x.n.toLowerCase()}[sortKey];
   rows.sort((a,b)=>{const x=v(a),y=v(b);return (x<y?-1:x>y?1:0)*sortDir||a.i-b.i});
   return rows;
 }
-function marketBody(rows){
-  return (rows.slice(0,shown).map(x=>{const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
-   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><button class="who" data-prof="${x.i}">${esc(x.n)}</button><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.starts?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
-   <td>${inS?`<button class="btn" data-sell="${x.i}">Remove</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Add</button>`}</td></tr>`}).join("")||`<tr><td colspan="10" class="note">No runners match. Clear the search or a filter.</td></tr>`);
+function marketBody(rows){mRows=rows;
+  return (rows.slice(0,shown).map(rowHtml).join("")||`<tr><td colspan="10" class="note">No runners match. Clear the search or a filter.</td></tr>`);
 }
-const moreBtn=rows=>rows.length>shown?`<button class="btn" id="more">Show ${Math.min(40,rows.length-shown)} more</button>`:"";
+function rowHtml(x){const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
+   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><button class="who" data-prof="${x.i}">${esc(x.n)}</button><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
+   <td>${inS?`<button class="btn" data-sell="${x.i}">Remove</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Add</button>`}</td></tr>`}
+/* the runner list grows as you scroll: a marker under it loads the next runners before you reach the end, and each
+   new runner rises in on its own. A button stays as a fallback where the browser cannot watch the marker. */
+let mRows=[];
+const moreBtn=rows=>rows.length>shown?(moreIO?`<span id="msent" aria-hidden="true"></span><span class="note mload">${rows.length-shown} more runners below</span>`:`<button class="btn" id="more">Show ${Math.min(40,rows.length-shown)} more</button>`):(rows.length>40?`<span class="note mload">All ${rows.length} runners shown</span>`:"");
+const moreIO="IntersectionObserver" in window?new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting))growMarket()},{rootMargin:"0px 0px 600px 0px"}):null;
+function watchMore(){if(!moreIO)return;moreIO.disconnect();const s=document.getElementById("msent");if(s)moreIO.observe(s)}
+let growing=false;
+function growMarket(){
+  const b=document.getElementById("mrows"),m=document.getElementById("mmore");if(!b||growing||shown>=mRows.length)return;
+  growing=true;const from=shown;shown=Math.min(mRows.length,shown+30);
+  b.insertAdjacentHTML("beforeend",mRows.slice(from,shown).map(rowHtml).join(""));
+  /* every new row waits to be revealed, even one that lands on screen straight away */
+  const fresh=[...b.children].slice(from);if(revealIO)fresh.forEach(el=>{el.classList.add("rv");revealIO.observe(el)});
+  if(m)m.innerHTML=moreBtn(mRows);watchMore();growing=false;
+  /* still short of the screen's end (a tall window, a fast scroll): keep going */
+  requestAnimationFrame(()=>{const s=document.getElementById("msent");if(s&&s.getBoundingClientRect().top<innerHeight+600)growMarket()});
+}
 /* typing only redraws the list, never the search box: no lost spaces, capitals or å/ä/ö mid-composition */
-function refreshMarket(){const rows=marketRows(),b=document.getElementById("mrows"),m=document.getElementById("mmore");if(b)b.innerHTML=marketBody(rows);if(m)m.innerHTML=moreBtn(rows);armReveals()}
+function refreshMarket(){const rows=marketRows(),b=document.getElementById("mrows"),m=document.getElementById("mmore");if(b)b.innerHTML=marketBody(rows);if(m)m.innerHTML=moreBtn(rows);armReveals();watchMore()}
 function marketHtml(){
   const rows=marketRows();const clubs=[...new Set(D.runners.filter(x=>x.p&&x.c).map(x=>x.c))].sort((a,b)=>a.localeCompare(b,"sv"));
   const th=(k,l)=>`<th><button data-sort="${k}">${l}${sortKey===k?(sortDir<0?" ↓":" ↑"):""}</button></th>`;
@@ -1242,11 +1288,11 @@ function marketHtml(){
    <select id="clsF" aria-label="Class"><option value="">All classes</option>${["H","D","H16","H18","H20","H21","D16","D18","D20","D21"].map(c=>`<option value="${c}" ${c===clsF?"selected":""}>${c==="H"?"All men (H)":c==="D"?"All women (D)":c}</option>`).join("")}</select>
    <select id="clubF" aria-label="Club"><option value="">All clubs</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
    <label><input type="checkbox" id="afford" ${afford?"checked":""}> Affordable only</label></div>
-  <div class="tbl"><table><thead><tr>${th("name","Runner")}<th>Tier</th>${th("price","Price")}<th>Change</th>${th("form","Form")}<th>Last six</th>${th("avg","Per start")}${th("total","Points")}${th("starts","Starts")}<th></th></tr></thead><tbody id="mrows">
+  <div class="tbl"><table><thead><tr>${th("name","Runner")}<th>Tier</th>${th("price","Price")}<th>Change</th>${th("form","Form")}<th>Last 6 race weeks</th>${th("avg","Per week")}${th("total","Points")}${th("starts","Starts")}<th></th></tr></thead><tbody id="mrows">
   ${marketBody(rows)}
   </tbody></table></div>
   <p id="mmore">${moreBtn(rows)}</p>
-  <p class="note">Form is the average of the last three results. Prices and stats only count races before this round.</p>`;
+  <p class="note">Points are per game week, like you would score them: all of a runner's races in a week added up. Form is the average of their last 3 race weeks, per week the average of their last 5. Prices and stats only count races before this round.</p>`;
 }
 /* one entry per competition: results are stored per class ("Name (H16)") and some organisers publish a race twice */
 const compName=n=>n.replace(/ \([DH]\d+[A-Z]*\)$/,"").replace(/\s*\((lokal kopia|local copy)[^)]*\)?\s*$/i,"").trim();
@@ -1571,16 +1617,18 @@ function flip(){
 let profileOpen=null;
 function profile(i){
   profileOpen=i;
-  const vis=E.visible(i,R()),s=E.stats(i,R());
-  const hist=vis.length>1?(()=>{const w=300,h=48,mxv=Math.max(...vis.map(x=>x.pts),1),mnv=Math.min(...vis.map(x=>x.pts),0);
-    const pts=vis.map((x,k)=>`${(k/(vis.length-1)*w).toFixed(1)},${(h-3-(x.pts-mnv)/(mxv-mnv||1)*(h-6)).toFixed(1)}`).join(" ");
-    return `<svg viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px" role="img" aria-label="Points per race"><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round"/></svg>`})():"";
+  const vis=E.visible(i,R()),s=E.stats(i,R()),wk=E.weeks(i,R()),first=wk.findIndex(x=>x.races),shownW=first<0?[]:wk.slice(first);
+  /* points per game week as bars, weeks without a race as a flat mark */
+  const hist=shownW.length?(()=>{const mx=Math.max(...shownW.map(x=>x.pts),10);
+    return `<div class="wkbars" role="img" aria-label="Points per game week">${shownW.map(x=>`<span title="Round ${D.rounds[x.round].n}: ${x.races?fp(x.pts)+" points, "+x.races+" race"+(x.races>1?"s":""):"no race"}"><i class="${x.races?(x.pts<0?"neg":""):"none"}" style="height:${x.races?Math.max(3,Math.round(Math.abs(x.pts)/mx*54)):2}px"></i><b>${x.races?fp(x.pts):""}</b><small>${D.rounds[x.round].n}</small></span>`).join("")}</div>`})():"";
+  const ev2r=new Map();D.rounds.forEach((rd,q)=>rd.ev.forEach(e=>ev2r.set(e,q)));
+  const groups=[];vis.slice().reverse().forEach(h=>{const q=ev2r.has(h.ev)?ev2r.get(h.ev):-1;let g=groups[groups.length-1];if(!g||g.q!==q){g={q,list:[]};groups.push(g)}g.list.push(h)});
   showSheet("prof|"+i,nameOf(i),`
    <div class="hd"><div style="display:flex;gap:16px;align-items:center;min-width:0">${avatar(i,"lg")}<div style="min-width:0"><h2>${esc(nameOf(i))}</h2><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}</div></div></div><button class="btn" data-close="1">Close</button></div>
-   <div class="stats"><div><b>${D.runners[i].p?fm(E.price(i,pr())):"–"}</b><span>Price · ${TIERS[tierOf(i)][1]}</span></div><div><b>${s.starts}</b><span>Starts</span></div><div><b>${fp(s.total)}</b><span>Points</span></div><div><b>${s.starts?fp(s.total/s.starts):"–"}</b><span>Per start</span></div>${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Class rating</span></div>`:""}</div>
+   <div class="stats"><div><b>${D.runners[i].p?fm(E.price(i,pr())):"–"}</b><span>Price · ${TIERS[tierOf(i)][1]}</span></div><div><b>${s.starts}</b><span>Starts</span></div><div><b>${fp(s.total)}</b><span>Points</span></div><div><b>${s.weeks?fp(s.perWeek):"–"}</b><span>Per week, last 5</span></div>${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Class rating</span></div>`:""}</div>
    ${hist}
    <div class="tbl" style="margin-top:12px"><table><thead><tr><th>Race</th><th>Place</th><th>Behind</th><th>Time</th><th>Points</th></tr></thead><tbody>
-   ${vis.slice().reverse().map(h=>{const e=D.events[h.ev];return `<tr><td>${esc(e.name)}<div class="sub">${dshort(e.date)}${e.tier>1?", x"+e.tier:""}</div></td><td>${h.kind?["","DNF","MP","DSQ"][h.kind]:h.rank+" of "+e.n}</td><td>${h.kind?"–":(h.gap/100).toFixed(1)+"%"}</td><td>${h.kind?"–":tm(h.t)}</td><td class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</td></tr>`}).join("")||`<tr><td colspan="5" class="note">No results yet.</td></tr>`}
+   ${groups.map(g=>{const tot=g.list.reduce((a,h)=>a+h.pts,0);return `<tr class="wkhead"><td colspan="4"><b>${g.q<0?"Before round 1":"Round "+D.rounds[g.q].n}</b> <span class="sub">${g.q<0?"not part of a game week":dshort(D.rounds[g.q].start)+" – "+dshort(D.rounds[g.q].end)+", "+g.list.length+" race"+(g.list.length>1?"s":"")}</span></td><td class="${tot<0?"neg":"pos"}"><b>${sg(tot)}</b></td></tr>`+g.list.map(h=>{const e=D.events[h.ev];return `<tr><td>${esc(e.name)}<div class="sub">${dshort(e.date)}${e.tier>1?", x"+e.tier:""}</div></td><td>${h.kind?["","DNF","MP","DSQ"][h.kind]:h.rank+" of "+e.n}</td><td>${h.kind?"–":(h.gap/100).toFixed(1)+"%"}</td><td>${h.kind?"–":tm(h.t)}</td><td class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</td></tr>`}).join("")}).join("")||`<tr><td colspan="5" class="note">No results yet.</td></tr>`}
    </tbody></table></div>${!isLive()&&!done()?`<p class="note">Showing races before round ${D.rounds[R()].n}.</p>`:""}
    ${photoSection(i)}`);
 }
@@ -1727,7 +1775,7 @@ function render(){
   if(tab==="season")tab="profile";
   $("#view").innerHTML=tab==="team"?teamView():tab==="rounds"?roundsView():tab==="leagues"?leaguesView():tab==="profile"?profileView():rulesView();
   justAdded=null;justBoosted=null;justLocked=false;justChip=null;countUp();flip();
-  armReveals();
+  armReveals();watchMore();
 }
 function doPlay(chip){
   const o=E.play(state,{squad:ordered(plan),captain:plan.captain,vice:null,chip:chip});

@@ -7,12 +7,18 @@ function makeEngine(D) {
   D.res.forEach((rows, ei) => rows.forEach(row => hist[row[0]].push({ ev: ei, kind: row[1], rank: row[2], t: row[3], gap: row[4], pts: row[5] })));
   const cutoff = r => (r >= R ? "9999-12-31" : D.rounds[r].start);
   const visible = (i, r) => hist[i].filter(h => D.events[h.ev].date < cutoff(r));
+  // a runner's points per game week (round) before round r: what they would have scored for you that week
+  function weeks(i, r) {
+    const out = [];
+    for (let q = 0; q < Math.min(r, R); q++) out.push({ round: q, pts: pts[q][i], races: starts[q][i] });
+    return out;
+  }
   function stats(i, r) {
-    const h = visible(i, r);
+    const h = visible(i, r), w = weeks(i, r).filter(x => x.races > 0);
     const total = h.reduce((a, x) => a + x.pts, 0);
-    const last3 = h.slice(-3);
-    const form = last3.length ? last3.reduce((a, x) => a + x.pts, 0) / last3.length : 0;
-    return { starts: h.length, total, form, last: h.length ? h[h.length - 1].pts : 0 };
+    // form: average of the last 3 weeks they raced; perWeek: average of the last 5 weeks they raced (recent form matters)
+    const avg = l => l.length ? l.reduce((a, x) => a + x.pts, 0) / l.length : 0;
+    return { starts: h.length, weeks: w.length, total, form: avg(w.slice(-3)), perWeek: avg(w.slice(-5)), last: w.length ? w[w.length - 1].pts : 0 };
   }
   const price = (i, r) => D.prices[Math.min(r, R - 1)][i];
   const clubOf = i => D.runners[i].c;
@@ -157,6 +163,6 @@ function makeEngine(D) {
     const a = []; for (let i = 0; i < N; i++) if (starts[r][i]) a.push([i, pts[r][i]]);
     return a.sort((x, y) => y[1] - x[1]).slice(0, k);
   }
-  return { R, N, pts, starts, hist, visible, stats, price, errors, newState, transfersFor, bankAfter, planErrors, play, season, teamMult, CHIPS, A, youth, bots, roundBest, greedy, rating, leagueMean };
+  return { R, N, pts, starts, hist, visible, weeks, stats, price, errors, newState, transfersFor, bankAfter, planErrors, play, season, teamMult, CHIPS, A, youth, bots, roundBest, greedy, rating, leagueMean };
 }
 if (typeof module !== "undefined") module.exports = { makeEngine };
