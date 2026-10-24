@@ -1086,6 +1086,28 @@ nav.tabs .ind.on{opacity:1}
 @container (max-width:200px){.sqc-ctl .boost span{display:none}.sqc-ctl .boost{flex:none;width:30px;height:30px;padding:0}.sqc-ctl{gap:4px}}
 .info-row{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 8px}
 .info{margin-top:14px}.info h3{margin-top:18px}
+/* runner sheet: this week at a glance */
+.entbox{display:flex;gap:12px;align-items:center;margin:12px 0 4px;padding:12px 14px;border-radius:14px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
+.entbox .entered{margin:0;width:26px;height:26px;font-size:14px;background:var(--text-3);cursor:default}
+.entbox.on{background:color-mix(in srgb,var(--good) 9%,var(--surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--good) 35%,transparent)}
+.entbox.on .entered{background:var(--good)}
+.entbox div{display:grid;gap:2px}.entbox b{font-size:15px}
+.skipnote.ok{background:color-mix(in srgb,var(--good) 9%,var(--surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--good) 30%,transparent)}
+/* admin card */
+.card.admin h4{margin:16px 0 8px;font:600 12px/1 var(--font);letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)}
+.adm-list{display:grid;gap:6px}
+.adm-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);flex-wrap:wrap}
+.adm-row .btn{padding:7px 12px;font-size:13px}
+.seg{display:inline-flex;border-radius:10px;box-shadow:inset 0 0 0 1.5px var(--line-2);overflow:hidden}
+.seg button{border:0;background:none;padding:7px 11px;font:600 13px/1 var(--font);color:var(--text-2)}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+/* the week board: cards overlap like a hand of cards, the upper card's point over the one below */
+.lineup{column-gap:0}
+.lineup .lu-col{gap:0}
+.lineup .lu-col>.lc+.lc{margin-top:-17%}
+.lineup .lu-col>.lc:first-child{z-index:2}
+.lineup .lu-col:nth-child(2){z-index:3;margin:0 -9%}
+.lineup .lc.tilt{z-index:5}
 </style>
 </head>
 <body>
@@ -1264,7 +1286,7 @@ const packPl=p=>p&&mapIds(p,rk), unpackPl=p=>p&&mapIds(p,ri);
 const TODAY=(()=>{try{return new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Stockholm"})}catch(e){return D.asof}})();
 const LIVE=D.liveStart;
 let state=E.newState(LIVE), plan={squad:[],captain:null,vice:null,chip:null};
-let lock=null,tab="team",viewRound=0,sortKey="total",sortDir=-1,q="",clubF="",clsF="",afford=false,shown=40,confirmAuto=false,confirmReset=false,confirmMode=false,mgrName="",myTeam="",myAv=null,avBusy=false,avMsg="",dbOk=false,drawn=false,localTs=0,cloudTimer=null,cloudMsg="",leagueRows={},leagueUnsubs={},leagueMsg="",newLeague="",joinCode="";
+let lock=null,tab="team",viewRound=0,sortKey="total",sortDir=-1,q="",clubF="",clsF="",afford=false,entF=false,shown=40,confirmAuto=false,confirmReset=false,confirmMode=false,mgrName="",myTeam="",myAv=null,avBusy=false,avMsg="",dbOk=false,drawn=false,localTs=0,cloudTimer=null,cloudMsg="",leagueRows={},leagueUnsubs={},leagueMsg="",newLeague="",joinCode="";
 let cloud={sb:null,uid:null,email:"",canWrite:false,ready:false};
 let myLeagues=[],myLgn={},myOwn={};
 const PJ="orienteering-fantasy-join";
@@ -1479,6 +1501,7 @@ function marketRows(){
     if(clsF&&(clsF.length===1?D.runners[i].k[0]!==clsF:D.runners[i].k!==clsF))continue;
     const s=E.stats(i,r),p=E.price(i,r);
     if(afford&&!plan.squad.includes(i)&&E.bankAfter(state,[...plan.squad,i])<0)continue;
+    if(entF&&!entOf(i,R()).length)continue;
     rows.push({i,s,p,d:r>0?p-E.price(i,r-1):0,n:nameOf(i),avg:s.perWeek});
   }
   const v={price:x=>x.p,form:x=>x.s.form,total:x=>x.s.total,avg:x=>x.avg,starts:x=>x.s.starts,name:x=>x.n.toLowerCase()}[sortKey];
@@ -1518,7 +1541,7 @@ function marketHtml(){
    <select id="tierF" aria-label="Tier"><option value="">All tiers</option>${TIERS.map(([k,l])=>`<option value="${k}" ${k===tierF?"selected":""}>${l}</option>`).join("")}</select>
    <select id="clsF" aria-label="Class"><option value="">All classes</option>${["H","D","H16","H18","H20","H21","D16","D18","D20","D21"].map(c=>`<option value="${c}" ${c===clsF?"selected":""}>${c==="H"?"All men (H)":c==="D"?"All women (D)":c}</option>`).join("")}</select>
    <select id="clubF" aria-label="Club"><option value="">All clubs</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
-   <label><input type="checkbox" id="afford" ${afford?"checked":""}> Affordable only</label></div>
+   <label><input type="checkbox" id="afford" ${afford?"checked":""}> Affordable only</label>${Object.keys(ENT).length?`<label><input type="checkbox" id="entF" ${entF?"checked":""}> Entered this week</label>`:""}</div>
   <p class="legend"><span class="idle y" aria-hidden="true">!</span> no race last week <span class="idle r" aria-hidden="true">!</span> none in 10 weeks${Object.keys(ENT).length?` <span class="entered" aria-hidden="true">✓</span> entered this week`:""}</p>
   <div class="tbl mkt"><table><thead><tr>${th("name","Runner")}<th>Tier</th>${th("price","Price")}<th>Change</th>${th("form","Form","Average of the last 3 race weeks")}<th title="Points in each of the last 6 weeks they raced">Last 6 race weeks</th>${th("avg","Per week","Average of the last 5 race weeks")}${th("total","Points")}${th("starts","Starts")}<th></th></tr></thead><tbody id="mrows">
   ${marketBody(rows)}
@@ -1542,7 +1565,7 @@ const entOf=(i,r)=>{const rd=D.rounds[r];return rd?(ENT[i]||[]).map(k=>D.upcomin
 const _entN=new Map();Object.values(ENT).forEach(a=>a.forEach(k=>_entN.set(k,(_entN.get(k)||0)+1)));
 const entCount=x=>{let n=0;D.upcoming.forEach((u,k)=>{if(u.date===x.date&&compName(u.name).toLowerCase()===x.n.toLowerCase())n+=_entN.get(k)||0});return n};
 const entTag=i=>{const r=R(),e=r<E.R&&!isFinal(r)?entOf(i,r):[];if(!e.length)return "";const t="Entered: "+e.map(u=>compName(u.name)+" ("+dshort(u.date)+")").join(", ");return `<span class="entered" title="${esc(t)}" aria-label="${esc(t)}" role="img">✓</span>`};
-const skipNote=r=>{const rd=D.rounds[r];return rd&&rd.skip?`<div class="skipnote"><b>No game this week.</b> Round ${rd.n} has ${rd.big?"only one big competition":"no big competitions"}, and a game week needs two. Nothing is scored, transfers are free and chips stay unused.</div>`:""};
+const skipNote=r=>{const rd=D.rounds[r];if(rd&&rd.pending&&!rd.skip)return `<div class="skipnote ${rd.big>=2?"ok":""}"><b>${rd.big>=2?"Game week":"May be skipped"}</b> · ${rd.big||0} big competition${rd.big===1?"":"s"} so far (100+ competitors and at least 5 top runners). Decided when the round starts on Monday ${dshort(rd.start)}.</div>`;return rd&&rd.skip?`<div class="skipnote"><b>No game this week.</b> Round ${rd.n} has ${rd.big?"only one big competition":"no big competitions"}, and a game week needs two. Nothing is scored, transfers are free and chips stay unused.</div>`:""};
 function weekList(r){
   const c=comps(r),by={};c.forEach(x=>{(by[x.date]=by[x.date]||[]).push(x)});
   const rd=D.rounds[r],days=[];for(let t=Date.parse(rd.start+"T12:00:00Z");t<=Date.parse(rd.end+"T12:00:00Z");t+=864e5)days.push(new Date(t).toISOString().slice(0,10));
@@ -1572,6 +1595,7 @@ function hero(r){
   const when=dshort(rd.start)+" – "+dshort(rd.end);
   const side=isFinal(r)?`<span class="eyebrow">Scored</span>`:hasStarted(r)?`<span class="livedot">Live</span>`:
     `<span class="eyebrow">Locks ${d===1?"tomorrow":"in"}</span>${d===1?"":`<span class="num">${d} days</span>`}<span class="sub">Monday ${dshort(rd.start)}</span>`;
+  if(rd.pending&&!rd.skip&&(rd.big||0)<2&&!hasStarted(r))return `<div class="next"><div class="next-main"><span class="next-k">Round ${rd.n} · ${when}</span><b>${title}</b><button class="sub wklink" data-week="${r}">May be skipped: ${rd.big||0} big competition${rd.big===1?"":"s"} so far. Week calendar →</button></div><div class="next-side">${side}</div></div>`;
   if(rd.skip)return `<div class="next skip"><div class="next-main"><span class="next-k">Round ${rd.n} · ${when}</span><b>No game this week</b><button class="sub wklink" data-week="${r}">Fewer than two big competitions. Week calendar →</button></div><div class="next-side"><span class="eyebrow">Free transfers</span><span class="sub">Next game: round ${(D.rounds.slice(r+1).find(x=>!x.skip)||rd).n}</span></div></div>`;
   return `<div class="next"><div class="next-main"><span class="next-k">Round ${rd.n} · ${when}</span><b>${title}</b>${u.length>1?`<button class="sub wklink" data-week="${r}">and ${u.length-1} more race${u.length===2?"":"s"} this week →</button>`:`<button class="sub wklink" data-week="${r}">Week calendar →</button>`}</div><div class="next-side">${side}</div></div>`;
 }
@@ -1729,8 +1753,9 @@ async function makeShareImage(){
   S.forEach(([l,v],k)=>{const sx=520+(k%2)*250,sy=240+Math.floor(k/2)*130;c.textAlign="left";c.fillStyle=t3;c.font=`600 22px ${font}`;c.fillText(l,sx,sy);c.fillStyle=text;c.font=`800 64px ${dfont}`;c.fillText(v,sx,sy+62)});
   c.textAlign="center";c.fillStyle=text;c.font=`800 54px ${dfont}`;c.fillText("Round "+b.rd.n+" · "+(b.team==="B"?"B team ×1":"A team ×2"),W/2,518);
   c.fillStyle=t2;c.font=`500 28px ${font}`;c.fillText(b.when+(b.x&&b.x.chip?" · "+CHIPINFO[b.x.chip][0]:""),W/2,556);
-  const ch=340,cw=Math.round(ch*.72),y0=592,gap=18,sx=Math.round((W-3*cw)/4),pos=[[sx,y0],[W-sx-cw,y0],[(W-cw)/2,y0+(ch+gap)/2],[sx,y0+ch+gap],[W-sx-cw,y0+ch+gap]];
-  for(let k=0;k<b.cards.length;k++)await drawFifa(c,b.cards[k],pos[k][0],pos[k][1],cw,ch,dfont);
+  const ch=380,cw=Math.round(ch*.72),y0=588,gap=-62,sx=Math.round((W-3*cw)/4)+18,pos=[[sx,y0],[W-sx-cw,y0],[(W-cw)/2,y0+(ch+gap)/2],[sx,y0+ch+gap],[W-sx-cw,y0+ch+gap]];
+  /* drawn bottom row first, so each upper card's point lies over the card below it, and the middle card last */
+  for(const k of [3,4,0,1,2])if(b.cards[k])await drawFifa(c,b.cards[k],pos[k][0],pos[k][1],cw,ch,dfont);
   c.textAlign="center";c.fillStyle=t3;c.font=`500 24px ${font}`;c.fillText(location.host?location.host+location.pathname.replace(/index\.html$/,""):"Orienteering Fantasy",W/2,H-58);
   return await new Promise((res,rej)=>cv.toBlob(bl=>bl?res(bl):rej(new Error("picture")),"image/png"));
 }
@@ -1775,7 +1800,7 @@ function profileView(){
   const L=state.log,best=L.slice().sort((a,b)=>b.total-a.total)[0];
   const live=isLive();
   return `<div class="pfhead">${mgrDot(me,1)}<div><h2>${esc(myTeam||me.name)}</h2><div class="sub">${myTeam?esc(me.name)+" · ":""}${esc(cloud.email)}</div></div></div>
-  ${reviewCard()}
+  ${adminGameCard()}${reviewCard()}
   <div class="kv"><div><span>Points</span><b>${fp(state.total)}</b></div><div><span>Rounds</span><b>${L.length}</b></div><div><span>Best round</span><b>${best?fp(best.total):"–"}</b></div><div><span>Chips left</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length}</b></div></div>
   ${L.length?seasonBars():""}
   <div class="grid2" style="margin-top:12px">
@@ -2013,6 +2038,7 @@ function profile(i){
   showSheet("prof|"+i,nameOf(i),`
    <div class="hd"><div style="display:flex;gap:16px;align-items:center;min-width:0">${avatar(i,"lg")}<div style="min-width:0"><h2>${esc(nameOf(i))}${idleTag(i)}</h2><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}${idle(i)?" · "+(idle(i)===2?"no race in 10 weeks":"did not race last week"):""}</div></div></div><button class="btn" data-close="1">Close</button></div>
    <div class="stats"><div><b>${D.runners[i].p?fm(E.price(i,pr())):"–"}</b><span>Price · ${TIERS[tierOf(i)][1]}</span></div><div><b>${s.starts}</b><span>Starts</span></div><div><b>${fp(s.total)}</b><span>Points</span></div><div><b>${fp(s.weeks?s.perWeek:0)}</b><span>Per week, last 5</span></div>${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Class rating</span></div>`:""}</div>
+   ${(()=>{if(!Object.keys(ENT).length)return "";const r=R(),w=r<E.R?entOf(i,r):[],rd=D.rounds[r];return `<div class="entbox ${w.length?"on":""}"><span class="entered" aria-hidden="true">${w.length?"✓":"–"}</span><div><b>${w.length?"Entered this game week":"Not entered this game week"}</b><span class="sub">${w.length?w.map(u=>esc(compName(u.name))+" ("+dayName(u.date).slice(0,3)+" "+dshort(u.date)+")").join(", "):rd?"Round "+rd.n+", "+dshort(rd.start)+" – "+dshort(rd.end):""}</span></div></div>`})()}
    ${(()=>{const e=(ENT[i]||[]).map(k=>D.upcoming[k]).filter(Boolean);return e.length?`<p class="note entline"><span class="entered" aria-hidden="true">✓</span> Entered: ${e.map(u=>`${u.eo?`<a href="https://eventor.orientering.se/Events/Show/${u.eo}" target="_blank" rel="noopener">${esc(compName(u.name))}</a>`:esc(compName(u.name))} (${dshort(u.date)})`).join(", ")}</p>`:""})()}
    ${hist}
    <div class="tbl rtab" style="margin-top:12px"><table><thead><tr><th>Race</th><th>Place</th><th>Behind</th><th>Time</th><th>Points</th></tr></thead><tbody>
@@ -2100,6 +2126,39 @@ async function dropPhoto(id,asAdmin){
 async function approvePhoto(id){
   try{await cloud.sb.from("photo_submissions").update({status:"approved",reviewed_at:new Date().toISOString()}).eq("id",id)}catch(e){}
   await loadPhotos();
+}
+/* admins: add or remove competitions and force game weeks on or off (applied by the nightly data refresh) */
+let ovr=[],ovrMsg="",ovrBusy=false,ovrAdd="";
+async function loadOvr(){if(!cloud.admin)return;try{const q=await cloud.sb.from("game_overrides").select("id,kind,ref,label,created_at").order("created_at");if(!q.error)ovr=q.data||[]}catch(e){}render()}
+const hasOvr=(k,ref)=>ovr.some(o=>o.kind===k&&String(o.ref)===String(ref));
+async function setOvr(kind,ref,label,on){
+  if(ovrBusy)return;ovrBusy=true;ovrMsg="";render();
+  try{
+    if(kind==="week_on"||kind==="week_off")await cloud.sb.from("game_overrides").delete().in("kind",["week_on","week_off"]).eq("ref",ref);
+    else await cloud.sb.from("game_overrides").delete().eq("kind",kind).eq("ref",ref);
+    if(on){const q=await cloud.sb.from("game_overrides").insert({kind,ref:String(ref),label:(label||"").slice(0,120)});if(q.error)throw q.error}
+    ovrMsg="Saved. It takes effect at the next data refresh (every night).";
+  }catch(e){ovrMsg="Could not save: "+(e.message||"error")}
+  ovrBusy=false;await loadOvr();
+}
+function adminGameCard(){
+  if(!cloud.admin)return "";
+  const live=D.rounds.map((rd,r)=>({rd,r})).filter(x=>x.r>=LIVE);
+  const st=rd=>rd.forced==="on"?"Forced on":rd.forced==="off"?"Forced off":rd.skip?"Skipped":rd.pending?((rd.big||0)>=2?"Game (provisional)":"May be skipped"):"Game";
+  const wk=({rd})=>{const ref=rd.start,on=hasOvr("week_on",ref),off=hasOvr("week_off",ref);return `<div class="adm-row"><div><b>Round ${rd.n}</b> <span class="sub">${dshort(rd.start)} – ${dshort(rd.end)} · ${rd.big??"–"} big · ${st(rd)}</span></div>
+    <div class="seg"><button class="${!on&&!off?"on":""}" data-wkset="auto" data-wkref="${ref}">Auto</button><button class="${on?"on":""}" data-wkset="on" data-wkref="${ref}">On</button><button class="${off?"on":""}" data-wkset="off" data-wkref="${ref}">Off</button></div></div>`};
+  const today=D.asof,soon=D.upcoming.filter(u=>u.eo);
+  const added=ovr.filter(o=>o.kind==="race_add"),removed=ovr.filter(o=>o.kind==="race_remove");
+  const race=u=>{const off=hasOvr("race_remove",u.eo);return `<div class="adm-row"><div><b>${esc(compName(u.name))}</b> <span class="sub">${dshort(u.date)}${u.big?" · big":""}</span></div><button class="btn ${off?"on":""}" data-rcset="${off?"keep":"drop"}" data-rcref="${u.eo}" data-rclabel="${esc(compName(u.name))}">${off?"Removed · undo":"Remove"}</button></div>`};
+  return `<div class="card admin"><h3>Admin · competitions and game weeks</h3>
+   <p class="note" style="margin:0 0 12px">Changes are saved now and take effect at the next data refresh (every night). A forced week ignores the big-competition rule.</p>
+   <h4>Game weeks</h4><div class="adm-list">${live.map(wk).join("")}</div>
+   <h4>Competitions ahead</h4><div class="adm-list">${soon.map(race).join("")||'<p class="note">No races from Eventor yet.</p>'}</div>
+   ${removed.filter(o=>!soon.some(u=>String(u.eo)===String(o.ref))).length?`<h4>Removed</h4><div class="adm-list">${removed.filter(o=>!soon.some(u=>String(u.eo)===String(o.ref))).map(o=>`<div class="adm-row"><div><b>${esc(o.label||o.ref)}</b> <span class="sub">Eventor ${esc(o.ref)}</span></div><button class="btn" data-rcset="keep" data-rcref="${esc(o.ref)}">Undo</button></div>`).join("")}</div>`:""}
+   <h4>Add a competition</h4>
+   <div class="row"><input class="name" id="ovrAdd" placeholder="Eventor link or event id" value="${esc(ovrAdd)}" inputmode="url" autocomplete="off"><button class="btn on" id="ovrAddBtn" ${ovrBusy?"disabled":""}>Add</button></div>
+   ${added.length?`<div class="adm-list">${added.map(o=>`<div class="adm-row"><div><b>${esc(o.label||"Eventor "+o.ref)}</b> <span class="sub">Added · counts as big</span></div><button class="btn" data-rcadd="${esc(o.ref)}">Remove</button></div>`).join("")}</div>`:""}
+   ${ovrMsg?`<p class="note" style="margin:10px 0 0">${esc(ovrMsg)}</p>`:""}</div>`;
 }
 function reviewCard(){
   if(!cloud.admin)return "";
@@ -2206,6 +2265,10 @@ document.addEventListener("click",ev=>{
   if(d.prof!==undefined){profile(+d.prof);return}
   if(d.week!==undefined){weekSheet(+d.week);return}
   if(d.info){infoSheet(d.info);return}
+  if(d.wkset){const r=d.wkref;if(d.wkset==="auto")setOvr("week_on",r,"",false);else setOvr(d.wkset==="on"?"week_on":"week_off",r,"Round week "+r,true);return}
+  if(d.rcset){setOvr("race_remove",d.rcref,d.rclabel||"",d.rcset==="drop");return}
+  if(d.rcadd){setOvr("race_add",d.rcadd,"",false);return}
+  if(t.id==="ovrAddBtn"){const v=($("#ovrAdd")||{}).value||"";const m=v.match(/(?:eventId=|Show\/|^\s*)(\d{3,7})/i);if(!m){ovrMsg="Paste an Eventor event link or its number.";render();return}ovrAdd="";setOvr("race_add",m[1],"Eventor "+m[1],true);return}
   if(d.tab){const nt=d.tab;if(d.focus)setTimeout(()=>{const f=document.getElementById(d.focus);if(f)f.focus()},700);if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
   if(d.add!==undefined){const i=+d.add;if(!canAddReason(i)){plan.squad.push(i);if(!Array.isArray(plan.a))plan.a=[];if(plan.a.length<AS)plan.a.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
   if(d.sell!==undefined){const i=+d.sell;plan.squad=plan.squad.filter(j=>j!==i);plan.a=(plan.a||[]).filter(j=>j!==i);if(swapSel===i)swapSel=null;fixLeaders();save();render();return}
@@ -2281,7 +2344,8 @@ document.addEventListener("change",ev=>{const t=ev.target;
   if(phForm&&t.id==="phConsent"){phForm.consent=t.checked;profile(phForm.i)}
   if(t.id==="clubF"){clubF=t.value;shown=40;render()}
   if(t.id==="clsF"){clsF=t.value;shown=40;render()}
-  if(t.id==="afford"){afford=t.checked;render()}});
+  if(t.id==="afford"){afford=t.checked;render()}
+  if(t.id==="entF"){entF=t.checked;shown=40;render()}});
 
 
 /* what the email link brought back: a session (confirmed) or an error such as an expired link */
@@ -2456,7 +2520,7 @@ async function onSession(session){
   if(!loaded){cloudMsg="Could not load your account. Reload the page to try again. Nothing was overwritten.";render();return}
   cloud.ready=true;settle();pushCloud();myLeagues.forEach(watchLeague);watchLeague("GLOBAL");
   try{const a=await cloud.sb.rpc("is_admin");cloud.admin=a.data===true}catch(e){cloud.admin=false}
-  loadPhotos();
+  loadPhotos();loadOvr();
   if(pendingJoin){const c=pendingJoin;if(myLeagues.includes(c)){clearPending();leagueMsg="You are already in "+lgName(c)+"."}
     else{const ok=await joinLeague(c,"");if(ok||/No league has that code|look right/.test(leagueMsg))clearPending()}tab="leagues"}
   render();

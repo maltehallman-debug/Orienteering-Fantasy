@@ -12,6 +12,12 @@ def _j(name, default):
     except Exception: return default
 EVMETA = _j("eventor_meta.json", {})
 EXCLUDE |= set(_j("eventor_replaces.json", []))
+# races an admin removed: an Eventor event id (all its races) or "lr:<liveresultat id>"
+for o in _j("game_overrides.json", []):
+    if o["kind"] == "race_remove":
+        ref = str(o["ref"])
+        if ref.startswith("lr:") and ref[3:].isdigit(): EXCLUDE.add(int(ref[3:]))
+        elif ref.isdigit(): EXCLUDE |= {int(c) for c, m in EVMETA.items() if str(m.get("eid")) == ref}
 print("eventor races", len(EVMETA), "liveresultat copies replaced", len(EXCLUDE) - 7)
 SEASON_START = dt.date(2026, 5, 4)
 TODAY = dt.date.today()
@@ -261,18 +267,55 @@ pool = sorted([k for k in names if starts[k] >= POOL_MIN], key=lambda k: (names[
 print("runners total", len(names), "pool", len(pool))
 
 # ---- rounds ----
-# A live game week needs at least two big competitions (championships and national events in Eventor, plus Helg utan
-# älg and Novembertävlingarna). Weeks with fewer are skipped, and the site says so as soon as it is known.
-EVWEEKS = _j("eventor_weeks.json", None)
+# A live game week needs at least two big competitions. A big competition has at least 100 competitors (everyone
+# entered, all classes, from Eventor) and a good field: at least 5 of the game's top runners (top 15% by class
+# rating) entered or racing in D/H 16-21. Admins can add or remove races and force a week on or off. A week is
+# decided when it starts (from the data on its Monday morning) and then kept; until then it is shown as provisional.
 LIVE_START = dt.date(2026, 11, 2)
+EVINFO = _j("eventor_events.json", None)
+OVR = _j("game_overrides.json", [])
+WEEK_ON = {o["ref"] for o in OVR if o["kind"] == "week_on"}; WEEK_OFF = {o["ref"] for o in OVR if o["kind"] == "week_off"}
+BIG_N, BIG_TOP = 100, 5
+EVWEEKS = None; EVBIG = {}
+if EVINFO is not None:
+    top_in = collections.defaultdict(set)
+    for en in _j("eventor_entries.json", []):
+        k = rkey({"name": en["name"], "club": en["club"]}, {"g": en["cls"][0]})
+        if k in TOP: top_in[en["eid"]].add(k)
+    for e in events:
+        eid = EVMETA.get(str(e["cid"]), {}).get("eid")
+        if eid: top_in[eid] |= {rkey(r, e) for r in e["fin"]} & TOP
+    weeks_now = collections.defaultdict(set)
+    for ev in EVINFO:
+        big = ev.get("forced") or ((ev.get("n") or 0) >= BIG_N and len(top_in.get(ev["eid"], ())) >= BIG_TOP)
+        EVBIG[ev["eid"]] = {"big": bool(big), "n": ev.get("n"), "top": len(top_in.get(ev["eid"], ()))}
+        if big:
+            for d in ev["dates"]: weeks_now[monday(dt.date.fromisoformat(d)).isoformat()].add(ev["eid"])
+    # a week that has started keeps what it was decided as
+    fp = f"{S}/data/eventor/weeks_final.json"; final = _j("eventor/weeks_final.json", {})
+    EVWEEKS = {}
+    wk = SEASON_START
+    while wk <= LAST_ROUND_START:
+        k = wk.isoformat(); started = wk <= TODAY
+        if started and k in final: EVWEEKS[k] = final[k]
+        else:
+            EVWEEKS[k] = {"big": len(weeks_now.get(k, ())), "final": started}
+            if started: final[k] = EVWEEKS[k]
+        wk += dt.timedelta(days=7)
+    os.makedirs(os.path.dirname(fp), exist_ok=True); json.dump(final, open(fp, "w"))
+    print("big competitions:", sorted(((ev["name"], ev["dates"][0], EVBIG[ev["eid"]]["n"], EVBIG[ev["eid"]]["top"]) for ev in EVINFO if EVBIG[ev["eid"]]["big"]), key=lambda x: x[1]))
 rounds = []
 wk = SEASON_START; i = 0
 while wk <= LAST_ROUND_START:
     ids = [e["id"] for e in events if monday(e["d"]) == wk]
     end = wk + dt.timedelta(days=6)
-    big = EVWEEKS.get(wk.isoformat(), 0) if EVWEEKS is not None else None
-    skip = EVWEEKS is not None and wk >= LIVE_START and big < 2
-    rounds.append({"n": i + 1, "start": wk.isoformat(), "end": end.isoformat(), "events": [] if skip else ids, "final": end < TODAY, "big": big, "skip": skip})
+    w = EVWEEKS.get(wk.isoformat()) if EVWEEKS is not None else None
+    big = w["big"] if w else None; decided = bool(w and w["final"])
+    k = wk.isoformat()
+    skip = wk >= LIVE_START and (k in WEEK_OFF or (k not in WEEK_ON and w is not None and decided and big < 2))
+    pending = wk >= LIVE_START and w is not None and not decided and k not in WEEK_ON and k not in WEEK_OFF
+    rounds.append({"n": i + 1, "start": k, "end": end.isoformat(), "events": [] if skip else ids, "final": end < TODAY, "big": big, "skip": skip,
+                   "pending": pending, "forced": "on" if k in WEEK_ON else "off" if k in WEEK_OFF else None})
     wk += dt.timedelta(days=7); i += 1
 print("rounds", len(rounds), [len(r["events"]) for r in rounds])
 print("skipped live weeks", [r["start"] for r in rounds if r.get("skip")], "big per live week", [(r["start"], r["big"]) for r in rounds if r["start"] >= LIVE_START.isoformat()])
@@ -320,7 +363,7 @@ upcoming.sort(key=lambda x: (x["date"], x["id"]))
 _seen = set(); upcoming = [u for u in upcoming if not ((u["name"].lower(), u["date"]) in _seen or _seen.add((u["name"].lower(), u["date"])))]
 EVUP = _j("eventor_upcoming.json", None)
 if EVUP is not None:
-    upcoming = [{"id": 0, "eo": u["eid"], "name": clean_name(u["name"]), "date": u["date"], "big": 1 if u["big"] else 0}
+    upcoming = [{"id": 0, "eo": u["eid"], "name": clean_name(u["name"]), "date": u["date"], "big": 1 if EVBIG.get(u["eid"], {}).get("big") else 0}
                 for u in EVUP if (u["ages"] >= 2 or u["cls"] == 1) and not TRAINING.search(u["name"]) and not OTHER_SPORT.search(u["name"])]
     _seen = set(); upcoming = [u for u in upcoming if not ((u["name"].lower(), u["date"]) in _seen or _seen.add((u["name"].lower(), u["date"])))]
 print("upcoming races", len(upcoming))

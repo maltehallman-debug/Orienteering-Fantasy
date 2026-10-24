@@ -74,6 +74,18 @@ if not orgs or time.time() - os.path.getmtime(op) > 30 * 86400:
         jsave(op, orgs)
 print("eventor organisations", len(orgs))
 
+# ---- admin overrides (set on the site by admins): races added or removed, game weeks forced on or off ----
+SB_URL = "https://hjpfmubvpvftxyyemltn.supabase.co"; SB_KEY = "sb_publishable_Ent2RuVrh-iKyjT1or8gOw_UFdZ74ch"   # the page's public key
+try:
+    _rq = urllib.request.Request(SB_URL + "/rest/v1/game_overrides?select=kind,ref", headers={"apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY})
+    OVR = json.loads(urllib.request.urlopen(_rq, timeout=30).read())
+except Exception:
+    OVR = jload(f"{S}/data/game_overrides.json", [])
+jsave(f"{S}/data/game_overrides.json", OVR)
+ADD = {int(o["ref"]) for o in OVR if o["kind"] == "race_add" and str(o["ref"]).isdigit()}
+DROP = {str(o["ref"]) for o in OVR if o["kind"] == "race_remove"}
+print("admin overrides", len(OVR))
+
 # ---- events: championship, national, district and local; foot orienteering, organised by Swedish clubs, not cancelled ----
 raw = get("events", fromDate=FROM, toDate=SEASON_END, classificationIds="1,2,3,4")
 if not raw: print("eventor: event list unavailable, skipped"); sys.exit(0)
@@ -87,25 +99,43 @@ for e in ET.fromstring(raw):
     events.append({"id": int(text(e, "EventId")), "name": text(e, "Name"), "cls": int(text(e, "EventClassificationId") or 4),
                    "form": e.attrib.get("eventForm", "IndSingleDay"), "date": text(e, "StartDate", "Date"), "end": text(e, "FinishDate", "Date"),
                    "races": [r for r in races if r["date"]]})
+# races an admin added are taken whatever their classification or date
+for eid in ADD - {e["id"] for e in events}:
+    raw = get(f"event/{eid}")
+    if not raw: continue
+    e = ET.fromstring(raw)
+    races = [{"id": int(text(r, "EventRaceId")), "name": text(r, "Name"), "date": text(r, "RaceDate", "Date")} for r in kids(e, "EventRace")]
+    events.append({"id": eid, "name": text(e, "Name"), "cls": int(text(e, "EventClassificationId") or 4), "form": e.attrib.get("eventForm", "IndSingleDay"),
+                   "date": text(e, "StartDate", "Date"), "end": text(e, "FinishDate", "Date"), "races": [r for r in races if r["date"]]})
+events = [e for e in events if str(e["id"]) not in DROP]
 print("eventor events (Swedish, foot-O, not cancelled)", len(events), dict(collections.Counter(e["cls"] for e in events)))
 
 # ---- classes per event: which have D/H 16-21 classes. Only for races in the last RECENT days and the next AHEAD days
 # (results and entries are only needed there). Cached: a past event's classes are never fetched again, an upcoming
 # event's at most every third day. ----
 def classes_of(ev):
-    p = f"{C}/classes/{ev['id']}.json"
+    # class names, plus "_n": everyone entered in the event (all classes), which decides whether it is a big competition.
+    # Refetched while the event is ahead (at most every third day) and once more after it, for the final count.
+    p = f"{C}/classes/{ev['id']}.json"; old = jload(p, None)
     upcoming = ev["end"] >= TODAY.isoformat()
-    if os.path.exists(p) and not (upcoming and time.time() - os.path.getmtime(p) > 3 * 86400): return jload(p, {})
+    age = time.time() - os.path.getmtime(p) if old is not None else 1e12
+    stale = old is None or "_n" not in old or (upcoming and age > 3 * 86400) or (not upcoming and old.get("_final") is None)
+    if not stale: return old
     raw = get("eventclasses", eventId=ev["id"])
-    if raw is None: return jload(p, {})
-    out = {}
+    if raw is None: return old or {}
+    out = {}; n = 0
     for c in ET.fromstring(raw):
         if strip(c.tag) != "EventClass": continue
         out[text(c, "EventClassId")] = text(c, "ClassShortName") or text(c, "Name")
+        try: n += int(c.attrib.get("numberOfEntries", 0))
+        except ValueError: pass
+    out["_n"] = n
+    if not upcoming: out["_final"] = 1
     jsave(p, out); return out
-near = [e for e in events if e["date"] <= (TODAY + dt.timedelta(days=AHEAD)).isoformat()]
+near = [e for e in events if e["date"] <= (TODAY + dt.timedelta(days=AHEAD)).isoformat() or e["id"] in ADD]
 cl = {e["id"]: classes_of(e) for e in near}
-def youth_ages(ev): return {REAL.match(norm(n)).group(2) for n in cl.get(ev["id"], {}).values() if REAL.match(norm(n))}
+def cnames(eid): return [v for k, v in cl.get(eid, {}).items() if not k.startswith("_")]
+def youth_ages(ev): return {REAL.match(norm(n)).group(2) for n in cnames(ev["id"]) if REAL.match(norm(n))}
 yev = [e for e in near if youth_ages(e)]
 print("eventor events with D/H 16-21 classes", len(yev))
 
@@ -246,6 +276,9 @@ for ev in yev + far:
                        "date": r["date"], "cls": ev["cls"], "big": big(ev), "ages": len(youth_ages(ev)) if ev["id"] in cl else 4})
 up.sort(key=lambda u: (u["date"], u["name"]))
 jsave(f"{S}/data/eventor_upcoming.json", up)
+evinfo = [{"eid": e["id"], "name": e["name"], "cls": e["cls"], "dates": [r["date"] for r in e["races"]], "n": cl.get(e["id"], {}).get("_n"),
+           "forced": e["id"] in ADD} for e in events if e["id"] in cl or e["id"] in ADD]
+jsave(f"{S}/data/eventor_events.json", evinfo)
 weeks = collections.defaultdict(set)
 for ev in events:
     if big(ev) and (ev["id"] not in cl or youth_ages(ev)):
@@ -274,7 +307,7 @@ for i in range(0, len(want), 15):
     for en in ET.fromstring(raw):
         if strip(en.tag) != "Entry": continue
         eid = int(text(en, "EventId") or 0); ecid = text(en, "EntryClass", "EventClassId")
-        cn = cl.get(eid, {}).get(ecid, "")
+        cn = str(cl.get(eid, {}).get(ecid, ""))
         if not REAL.match(norm(cn)): continue
         comp = path(en, "Competitor"); per = path(comp, "Person")
         if per is None: continue

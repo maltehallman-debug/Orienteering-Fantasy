@@ -22,7 +22,8 @@ for i, e in enumerate(events):
     rows.sort(key=lambda x: (x[1] != 0, x[2] if x[1] == 0 else 0, -x[5]))
     res.append(rows)
 out_rounds = [{"n": r["n"], "start": r["start"], "end": r["end"], "ev": [evpos[x] for x in r["events"]], "final": 1 if r["final"] else 0,
-               **({"skip": 1} if r.get("skip") else {}), **({"big": r["big"]} if r.get("big") is not None else {})} for r in rounds]
+               **({"skip": 1} if r.get("skip") else {}), **({"big": r["big"]} if r.get("big") is not None else {}),
+               **({"pending": 1} if r.get("pending") else {}), **({"forced": r["forced"]} if r.get("forced") else {})} for r in rounds]
 prices = [[int(round(p[k] * 10)) for k in pool] for p in D["prices"]]
 runners = [{"n": D["names"][k], "c": D["clubs"][k], "p": 1, "s": int(round(D["strength"].get(k, 0.05) * 100)), "k": D["cls"][k], "id": k} for k in pool]
 # runner photos: photos.json maps a runner id ("name|H" or "name|D") to a file in data/photos, embedded so the page stays one file
