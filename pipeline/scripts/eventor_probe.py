@@ -41,6 +41,40 @@ def find(e, name):
 def txt(e, name):
     f = find(e, name); return (f.text or "").strip() if f is not None and f.text else ""
 
+import re
+YOUTH = re.compile(r"^\s*[DH]\s*(16|18|20|21)", re.I)
+ev = get("events", fromDate="2026-06-25", toDate=dt.date.today().isoformat(), classificationIds="1,2,3", EventStatusIds="9,10")
+evs = [e for e in ev if strip(e.tag) == "Event"] if ev is not None else []
+print("events", len(evs), "status:", collections.Counter(txt(e, "EventStatusId") for e in evs).most_common(), "forms:", collections.Counter(e.attrib.get("eventForm", "-") for e in evs).most_common())
+def sdate(e):
+    s = find(e, "StartDate"); return txt(s, "Date") if s is not None else ""
+evs.sort(key=sdate, reverse=True)
+want = {"ind": None, "relay": None, "multi": None}
+for e in evs:
+    form = e.attrib.get("eventForm", "IndSingleDay"); k = "relay" if "Relay" in form else "multi" if "Multi" in form else "ind" if form == "IndSingleDay" else None
+    if not k or want[k] is not None or txt(e, "DisciplineId") != "1": continue
+    cl = get("eventclasses", eventId=txt(e, "EventId"))
+    names = [txt(c, "ClassShortName") or txt(c, "Name") for c in (cl if cl is not None else []) if strip(c.tag) == "EventClass"]
+    yn = [n for n in names if YOUTH.match(n)]
+    print("  ", k, sdate(e), txt(e, "Name"), "youth classes:", yn[:12])
+    if len(yn) >= 3: want[k] = e
+    if all(want.values()): break
+for k, e in want.items():
+    if e is None: print("none for", k); continue
+    print(f"\n#### {k}: {sdate(e)} {txt(e, 'Name')}")
+    r = get("results/event/iofxml", eventId=txt(e, "EventId"), includeSplitTimes="false")
+    dump(r, 400)
+    if r is not None:
+        for cr in [c for c in r if strip(c.tag) == "ClassResult"][:60]:
+            c = find(cr, "Class"); n = txt(c, "ShortName") or txt(c, "Name")
+            if not YOUTH.match(n): continue
+            stat = collections.Counter(txt(x, "Status") for x in cr.iter() if strip(x.tag) == "Result")
+            print("   class", repr(n), "people", sum(1 for x in cr.iter() if strip(x.tag) in ("PersonResult", "TeamMemberResult")), "teams", sum(1 for x in cr if strip(x.tag) == "TeamResult"), "statuses", dict(stat))
+o = get("organisations")
+if o is not None:
+    orgs = [x for x in o if strip(x.tag) == "Organisation"]
+    print("organisations", len(orgs), "countries", collections.Counter(next((a.attrib.get("value") for a in x.iter() if strip(a.tag) == "CountryId"), "?") for x in orgs).most_common(8))
+sys.exit(0)
 dump(get("organisation/apiKey"))
 today = dt.date.today()
 ev = get("events", fromDate="2026-08-01", toDate=(today + dt.timedelta(days=21)).isoformat(), classificationIds="1,2,3,4")
