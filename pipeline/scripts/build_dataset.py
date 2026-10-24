@@ -39,16 +39,18 @@ def _tier_name(c):
             or "unionsmatchen" in n or "jwoc" in n or "publiktävling sm" in n or "wcs spec" in n or "woc spect" in n):
         return 1.2
     return 1.0
-# Only real competitions count: proper H/D16-21 classes (plain or elite, not K/A/B/short variants),
+# Only real competitions count: proper H/D15-21 classes (15 counts as 16) (plain or elite, not K/A/B/short variants),
 # no other sports, no club-internal or training races, and at least two of the four age groups
 # unless it is a championship (Ungdoms-SM and Unionsmatchen only have 16).
-REAL = re.compile(r"^([DH])(16|18|20|21)(E|ELIT|ELITE)?$")
+REAL = re.compile(r"^([DH])(15|16|18|20|21)(E|ELIT|ELITE)?$")
 # a class name split into parts: relay legs ("H21-1"), heats ("D16-1", "D18E-2" at 25mannamedeln) or stages
-PART = re.compile(r"^\s*([DH])\s*(16|18|20|21)\s*-?\s*(E|ELIT|ELITE)?\s*-\s*([1-9])\s*$", re.I)
+PART = re.compile(r"^\s*([DH])\s*(15|16|18|20|21)\s*-?\s*(E|ELIT|ELITE)?\s*-\s*([1-9])\s*$", re.I)
+# H15/D15 runners are in the game's youngest category, 16 (their races keep the real class in the label)
+def cat(age): return "16" if age == "15" else age
 def age_of(n):
     m = REAL.match(norm(n)) or PART.match(n)
-    return m.group(2) if m else None
-OTHER_SPORT = re.compile(r"mtbo|mtb-o|ol-skytte|skidorient|\bvtt\b|trail-?o\b|precision", re.I)
+    return cat(m.group(2)) if m else None
+OTHER_SPORT = re.compile(r"mtbo|mtb-o|ol-skytte|skidorient|\bskid-?o\b|\bvtt\b|trail-?o\b|precision", re.I)
 TRAINING = re.compile(r"\bkm\b|klubbmästerskap|klubbmatch|träning|^test\b|\btest \d|fasttest|testløb|ungdomsserie|u-serie|u-ringen|totalresultat", re.I)
 _cl = json.load(open(f"{S}/data/classes.json"))
 def clean_name(n): return re.sub(r"\s*\((lokal kopia|local copy)[^)]*\)?\s*$", "", n.strip(), flags=re.I).strip()
@@ -83,7 +85,7 @@ for p in glob.glob(f"{S}/data/results/*.json"):
     if len(fin) < MIN_FIN: continue
     d = dt.date.fromisoformat(c["date"])
     if d >= TODAY: continue
-    g, age = m.group(1), m.group(2)
+    g, age = m.group(1), cat(m.group(2))
     # the label keeps the real class (H21 and H21E are different races in the same competition)
     events.append({"id": ek, "cid": cid, "eo": EVMETA.get(str(cid), {}).get("eid", 0), "name": f'{clean_name(c["name"])} ({cn})', "date": c["date"], "d": d, "tier": tier_of(c),
                    "g": g, "cls": g + age, "rows": rows, "fin": fin})
@@ -95,7 +97,7 @@ TEAMNO = re.compile(r"\s+\d{1,2}$")
 RELAYNAME = re.compile(r"stafett|relay|relais|staffel|kavle|tiomila|jukola|venla|budkavle", re.I)
 def _rows(j): return [r for r in j["rows"] if r["name"] and r["name"].strip().lower() != "vacant"]
 for (cid, g, age, el), P in parts.items():
-    c = comps[cid]; d = dt.date.fromisoformat(c["date"]); legs = sorted(P); cls = g + age + el
+    c = comps[cid]; d = dt.date.fromisoformat(c["date"]); legs = sorted(P); cls = g + age + el; age = cat(age)
     relay = bool(EVMETA.get(str(cid), {}).get("relay"))
     if len(legs) >= 2 and not relay:
         a, b = _rows(P[legs[0]]), _rows(P[legs[1]])

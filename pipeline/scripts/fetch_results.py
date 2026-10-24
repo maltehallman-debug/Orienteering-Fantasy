@@ -3,9 +3,9 @@ S = sys.argv[1]
 comps = {c["id"]: c for c in json.load(open(f"{S}/data/comps_clean.json"))}
 classes = json.load(open(f"{S}/data/classes.json"))
 def norm(n): return re.sub(r"[\s_-]", "", n.upper())
-PAT = re.compile(r"^[DH](16|18|20|21)(E|ELIT|A|B|K|KORT|L|LÅNG|LANG|ELITE)?$")
+PAT = re.compile(r"^[DH](15|16|18|20|21)(E|ELIT|A|B|K|KORT|L|LÅNG|LANG|ELITE)?$")
 # split classes: relay legs ("H21-1", "H21-2", ...), heats ("D16-1", "D16-2" at 25mannamedeln) and stages
-PART = re.compile(r"^\s*[DH]\s*(16|18|20|21)\s*-?\s*(E|ELIT|ELITE)?\s*-\s*[1-9]\s*$", re.I)
+PART = re.compile(r"^\s*[DH]\s*(15|16|18|20|21)\s*-?\s*(E|ELIT|ELITE)?\s*-\s*[1-9]\s*$", re.I)
 jobs = []
 TODAY = dt.date.today().isoformat()
 FRESH = (dt.date.today() - dt.timedelta(days=3)).isoformat()   # results this recent may still change, so refetch them
