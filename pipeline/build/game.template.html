@@ -417,6 +417,8 @@ input.name{width:100%;max-width:380px}
 @media (max-width:560px){.lgt th,.lgt td{padding:10px 8px}.lgt .prevcol{display:none}.lgt .sub{font-size:12px}.lgt .mdot{width:28px;height:28px;font-size:12px}.lgt .who-wrap{gap:8px}}
 .mv{font:600 10.5px var(--mono);color:var(--text-3);margin-left:4px}.mv.up{color:var(--good)}.mv.dn{color:var(--bad)}
 .card.global{box-shadow:var(--shadow),inset 0 0 0 1.5px var(--accent-line),inset 0 3px 0 var(--accent)}
+.mgrline{display:block;font-size:12.5px;line-height:1.3;color:var(--text-2);font-weight:500}
+.lgmembers .tag b{font-weight:600}.lgmembers .tag .mgrline{font-size:11px}
 .lgt tr.gap td{text-align:center;color:var(--text-3);padding:4px}
 .lgmembers{display:flex;flex-wrap:wrap;gap:6px}.lgmembers .tag{display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:999px}.lgmembers .mdot{width:26px;height:26px;font-size:12px}
 .lghead{display:grid;gap:8px;margin-bottom:14px}.lgtitle{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.lgtitle h2{margin:0}
@@ -1208,7 +1210,8 @@ let lgOpen=null,lgSub="table",lgRound=null;
 const startedRounds=()=>{const o=openRound(),a=[];for(let r=LIVE;r<Math.min(o,E.R);r++)a.push(r);return a};
 const mgrHue=id=>hsh(String(id))%360;
 const mgrDot=(m,big)=>m.av?`<span class="mdot ph${big?" big":""}" aria-hidden="true"><img src="${esc(avPublic(m.av))}" alt="" loading="lazy" decoding="async"></span>`:`<span class="mdot${big?" big":""}" style="--h:${mgrHue(m.id)}" aria-hidden="true">${esc((m.name||"M").slice(0,1).toUpperCase())}</span>`;
-const subName=m=>m.team&&m.mgr?` <span class="sub">${esc(m.mgr)}</span>`:"";
+/* the manager's own name on its own line under a team name (nothing when the manager has no team name) */
+const subName=m=>m.team&&m.mgr?`<span class="mgrline">${esc(m.mgr)}</span>`:"";
 const ptsOf=(m,r)=>m.by[r]?m.by[r].total:null;
 function standings(code){
   const rows=(leagueRows[code]||[]).slice(),rs=startedRounds(),cur=rs[rs.length-1],prev=rs[rs.length-2];
@@ -1229,11 +1232,11 @@ function leagueTable(code){
   }
   if(!rows.length)return `<p class="note">Loading members…</p>`;
   if(cur===undefined)return `<p class="note" style="margin:6px 0 10px">The live season starts on Monday ${dshort(D.rounds[LIVE].start)}. Teams and points show here once round ${D.rounds[LIVE].n} has started.</p>
-   <div class="lgmembers">${rows.map(m=>`<span class="tag">${mgrDot(m)} ${esc(m.name)}${m.id===cloud.uid?" (you)":""}</span>`).join("")}</div>`;
+   <div class="lgmembers">${rows.map(m=>`<span class="tag">${mgrDot(m)} <span><b>${esc(m.name)}</b>${m.id===cloud.uid?" (you)":""}${subName(m)}</span></span>`).join("")}</div>`;
   const live=!isFinal(cur);
   return `<div class="tbl lgt"><table><thead><tr><th>#</th><th>Team</th><th>R${D.rounds[cur].n}${live?' <span class="livedot">live</span>':""}</th>${prev!==undefined?`<th class="prevcol">R${D.rounds[prev].n}</th>`:""}<th>Total</th></tr></thead><tbody>
    ${rows.map((m,k)=>`${code==="GLOBAL"&&k===20?'<tr class="gap"><td colspan="5">⋯</td></tr>':""}<tr class="${m.id===cloud.uid?"in":""}" data-mgr="${esc(code)}|${esc(m.id)}" tabindex="0"><td><b>${m.rank}</b> ${m.move>0?`<span class="mv up">▲${m.move}</span>`:m.move<0?`<span class="mv dn">▼${-m.move}</span>`:`<span class="mv">–</span>`}</td>
-    <td><div class="who-wrap">${mgrDot(m)}<div><b>${esc(m.name)}</b>${subName(m)}${m.id===cloud.uid?' <span class="sub">(you)</span>':""}<div class="sub">${chipTags(m)}</div></div></div></td>
+    <td><div class="who-wrap">${mgrDot(m)}<div><b>${esc(m.name)}</b>${m.id===cloud.uid?' <span class="sub">(you)</span>':""}${subName(m)}<div class="sub">${chipTags(m)}</div></div></div></td>
     <td>${ptsOf(m,cur)!==null?fp(ptsOf(m,cur)):"–"}</td>${prev!==undefined?`<td class="prevcol">${ptsOf(m,prev)!==null?fp(ptsOf(m,prev)):"–"}</td>`:""}<td><b>${fp(m.t)}</b></td></tr>`).join("")}
    </tbody></table></div>`;
 }
@@ -1267,12 +1270,12 @@ function leagueDetail(code){
     ${S.topRunner&&S.topRunner.p>0?hl("Best runner picked",esc(nameOf(S.topRunner.i)),sg(S.topRunner.p)+", in "+S.topRunner.n+" of "+S.rows.length+" teams"):""}
     ${S.diff&&S.diff.p>0&&(!S.topRunner||S.diff.i!==S.topRunner.i||S.rows.length>2)?hl("Best differential",esc(nameOf(S.diff.i)),sg(S.diff.p)+", only "+esc(S.diffOwner.name)):""}
     ${S.mb&&S.mb[1]>1?hl("Most boosted",esc(nameOf(S.mb[0])),S.mb[1]+" of "+S.rows.length+" managers"):""}`;
-  return head+nav+(hlsHtml.trim()?`<div class="hls">${hlsHtml}</div>`:"")+`   <div class="grid2"><div class="card"><h3>Round ranking</h3>${ranked.map((m,k)=>{const x=m.by[r];return `<div class="ev" data-mgr="${esc(code)}|${esc(m.id)}" style="cursor:pointer"><span style="display:flex;gap:10px;align-items:center">${k+1}. ${mgrDot(m)}<span><b>${esc(m.name)}</b><span class="sub" style="display:block">Boost ${esc(nameOf(x.captain))}${x.capLive===null?" (did not race)":" "+sg(x.capExtra)}${x.chip?", "+CHIPINFO[x.chip][0]:""}${x.penalty?", -"+fp(x.penalty)+" transfers":""}${x.carried?", squad carried over":""}</span></span></span><b>${fp(x.total)}</b></div>`}).join("")}</div>
+  return head+nav+(hlsHtml.trim()?`<div class="hls">${hlsHtml}</div>`:"")+`   <div class="grid2"><div class="card"><h3>Round ranking</h3>${ranked.map((m,k)=>{const x=m.by[r];return `<div class="ev" data-mgr="${esc(code)}|${esc(m.id)}" style="cursor:pointer"><span style="display:flex;gap:10px;align-items:center">${k+1}. ${mgrDot(m)}<span><b>${esc(m.name)}</b>${subName(m)}<span class="sub" style="display:block">Boost ${esc(nameOf(x.captain))}${x.capLive===null?" (did not race)":" "+sg(x.capExtra)}${x.chip?", "+CHIPINFO[x.chip][0]:""}${x.penalty?", -"+fp(x.penalty)+" transfers":""}${x.carried?", squad carried over":""}</span></span></span><b>${fp(x.total)}</b></div>`}).join("")}</div>
    <div class="card"><h3>Who picked whom</h3>${S.pick.slice(0,12).map(x=>`<div class="ev"><span style="display:flex;gap:10px;align-items:center">${avatar(x.i,"sm")}<span><button class="who" style="font-size:14.5px" data-prof="${x.i}">${esc(nameOf(x.i))}</button><span class="sub" style="display:block">${Math.round(x.n/S.rows.length*100)}% of teams${x.started?"":", did not race"}</span></span></span><b class="${x.p<0?"neg":x.p>0?"pos":""}">${sg(x.p)}</b></div>`).join("")}</div></div>`;
 }
 function teamCard(code,m,r,k){
   const x=m.by[r];
-  return `<div class="card tc" style="--i:${k}" data-mgr="${esc(code)}|${esc(m.id)}"><div class="ev" style="border:0;padding:0 0 8px;align-items:center"><span style="display:flex;gap:10px;align-items:center">${mgrDot(m)}<b>${esc(m.name)}</b></span><span class="pts-big">${fp(x.total)}</span></div>
+  return `<div class="card tc" style="--i:${k}" data-mgr="${esc(code)}|${esc(m.id)}"><div class="ev" style="border:0;padding:0 0 8px;align-items:center"><span style="display:flex;gap:10px;align-items:center">${mgrDot(m)}<span><b>${esc(m.name)}</b>${subName(m)}</span></span><span class="pts-big">${fp(x.total)}</span></div>
    <div class="mini">${x.squad.map((i,k)=>{const b=i===x.captain,m2=multOf(i,x.squad,x.chip,x.capLive),p=E.pts[r][i]*m2;return `${k===0?'<span class="eyebrow">A team</span>':k===AS?'<span class="eyebrow" style="margin-top:6px">B team</span>':""}<div class="mr ${b?"b":""}">${avatar(i,"sm")}<span>${esc(nameOf(i).split(" ").slice(-1)[0])}${b?` <i>boost</i>`:""} <span class="sub" style="font-size:11px">×${m2}</span></span><b class="${E.starts[r][i]?(p<0?"neg":"pos"):"sub"}">${E.starts[r][i]?sg(p):"–"}</b></div>`}).join("")}</div></div>`;
 }
 function managerSheet(code,id,r0){
