@@ -904,7 +904,7 @@ tbody tr.tr-bronze td:first-child{box-shadow:inset 4px 0 0 #ea580c}
 .chipc.on{background:var(--accent);color:var(--accent-ink);box-shadow:0 12px 28px -14px var(--accent)}
 .chipc.on small,.chipc.on svg{color:var(--accent-ink)}
 .chipc:disabled{opacity:.42;cursor:default}
-.chipc.used::after{content:"Used";position:absolute;right:8px;top:8px;font:700 9.5px var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--text-3)}
+.chipc.used::after{content:"Använt";position:absolute;right:8px;top:8px;font:700 9.5px var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--text-3)}
 .chipc.none{grid-column:1/-1;justify-items:center;padding:9px}
 @media (hover:hover) and (pointer:fine){.chipc:not(:disabled):not(.on):hover{box-shadow:inset 0 0 0 1.5px var(--accent-line)}}
 .chipbanner{position:absolute;z-index:6;left:50%;top:50%;pointer-events:none;text-align:center;white-space:nowrap;font:700 clamp(34px,6vw,64px)/1 var(--font);letter-spacing:-.04em;color:var(--accent);text-shadow:0 2px 0 var(--surface),0 18px 40px rgba(0,0,0,.18);opacity:0}
@@ -1502,7 +1502,7 @@ td,th{border-color:#ededed!important}
   <button class="logo" type="button" data-tab="team" aria-label="Fantasy Orientering, till ditt lag">
     <svg class="mark" width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#003c68"/><path d="M34 6v19a9 9 0 0 1-9 9H6z" fill="#ffe74d"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff" stroke-width="2.4"/></svg>
     <b><span class="w1">Fantasy</span> <span class="w2">Orientering</span></b></button>
-  <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+  <nav class="tabs" id="tabs" aria-label="Sektioner"></nav>
   <div class="hdr-r"><button id="mgr" type="button"></button></div>
 </div></header>
 <div class="container">
@@ -1514,7 +1514,7 @@ td,th{border-color:#ededed!important}
 <nav class="bigpills" aria-label="Genvägar"><button type="button" data-tab="rules">Regler <i>↗</i></button><button type="button" data-tab="leagues">Ligor <i>↗</i></button><a href="https://eventor.orientering.se" target="_blank" rel="noopener">Eventor <i>↗</i></a></nav>
 <p class="fanline">Fantasy Orientering är ett fristående, ideellt fanprojekt och har ingen koppling till Svensk Orientering. Resultaten kommer från Eventor och liveresultat.orientering.se.</p>
 </div>
-<nav class="tabbar" id="tabbar" aria-label="Sections"></nav>
+<nav class="tabbar" id="tabbar" aria-label="Sektioner"></nav>
 <div id="modal"></div>
 <div id="fx" aria-hidden="true"></div>
 
@@ -1549,7 +1549,7 @@ const avPublic=path=>SB_URL+"/storage/v1/object/public/avatars/"+path.split("/")
 const photoPublic=path=>SB_URL+"/storage/v1/object/public/runner-photos/"+path.split("/").map(encodeURIComponent).join("/");
 const youthCls=i=>/^[DH](16|18)$/.test(D.runners[i].k);
 /* ---------- themes ---------- */
-const THEMES=[["light","Light","#ffffff",["#f5f7fa","#cbd5e1","#059669","#0d9488"]],["dark","Dark","#0b1120",["#0b1120","#334155","#34d399","#2dd4bf"]]];
+const THEMES=[["light","Ljust","#ffffff",["#f5f7fa","#cbd5e1","#059669","#0d9488"]],["dark","Mörkt","#0b1120",["#0b1120","#334155","#34d399","#2dd4bf"]]];
 const curTheme=()=>document.documentElement.dataset.theme||"light";
 function setTheme(name,from){
   const t=THEMES.find(x=>x[0]===name)||THEMES[0];
@@ -1614,7 +1614,7 @@ let reelEnd=0;
    <div class="in"><svg class="leg" viewBox="0 0 200 60"><path class="st" pathLength="1" d="M22 15.5 34 36.5H10Z"/><path class="ln" pathLength="1" d="M40 30H150"/>
     <circle class="ping" cx="170" cy="30" r="16"/><circle class="ring" pathLength="1" cx="170" cy="30" r="16"/>
     <g class="flag"><path d="M161 21h18v18h-18z" fill="#fff"/><path d="M179 21v18h-18z" fill="#f06a2b"/><path d="M161 21h18v18h-18z" fill="none" stroke="rgba(0,0,0,.25)" stroke-width=".8"/></g></svg>
-   <div class="t">${letters}</div><div class="rule"></div><div class="k">D/H 16–21 · live season</div></div>`;
+   <div class="t">${letters}</div><div class="rule"></div><div class="k">D/H 16–21 · säsongen 2026/27</div></div>`;
   /* every contour draws in, hill by hill, from the middle of the screen outwards */
   const ps=[...r.querySelectorAll(".map path:not(.veg):not(.lake)")];ps.forEach((p,k)=>{p.setAttribute("pathLength","1");p.style.setProperty("--d",(.05+(k/ps.length)*.7).toFixed(3)+"s")});
   r.classList.add("fw");document.body.appendChild(r);document.body.classList.add("reel-hold");reelEnd=performance.now()+3400;
@@ -1882,7 +1882,7 @@ function renderTabs(){
     el.querySelectorAll("[data-tab]").forEach(b=>{const on=b.dataset.tab===tab;b.setAttribute("aria-selected",on);b.setAttribute("aria-current",on?"page":"false")})});
   placeInd();
   const m=$("#mgr");
-  if(dbOk){const nm=mgrName||cloud.email.split("@")[0]||"Account";m.className="";m.innerHTML=`${myAv?`<span class="dot ph"><img src="${esc(avPublic(myAv))}" alt=""></span>`:`<span class="dot">${esc(nm.slice(0,1).toUpperCase())}</span>`}<span class="nm">${esc(nm)}</span>${adminOn()&&pendingPhotos.length?`<span class="badge" title="Foton som väntar på godkännande">${pendingPhotos.length}</span>`:""}`;m.title="Din profil";m.setAttribute("aria-label","Konto: "+nm)}
+  if(dbOk){const nm=mgrName||cloud.email.split("@")[0]||"Konto";m.className="";m.innerHTML=`${myAv?`<span class="dot ph"><img src="${esc(avPublic(myAv))}" alt=""></span>`:`<span class="dot">${esc(nm.slice(0,1).toUpperCase())}</span>`}<span class="nm">${esc(nm)}</span>${adminOn()&&pendingPhotos.length?`<span class="badge" title="Foton som väntar på godkännande">${pendingPhotos.length}</span>`:""}`;m.title="Din profil";m.setAttribute("aria-label","Konto: "+nm)}
   else{m.className="out";m.textContent="Logga in";m.title="Logga in eller skapa ett konto";m.setAttribute("aria-label","Logga in eller skapa ett konto")}
 }
 function renderFacts(){
@@ -1921,7 +1921,7 @@ function squadCard(i,k,show,locked,team){
     <span class="lc-club">${esc(clubOf(i))}</span>
     <span class="lc-club">${esc(clubOf(i))}</span></button></div>
    <div class="sqc-ctl"><button class="boost ${on?"on":""}" data-boost="${i}" ${locked?"disabled":""} aria-pressed="${on}" aria-label="${on?esc(nameOf(i))+" är boostad":"Boosta "+esc(nameOf(i))}" title="${on?"Boostad "+m+"x":"Boosta"}">${BOLT}<span>Boost</span></button>${locked?"":`<button class="sw" data-swap="${i}" title="Byt mellan A och B" aria-label="Flytta ${esc(nameOf(i))} till det andra laget">${SWAP}</button><button class="rm" data-sell="${i}" title="Ta bort ur truppen" aria-label="Ta bort ${esc(nameOf(i))}">&times;</button>`}</div>
-   ${other?`<button class="swapto" data-swapwith="${i}">Swap with ${esc(nameOf(swapSel).split(" ")[0])}</button>`:""}</div>`;
+   ${other?`<button class="swapto" data-swapwith="${i}">Byt med ${esc(nameOf(swapSel).split(" ")[0])}</button>`:""}</div>`;
 }
 function canAddReason(i){
   if(plan.squad.length>=D.squad)return "Truppen är full";
@@ -1980,8 +1980,8 @@ function marketHtml(){
   return `<section class="panel mkt-panel"><h2 id="market">Löpare</h2>
   <div class="filters"><input type="search" id="q" placeholder="Sök löpare eller klubb" value="${esc(qRaw)}" aria-label="Sök löpare" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
    <select id="tierF" aria-label="Nivå"><option value="">Alla nivåer</option>${TIERS.map(([k,l])=>`<option value="${k}" ${k===tierF?"selected":""}>${l}</option>`).join("")}</select>
-   <select id="clsF" aria-label="Class"><option value="">Alla klasser</option>${["H","D","H16","H18","H20","H21","D16","D18","D20","D21"].map(c=>`<option value="${c}" ${c===clsF?"selected":""}>${c==="H"?"Alla herrar (H)":c==="D"?"Alla damer (D)":c}</option>`).join("")}</select>
-   <select id="clubF" aria-label="Club"><option value="">Alla klubbar</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
+   <select id="clsF" aria-label="Klass"><option value="">Alla klasser</option>${["H","D","H16","H18","H20","H21","D16","D18","D20","D21"].map(c=>`<option value="${c}" ${c===clsF?"selected":""}>${c==="H"?"Alla herrar (H)":c==="D"?"Alla damer (D)":c}</option>`).join("")}</select>
+   <select id="clubF" aria-label="Klubb"><option value="">Alla klubbar</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
    <label><input type="checkbox" id="afford" ${afford?"checked":""}> Bara de jag har råd med</label>${Object.keys(ENT).length?`<label><input type="checkbox" id="entF" ${entF?"checked":""}> Anmäld den här veckan</label>`:""}</div>
   <p class="legend"><span class="idle y" aria-hidden="true">!</span> inget lopp förra veckan <span class="idle r" aria-hidden="true">!</span> inget på 10 veckor${Object.keys(ENT).length?` <span class="entered" aria-hidden="true">✓</span> anmäld den här veckan`:""}</p>
   <div class="tbl mkt"><table><thead><tr>${th("name","Löpare")}<th>Nivå</th>${th("price","Pris")}<th>Ändring</th>${th("form","Form","Snitt de senaste 3 tävlingsveckorna")}<th title="Poäng de senaste 6 veckorna de tävlade">Senaste 6 tävlingsveckorna</th>${th("avg","Per vecka","Snitt de senaste 5 tävlingsveckorna")}${th("total","Poäng")}${th("starts","Starter")}<th></th></tr></thead><tbody id="mrows">
@@ -2011,7 +2011,8 @@ function omapVar(seed,w,h){
   if(!id){id="--om"+OMAPS.size;OMAPS.set(key,id);try{document.documentElement.style.setProperty(id,omap(seed,w,h))}catch(e){}}
   return `var(${id})`;
 }
-function omap(seed,W,H){
+function omap(seed,W,H){const o=omapParts(seed,W,H);return `url("data:image/svg+xml,${encodeURIComponent(o.svg)}") center/100% 100% no-repeat, url("${o.map}") ${o.px}% ${o.py}%/cover no-repeat #f7f5ef`}
+function omapParts(seed,W,H){
   let h0=2166136261;for(const ch of String(seed)){h0^=ch.charCodeAt(0);h0=Math.imul(h0,16777619)}
   const rnd=()=>{h0=Math.imul(h0^(h0>>>15),2246822507);h0=Math.imul(h0^(h0>>>13),3266489909);return ((h0^=h0>>>16)>>>0)/4294967296};
   const map=MAPS[Math.floor(rnd()*MAPS.length)],px=Math.round(rnd()*100),py=Math.round(rnd()*100);
@@ -2023,7 +2024,7 @@ function omap(seed,W,H){
   for(let k=1;k<P.length-1;k++)d+=`<circle cx="${f(P[k][0])}" cy="${f(P[k][1])}" r="${f(R)}"/>`;
   const [fx,fy]=P[P.length-1];d+=`<circle cx="${f(fx)}" cy="${f(fy)}" r="${f(R*.72)}"/><circle cx="${f(fx)}" cy="${f(fy)}" r="${f(R*1.12)}"/>`;
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="#c2187c" stroke-width="${f(sw)}" stroke-opacity=".9">${d}</g></svg>`;
-  return `url("data:image/svg+xml,${encodeURIComponent(svg)}") center/100% 100% no-repeat, url("${map}") ${px}% ${py}%/cover no-repeat #f7f5ef`;
+  return {map,px,py,svg};
 }
 /* this week's races as cards, like orientering.se's news */
 function raceCards(r){
@@ -2051,7 +2052,7 @@ function weekSheet(r){
   if(r===undefined||r===null)r=R();r=Math.max(0,Math.min(E.R-1,r));weekR=r;
   const rd=D.rounds[r],n=comps(r).length;
   showSheet("week","Lopp i omgång "+rd.n,`<div class="hd"><div><span class="eyebrow">Omgång ${rd.n}</span><h2 style="margin:4px 0 0">${n} lopp</h2><div class="sub">${dshort(rd.start)} – ${dshort(rd.end)}</div></div><button class="btn" data-close="1">Stäng</button></div>
-   <div class="rnav" style="margin:14px 0"><button class="btn" data-week="${r-1}" ${r<=0?"disabled":""}>Förra veckan</button><b>${r===R()?"Den här omgången":r===R()+1?"Nästa omgång":"Round "+rd.n}</b><button class="btn" data-week="${r+1}" ${r>=E.R-1?"disabled":""}>Nästa vecka</button></div>
+   <div class="rnav" style="margin:14px 0"><button class="btn" data-week="${r-1}" ${r<=0?"disabled":""}>Förra veckan</button><b>${r===R()?"Den här omgången":r===R()+1?"Nästa omgång":"Omgång "+rd.n}</b><button class="btn" data-week="${r+1}" ${r>=E.R-1?"disabled":""}>Nästa vecka</button></div>
    ${weekList(r)}
 `);
 }
@@ -2075,7 +2076,7 @@ function hero(r){
   return `<div class="next omhero" style="--om:${omapVar("omgång "+rd.n,1400,460)}"><div class="next-main"><span class="next-k">Omgång ${rd.n} · ${when}</span><b>${title}</b>${u.length>1?`<button class="sub wklink" data-week="${r}">och ${u.length-1} lopp till den här veckan →</button>`:`<button class="sub wklink" data-week="${r}">Veckokalender →</button>`}</div><div class="next-side">${side}</div></div>`;
 }
 function teamView(){
-  if(done())return `<div class="card"><h2 style="margin-top:0">Säsongen är slut</h2><p>Du slutade på <b>${fp(state.total)}</b> points.</p><button class="btn on" data-tab="profile">Se din säsong</button></div>`;
+  if(done())return `<div class="card"><h2 style="margin-top:0">Säsongen är slut</h2><p>Du slutade på <b>${fp(state.total)}</b> poäng.</p><button class="btn on" data-tab="profile">Se din säsong</button></div>`;
   const r=R(),rd=D.rounds[r],locked=!isLive()&&lock&&lock.round===r,frozen=locked&&hasStarted(r);
   const show=locked?Object.assign({a:lock.squad.slice(0,AS)},lock):plan;
   const errs=plan.squad.length?E.planErrors(state,{squad:ordered(plan),captain:plan.captain,chip:plan.chip}):["Välj "+D.squad+" löpare för att börja"];
@@ -2119,7 +2120,7 @@ function teamView(){
 function evLines(i,rd){
   return E.hist[i].filter(h=>D.rounds[rd].ev.includes(h.ev)).map(h=>{const e=D.events[h.ev];
     const row=D.res[h.ev].find(x=>x[0]===i);const topb=row?row[6]:0;
-    return `<div class="ev"><span>${esc(e.name)} <span class="sub">${dshort(e.date)}</span></span><span>${h.kind?`<span class="neg">${["","Fullföljde inte","Mispunch","Disqualified"][h.kind]}</span>`:`place ${h.rank} of ${e.n}, ${(h.gap/100).toFixed(1)}% behind${topb?", beat "+topb+" top "+(topb===1?"runner":"runners"):""}`}, <span class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</span></span></div>`}).join("")||`<div class="ev sub">Sprang inte den här omgången</div>`;
+    return `<div class="ev"><span>${esc(e.name)} <span class="sub">${dshort(e.date)}</span></span><span>${h.kind?`<span class="neg">${["","Fullföljde inte","Felstämplat","Diskad"][h.kind]}</span>`:`plats ${h.rank} av ${e.n}, ${(h.gap/100).toFixed(1)} % efter${topb?", slog "+topb+" topplöpare":""}`}, <span class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</span></span></div>`}).join("")||`<div class="ev sub">Sprang inte den här omgången</div>`;
 }
 /* ---------- the week board: score, numbers and your five, made to screenshot ---------- */
 let lpTeam="A";
@@ -2162,7 +2163,7 @@ function weekBoard(){
   return `<section class="board" aria-label="Omgång ${rd.n}">
    <div class="bd-head"><span class="bd-brand">Fantasy<em>Orientering</em></span><span class="bd-me"><span><b>${esc(b.me)}</b>${b.mgr?`<small>${esc(b.mgr)}</small>`:""}</span>${dbOk?mgrDot({id:cloud.uid,name:mgrName||"M",av:myAv}):""}</span></div>
    <div class="bd-top"><div class="bd-gauge"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="g0" cx="100" cy="100" r="80" pathLength="100"/>${b.frac>0?`<circle class="g1" cx="100" cy="100" r="80" pathLength="100" style="--f:${(b.frac*75).toFixed(2)}"/>`:""}</svg>
-    <div class="bd-score"><b class="score" data-count="${b.score/10}" data-key="board${r}">${x?fp(b.score):"–"}</b><span>${x?(isFinal(r)?"points":"hittills"):"inte spelad"}</span></div></div>
+    <div class="bd-score"><b class="score" data-count="${b.score/10}" data-key="board${r}">${x?fp(b.score):"–"}</b><span>${x?(isFinal(r)?"poäng":"hittills"):"inte spelad"}</span></div></div>
    <div class="bd-stats"><div><span>Byten</span><b>${b.tr}</b></div><div><span>Totalt</span><b>${fp(b.total)}</b></div><div><span>Spelare</span><b>${b.players||"–"}</b></div><div><span>Högsta</span><b>${b.best!==null?fp(b.best):"–"}</b></div></div></div>
    <div class="bd-week"><button class="bd-arr" data-round="${w.k-1}" ${w.k<=0?"disabled":""} aria-label="Föregående omgång">‹</button><div><b>Omgång ${rd.n}</b><span>${b.when}${x&&x.chip?" · "+esc(CHIPINFO[x.chip][0]):""}${x&&x.carried?" · last round's squad":""}</span></div><button class="bd-arr" data-round="${w.k+1}" ${w.k>=weeks.length-1?"disabled":""} aria-label="Nästa omgång">›</button></div>
    <div class="bd-tabs"><button data-lteam="A" class="${lpTeam!=="B"?"on":""}">A-lag <small>×2</small></button><button data-lteam="B" class="${lpTeam==="B"?"on":""}">B-lag <small>×1</small></button></div>
@@ -2237,22 +2238,25 @@ async function makeShareImage(){
   {const g=c.createLinearGradient(0,PY,0,PY+PH);g.addColorStop(0,"rgba(255,255,255,.55)");g.addColorStop(.3,"rgba(255,255,255,0)");c.save();roundRect(c,PX,PY,PW,PH,56);c.clip();c.fillStyle=g;c.fillRect(PX,PY,PW,PH);c.restore()}
   c.save();roundRect(c,PX+1,PY+1,PW-2,PH-2,55);c.lineWidth=2;c.strokeStyle="rgba(255,255,255,.95)";c.stroke();c.restore();
   /* header */
-  c.textBaseline="alphabetic";c.textAlign="left";c.fillStyle=text;c.font=`800 54px ${dfont}`;c.fillText("Fantasy",92,138);const ow=c.measureText("Fantasy ").width;c.fillStyle=acc;c.fillText("Orientering",92+ow,138);
-  c.textAlign="right";c.fillStyle=text;c.font=`800 46px ${dfont}`;let me=b.me;while(c.measureText(me).width>380&&me.length>3)me=me.slice(0,-2)+"…";c.fillText(me,W-92,134);if(b.mgr){c.fillStyle=t2;c.font=`500 28px ${font}`;c.fillText(b.mgr,W-92,172)}
+  c.textBaseline="alphabetic";c.textAlign="left";c.fillStyle=text;c.font=`800 46px ${dfont}`;c.fillText("Fantasy",92,136);const ow=c.measureText("Fantasy ").width;c.fillStyle=acc;c.fillText("Orientering",92+ow,136);
+  /* the team name never runs into the title: it gets the space to the right of it, shrinking and then shortening */
+  const room=W-92-(92+c.measureText("Fantasy Orientering").width)-36;let me=b.me,fs=40;c.font=`800 ${fs}px ${dfont}`;
+  while(c.measureText(me).width>room&&fs>26){fs-=2;c.font=`800 ${fs}px ${dfont}`}while(c.measureText(me).width>room&&me.length>3)me=me.slice(0,-2)+"…";
+  c.textAlign="right";c.fillStyle=text;c.fillText(me,W-92,134);if(b.mgr){c.fillStyle=t2;c.font=`500 26px ${font}`;let mg=b.mgr;while(c.measureText(mg).width>room&&mg.length>3)mg=mg.slice(0,-2)+"…";c.fillText(mg,W-92,172)}
   /* gauge and numbers */
   const gx=262,gy=350,gr=140;c.lineCap="round";c.lineWidth=26;c.strokeStyle=line;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*2.25);c.stroke();
   if(b.frac>0){c.strokeStyle=acc;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*(.75+1.5*b.frac));c.stroke()}
-  const sc=fp(b.score);c.textAlign="center";c.fillStyle=acc;c.font=`800 ${sc.length>3?120:156}px ${dfont}`;c.fillText(sc,gx,gy+46);c.fillStyle=t2;c.font=`500 32px ${font}`;c.fillText(b.x?(isFinal(b.r)?"points":"hittills"):"inte spelad",gx,gy+98);
-  const S=[["TRANSFERS",String(b.tr)],["TOTAL",fp(b.total)],["PLAYERS",b.players?String(b.players):"–"],["HIGHEST",b.best!==null?fp(b.best):"–"]];
+  const sc=fp(b.score);c.textAlign="center";c.fillStyle=acc;c.font=`800 ${sc.length>3?120:156}px ${dfont}`;c.fillText(sc,gx,gy+46);c.fillStyle=t2;c.font=`500 27px ${font}`;c.fillText(b.x?(isFinal(b.r)?"poäng":"hittills"):"inte spelad",gx,gy+80);
+  const S=[["BYTEN",String(b.tr)],["TOTALT",fp(b.total)],["SPELARE",b.players?String(b.players):"–"],["HÖGSTA",b.best!==null?fp(b.best):"–"]];
   S.forEach(([l,v],k)=>{const sx=540+(k%2)*240,sy=262+Math.floor(k/2)*150;c.textAlign="left";c.fillStyle=t3;c.font=`600 24px ${font}`;c.fillText(l,sx,sy);c.fillStyle=text;c.font=`800 72px ${dfont}`;c.fillText(v,sx,sy+72)});
   /* round */
-  c.textAlign="center";c.fillStyle=text;c.font=`800 60px ${dfont}`;c.fillText("Round "+b.rd.n,W/2,598);
+  c.textAlign="center";c.fillStyle=text;c.font=`800 60px ${dfont}`;c.fillText("Omgång "+b.rd.n,W/2,598);
   c.fillStyle=t2;c.font=`500 32px ${font}`;c.fillText(b.when+(b.x&&b.x.chip?" · "+CHIPINFO[b.x.chip][0]:""),W/2,644);
   /* the team switch, as on the board */
   const sw=PW-120,sx0=(W-sw)/2,sy0=680,sh=84;roundRect(c,sx0,sy0,sw,sh,42);c.fillStyle="rgba(255,255,255,.7)";c.fill();c.lineWidth=2;c.strokeStyle="rgba(15,23,42,.08)";c.stroke();
   const onB=b.team==="B",hx=sx0+(onB?sw/2:0)+5;
   c.save();c.shadowColor=acc;c.shadowBlur=24;c.shadowOffsetY=8;roundRect(c,hx,sy0+5,sw/2-10,sh-10,37);const pg=c.createLinearGradient(0,sy0,0,sy0+sh);pg.addColorStop(0,css("--accent-2")||acc);pg.addColorStop(1,acc);c.fillStyle=acc;c.fill();c.restore();
-  [["A team","×2",0],["B team","×1",1]].forEach(([t,m,k])=>{const on=(k===1)===onB,cx=sx0+sw/4+k*sw/2;c.font=`700 38px ${font}`;const tw=c.measureText(t+" ").width;c.font=`600 28px ${font}`;const mw=c.measureText(m).width;
+  [["A-lag","×2",0],["B-lag","×1",1]].forEach(([t,m,k])=>{const on=(k===1)===onB,cx=sx0+sw/4+k*sw/2;c.font=`700 38px ${font}`;const tw=c.measureText(t+" ").width;c.font=`600 28px ${font}`;const mw=c.measureText(m).width;
     c.textAlign="left";c.fillStyle=on?"#fff":t2;c.font=`700 38px ${font}`;c.fillText(t,cx-(tw+mw)/2,sy0+56);c.font=`600 28px ${font}`;c.globalAlpha=on?.85:.7;c.fillText(m,cx-(tw+mw)/2+tw,sy0+56);c.globalAlpha=1});
   /* the cards: three columns, the middle one sits half a card lower (cards 0 and 3 left, 2 middle, 1 and 4 right) */
   const gap=14,cw=Math.floor((PW-60-2*gap)/3),ch=Math.round(cw/.72),y0=800,x0=(W-(3*cw+2*gap))/2,col=k=>x0+k*(cw+gap);
@@ -2279,8 +2283,8 @@ function roundsView(){
   if(viewRound>=state.log.length)return board;
   return `${board}${!isFinal(rd)?`<p class="next-k" style="margin:18px 0 6px">Live · poäng hittills, fler resultat kan komma</p>`:""}${L.carried?`<p class="note" style="margin:0 0 6px">Ingen trupp låstes den här omgången, så truppen från omgången innan spelade.</p>`:""}
   <p class="note" style="margin:18px 0 12px">${fp(L.base)} från löpare${L.capLive===null?", boostad löpare sprang inte":", "+sg(L.capExtra)+" boost från "+esc(nameOf(L.capLive))+(L.chip==="tc"?" (3x)":" (2x)")}${L.penalty?", -"+fp(L.penalty)+" för "+L.transfers+" byten":""}${L.chip==="wc"?", Wildcard spelat":""}</p>
-  <div class="grid2">${L.squad.map((i,k)=>{const m=multOf(i,L.squad,L.chip,L.capLive),raw=E.pts[rd][i],p=raw*m,b=L.captain===i;return `<div class="card" style="--i:${k}${b?";box-shadow:0 0 0 1px var(--accent-line) inset":""}"><div class="ev" style="border:0;padding:0 0 4px;align-items:center"><div style="display:flex;gap:12px;align-items:center;min-width:0">${avatar(i,"sm")}<div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${k<AS?"A team":"B team"}, ${esc(clubOf(i))}${b?`, <b style="color:var(--accent)">boosted</b>`:""}</span></div></div><span class="pts-big ${p<0?"neg":""}">${sg(p)}${E.starts[rd][i]?` <span class="sub" style="font-size:12px">${sg(raw)} ×${m}</span>`:""}</span></div>${evLines(i,rd)}</div>`}).join("")}</div>
-  <div class="card"><h3>Bästa poängen den här omgången</h3>${E.roundBest(rd,5).map(([i,p],k)=>`<div class="ev"><span>${k+1}. <button class="who" style="font-size:15px" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${esc(clubOf(i))}</span></span><b class="pos">${sg(p)}</b></div>`).join("")||'<div class="sub">No counted races this round.</div>'}</div>
+  <div class="grid2">${L.squad.map((i,k)=>{const m=multOf(i,L.squad,L.chip,L.capLive),raw=E.pts[rd][i],p=raw*m,b=L.captain===i;return `<div class="card" style="--i:${k}${b?";box-shadow:0 0 0 1px var(--accent-line) inset":""}"><div class="ev" style="border:0;padding:0 0 4px;align-items:center"><div style="display:flex;gap:12px;align-items:center;min-width:0">${avatar(i,"sm")}<div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${k<AS?"A-lag":"B-lag"}, ${esc(clubOf(i))}${b?`, <b style="color:var(--accent)">boosted</b>`:""}</span></div></div><span class="pts-big ${p<0?"neg":""}">${sg(p)}${E.starts[rd][i]?` <span class="sub" style="font-size:12px">${sg(raw)} ×${m}</span>`:""}</span></div>${evLines(i,rd)}</div>`}).join("")}</div>
+  <div class="card"><h3>Bästa poängen den här omgången</h3>${E.roundBest(rd,5).map(([i,p],k)=>`<div class="ev"><span>${k+1}. <button class="who" style="font-size:15px" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${esc(clubOf(i))}</span></span><b class="pos">${sg(p)}</b></div>`).join("")||'<div class="sub">Inga räknade lopp den här omgången.</div>'}</div>
   ${!done()&&li===state.log.length-1?`<p><button class="btn on" data-tab="team" id="next">Planera omgång ${D.rounds[R()].n}</button></p>`:""}`;
 }
 
@@ -2302,7 +2306,7 @@ function profileView(){
   const L=state.log,best=L.slice().sort((a,b)=>b.total-a.total)[0];
   const live=isLive();
   return `<div class="pfhead">${mgrDot(me,1)}<div><h2>${esc(myTeam||me.name)}</h2><div class="sub">${myTeam?esc(me.name)+" · ":""}${esc(cloud.email)}</div></div></div>
-  ${cloud.admin?`<label class="admsw"><input type="checkbox" role="switch" id="admSw" ${showAdmin?"checked":""}><span class="trk" aria-hidden="true"></span><span><b>Adminverktyg</b><span class="sub">${showAdmin?"Shown":"Hidden"}</span></span></label>`:""}
+  ${cloud.admin?`<label class="admsw"><input type="checkbox" role="switch" id="admSw" ${showAdmin?"checked":""}><span class="trk" aria-hidden="true"></span><span><b>Adminverktyg</b><span class="sub">${showAdmin?"Visas":"Dolda"}</span></span></label>`:""}
   ${adminGameCard()}${reviewCard()}
   <div class="kv"><div><span>Poäng</span><b>${fp(state.total)}</b></div><div><span>Omgångar</span><b>${L.length}</b></div><div><span>Bästa omgång</span><b>${best?fp(best.total):"–"}</b></div><div><span>Chips kvar</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length}</b></div></div>
   ${L.length?seasonBars():""}
@@ -2315,7 +2319,7 @@ function profileView(){
     <p class="note" id="nameMsg" style="margin:6px 0 0;color:var(--warn)">${nameOk(mgrName)&&nameOk(myTeam)?"":"Det namnet är inte tillåtet. Välj ett annat: alla i spelet ser det."}</p>
     <p class="note" id="cloudstat" style="margin:10px 0 0">${esc(cloudMsg||"Sparas automatiskt på ditt konto.")}</p>
     <div class="row" style="margin-top:12px"><button class="btn" id="authOut">Logga ut</button></div></div>
-   <div class="card"><h3>Dina ligor</h3>${myLeagues.length?`<div class="lglist">${myLeagues.map(c=>`<button class="lgi" data-lgopen="${esc(c)}"><span>${esc(lgName(c))}${myOwn[c]?'<span class="host">Host</span>':""}</span><span class="sub">Open →</span></button>`).join("")}</div>`:`<p class="note" style="margin:0 0 12px">Du är inte med i någon liga än.</p><button class="btn on" data-tab="leagues">Starta eller gå med i en liga</button>`}</div>
+   <div class="card"><h3>Dina ligor</h3>${myLeagues.length?`<div class="lglist">${myLeagues.map(c=>`<button class="lgi" data-lgopen="${esc(c)}"><span>${esc(lgName(c))}${myOwn[c]?'<span class="host">Värd</span>':""}</span><span class="sub">Öppna →</span></button>`).join("")}</div>`:`<p class="note" style="margin:0 0 12px">Du är inte med i någon liga än.</p><button class="btn on" data-tab="leagues">Starta eller gå med i en liga</button>`}</div>
   </div>
   ${practiceCard()}${privacyCard()}`;
 }
@@ -2355,7 +2359,7 @@ function seasonView(){
   <div class="card"><h3>Säsongsläge</h3>
    <p class="note" style="margin:0 0 10px">${live?"Du spelar säsongen, som startar "+dshort(D.rounds[LIVE].start)+" med riktiga kommande lopp.":"Du spelar om tidigare omgångar från "+dshort(D.rounds[0].start)+" som övning. Övningsomgångar räknas inte i ligor."}</p>
    <button class="btn" id="mode">${confirmMode?(live?"Bekräfta: starta en övningsomgång":"Bekräfta: avsluta och gå tillbaka"):live?"Öva med en omspelning från "+dshort(D.rounds[0].start):"Tillbaka till säsongen"}</button>
-   ${live?`<p class="note" style="margin:10px 0 0">Dina riktiga trupper sparas medan du övar.</p>`:`<button class="btn quiet" id="reset">${confirmReset?"Bekräfta: radera omspelningen och börja om":"Restart"}</button>`}</div>`;
+   ${live?`<p class="note" style="margin:10px 0 0">Dina riktiga trupper sparas medan du övar.</p>`:`<button class="btn quiet" id="reset">${confirmReset?"Bekräfta: radera omspelningen och börja om":"Börja om"}</button>`}</div>`;
 }
 function lgName(code){if(code==="GLOBAL")return "Topp 20 totalt";return myLgn[code]||code.replace(/-[A-Z0-9]{4}$/,"").replace(/_/g," ")}
 /* open a sheet, or swap its content in place when the same sheet is already open (no replayed animation) */
@@ -2403,7 +2407,7 @@ function leagueTable(code){
   const live=!isFinal(cur);
   return `<div class="tbl lgt"><table><thead><tr><th>#</th><th>Lag</th><th>R${D.rounds[cur].n}${live?' <span class="livedot">live</span>':""}</th>${prev!==undefined?`<th class="prevcol">R${D.rounds[prev].n}</th>`:""}<th>Totalt</th></tr></thead><tbody>
    ${rows.map((m,k)=>`${code==="GLOBAL"&&k===20?'<tr class="gap"><td colspan="5">⋯</td></tr>':""}<tr class="${m.id===cloud.uid?"in":""} ${m.rank<=3?"pod":""}" style="--i:${k}" data-mgr="${esc(code)}|${esc(m.id)}" tabindex="0"><td>${m.rank<=3?`<b class="medal m${m.rank}">${m.rank}</b>`:`<b>${m.rank}</b>`} ${m.move>0?`<span class="mv up">▲${m.move}</span>`:m.move<0?`<span class="mv dn">▼${-m.move}</span>`:`<span class="mv">–</span>`}</td>
-    <td><div class="who-wrap">${mgrDot(m)}<div><b>${esc(m.name)}</b>${m.id===cloud.uid?' <span class="sub">(you)</span>':""}${subName(m)}<div class="sub">${chipTags(m)}</div></div></div></td>
+    <td><div class="who-wrap">${mgrDot(m)}<div><b>${esc(m.name)}</b>${m.id===cloud.uid?' <span class="sub">(du)</span>':""}${subName(m)}<div class="sub">${chipTags(m)}</div></div></div></td>
     <td>${ptsOf(m,cur)!==null?fp(ptsOf(m,cur)):"–"}</td>${prev!==undefined?`<td class="prevcol">${ptsOf(m,prev)!==null?fp(ptsOf(m,prev)):"–"}</td>`:""}<td><b>${fp(m.t)}</b></td></tr>`).join("")}
    </tbody></table></div>`;
 }
@@ -2422,14 +2426,14 @@ function leagueDetail(code){
   const st=standings(code),{rows,rs,cur}=st;
   const sub=(k,l)=>`<button class="btn ${lgSub===k?"on":""}" data-lgsub="${k}">${l}</button>`;
   const head=`<div class="lghead"><button class="btn quiet" data-lgback="1">← Alla ligor</button>
-   <div class="lgtitle"><h2 style="margin:0">${esc(lgName(code))}</h2>${myOwn[code]?`<span class="host">You host</span>`:""}</div>
-   ${code==="GLOBAL"?`${(leagueRows.GLOBAL||[]).length?`<p class="note" style="margin:6px 0 0">${leagueRows.GLOBAL.length} players</p>`:""}`:`<div class="codebox"><code>${esc(code)}</code><button class="btn on" data-copy="${esc(code)}">${copied===code?"Länken kopierad":"Kopiera inbjudningslänk"}</button>${navigator.share?`<button class="btn" data-share="${esc(code)}">Share</button>`:""}</div>`}
+   <div class="lgtitle"><h2 style="margin:0">${esc(lgName(code))}</h2>${myOwn[code]?`<span class="host">Du är värd</span>`:""}</div>
+   ${code==="GLOBAL"?`${(leagueRows.GLOBAL||[]).length?`<p class="note" style="margin:6px 0 0">${leagueRows.GLOBAL.length} spelare</p>`:""}`:`<div class="codebox"><code>${esc(code)}</code><button class="btn on" data-copy="${esc(code)}">${copied===code?"Länken kopierad":"Kopiera inbjudningslänk"}</button>${navigator.share?`<button class="btn" data-share="${esc(code)}">Share</button>`:""}</div>`}
    ${dbOk&&!myTeam?`<div class="nudge"><span><b>Ge ditt lag ett namn</b></span><button class="btn on" data-tab="profile" data-focus="teamName">Namnge ditt lag</button></div>`:""}
-   ${cur!==undefined?`<div class="chips" style="margin-top:12px">${sub("table","Table")}${sub("round","Round")}${sub("teams","Teams")}</div>`:""}</div>`;
+   ${cur!==undefined?`<div class="chips" style="margin-top:12px">${sub("table","Tabell")}${sub("round","Omgång")}${sub("teams","Lag")}</div>`:""}</div>`;
   if(cur===undefined||lgSub==="table")return head+`<div class="card">${leagueTable(code)}</div>`;
   const r=lgRound!==null&&rs.includes(lgRound)?lgRound:cur,ix=rs.indexOf(r),S=lgStats(code,r),live=!isFinal(r);
-  const nav=`<div class="rnav"><button class="btn" data-lground="${rs[ix-1]}" ${ix<=0?"disabled":""}>Previous</button><b>Round ${D.rounds[r].n} <span class="sub">${dshort(D.rounds[r].start)}–${dshort(D.rounds[r].end)}</span>${live?' <span class="livedot">live</span>':""}</b><button class="btn" data-lground="${rs[ix+1]}" ${ix>=rs.length-1?"disabled":""}>Next</button></div>`;
-  if(lgSub==="teams")return head+nav+`<div class="grid2">${S.rows.slice().sort((a,b)=>b.by[r].total-a.by[r].total).slice(0,code==="GLOBAL"?20:1e9).map((m,k)=>teamCard(code,m,r,k)).join("")||'<div class="card">Nobody had a squad in this round.</div>'}</div>`;
+  const nav=`<div class="rnav"><button class="btn" data-lground="${rs[ix-1]}" ${ix<=0?"disabled":""}>Föregående</button><b>Omgång ${D.rounds[r].n} <span class="sub">${dshort(D.rounds[r].start)}–${dshort(D.rounds[r].end)}</span>${live?' <span class="livedot">live</span>':""}</b><button class="btn" data-lground="${rs[ix+1]}" ${ix>=rs.length-1?"disabled":""}>Nästa</button></div>`;
+  if(lgSub==="teams")return head+nav+`<div class="grid2">${S.rows.slice().sort((a,b)=>b.by[r].total-a.by[r].total).slice(0,code==="GLOBAL"?20:1e9).map((m,k)=>teamCard(code,m,r,k)).join("")||'<div class="card">Ingen hade en trupp den här omgången.</div>'}</div>`;
   const ranked=S.rows.slice().sort((a,b)=>b.by[r].total-a.by[r].total).slice(0,code==="GLOBAL"?20:1e9);
   const hl=(k,v,s2)=>`<div class="hl"><span>${k}</span><b>${v}</b><span class="sub">${s2}</span></div>`;
   const hlsHtml=`
@@ -2438,12 +2442,12 @@ function leagueDetail(code){
     ${S.diff&&S.diff.p>0&&(!S.topRunner||S.diff.i!==S.topRunner.i||S.rows.length>2)?hl("Bästa unika val",esc(nameOf(S.diff.i)),sg(S.diff.p)+", bara "+esc(S.diffOwner.name)):""}
     ${S.mb&&S.mb[1]>1?hl("Mest boostad",esc(nameOf(S.mb[0])),S.mb[1]+" of "+S.rows.length+" managers"):""}`;
   return head+nav+(hlsHtml.trim()?`<div class="hls">${hlsHtml}</div>`:"")+`   <div class="grid2"><div class="card"><h3>Omgångens ranking</h3>${ranked.map((m,k)=>{const x=m.by[r];return `<div class="ev" data-mgr="${esc(code)}|${esc(m.id)}" style="cursor:pointer"><span style="display:flex;gap:10px;align-items:center">${k+1}. ${mgrDot(m)}<span><b>${esc(m.name)}</b>${subName(m)}<span class="sub" style="display:block">Boost ${esc(nameOf(x.captain))}${x.capLive===null?" (sprang inte)":" "+sg(x.capExtra)}${x.chip?", "+CHIPINFO[x.chip][0]:""}${x.penalty?", -"+fp(x.penalty)+" transfers":""}${x.carried?", squad carried over":""}</span></span></span><b>${fp(x.total)}</b></div>`}).join("")}</div>
-   <div class="card"><h3>Vem valde vem</h3>${S.pick.slice(0,12).map(x=>`<div class="ev"><span style="display:flex;gap:10px;align-items:center">${avatar(x.i,"sm")}<span><button class="who" style="font-size:14.5px" data-prof="${x.i}">${esc(nameOf(x.i))}</button><span class="sub" style="display:block">${Math.round(x.n/S.rows.length*100)}% of teams${x.started?"":", sprang inte"}</span></span></span><b class="${x.p<0?"neg":x.p>0?"pos":""}">${sg(x.p)}</b></div>`).join("")}</div></div>`;
+   <div class="card"><h3>Vem valde vem</h3>${S.pick.slice(0,12).map(x=>`<div class="ev"><span style="display:flex;gap:10px;align-items:center">${avatar(x.i,"sm")}<span><button class="who" style="font-size:14.5px" data-prof="${x.i}">${esc(nameOf(x.i))}</button><span class="sub" style="display:block">${Math.round(x.n/S.rows.length*100)}% av lagen${x.started?"":", sprang inte"}</span></span></span><b class="${x.p<0?"neg":x.p>0?"pos":""}">${sg(x.p)}</b></div>`).join("")}</div></div>`;
 }
 function teamCard(code,m,r,k){
   const x=m.by[r];
   return `<div class="card tc" style="--i:${k}" data-mgr="${esc(code)}|${esc(m.id)}"><div class="ev" style="border:0;padding:0 0 8px;align-items:center"><span style="display:flex;gap:10px;align-items:center">${mgrDot(m)}<span><b>${esc(m.name)}</b>${subName(m)}</span></span><span class="pts-big">${fp(x.total)}</span></div>
-   <div class="mini">${x.squad.map((i,k)=>{const b=i===x.captain,m2=multOf(i,x.squad,x.chip,x.capLive),p=E.pts[r][i]*m2;return `${k===0?'<span class="eyebrow">A team</span>':k===AS?'<span class="eyebrow" style="margin-top:6px">B team</span>':""}<div class="mr ${b?"b":""}">${avatar(i,"sm")}<span>${esc(nameOf(i).split(" ").slice(-1)[0])}${b?` <i>boost</i>`:""} <span class="sub" style="font-size:11px">×${m2}</span></span><b class="${E.starts[r][i]?(p<0?"neg":"pos"):"sub"}">${E.starts[r][i]?sg(p):"–"}</b></div>`}).join("")}</div></div>`;
+   <div class="mini">${x.squad.map((i,k)=>{const b=i===x.captain,m2=multOf(i,x.squad,x.chip,x.capLive),p=E.pts[r][i]*m2;return `${k===0?'<span class="eyebrow">A-lag</span>':k===AS?'<span class="eyebrow" style="margin-top:6px">B team</span>':""}<div class="mr ${b?"b":""}">${avatar(i,"sm")}<span>${esc(nameOf(i).split(" ").slice(-1)[0])}${b?` <i>boost</i>`:""} <span class="sub" style="font-size:11px">×${m2}</span></span><b class="${E.starts[r][i]?(p<0?"neg":"pos"):"sub"}">${E.starts[r][i]?sg(p):"–"}</b></div>`}).join("")}</div></div>`;
 }
 function managerSheet(code,id,r0){
   const m=(leagueRows[code]||[]).find(x=>x.id===id);if(!m)return;
@@ -2451,19 +2455,19 @@ function managerSheet(code,id,r0){
   const r=rs.includes(r0)?r0:rs[rs.length-1],x=r!==undefined?m.by[r]:null,ix=rs.indexOf(r),row=st.rows.find(y=>y.id===id);
   const bars=st.rs.map(q=>{const v=ptsOf(m,q);return {q,v:v===null?0:v,has:v!==null}}),mx=Math.max(100,...bars.map(b=>b.v));
   const body=!x?`<p class="note">${esc(m.name)} har ingen trupp i en omgång som har startat än.</p>`:`
-   <div class="rnav"><button class="btn" data-mgrr="${esc(code)}|${esc(id)}|${rs[ix-1]}" ${ix<=0?"disabled":""}>Previous</button><b>Round ${D.rounds[r].n}${!isFinal(r)?' <span class="livedot">live</span>':""}</b><button class="btn" data-mgrr="${esc(code)}|${esc(id)}|${rs[ix+1]}" ${ix>=rs.length-1?"disabled":""}>Next</button></div>
+   <div class="rnav"><button class="btn" data-mgrr="${esc(code)}|${esc(id)}|${rs[ix-1]}" ${ix<=0?"disabled":""}>Föregående</button><b>Omgång ${D.rounds[r].n}${!isFinal(r)?' <span class="livedot">live</span>':""}</b><button class="btn" data-mgrr="${esc(code)}|${esc(id)}|${rs[ix+1]}" ${ix>=rs.length-1?"disabled":""}>Nästa</button></div>
    <div class="stats"><div><b>${fp(x.total)}</b><span>Omgångspoäng</span></div><div><b>${fp(x.base)}</b><span>Från löpare</span></div><div><b>${x.capLive===null?"0.0":sg(x.capExtra)}</b><span>Boost${x.chip?" · "+CHIPINFO[x.chip][0]:""}</span></div><div><b class="${x.penalty?"dn":""}">${x.penalty?"-"+fp(x.penalty):"0.0"}</b><span>${x.transfers} transfer${x.transfers===1?"":"s"}</span></div></div>
    ${x.carried?`<p class="note">Ingen trupp låstes den här omgången, så truppen från omgången innan spelade.</p>`:""}${x.chip?`<p class="note"><b>${CHIPINFO[x.chip][0]}</b> spelat: ${CHIPINFO[x.chip][1].toLowerCase()}.</p>`:""}
    <div class="squad sheetsq">${x.squad.map((i,k)=>{const b=i===x.captain,raced=E.starts[r][i]>0,m2=multOf(i,x.squad,x.chip,x.capLive),p=E.pts[r][i]*m2;
      return `${k===0?'<div class="eyebrow" style="grid-column:1/-1">A-lag · ×2</div>':k===AS?'<div class="eyebrow" style="grid-column:1/-1;margin-top:4px">B-lag · ×1</div>':""}<div class="rc tier-${TIERS[tierOf(i,r)][0]} ${b?"boosted":""}"><span class="plate" aria-hidden="true"></span><span class="tm ${m2>(k<AS?2:1)?"hi":""}">×${m2}${b?" · boost":""}</span><div class="top"><span style="width:30px"></span>${avatar(i)}</div><div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}</div></div>
      <div class="meta"><span class="sub">${raced?E.hist[i].filter(h=>D.rounds[r].ev.includes(h.ev)).length+" race"+(E.hist[i].filter(h=>D.rounds[r].ev.includes(h.ev)).length===1?"":"s"):"sprang inte"}</span><b class="pts-big ${p<0?"neg":""}">${raced?sg(p):"0"}</b></div></div>`}).join("")}</div>
-   ${x.in&&x.in.length?`<p class="note"><b style="color:var(--good)">In:</b> ${x.in.map(i=>esc(nameOf(i))).join(", ")} &nbsp; <b style="color:var(--bad)">Out:</b> ${x.out.map(i=>esc(nameOf(i))).join(", ")}</p>`:""}
+   ${x.in&&x.in.length?`<p class="note"><b style="color:var(--good)">In:</b> ${x.in.map(i=>esc(nameOf(i))).join(", ")} &nbsp; <b style="color:var(--bad)">Ut:</b> ${x.out.map(i=>esc(nameOf(i))).join(", ")}</p>`:""}
    ${me&&me.id!==id&&me.by[r]?(()=>{const a=new Set(me.by[r].squad),both=x.squad.filter(i=>a.has(i)),only=x.squad.filter(i=>!a.has(i)),mine=me.by[r].squad.filter(i=>!x.squad.includes(i));
      const sum=l=>l.reduce((s2,i)=>s2+E.pts[r][i],0);
      return `<div class="card" style="margin-top:12px"><h3>Du mot ${esc(m.name)} den här omgången</h3><p class="note" style="margin:0 0 6px">${both.length} löpare i båda lagen. Deras egna val gav ${sg(sum(only))}, dina ${sg(sum(mine))}. Totalt ${fp(me.by[r].total)} mot ${fp(x.total)}.</p>
       <div class="sub">Bara de: ${only.map(i=>esc(nameOf(i))).join(", ")||"inga"}</div><div class="sub">Bara du: ${mine.map(i=>esc(nameOf(i))).join(", ")||"inga"}</div></div>`})():""}`;
   showSheet("mgr|"+code+"|"+id,m.name,`
-   <div class="hd"><div style="display:flex;gap:14px;align-items:center">${mgrDot(m,1)}<div><h2>${esc(m.name)}${id===cloud.uid?' <span class="sub">(you)</span>':""}</h2>${m.team?`<div class="sub">Manager: ${esc(m.mgr)}</div>`:""}<div class="sub">${row?"Plats "+row.rank+" av "+st.rows.length+", ":""}${fp(m.total)} poäng, ${chipTags(m)}</div></div></div><button class="btn" data-close="1">Stäng</button></div>
+   <div class="hd"><div style="display:flex;gap:14px;align-items:center">${mgrDot(m,1)}<div><h2>${esc(m.name)}${id===cloud.uid?' <span class="sub">(du)</span>':""}</h2>${m.team?`<div class="sub">Manager: ${esc(m.mgr)}</div>`:""}<div class="sub">${row?"Plats "+row.rank+" av "+st.rows.length+", ":""}${fp(m.total)} poäng, ${chipTags(m)}</div></div></div><button class="btn" data-close="1">Stäng</button></div>
    <div class="mbars" role="img" aria-label="Poäng per omgång">${bars.map(b=>`<button class="${b.q===r?"on":""}" data-mgrr="${esc(code)}|${esc(id)}|${b.q}" ${b.has?"":"disabled"} title="Round ${D.rounds[b.q].n}: ${b.has?fp(b.v):"no squad"}"><i style="height:${Math.max(3,Math.round(Math.max(0,b.v)/mx*64))}px"></i><span>${D.rounds[b.q].n}</span></button>`).join("")}</div>
    ${body}
    ${openRound()<E.R?`<p class="note" style="margin-top:12px">${id===cloud.uid?(picks[openRound()]?"Din trupp för omgång "+D.rounds[openRound()].n+" är sparad.":"Du har ingen komplett trupp för omgång "+D.rounds[openRound()].n+" än."):"Trupperna för omgång "+D.rounds[openRound()].n+" är dolda tills den startar måndag "+dshort(D.rounds[openRound()].start)+"."}</p>`:""}`,true);
@@ -2473,11 +2477,11 @@ function inviteBanner(){
 }
 function globalCard(){
   const rows=leagueRows.GLOBAL||[],st=standings("GLOBAL"),me=st.rows.find(m=>m.id===cloud.uid);
-  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><span class="eyebrow">Everyone</span><h3 style="margin:2px 0 0">Topp 20 totalt</h3>${me&&st.cur!==undefined?`<div class="sub">You are #${me.rank} of ${rows.length}</div>`:""}</div>${st.cur!==undefined&&rows.length?`<button class="btn on" data-lgopen="GLOBAL">Open leaderboard</button>`:""}</div>${leagueTable("GLOBAL")}</div>`;
+  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><span class="eyebrow">Alla</span><h3 style="margin:2px 0 0">Topp 20 totalt</h3>${me&&st.cur!==undefined?`<div class="sub">Du är #${me.rank} av ${rows.length}</div>`:""}</div>${st.cur!==undefined&&rows.length?`<button class="btn on" data-lgopen="GLOBAL">Öppna topplistan</button>`:""}</div>${leagueTable("GLOBAL")}</div>`;
 }
 function leaguesView(){
   if(dbOk&&lgOpen&&(myLeagues.includes(lgOpen)||lgOpen==="GLOBAL"))return leagueDetail(lgOpen);
-  if(!dbOk)return `<p class="eyebrow pg-k">03 · Tävla</p><h2 style="margin-top:0">Ligor</h2>${inviteBanner()}<div class="grid2"><div class="promo"><span class="pimg" style="background:${omapVar("ligor",700,420)}"></span><div class="pbody"><h3>Spela mot dina kompisar</h3><p>Starta en liga, skicka länken och se vem som valde bäst varje vecka. Ligor kräver ett konto.</p><button class="btn" data-tab="profile">Logga in eller skapa ett konto</button></div></div><div class="card"><h3>Så fungerar ligor</h3><ol class="steps"><li>Skapa ett konto och starta en liga.</li><li>Skicka inbjudningslänken. Kompisar registrerar sig och hamnar i din liga.</li><li>Alla låser en trupp före måndag.</li><li>Sedan ser ni varandras lag och poäng.</li></ol></div></div><div class="card global" style="margin-top:12px"><span class="eyebrow">Everyone</span><h3 style="margin:2px 0 6px">Topp 20 totalt</h3><p class="note" style="margin:0">Alla spelare rankas på en topplista. Logga in för att se den och var du ligger.</p></div>`;
+  if(!dbOk)return `<p class="eyebrow pg-k">03 · Tävla</p><h2 style="margin-top:0">Ligor</h2>${inviteBanner()}<div class="grid2"><div class="promo"><span class="pimg" style="background:${omapVar("ligor",700,420)}"></span><div class="pbody"><h3>Spela mot dina kompisar</h3><p>Starta en liga, skicka länken och se vem som valde bäst varje vecka. Ligor kräver ett konto.</p><button class="btn" data-tab="profile">Logga in eller skapa ett konto</button></div></div><div class="card"><h3>Så fungerar ligor</h3><ol class="steps"><li>Skapa ett konto och starta en liga.</li><li>Skicka inbjudningslänken. Kompisar registrerar sig och hamnar i din liga.</li><li>Alla låser en trupp före måndag.</li><li>Sedan ser ni varandras lag och poäng.</li></ol></div></div><div class="card global" style="margin-top:12px"><span class="eyebrow">Alla</span><h3 style="margin:2px 0 6px">Topp 20 totalt</h3><p class="note" style="margin:0">Alla spelare rankas på en topplista. Logga in för att se den och var du ligger.</p></div>`;
   return `<p class="eyebrow pg-k">03 · Tävla</p><h2 style="margin-top:0">Ligor</h2>${inviteBanner()}
   ${isLive()?"":`<p class="note" style="margin:0 0 12px;color:var(--warn)">Du är i en övningsomgång. Ligor räknar bara säsongen.</p>`}
   <div class="grid2">
@@ -2485,7 +2489,7 @@ function leaguesView(){
    <div class="card"><h3>Gå med via kod</h3><div class="row"><input class="name" id="joinCode" maxlength="40" placeholder="NAMN-1A2B" value="${esc(joinCode)}" aria-label="Ligakod" autocapitalize="characters" autocorrect="off" style="flex:1;max-width:none"><button class="btn on" id="joinLeague">Gå med</button></div></div></div>
   ${leagueMsg?`<p class="note" style="margin:10px 0 0">${esc(leagueMsg)}</p>`:""}
   ${isLive()?globalCard():""}
-  ${myLeagues.length?myLeagues.map(c=>`<div class="card" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><h3 style="margin:0;display:inline">${esc(lgName(c))}</h3>${myOwn[c]?`<span class="host">You host</span>`:""} <button class="btn on" data-lgopen="${esc(c)}" style="margin-left:8px">Öppna ligan</button>
+  ${myLeagues.length?myLeagues.map(c=>`<div class="card" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><h3 style="margin:0;display:inline">${esc(lgName(c))}</h3>${myOwn[c]?`<span class="host">Du är värd</span>`:""} <button class="btn on" data-lgopen="${esc(c)}" style="margin-left:8px">Öppna ligan</button>
     <div class="codebox"><code>${esc(c)}</code><button class="btn" data-copy="${esc(c)}">${copied===c?"Länken kopierad":"Kopiera inbjudningslänk"}</button>${navigator.share?`<button class="btn" data-share="${esc(c)}">Share</button>`:""}</div></div><button class="btn quiet" data-leave="${esc(c)}">Lämna</button></div>${leagueTable(c)}</div>`).join(""):`<div class="card" style="margin-top:12px"><h3>Inga ligor än</h3><p class="note" style="margin:0">Starta en ovan och skicka inbjudningslänken till dina kompisar.</p></div>`}`;
 }
 function rulesView(){
@@ -2505,7 +2509,7 @@ function rulesView(){
 /* the details live in small sheets so the rules page stays short */
 function infoSheet(k){
   const hd=(t,e)=>`<div class="hd"><div><span class="eyebrow">${e}</span><h2 style="margin:4px 0 0">${t}</h2></div><button class="btn" data-close="1">Stäng</button></div>`;
-  const body={points:()=>hd("Så räknas poängen","Scoring")+`<div class="info"><ul class="rules"><li><b>2</b> för en godkänd målgång.</li>
+  const body={points:()=>hd("Så räknas poängen","Poäng")+`<div class="info"><ul class="rules"><li><b>2</b> för en godkänd målgång.</li>
   <li><b>Slagna löpare:</b> var och en är värd mellan 0,1 och 2,0 beroende på den slagna löparens klassbetyg. Att slå en av de bästa i H16 är värt ungefär 20 gånger mer än att slå en nybörjare. Högst 35.</li>
   <li><b>Fart:</b> 18 minus 80 gånger andelen efter vinnaren, aldrig under 0. En löpare 10 % efter vinnaren får 10 innan fältets styrka räknas in.</li>
   <li><b>Pallplats:</b> 12 för seger, 7 för andraplats, 4 för tredjeplats.</li>
@@ -2539,7 +2543,7 @@ function infoSheet(k){
    <div class="field"><label for="rmMsg">Meddelande (frivilligt)</label><input class="name" id="rmMsg" maxlength="1000" value="${esc(rmF.msg)}" autocomplete="off"></div>
    <div class="field"><label for="rmContact">E-post eller telefon om du vill ha svar (frivilligt)</label><input class="name" id="rmContact" maxlength="200" value="${esc(rmF.contact)}" autocomplete="email"></div>
    <div class="row" style="margin-top:10px"><button class="btn on" id="rmSend" ${rmBusy?"disabled":""}>Skicka</button>${rmStat?`<span class="note">${esc(rmStat)}</span>`:""}</div></div>`;
-  showSheet("info|"+k,"Rules",(body[k]||body.points)());
+  showSheet("info|"+k,"Regler",(body[k]||body.points)());
 }
 /* cards glide from where they were to where they are now (swaps between A and B, adds, removals) */
 let flipFrom=null;
@@ -2562,7 +2566,7 @@ function profile(i){
   showSheet("prof|"+i,nameOf(i),`
    <div class="hd"><div style="display:flex;gap:16px;align-items:center;min-width:0">${avatar(i,"lg")}<div style="min-width:0"><h2>${esc(nameOf(i))}${idleTag(i)}</h2><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}${idle(i)?" · "+(idle(i)===2?"inget lopp på 10 veckor":"sprang inte förra veckan"):""}</div></div></div><button class="btn" data-close="1">Stäng</button></div>
    <div class="stats"><div><b>${D.runners[i].p?fm(E.price(i,pr())):"–"}</b><span>Pris · ${TIERS[tierOf(i)][1]}</span></div><div><b>${s.starts}</b><span>Starter</span></div><div><b>${fp(s.total)}</b><span>Poäng</span></div><div><b>${fp(s.weeks?s.perWeek:0)}</b><span>Per vecka, senaste 5</span></div>${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Klassbetyg</span></div>`:""}</div>
-   ${(()=>{if(!Object.keys(ENT).length)return "";const r=R(),w=r<E.R?entOf(i,r):[],rd=D.rounds[r];return `<div class="entbox ${w.length?"on":""}"><span class="entered" aria-hidden="true">${w.length?"✓":"–"}</span><div><b>${w.length?"Anmäld den här spelveckan":"Inte anmäld den här spelveckan"}</b><span class="sub">${w.length?w.map(u=>esc(compName(u.name))+" ("+dayName(u.date).slice(0,3)+" "+dshort(u.date)+")").join(", "):rd?"Round "+rd.n+", "+dshort(rd.start)+" – "+dshort(rd.end):""}</span></div></div>`})()}
+   ${(()=>{if(!Object.keys(ENT).length)return "";const r=R(),w=r<E.R?entOf(i,r):[],rd=D.rounds[r];return `<div class="entbox ${w.length?"on":""}"><span class="entered" aria-hidden="true">${w.length?"✓":"–"}</span><div><b>${w.length?"Anmäld den här spelveckan":"Inte anmäld den här spelveckan"}</b><span class="sub">${w.length?w.map(u=>esc(compName(u.name))+" ("+dayName(u.date).slice(0,3)+" "+dshort(u.date)+")").join(", "):rd?"Omgång "+rd.n+", "+dshort(rd.start)+" – "+dshort(rd.end):""}</span></div></div>`})()}
    ${(()=>{const e=(ENT[i]||[]).map(k=>D.upcoming[k]).filter(Boolean);return e.length?`<p class="note entline"><span class="entered" aria-hidden="true">✓</span> Anmäld: ${e.map(u=>`${u.eo?`<a href="https://eventor.orientering.se/Events/Show/${u.eo}" target="_blank" rel="noopener">${esc(compName(u.name))}</a>`:esc(compName(u.name))} (${dshort(u.date)})`).join(", ")}</p>`:""})()}
    ${hist}
    <div class="tbl rtab" style="margin-top:12px"><table><thead><tr><th>Lopp</th><th>Plats</th><th>Efter</th><th>Tid</th><th>Poäng</th></tr></thead><tbody>
@@ -2580,10 +2584,10 @@ function photoSection(i){
   rel.push(["guardian","Jag är löparens förälder eller vårdnadshavare"]);
   if(adminOn())rel.push(["admin","Admin: jag har löparens tillstånd"]);
   return `<div class="phbox"><h3>Lägg till ett foto av ${esc(nameOf(i))}</h3>
-   <div class="phprev">${f.url?`<img src="${f.url}" alt="Preview">`:`<div class="ph0"></div>`}<div><input type="file" id="phFile" accept="image/*" aria-label="Välj ett foto"><p class="note" style="margin:6px 0 0">Ett tydligt foto av ansiktet fungerar bäst. Det beskärs till en kvadrat och platsdata tas bort.</p></div></div>
+   <div class="phprev">${f.url?`<img src="${f.url}" alt="Förhandsvisning">`:`<div class="ph0"></div>`}<div><input type="file" id="phFile" accept="image/*" aria-label="Välj ett foto"><p class="note" style="margin:6px 0 0">Ett tydligt foto av ansiktet fungerar bäst. Det beskärs till en kvadrat och platsdata tas bort.</p></div></div>
    <div style="display:grid;gap:8px">${rel.map(([k,l])=>`<label><input type="radio" name="phRel" value="${k}" ${f.rel===k?"checked":""}> ${l}</label>`).join("")}</div>
    <label><input type="checkbox" id="phConsent" ${f.consent?"checked":""}> Jag har rätt att dela fotot och godkänner att det visas offentligt på Fantasy Orientering. Det kan tas bort när som helst.</label>
-   <div class="row"><button class="btn on" id="phSend" ${phBusy||!f.blob||!f.rel||!f.consent?"disabled":""}>${phBusy?"Skickar…":"Skicka för godkännande"}</button><button class="btn quiet" id="phCancel">Cancel</button></div>
+   <div class="row"><button class="btn on" id="phSend" ${phBusy||!f.blob||!f.rel||!f.consent?"disabled":""}>${phBusy?"Skickar…":"Skicka för godkännande"}</button><button class="btn quiet" id="phCancel">Avbryt</button></div>
    ${phMsg?`<p class="note" style="margin:0">${esc(phMsg)}</p>`:""}${list}</div>`;
 }
 /* square crop and re-encode in the browser: small upload, no EXIF or GPS data */
@@ -2663,7 +2667,7 @@ let rmReqs=[],allPf=[],modMsg="",rmF={runner:"",msg:"",contact:""},rmStat="",rmB
 async function applyNow(){
   if(applyBusy)return;applyBusy=true;applyMsg="Starting…";render();
   try{const r=await cloud.sb.functions.invoke("apply-now",{method:"POST"});const o=r.data||{};
-    applyMsg=o.msg||(r.error?"Kunde inte starta uppdateringen: "+(r.error.message||"error"):"Started.");
+    applyMsg=o.msg||(r.error?"Kunde inte starta uppdateringen: "+(r.error.message||"fel"):"Startad.");
     if(r.error&&r.error.context){try{const j=await r.error.context.json();if(j&&j.msg)applyMsg=j.msg}catch(e){}}
   }catch(e){applyMsg="Kunde inte starta uppdateringen."}
   applyBusy=false;render();
@@ -2671,7 +2675,7 @@ async function applyNow(){
 async function loadOvr(){if(!cloud.admin)return;try{const [q,r,p]=await Promise.all([cloud.sb.from("game_overrides").select("id,kind,ref,label,created_at").order("created_at"),
   cloud.sb.from("removal_requests").select("id,runner,message,contact,created_at").eq("handled",false).order("created_at"),cloud.sb.from("profiles").select("id,name,team,name_flag").order("created_at").limit(2000)]);
   if(!q.error)ovr=q.data||[];if(!r.error)rmReqs=r.data||[];if(!p.error)allPf=p.data||[]}catch(e){}render()}
-async function modProfile(id,patch,what){try{const q=await cloud.sb.from("profiles").update(patch).eq("id",id);modMsg=q.error?"Kunde inte spara: "+q.error.message:what;pfCache.delete(id)}catch(e){modMsg="Could not save."}await loadOvr()}
+async function modProfile(id,patch,what){try{const q=await cloud.sb.from("profiles").update(patch).eq("id",id);modMsg=q.error?"Kunde inte spara: "+q.error.message:what;pfCache.delete(id)}catch(e){modMsg="Kunde inte spara."}await loadOvr()}
 async function rmDone(id){try{await cloud.sb.from("removal_requests").update({handled:true}).eq("id",id)}catch(e){}await loadOvr()}
 /* someone asks for a runner to be left out of the game (no account needed) */
 async function sendRemoval(){
@@ -2729,7 +2733,7 @@ function adminModCard(){
   const req=x=>`<div class="adm-row col"><div><b>${esc(x.runner)}</b> <span class="sub">${esc(dshort(String(x.created_at).slice(0,10)))}${x.contact?" · "+esc(x.contact):""}</span>${x.message?`<p class="note" style="margin:4px 0 0">${esc(x.message)}</p>`:""}</div>
     <div class="row">${match(x.runner).map(i=>`<button class="btn" data-rmhide="${esc(D.runners[i].id)}" data-rmlabel="${esc(nameOf(i)+", "+clubOf(i))}">Dölj ${esc(nameOf(i))} · ${esc(clubOf(i))} · ${esc(D.runners[i].k)}</button>`).join("")||'<span class="note">Ingen löpare med det namnet i spelet.</span>'}<button class="btn quiet" data-rmdone="${x.id}">Klar</button></div></div>`;
   const bad=allPf.filter(p=>!nameOk(p.name)||!nameOk(p.team)||p.name_flag),pf=p=>{const f=p.name_flag,tf=f==="team"||f==="both",nf=f==="name"||f==="both",flag=(t,n)=>t&&n?"both":t?"team":n?"name":"";
-    return `<div class="adm-row col"><div><b>${esc(p.team||"Inget lagnamn")}</b> <span class="sub">${esc(p.name||"")}</span>${f?` <span class="flagtag">Must choose a new ${f==="both"?"name and team name":f==="team"?"team name":"name"}</span>`:""}</div><div class="row">
+    return `<div class="adm-row col"><div><b>${esc(p.team||"Inget lagnamn")}</b> <span class="sub">${esc(p.name||"")}</span>${f?` <span class="flagtag">Måste välja nytt ${f==="both"?"namn och lagnamn":f==="team"?"lagnamn":"namn"}</span>`:""}</div><div class="row">
       ${p.team?`<button class="btn ${tf?"on":""}" data-pfflag="${esc(p.id)}" data-flag="${flag(!tf,nf)}">${tf?"Lagnamn: ångra":"Lagnamnet är inte tillåtet"}</button>`:""}
       <button class="btn ${nf?"on":""}" data-pfflag="${esc(p.id)}" data-flag="${flag(tf,!nf)}">${nf?"Namn: ångra":"Namnet är inte tillåtet"}</button></div></div>`};
   return `<div class="card admin"><h3>Admin · löpare och managers</h3>
@@ -2954,10 +2958,10 @@ function welcomeSheet(kind){
   const joined=myLeagues.length?lgName(myLeagues[myLeagues.length-1]):"";
   const body=kind==="ok"?`<svg class="tick" viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="40"/><path d="M29 47 l11 11 l23 -25"/></svg>
     <h2>E-posten är bekräftad</h2><p>Välkommen${nm?", "+nm:""}. Du är inloggad${joined?" och med i ligan <b>"+esc(joined)+"</b>":""}. Din trupp sparas nu på ditt konto på alla enheter.</p>
-    <div class="row"><button class="btn on" id="wTeam">Välj din trupp</button>${joined?`<button class="btn" id="wLeague">Open the league</button>`:""}</div>`
+    <div class="row"><button class="btn on" id="wTeam">Välj din trupp</button>${joined?`<button class="btn" id="wLeague">Öppna ligan</button>`:""}</div>`
    :`<svg class="tick bad" viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="40"/><path d="M33 33 l26 26 M59 33 l-26 26"/></svg>
     <h2>Länken fungerade inte</h2><p>${AUTH_BACK.code==="otp_expired"?"Bekräftelselänken har gått ut eller har redan använts.":esc(AUTH_BACK.err||"Länken kunde inte användas.")} Om du redan har bekräftat din e-post, logga bara in. Annars skapar du kontot igen för att få en ny länk.</p>
-    <div class="row"><button class="btn on" id="wSignIn">Sign in</button><button class="btn" data-close="1">Stäng</button></div>`;
+    <div class="row"><button class="btn on" id="wSignIn">Logga in</button><button class="btn" data-close="1">Stäng</button></div>`;
   $("#modal").innerHTML=`<div class="modal" data-close="1"><div class="sheet welcome" role="dialog" aria-modal="true" aria-label="${kind==="ok"?"E-posten är bekräftad":"Problem med länken"}">${body}</div></div>`;
   if(kind==="ok")setTimeout(()=>burst(innerWidth/2,innerHeight*.3,70),500);
 }
