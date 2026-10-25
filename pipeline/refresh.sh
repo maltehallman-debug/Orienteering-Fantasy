@@ -12,5 +12,6 @@ python3 "$S/scripts/fetch_results.py" "$S"
 python3 "$S/scripts/eventor.py" "$S"
 python3 "$S/scripts/build_dataset.py" "$S"
 python3 "$S/scripts/build_data.py" "$S"
+python3 "$S/scripts/sync_locks.py" "$S"
 (cd "$S" && python3 scripts/assemble.py)
 cp "$S/build/index.html" "$ROOT/index.html"

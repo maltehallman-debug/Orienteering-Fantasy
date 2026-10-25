@@ -24,7 +24,8 @@ for i, e in enumerate(events):
 out_rounds = [{"n": r["n"], "start": r["start"], "end": r["end"], "ev": [evpos[x] for x in r["events"]], "final": 1 if r["final"] else 0,
                **({"skip": 1} if r.get("skip") else {}), **({"big": r["big"]} if r.get("big") is not None else {}),
                **({"pending": 1} if r.get("pending") else {}), **({"forced": r["forced"]} if r.get("forced") else {}),
-               **({"beta": 1} if r.get("beta") else {}), **({"launch": 1} if r.get("launch") else {}), **({"wait": 1} if r.get("wait") else {})} for r in rounds]
+               **({"beta": 1} if r.get("beta") else {}), **({"launch": 1} if r.get("launch") else {}), **({"wait": 1} if r.get("wait") else {}),
+               **({"no": r["no"]} if r.get("no") is not None else {}), **({"pre": 1} if r.get("pre") else {}), **({"lock": r["lock"]} if r.get("lock") else {})} for r in rounds]
 # prices only change with new results: rounds ahead all have today's prices, so only up to the next round is sent
 _upto = next((i for i, r in enumerate(rounds) if r["start"] > _dt.date.today().isoformat()), len(rounds) - 1) + 1
 prices = [[int(round(p[k] * 10)) for k in pool] for p in D["prices"][:max(1, _upto)]]

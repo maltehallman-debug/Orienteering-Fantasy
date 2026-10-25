@@ -47,6 +47,8 @@ jobs:
           TZ: Europe/Stockholm
           # only used as a request header to eventor.orientering.se; GitHub masks it in logs and it is never written out
           EVENTOR_API_KEY: ${{ secrets.EVENTOR_API_KEY }}
+          # sends the rounds' lock times to the database; kept in Supabase's Vault as round_sync_key and copied here
+          ROUND_SYNC_KEY: ${{ secrets.ROUND_SYNC_KEY }}
         run: bash pipeline/refresh.sh
       - name: Commit if changed
         run: |

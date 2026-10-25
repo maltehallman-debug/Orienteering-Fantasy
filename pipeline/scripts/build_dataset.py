@@ -322,10 +322,34 @@ BETA_WEEK = "2026-11-02"
 LAUNCH = _j("eventor/launch.json", None) or {"name": "Sverigepremiären", "dates": ["2027-03-05", "2027-03-06", "2027-03-07"], "guess": True}
 LAUNCH_WEEK = monday(dt.date.fromisoformat(LAUNCH["dates"][0])).isoformat()
 print("launch week", LAUNCH_WEEK, LAUNCH["dates"], "(not yet confirmed by Eventor)" if LAUNCH.get("guess") else "(from Eventor)")
+# Each live week locks the evening before its first big race, at 20:00 Swedish time (the first race of any kind when
+# the week has no big one known yet; Monday 00:00 when nothing is known). Only races after the lock count for the
+# round. A lock that has passed is kept as it was, whatever the race list says later.
+from zoneinfo import ZoneInfo
+STO = ZoneInfo("Europe/Stockholm"); NOW = dt.datetime.now(STO)
+first_big = {}
+if EVINFO is not None:
+    for ev in EVINFO:
+        if EVBIG.get(ev["eid"], {}).get("big"):
+            for d in ev["dates"]:
+                k = monday(dt.date.fromisoformat(d)).isoformat()
+                first_big[k] = min(first_big.get(k, d), d)
+first_big[LAUNCH_WEEK] = min(first_big.get(LAUNCH_WEEK, LAUNCH["dates"][0]), LAUNCH["dates"][0])
+lk_path = f"{S}/data/eventor/locks_final.json"; locks_final = _j("eventor/locks_final.json", {})
+def lock_of(wk, ids):
+    k = wk.isoformat()
+    if k in locks_final: return locks_final[k]
+    first = first_big.get(k) or min((e["d"].isoformat() for e in events if e["id"] in ids), default=None)
+    if not first: return None
+    t = dt.datetime.combine(dt.date.fromisoformat(first) - dt.timedelta(days=1), dt.time(20, 0), STO)
+    if t <= NOW: locks_final[k] = t.isoformat()
+    return t.isoformat()
 rounds = []
 wk = SEASON_START; i = 0
 while wk <= LAST_ROUND_START:
     ids = [e["id"] for e in events if monday(e["d"]) == wk]
+    lock = lock_of(wk, ids) if wk >= LIVE_START else None
+    if lock: ids = [x for x in ids if next(e for e in events if e["id"] == x)["d"] > dt.date.fromisoformat(lock[:10])]
     end = wk + dt.timedelta(days=6)
     w = EVWEEKS.get(wk.isoformat()) if EVWEEKS is not None else None
     big = w["big"] if w else None; decided = bool(w and w["final"])
@@ -335,8 +359,17 @@ while wk <= LAST_ROUND_START:
     pending = wk >= LIVE_START and not wait and k != LAUNCH_WEEK and w is not None and not decided and k not in WEEK_ON and k not in WEEK_OFF
     rounds.append({"n": i + 1, "start": k, "end": end.isoformat(), "events": [] if skip else ids, "final": end < TODAY, "big": big, "skip": skip,
                    "pending": pending, "forced": "on" if k in WEEK_ON or k == LAUNCH_WEEK else "off" if k in WEEK_OFF or wait else None,
-                   "beta": k == BETA_WEEK, "launch": k == LAUNCH_WEEK, "wait": wait})
+                   "beta": k == BETA_WEEK, "launch": k == LAUNCH_WEEK, "wait": wait, "lock": lock})
     wk += dt.timedelta(days=7); i += 1
+os.makedirs(os.path.dirname(lk_path), exist_ok=True); json.dump(locks_final, open(lk_path, "w"))
+# Numbers: Sverigepremiären is Omgång 1 and only weeks that are played count, so a skipped week takes no number.
+# The weeks before the beta round are practice rounds (for replaying), numbered on their own.
+_n = _p = 0
+for r in rounds:
+    if r["skip"] or r["beta"]: r["no"] = None
+    elif r["start"] >= LAUNCH_WEEK: _n += 1; r["no"] = _n
+    else: _p += 1; r["no"] = _p; r["pre"] = True
+print("round numbers from the launch:", [(r["start"], r["no"], r["lock"]) for r in rounds if r["start"] >= BETA_WEEK][:8])
 print("rounds", len(rounds), [len(r["events"]) for r in rounds])
 print("skipped live weeks", [r["start"] for r in rounds if r.get("skip")], "big per live week", [(r["start"], r["big"]) for r in rounds if r["start"] >= LIVE_START.isoformat()])
 
