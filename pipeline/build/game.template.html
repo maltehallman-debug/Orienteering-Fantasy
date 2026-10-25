@@ -1584,6 +1584,8 @@ td,th{border-color:#ededed!important}
 .next.omhero{position:relative;display:block;min-height:clamp(250px,30vw,380px);padding:0!important;margin:0 0 26px;border-radius:0 0 50px 50px!important;
   background:var(--om)!important;overflow:hidden;color:#fff}
 .next.omhero::before{display:none!important}
+/* on wider screens the big card shows a hand-made course (maps/hero-pc.jpg); phones keep the generated one for now */
+@media (min-width:641px){.next.omhero{background:url(maps/hero-pc.jpg) center/cover no-repeat #f7f5ef!important}}
 .next.omhero .next-main{position:absolute;left:0;bottom:0;display:grid;gap:6px;max-width:min(560px,88%);background:#000;padding:20px 28px 22px;border-radius:0 0 0 50px}
 .next.omhero .next-main b{font-family:var(--font);font-weight:700;font-size:clamp(22px,2.6vw,30px);line-height:1.15;color:#fff}
 .next.omhero .next-k{font-size:11px;color:var(--gul)!important;letter-spacing:.08em}
@@ -2298,6 +2300,8 @@ function launchTick(){
 }
 setInterval(()=>{if(!document.hidden)launchTick()},1000);
 /* a round's name: the O-Event week is the beta test round */
+/* hand-made courses for the four race cards on the home page (1200x626); missing ones fall back to a generated course */
+const CARDIMG=["maps/tavling-1.jpg","maps/tavling-2.jpg"];
 const MAPS=["maps/karta-1.jpg","maps/karta-2.jpg","maps/karta-3.jpg","maps/karta-4.jpg","maps/karta-5.jpg","maps/karta-6.jpg","maps/karta-7.jpg","maps/karta-8.jpg"];
 const OMAPS=new Map();
 function omapVar(seed,w,h){
@@ -2381,7 +2385,7 @@ function omapParts(seed,W,H){
 function raceCards(r){
   const c=comps(r);if(!c.length)return "";const rd=D.rounds[r];
   return `<section class="news"><div class="news-hd"><h2>Veckans tävlingar</h2><span class="sub">${rdName(rd)} · ${dshort(rd.start)} – ${dshort(rd.end)}</span></div>
-   <div class="news-grid">${c.slice(0,4).map(x=>`<button class="ncard" data-week="${r}"><span class="nimg" style="background:${omapVar(x.n,480,250)}"></span>
+   <div class="news-grid">${c.slice(0,4).map((x,i)=>`<button class="ncard" data-week="${r}"><span class="nimg" style="background:${CARDIMG[i]?`url(${CARDIMG[i]}) center/cover no-repeat #f7f5ef`:omapVar(x.n,480,250)}"></span>
      <span class="nrow"><span>${x.big?"Stor tävling":x.tier>1?"Mästerskap":"Tävling"}</span><span>${dayName(x.date).slice(0,3)} ${dshort(x.date)}</span></span><b>${esc(x.n)}</b></button>`).join("")}</div>
    ${c.length>4?`<div class="news-more"><button class="btn" data-week="${r}">Alla ${c.length} lopp</button></div>`:""}</section>`;
 }
