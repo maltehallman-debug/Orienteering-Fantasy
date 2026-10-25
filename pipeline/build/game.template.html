@@ -3228,7 +3228,11 @@ async function onSession(session){
 async function initCloud(){
   try{
     if(!window.supabase||!window.supabase.createClient){authMsg="Kunde inte ladda inloggningen. Ladda om sidan.";return}
-    cloud.sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    /* the login's own lock, kept to this tab: the browser-wide lock supabase-js uses by default can get stuck,
+       most of all on phones after switching to the mail app and back, and then saving a new password waits forever */
+    let lockQ=Promise.resolve();
+    const tabLock=(name,timeout,fn)=>{const r=lockQ.then(()=>fn());lockQ=r.catch(()=>{});return r};
+    cloud.sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,lock:tabLock}});
     cloud.sb.auth.onAuthStateChange((ev,session)=>{setTimeout(()=>onSession(session),0);if(ev==="PASSWORD_RECOVERY"&&!pwOpen){welcomed=true;setTimeout(pwSheet,0)}});
     loadPhotos();
   }catch(e){}
@@ -3244,17 +3248,22 @@ function pwSheet(){pwOpen=true;
     <div class="row"><button class="btn on" id="pwSave" ${pwBusy?"disabled":""}>${pwBusy?"Ett ögonblick…":"Spara lösenordet"}</button><button class="btn" id="pwLater">Senare</button></div></div></div>`;
   setTimeout(()=>{const x=$("#pwNew");x&&x.focus()},60);
 }
+function pwDone(){if(!pwOpen&&!pwBusy)return;pwOpen=false;pwBusy=false;pwMsg="";clearTimeout(pwSlow);
+  $("#modal").innerHTML=`<div class="modal" data-close="1"><div class="sheet welcome" role="dialog" aria-modal="true" aria-label="Lösenordet är bytt"><svg class="tick" viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="40"/><path d="M29 47 l11 11 l23 -25"/></svg><h2>Lösenordet är bytt</h2><p>Du är inloggad. Nästa gång loggar du in med det nya lösenordet.</p><div class="row"><button class="btn on" data-close="1">Klart</button></div></div></div>`}
+let pwSlow=0;
 async function savePw(){
   if(pwBusy||!cloud.sb)return;const a=($("#pwNew")||{}).value||"",b=($("#pwNew2")||{}).value||"",m=$("#pwMsg");
-  const say=t=>{pwMsg=t;if(m)m.textContent=t};
+  const say=t=>{pwMsg=t;const x=$("#pwMsg");if(x)x.textContent=t};
+  const idle=()=>{const b2=$("#pwSave");if(b2){b2.disabled=false;b2.textContent="Spara lösenordet"}};
   if(a.length<8)return say("Lösenordet måste vara minst 8 tecken.");
   if(a!==b)return say("Lösenorden är inte likadana.");
-  pwBusy=true;const btn=$("#pwSave");if(btn){btn.disabled=true;btn.textContent="Ett ögonblick…"}
+  pwBusy=true;say("");const btn=$("#pwSave");if(btn){btn.disabled=true;btn.textContent="Ett ögonblick…"}
+  /* never an endless wait: after a while say so and let them try again; a late answer still finishes the job */
+  pwSlow=setTimeout(()=>{if(!pwBusy)return;pwBusy=false;idle();say("Det tar längre tid än vanligt. Försök igen, eller ladda om sidan och be om en ny länk.")},12000);
   try{const r=await cloud.sb.auth.updateUser({password:a});
-    if(r.error){say(/different from the old/i.test(r.error.message)?"Välj ett annat lösenord än det gamla.":/session|expired|missing/i.test(r.error.message)?"Länken har gått ut. Be om en ny under Logga in.":"Det gick inte att spara. Försök igen.")}
-    else{pwOpen=false;pwMsg="";$("#modal").innerHTML=`<div class="modal" data-close="1"><div class="sheet welcome" role="dialog" aria-modal="true" aria-label="Lösenordet är bytt"><svg class="tick" viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="40"/><path d="M29 47 l11 11 l23 -25"/></svg><h2>Lösenordet är bytt</h2><p>Du är inloggad. Nästa gång loggar du in med det nya lösenordet.</p><div class="row"><button class="btn on" data-close="1">Klart</button></div></div></div>`}
-  }catch(e){say("Det gick inte att spara. Försök igen.")}
-  pwBusy=false;const b2=$("#pwSave");if(b2){b2.disabled=false;b2.textContent="Spara lösenordet"}
+    if(r.error){clearTimeout(pwSlow);pwBusy=false;idle();say(/different from the old/i.test(r.error.message)?"Välj ett annat lösenord än det gamla.":/session|expired|missing/i.test(r.error.message)?"Länken har gått ut. Be om en ny under Logga in.":"Det gick inte att spara. Försök igen.")}
+    else{pwBusy=true;pwDone()}
+  }catch(e){clearTimeout(pwSlow);pwBusy=false;idle();say("Det gick inte att spara. Försök igen.")}
 }
 async function sendReset(){
   if(authBusy||!cloud.sb)return;authMsg="";authOk=false;const email=authEmail.trim();
