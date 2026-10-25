@@ -1770,6 +1770,8 @@ const R=()=>state.round, done=()=>state.round>=E.R, pr=()=>Math.min(state.round,
 /* Rounds are numbered from the official launch, Sverigepremiären = Omgång 1, and skipped weeks get no number
    ("no" comes from the build). The O-Event week is the beta test round; the replayable weeks before it are practice. */
 const rdName=rd=>!rd?"":rd.beta?"Betatestrunda":rd.no==null?"Uppehåll":(rd.pre?"Övningsomgång ":"Omgång ")+rd.no;
+/* in a sentence: "betatestrundan", "omgång 1" */
+const rdThe=rd=>!rd?"":rd.beta?"betatestrundan":rdName(rd).toLowerCase();
 const rdNo=rd=>!rd?"":rd.beta?"B":rd.no==null?"–":String(rd.no);
 const rdHead=rd=>!rd?"":rd.beta?"Beta":rd.no==null?"–":"Omg "+rd.no;
 /* a round locks the evening before its week's first big race ("lock", from the build); otherwise Monday 00:00 */
@@ -1888,7 +1890,7 @@ function courseSvg(){
   const [sx,sy]=P[0],[fx,fy]=P[n+1];
   const start=`<polygon class="sta" points="${sx},${sy-13} ${sx-12},${sy+9} ${sx+12},${sy+9}"/>`;
   const fin=`<circle class="fin" cx="${fx}" cy="${fy}" r="${cr-3}"/><circle class="fin" cx="${fx}" cy="${fy}" r="${cr+4}"/>`;
-  return `<svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Säsongens bana, ${rdName(D.rounds[w0]).toLowerCase()} till ${rdName(D.rounds[w1-1]).toLowerCase()}">${legs}${start}${c}${fin}</svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Säsongens bana, ${rdThe(D.rounds[w0])} till ${rdThe(D.rounds[w1-1])}">${legs}${start}${c}${fin}</svg>`;
 }
 function renderCourse(){$("#course").innerHTML=(tab==="rounds"&&state.log.length)||(tab==="team"&&isLive()&&!done())?courseSvg():""}
 
@@ -2160,7 +2162,7 @@ let weekR=null;
 function weekSheet(r){
   if(r===undefined||r===null)r=R();r=Math.max(0,Math.min(E.R-1,r));weekR=r;
   const rd=D.rounds[r],n=comps(r).length;
-  showSheet("week","Lopp i "+rdName(rd).toLowerCase(),`<div class="hd"><div><span class="eyebrow">${rdName(rd)}</span><h2 style="margin:4px 0 0">${n} lopp</h2><div class="sub">${dshort(rd.start)} – ${dshort(rd.end)}</div></div><button class="btn" data-close="1">Stäng</button></div>
+  showSheet("week","Lopp i "+rdThe(rd),`<div class="hd"><div><span class="eyebrow">${rdName(rd)}</span><h2 style="margin:4px 0 0">${n} lopp</h2><div class="sub">${dshort(rd.start)} – ${dshort(rd.end)}</div></div><button class="btn" data-close="1">Stäng</button></div>
    <div class="rnav" style="margin:14px 0"><button class="btn" data-week="${r-1}" ${r<=0?"disabled":""}>Förra veckan</button><b>${r===R()?"Den här omgången":r===R()+1?"Nästa omgång":rdName(rd)}</b><button class="btn" data-week="${r+1}" ${r>=E.R-1?"disabled":""}>Nästa vecka</button></div>
    ${weekList(r)}
 `);
@@ -2195,7 +2197,7 @@ function teamView(){
   const teamRows=(list,n,team,off)=>{const out=[];for(let k=0;k<n;k++)out.push(list[k]!==undefined?squadCard(list[k],off+k,show,locked,team):slot(off+k,team));return out.join("")};
   const fin=isFinal(r);
   const saved=isLive()&&isSaved(),cd=dshort(rd.start);
-  const lead=locked?(frozen?"Låst. Poängen kommer in i takt med resultaten.":"Låst för "+rdName(rd).toLowerCase()+"."):
+  const lead=locked?(frozen?"Låst. Poängen kommer in i takt med resultaten.":"Låst för "+rdThe(rd)+"."):
      (!state.squad.length?"Välj "+D.squad+" löpare för "+fm(D.budget)+", högst "+D.clubMax+" per klubb.":D.freeTransfers+" fria byten den här omgången.");
   const chipsHtml=`<div class="chipset"><div class="coins">${E.CHIPS.map(c=>{const used=state.chips[c],on=plan.chip===c,off=locked||used||rd.skip||(c==="wc"&&!state.squad.length);
       return `<button class="coin c-${c} ${on?"on":""} ${used?"used":""}" data-chip="${on?"":c}" aria-pressed="${on}" ${off?"disabled":""} title="${esc(CHIPINFO[c][0]+": "+CHIPINFO[c][1])}"><span class="disc"><i class="code">${31+E.CHIPS.indexOf(c)}</i>${chipSvg(c)}</span><b>${used?"Använd":CHIPSHORT[c]}</b></button>`}).join("")}</div>
@@ -2216,9 +2218,9 @@ function teamView(){
    <dl><dt>Byten</dt><dd>${!state.squad.length?"fria":t.n+" av "+D.freeTransfers+" fria"}</dd><dt>Avdrag</dt><dd class="${pen?"dn":""}">${pen?"-"+fp(pen):"inget"}</dd><dt>Kvar i banken</dt><dd class="${E.bankAfter(state,plan.squad)<0?"dn":""}">${fm(E.bankAfter(state,plan.squad))}</dd></dl>
    <div><span class="eyebrow">Chips · ett användande var</span><div style="margin-top:10px">${chipsHtml}</div></div>
    ${errs.length&&!locked?`<ul class="errs">${errs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
-   ${isLive()?(saved?`<div class="savest" id="savest"><i>✓</i><span>Sparad för ${rdName(rd).toLowerCase()}<small>Låses automatiskt ${lockText(r)}</small></span></div>`
+   ${isLive()?(saved?`<div class="savest" id="savest"><i>✓</i><span>Sparad för ${rdThe(rd)}<small>Låses automatiskt ${lockText(r)}</small></span></div>`
        :`<div class="savest warn" id="savest"><i>!</i><span>${plan.squad.length?"Inte sparad än":"Ingen trupp än"}<small>${picks[r]||state.squad.length?"Din senaste kompletta trupp spelar tills dess":"Sparas när alla "+D.squad+" är valda"}</small></span></div>`)
-     :`<button class="btn go" id="play" ${errs.length||hasStarted(r)&&!fin?"disabled":""}>Spela ${rdName(rd).toLowerCase()}</button>`}
+     :`<button class="btn go" id="play" ${errs.length||hasStarted(r)&&!fin?"disabled":""}>Spela ${rdThe(rd)}</button>`}
    ${isLive()&&syncMsg?`<p class="note" style="margin:0;color:var(--warn)">${esc(syncMsg)}</p>`:""}
    ${fin&&state.squad.length&&!errs.length?`<button class="btn quiet" id="auto">${confirmAuto?"Bekräfta: spela alla färdiga omgångar":"Spela färdiga omgångar automatiskt med den här truppen"}</button>`:""}
   </aside></div>
@@ -2378,7 +2380,7 @@ async function shareBoard(){
   if(shareBusy)return;shareBusy=true;shareMsg="";render();
   try{
     const b=boardData(),blob=await makeShareImage(),name=`orienteering-fantasy-round-${b.rd.n}-${b.team}-team.png`;
-    const file=new File([blob],name,{type:"image/png"}),text=`${b.me}: ${b.x?fp(b.score)+" poäng i "+rdName(b.rd).toLowerCase():"mitt lag för "+rdName(b.rd).toLowerCase()} · Fantasy Orientering`;
+    const file=new File([blob],name,{type:"image/png"}),text=`${b.me}: ${b.x?fp(b.score)+" poäng i "+rdThe(b.rd):"mitt lag för "+rdThe(b.rd)} · Fantasy Orientering`;
     if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:"Fantasy Orientering",text})}catch(e){if(e&&e.name!=="AbortError")throw e}}
     else{const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);shareMsg="Bilden sparades i dina hämtade filer."}
     window.__lastShare={size:blob.size,name};
@@ -2514,11 +2516,11 @@ function leagueTable(code){
   const st=standings(code),{cur,prev}=st;let rows=st.rows;
   if(code==="GLOBAL"){
     if(!leagueRows.GLOBAL)return `<p class="note">Laddar topplistan…</p>`;
-    if(cur===undefined||!rows.length)return `<p class="note" style="margin:6px 0 0">Alla som spelar är med. Tabellen fylls när ${rdName(D.rounds[LIVE]).toLowerCase()} låses ${lockText(LIVE)}.</p>`;
+    if(cur===undefined||!rows.length)return `<p class="note" style="margin:6px 0 0">Alla som spelar är med. Tabellen fylls när ${rdThe(D.rounds[LIVE])} låses ${lockText(LIVE)}.</p>`;
     const me=rows.find(m=>m.id===cloud.uid);rows=rows.slice(0,20);if(me&&!rows.includes(me))rows=rows.concat([me]);
   }
   if(!rows.length)return `<p class="note">Laddar medlemmar…</p>`;
-  if(cur===undefined)return `<p class="note" style="margin:6px 0 10px">Spelet startar med ${rdName(D.rounds[LIVE]).toLowerCase()}, som låses ${lockText(LIVE)}. Lag och poäng syns här när den har startat.</p>
+  if(cur===undefined)return `<p class="note" style="margin:6px 0 10px">Spelet startar med ${rdThe(D.rounds[LIVE])}, som låses ${lockText(LIVE)}. Lag och poäng syns här när den har startat.</p>
    <div class="lgmembers">${rows.map(m=>`<span class="tag">${mgrDot(m)} <span><b>${esc(m.name)}</b>${m.id===cloud.uid?" (du)":""}${subName(m)}</span></span>`).join("")}</div>`;
   const live=!isFinal(cur);
   return `<div class="tbl lgt"><table><thead><tr><th>#</th><th>Lag</th><th>${rdHead(D.rounds[cur])}${live?' <span class="livedot">Live</span>':""}</th>${prev!==undefined?`<th class="prevcol">${rdHead(D.rounds[prev])}</th>`:""}<th>Totalt</th></tr></thead><tbody>
@@ -2595,13 +2597,15 @@ function inviteBanner(){
    back through the rounds that have been played. */
 let wmR=null;
 function weekCard(){
-  const st=standings("GLOBAL"),rs=st.rs;if(!leagueRows.GLOBAL||st.cur===undefined)return "";
+  const st=standings("GLOBAL"),rs=st.rs;
+  /* before any round has been played the card is still there, saying when it fills */
+  if(!leagueRows.GLOBAL||st.cur===undefined)return `<div class="card global" style="margin-top:12px"><span class="eyebrow">Topp 20 i omgången</span><h3 style="margin:2px 0 6px">Veckans manager</h3><p class="note" style="margin:0">${!leagueRows.GLOBAL?"Laddar topplistan…":`De 20 managers som tar flest poäng i omgången. Listan fylls när ${rdThe(D.rounds[LIVE])} låses ${lockText(LIVE)}.`}</p></div>`;
   if(wmR===null||!rs.includes(wmR))wmR=st.cur;
   const r=wmR,i=rs.indexOf(r),live=!isFinal(r);
   const all=st.rows.filter(m=>ptsOf(m,r)!==null).map(m=>({m,p:ptsOf(m,r)})).sort((a,b)=>b.p-a.p||a.m.name.localeCompare(b.m.name,"sv"));
   all.forEach((x,k)=>{x.rank=k>0&&all[k-1].p===x.p?all[k-1].rank:k+1});
   let rows=all.slice(0,20);const me=all.find(x=>x.m.id===cloud.uid);if(me&&!rows.includes(me))rows=rows.concat([me]);
-  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0;align-items:center"><div><span class="eyebrow">Topp 20 i omgången</span><h3 style="margin:2px 0 0">Veckans manager</h3>${me?`<div class="sub">Du är #${me.rank} av ${all.length} i ${rdName(D.rounds[r]).toLowerCase()}</div>`:""}</div>
+  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0;align-items:center"><div><span class="eyebrow">Topp 20 i omgången</span><h3 style="margin:2px 0 0">Veckans manager</h3>${me?`<div class="sub">Du är #${me.rank} av ${all.length} i ${rdThe(D.rounds[r])}</div>`:""}</div>
     <div class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn wmarrow" data-weekr="${i>0?rs[i-1]:""}" ${i>0?"":"disabled"} aria-label="Föregående omgång">‹</button><b style="white-space:nowrap">${esc(rdName(D.rounds[r]))}${live?' <span class="livedot">Live</span>':""}</b><button class="btn wmarrow" data-weekr="${i<rs.length-1?rs[i+1]:""}" ${i<rs.length-1?"":"disabled"} aria-label="Nästa omgång">›</button></div></div>
     ${all.length?`<div class="tbl lgt"><table><thead><tr><th>#</th><th>Lag</th><th>Poäng</th></tr></thead><tbody>
     ${rows.map((x,k)=>`${k===20?'<tr class="gap"><td colspan="3">⋯</td></tr>':""}<tr class="${x.m.id===cloud.uid?"in":""} ${x.rank<=3?"pod":""}" style="--i:${k}" data-mgr="GLOBAL|${esc(x.m.id)}" tabindex="0"><td>${x.rank<=3?`<b class="medal m${x.rank}">${x.rank}</b>`:`<b>${x.rank}</b>`}</td>
