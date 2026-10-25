@@ -89,6 +89,25 @@ ADD = {int(o["ref"]) for o in OVR if o["kind"] == "race_add" and str(o["ref"]).i
 DROP = {str(o["ref"]) for o in OVR if o["kind"] == "race_remove"}
 print("admin overrides", len(OVR))
 
+# ---- the official launch: Sverigepremiären, the season's first big weekend. The event list above only reaches two
+# months ahead, so it is looked up on its own, in the first months of the coming year ----
+try:
+    _yr = TODAY.year + (1 if TODAY.month >= 4 else 0)
+    _raw = get("events", fromDate=f"{_yr}-01-15", toDate=f"{_yr}-04-30", classificationIds="1,2,3,4")
+    _hits = []
+    for e in (ET.fromstring(_raw) if _raw else []):
+        if strip(e.tag) != "Event" or not re.search(r"sverigepremi", text(e, "Name") or "", re.I) or text(e, "EventStatusId") == "10": continue
+        _ds = [text(r, "RaceDate", "Date") for r in kids(e, "EventRace")] or [text(e, "StartDate", "Date")]
+        _hits.append({"eid": int(text(e, "EventId")), "name": text(e, "Name"), "dates": sorted(d for d in _ds if d)})
+    if _hits:
+        _dates = sorted(d for h in _hits for d in h["dates"])
+        jsave(f"{C}/launch.json", {"name": "Sverigepremiären", "dates": _dates, "events": _hits})
+        print("launch: Sverigepremiären", _dates[0], "to", _dates[-1], [h["name"] for h in _hits])
+    else:
+        print("launch: no Sverigepremiären found in", _yr, "- keeping", jload(f"{C}/launch.json", {}).get("dates"))
+except Exception as ex:
+    print("launch: lookup failed", type(ex).__name__)
+
 # ---- events: championship, national, district and local; foot orienteering, organised by Swedish clubs, not cancelled ----
 raw = get("events", fromDate=FROM, toDate=SEASON_END, classificationIds="1,2,3,4")
 if not raw: print("eventor: event list unavailable, skipped"); sys.exit(0)

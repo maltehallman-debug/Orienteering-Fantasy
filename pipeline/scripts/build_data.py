@@ -23,7 +23,8 @@ for i, e in enumerate(events):
     res.append(rows)
 out_rounds = [{"n": r["n"], "start": r["start"], "end": r["end"], "ev": [evpos[x] for x in r["events"]], "final": 1 if r["final"] else 0,
                **({"skip": 1} if r.get("skip") else {}), **({"big": r["big"]} if r.get("big") is not None else {}),
-               **({"pending": 1} if r.get("pending") else {}), **({"forced": r["forced"]} if r.get("forced") else {})} for r in rounds]
+               **({"pending": 1} if r.get("pending") else {}), **({"forced": r["forced"]} if r.get("forced") else {}),
+               **({"beta": 1} if r.get("beta") else {}), **({"launch": 1} if r.get("launch") else {}), **({"wait": 1} if r.get("wait") else {})} for r in rounds]
 # prices only change with new results: rounds ahead all have today's prices, so only up to the next round is sent
 _upto = next((i for i, r in enumerate(rounds) if r["start"] > _dt.date.today().isoformat()), len(rounds) - 1) + 1
 prices = [[int(round(p[k] * 10)) for k in pool] for p in D["prices"][:max(1, _upto)]]
@@ -63,6 +64,8 @@ data = {"runners": runners, "events": out_events, "rounds": out_rounds, "res": r
         "asof": ASOF, "upcoming": [dict({"name": u["name"], "date": u["date"]}, **({"lr": u["id"]} if u.get("id") else {}), **({"eo": u["eo"]} if u.get("eo") else {}), **({"big": 1} if u.get("big") else {})) for u in upcoming], "liveStart": live_start,
         # runner index -> the upcoming races (indexes into "upcoming") they have entered in Eventor
         "entered": entered,
+        # the official launch: Sverigepremiären's dates (from Eventor when it has them)
+        "launch": {k: v for k, v in (json.load(open(f"{S}/data/eventor/launch.json")) if os.path.exists(f"{S}/data/eventor/launch.json") else {"name": "Sverigepremiären", "dates": ["2027-03-05", "2027-03-06", "2027-03-07"], "guess": True}).items() if k in ("name", "dates", "guess")},
         # old runner keys (a joint relay club used to count as a club) -> runner index, so saved squads still load
         "alias": {a: ridx[k] for a, k in D.get("alias", {}).items() if k in ridx},
         # money is in tenths of a thousand (205 = 20.5k); ten runners, the first five are the A team and score double

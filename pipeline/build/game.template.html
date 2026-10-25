@@ -1514,6 +1514,17 @@ td,th{border-color:#ededed!important}
 #modal .sheet[data-key="rename"] input.name:focus{box-shadow:inset 0 0 0 2px #fff,0 0 0 4px rgba(255,255,255,.18)!important}
 #modal .sheet[data-key="rename"] #rnSave{background:#fff!important;color:#991b1b!important}
 .wkd{border-radius:22px!important;padding:14px 18px!important}
+/* the countdown to the official launch, on every page until it comes */
+.launchbar{margin:14px 0 4px;background:#003c68!important;color:#fff;border-radius:24px;padding:14px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;box-shadow:0 10px 30px -18px rgba(0,30,60,.6)}
+.launchbar .lb-clock{display:flex;gap:8px;align-items:flex-end}
+.launchbar .lb-u{display:grid;justify-items:center;gap:3px}
+.launchbar .lb-u b{min-width:58px;text-align:center;background:#ffe74d;color:#002847;border-radius:12px;padding:6px 8px 4px;font:800 30px/1 var(--font);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.launchbar .lb-u span{font:700 10.5px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:#cfe0ef}
+.launchbar .lb-t{display:grid;gap:4px;min-width:0}
+.launchbar .lb-t strong{font:800 19px/1.15 var(--font);letter-spacing:-.01em}
+.launchbar .lb-t em{font:500 13.5px/1.35 var(--font);font-style:normal;color:#cfe0ef}
+.launchbar .lb-beta{display:inline-block;background:#d6261c;color:#fff;font:800 11px/1 var(--font);letter-spacing:.1em;text-transform:uppercase;padding:5px 8px 4px;border-radius:999px;margin-right:6px;vertical-align:1px}
+@media (max-width:520px){.launchbar{padding:12px 14px;gap:10px}.launchbar .lb-u b{min-width:0;width:100%;font-size:24px;padding:6px 6px 4px}.launchbar .lb-clock{display:grid;grid-template-columns:repeat(4,1fr);width:100%;gap:6px}.launchbar .lb-t strong{font-size:17px}}
 .logo .beta{font:800 13px/1 var(--font);font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:#d6261c;padding:6px 9px 5px;border-radius:999px;transform:rotate(-4deg);box-shadow:0 2px 6px rgba(214,38,28,.35);flex:none}
 @media (max-width:420px){.logo{gap:7px}.logo b{font-size:15px!important}.logo .mark{width:28px;height:28px}.logo .beta{font-size:11px;padding:5px 7px 4px}}
 .linkish{background:none;border:0;padding:2px 0 10px;color:var(--accent);font:600 14px/1.2 var(--font);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
@@ -1529,6 +1540,7 @@ td,th{border-color:#ededed!important}
   <div class="hdr-r"><button id="mgr" type="button"></button></div>
 </div></header>
 <div class="container">
+<div class="launchbar" id="launchbar" role="timer" aria-live="off" hidden></div>
 <section id="hero"></section>
 <div class="ticker" id="ticker" hidden></div>
 <div class="facts" id="facts" aria-live="polite"></div>
@@ -1856,7 +1868,7 @@ function courseSvg(){
     const ri=w0+k-1,[x,y]=P[k],entry=state.log.find(l=>l.round===ri),played=!!entry,now=!done()&&ri===state.round,taken=ri<cur;
     const lab=played?Math.round(entry.total/10):taken?"tagen":(lock&&lock.round===ri?"låst":"");
     const sub=dshort(D.rounds[ri].start);
-    c+=`<g class="ctl ${played?"done":""} ${taken?"taken":""} ${now?"now":""}" data-ctrl="${ri}" role="button" tabindex="0" aria-label="Omgång ${D.rounds[ri].n}, veckan ${sub}${played?", "+lab+" poäng":taken?", tagen":""}">
+    c+=`<g class="ctl ${played?"done":""} ${taken?"taken":""} ${now?"now":""}" data-ctrl="${ri}" role="button" tabindex="0" aria-label="${rdName(D.rounds[ri])}, veckan ${sub}${played?", "+lab+" poäng":taken?", tagen":""}">
       <circle class="ring" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${cr}"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${cr}"/>
       <text x="${x.toFixed(1)}" y="${y.toFixed(1)}">${D.rounds[ri].n}</text>${taken?`<g class="punch"><circle cx="${(x+cr*.8).toFixed(1)}" cy="${(y-cr*.8).toFixed(1)}" r="7.5"/><path d="M${(x+cr*.8-3.4).toFixed(1)} ${(y-cr*.8).toFixed(1)}l2.4 2.4 4.4-4.6"/></g>`:""}
       <text class="pts" x="${x.toFixed(1)}" y="${(y+(k%2?-26:38)).toFixed(1)}" style="dominant-baseline:auto">${lab!==""?lab:sub}</text></g>`;
@@ -1911,7 +1923,7 @@ function renderTabs(){
 function renderFacts(){
   if(tab!=="team"||done()){$("#facts").innerHTML="";return}
   const r=R(),bank=done()?state.bank:E.bankAfter(state,plan.squad);
-  const where=done()?"Säsongen är slut":"Omgång "+D.rounds[r].n+": "+dshort(D.rounds[r].start)+" till "+dshort(D.rounds[r].end);
+  const where=done()?"Säsongen är slut":rdName(D.rounds[r])+": "+dshort(D.rounds[r].start)+" till "+dshort(D.rounds[r].end);
   const sv=plan.squad.reduce((a,i)=>a+E.price(i,pr()),0);
   $("#facts").innerHTML=`<div><span>Poäng</span><b data-count="${state.total/10}" data-key="pts">${fp(state.total)}</b></div>
    <div><span>I banken</span><b class="${bank<0?"dn":""}" data-count="${bank/10}" data-key="bank" data-suf="k">${fm(bank)}</b></div>
@@ -2027,6 +2039,26 @@ const dayName=s=>DAYS[new Date(s+"T12:00:00Z").getUTCDay()];
 /* ---------- orienteering maps as pictures: the photos on orientering.se, as real O-maps ----------
    Pieces of a real orienteering map (Järvafältet, 1:15 000, text removed) with a purple course drawn on top for each
    race. One seed picks the piece, the part of it shown and the course, so a race always gets the same picture. */
+/* the official launch: the round of Sverigepremiären. The countdown runs to its start (Monday, when squads lock) */
+const launchDates=()=>{const ds=(D.launch&&D.launch.dates)||[];if(!ds.length)return "";const a=ds[0],b=ds[ds.length-1],[,ma]=a.split("-"),[,mb]=b.split("-");
+  return a===b?dshort(a):ma===mb?(+a.split("-")[2])+"–"+dshort(b):dshort(a)+" – "+dshort(b)};
+function launchTick(){
+  const el=document.getElementById("launchbar");if(!el)return;
+  const lr=D.rounds.find(r=>r.launch);if(!lr){el.hidden=true;return}
+  const at=new Date(lr.start+"T00:00:00"+(+lr.start.slice(5,7)>3&&+lr.start.slice(5,7)<11?"+02:00":"+01:00")).getTime(),ms=at-Date.now();
+  if(ms<=0){el.hidden=true;return}
+  const v=[Math.floor(ms/864e5),Math.floor(ms/36e5)%24,Math.floor(ms/6e4)%60,Math.floor(ms/1e3)%60];
+  if(!el.firstChild){
+    const beta=D.rounds.find(r=>r.beta),betaOn=beta&&beta.end>=new Date().toISOString().slice(0,10);
+    el.innerHTML=`<div class="lb-clock">${["dagar","tim","min","sek"].map(u=>`<div class="lb-u"><b>0</b><span>${u}</span></div>`).join("")}</div>
+      <div class="lb-t"><strong>till officiell launch</strong><em>${betaOn?`<span class="lb-beta">Betatest</span>${esc(rdName(beta))} under O-Event ${dshort(beta.start)} – ${dshort(beta.end)}. `:""}Sverigepremiären ${launchDates()}, lagen låses måndag ${dshort(lr.start)}.</em></div>`}
+  el.querySelectorAll(".lb-u b").forEach((b,i)=>{const t=i?String(v[i]).padStart(2,"0"):String(v[i]);if(b.textContent!==t)b.textContent=t});
+  el.setAttribute("aria-label",`${v[0]} dagar, ${v[1]} timmar och ${v[2]} minuter till officiell launch`);
+  el.hidden=false;
+}
+setInterval(()=>{if(!document.hidden)launchTick()},1000);
+/* a round's name: the O-Event week is the beta test round */
+const rdName=rd=>rd&&rd.beta?"Betatestrunda":"Omgång "+(rd?rd.n:"");
 const MAPS=["maps/karta-1.jpg","maps/karta-2.jpg","maps/karta-3.jpg","maps/karta-4.jpg","maps/karta-5.jpg","maps/karta-6.jpg","maps/karta-7.jpg","maps/karta-8.jpg"];
 const OMAPS=new Map();
 function omapVar(seed,w,h){
@@ -2095,7 +2127,7 @@ function omapParts(seed,W,H){
 /* this week's races as cards, like orientering.se's news */
 function raceCards(r){
   const c=comps(r);if(!c.length)return "";const rd=D.rounds[r];
-  return `<section class="news"><div class="news-hd"><h2>Veckans tävlingar</h2><span class="sub">Omgång ${rd.n} · ${dshort(rd.start)} – ${dshort(rd.end)}</span></div>
+  return `<section class="news"><div class="news-hd"><h2>Veckans tävlingar</h2><span class="sub">${rdName(rd)} · ${dshort(rd.start)} – ${dshort(rd.end)}</span></div>
    <div class="news-grid">${c.slice(0,4).map(x=>`<button class="ncard" data-week="${r}"><span class="nimg" style="background:${omapVar(x.n,480,250)}"></span>
      <span class="nrow"><span>${x.big?"Stor tävling":x.tier>1?"Mästerskap":"Tävling"}</span><span>${dayName(x.date).slice(0,3)} ${dshort(x.date)}</span></span><b>${esc(x.n)}</b></button>`).join("")}</div>
    ${c.length>4?`<div class="news-more"><button class="btn" data-week="${r}">Alla ${c.length} lopp</button></div>`:""}</section>`;
@@ -2107,7 +2139,7 @@ const entOf=(i,r)=>{const rd=D.rounds[r];return rd?(ENT[i]||[]).map(k=>D.upcomin
 const _entN=new Map();Object.values(ENT).forEach(a=>a.forEach(k=>_entN.set(k,(_entN.get(k)||0)+1)));
 const entCount=x=>{let n=0;D.upcoming.forEach((u,k)=>{if(u.date===x.date&&compName(u.name).toLowerCase()===x.n.toLowerCase())n+=_entN.get(k)||0});return n};
 const entTag=i=>{const r=R(),e=r<E.R&&!isFinal(r)?entOf(i,r):[];if(!e.length)return "";const t="Anmäld: "+e.map(u=>compName(u.name)+" ("+dshort(u.date)+")").join(", ");return `<span class="entered" title="${esc(t)}" aria-label="${esc(t)}" role="img">✓</span>`};
-const skipNote=r=>{const rd=D.rounds[r];if(rd&&rd.pending&&!rd.skip)return `<div class="skipnote ${rd.big>=2?"ok":""}"><b>${rd.big>=2?"Spelvecka":"Kan hoppas över"}</b> · ${rd.big||0} stor${rd.big===1?"":"a"} tävling${rd.big===1?"":"ar"} hittills (100+ deltagare och minst 5 topplöpare). Avgörs när omgången startar måndag ${dshort(rd.start)}.</div>`;return rd&&rd.skip?`<div class="skipnote"><b>Ingen spelvecka den här veckan.</b> Omgång ${rd.n} har ${rd.big?"bara en stor tävling":"inga stora tävlingar"}, och en spelvecka behöver två. Inga poäng räknas, byten är fria och chips sparas.</div>`:""};
+const skipNote=r=>{const rd=D.rounds[r];if(rd&&rd.wait)return `<div class="skipnote"><b>Uppehåll till den officiella lanseringen.</b> Efter betatestrundan på O-Event vilar spelet över vintern. Nästa omgång är Sverigepremiären${D.launch&&D.launch.dates?" "+launchDates():""}. Inga poäng räknas och byten är fria fram till dess.</div>`;if(rd&&rd.pending&&!rd.skip)return `<div class="skipnote ${rd.big>=2?"ok":""}"><b>${rd.big>=2?"Spelvecka":"Kan hoppas över"}</b> · ${rd.big||0} stor${rd.big===1?"":"a"} tävling${rd.big===1?"":"ar"} hittills (100+ deltagare och minst 5 topplöpare). Avgörs när omgången startar måndag ${dshort(rd.start)}.</div>`;return rd&&rd.skip?`<div class="skipnote"><b>Ingen spelvecka den här veckan.</b> ${rdName(rd)} har ${rd.big?"bara en stor tävling":"inga stora tävlingar"}, och en spelvecka behöver två. Inga poäng räknas, byten är fria och chips sparas.</div>`:""};
 function weekList(r){
   const c=comps(r),by={};c.forEach(x=>{(by[x.date]=by[x.date]||[]).push(x)});
   const rd=D.rounds[r],days=[];for(let t=Date.parse(rd.start+"T12:00:00Z");t<=Date.parse(rd.end+"T12:00:00Z");t+=864e5)days.push(new Date(t).toISOString().slice(0,10));
@@ -2117,8 +2149,8 @@ let weekR=null;
 function weekSheet(r){
   if(r===undefined||r===null)r=R();r=Math.max(0,Math.min(E.R-1,r));weekR=r;
   const rd=D.rounds[r],n=comps(r).length;
-  showSheet("week","Lopp i omgång "+rd.n,`<div class="hd"><div><span class="eyebrow">Omgång ${rd.n}</span><h2 style="margin:4px 0 0">${n} lopp</h2><div class="sub">${dshort(rd.start)} – ${dshort(rd.end)}</div></div><button class="btn" data-close="1">Stäng</button></div>
-   <div class="rnav" style="margin:14px 0"><button class="btn" data-week="${r-1}" ${r<=0?"disabled":""}>Förra veckan</button><b>${r===R()?"Den här omgången":r===R()+1?"Nästa omgång":"Omgång "+rd.n}</b><button class="btn" data-week="${r+1}" ${r>=E.R-1?"disabled":""}>Nästa vecka</button></div>
+  showSheet("week","Lopp i omgång "+rd.n,`<div class="hd"><div><span class="eyebrow">${rdName(rd)}</span><h2 style="margin:4px 0 0">${n} lopp</h2><div class="sub">${dshort(rd.start)} – ${dshort(rd.end)}</div></div><button class="btn" data-close="1">Stäng</button></div>
+   <div class="rnav" style="margin:14px 0"><button class="btn" data-week="${r-1}" ${r<=0?"disabled":""}>Förra veckan</button><b>${r===R()?"Den här omgången":r===R()+1?"Nästa omgång":rdName(rd)}</b><button class="btn" data-week="${r+1}" ${r>=E.R-1?"disabled":""}>Nästa vecka</button></div>
    ${weekList(r)}
 `);
 }
@@ -2129,7 +2161,7 @@ function raceTags(r){
 function liveNow(){
   if(!isLive())return "";const L=state.log[state.log.length-1];
   if(!L||isFinal(L.round))return "";
-  return `<div class="livestrip"><div><span class="livedot">Live</span> <span class="note">Omgång ${D.rounds[L.round].n}${L.carried?", förra omgångens trupp spelar":""}</span><div style="margin-top:6px"><b>${fp(L.total)}</b> <span class="note">poäng hittills</span></div></div><button class="btn" data-tab="rounds">Dina löpare</button></div>`;
+  return `<div class="livestrip"><div><span class="livedot">Live</span> <span class="note">${rdName(D.rounds[L.round])}${L.carried?", förra omgångens trupp spelar":""}</span><div style="margin-top:6px"><b>${fp(L.total)}</b> <span class="note">poäng hittills</span></div></div><button class="btn" data-tab="rounds">Dina löpare</button></div>`;
 }
 function hero(r){
   const rd=D.rounds[r],d=daysTo(rd.start),u=comps(r),first=u[0];
@@ -2137,9 +2169,9 @@ function hero(r){
   const when=dshort(rd.start)+" – "+dshort(rd.end);
   const side=isFinal(r)?`<span class="eyebrow">Klar</span>`:hasStarted(r)?`<span class="livedot">Live</span>`:
     `<span class="eyebrow">Låses ${d===1?"i morgon":"om"}</span>${d===1?"":`<span class="num">${d} dagar</span>`}<span class="sub">måndag ${dshort(rd.start)}</span>`;
-  if(rd.pending&&!rd.skip&&(rd.big||0)<2&&!hasStarted(r))return `<div class="next omhero" style="--om:${omapVar("omgång "+rd.n,1400,460)}"><div class="next-main"><span class="next-k">Omgång ${rd.n} · ${when}</span><b>${title}</b><button class="sub wklink" data-week="${r}">Kan hoppas över: ${rd.big||0} stor${rd.big===1?"":"a"} tävling${rd.big===1?"":"ar"} hittills. Veckokalender →</button></div><div class="next-side">${side}</div></div>`;
-  if(rd.skip)return `<div class="next skip omhero" style="--om:${omapVar("omgång "+rd.n,1400,460)}"><div class="next-main"><span class="next-k">Omgång ${rd.n} · ${when}</span><b>Ingen spelvecka</b><button class="sub wklink" data-week="${r}">Färre än två stora tävlingar. Veckokalender →</button></div><div class="next-side"><span class="eyebrow">Fria byten</span><span class="sub">Nästa spelvecka: omgång ${(D.rounds.slice(r+1).find(x=>!x.skip)||rd).n}</span></div></div>`;
-  return `<div class="next omhero" style="--om:${omapVar("omgång "+rd.n,1400,460)}"><div class="next-main"><span class="next-k">Omgång ${rd.n} · ${when}</span><b>${title}</b>${u.length>1?`<button class="sub wklink" data-week="${r}">och ${u.length-1} lopp till den här veckan →</button>`:`<button class="sub wklink" data-week="${r}">Veckokalender →</button>`}</div><div class="next-side">${side}</div></div>`;
+  if(rd.pending&&!rd.skip&&(rd.big||0)<2&&!hasStarted(r))return `<div class="next omhero" style="--om:${omapVar("omgång "+rd.n,1400,460)}"><div class="next-main"><span class="next-k">${rdName(rd)} · ${when}</span><b>${title}</b><button class="sub wklink" data-week="${r}">Kan hoppas över: ${rd.big||0} stor${rd.big===1?"":"a"} tävling${rd.big===1?"":"ar"} hittills. Veckokalender →</button></div><div class="next-side">${side}</div></div>`;
+  if(rd.skip)return `<div class="next skip omhero" style="--om:${omapVar("omgång "+rd.n,1400,460)}"><div class="next-main"><span class="next-k">${rdName(rd)} · ${when}</span><b>Ingen spelvecka</b><button class="sub wklink" data-week="${r}">Färre än två stora tävlingar. Veckokalender →</button></div><div class="next-side"><span class="eyebrow">Fria byten</span><span class="sub">Nästa spelvecka: omgång ${(D.rounds.slice(r+1).find(x=>!x.skip)||rd).n}</span></div></div>`;
+  return `<div class="next omhero" style="--om:${omapVar("omgång "+rd.n,1400,460)}"><div class="next-main"><span class="next-k">${rdName(rd)} · ${when}</span><b>${title}</b>${u.length>1?`<button class="sub wklink" data-week="${r}">och ${u.length-1} lopp till den här veckan →</button>`:`<button class="sub wklink" data-week="${r}">Veckokalender →</button>`}</div><div class="next-side">${side}</div></div>`;
 }
 function teamView(){
   if(done())return `<div class="card"><h2 style="margin-top:0">Säsongen är slut</h2><p>Du slutade på <b>${fp(state.total)}</b> poäng.</p><button class="btn on" data-tab="profile">Se din säsong</button></div>`;
@@ -2226,12 +2258,12 @@ function fifaCard(c,k){
 }
 function weekBoard(){
   const b=boardData();if(!b)return "";const {w,weeks,x,r,rd}=b;
-  return `<section class="board" aria-label="Omgång ${rd.n}">
+  return `<section class="board" aria-label="${rdName(rd)}">
    <div class="bd-head"><span class="bd-brand">Fantasy<em>Orientering</em></span><span class="bd-me"><span><b>${esc(b.me)}</b>${b.mgr?`<small>${esc(b.mgr)}</small>`:""}</span>${dbOk?mgrDot({id:cloud.uid,name:mgrName||"M",av:myAv}):""}</span></div>
    <div class="bd-top"><div class="bd-gauge"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="g0" cx="100" cy="100" r="80" pathLength="100"/>${b.frac>0?`<circle class="g1" cx="100" cy="100" r="80" pathLength="100" style="--f:${(b.frac*75).toFixed(2)}"/>`:""}</svg>
     <div class="bd-score"><b class="score" data-count="${b.score/10}" data-key="board${r}">${x?fp(b.score):"–"}</b><span>${x?(isFinal(r)?"poäng":"hittills"):"inte spelad"}</span></div></div>
    <div class="bd-stats"><div><span>Byten</span><b>${b.tr}</b></div><div><span>Totalt</span><b>${fp(b.total)}</b></div><div><span>Spelare</span><b>${b.players||"–"}</b></div><div><span>Högsta</span><b>${b.best!==null?fp(b.best):"–"}</b></div></div></div>
-   <div class="bd-week"><button class="bd-arr" data-round="${w.k-1}" ${w.k<=0?"disabled":""} aria-label="Föregående omgång">‹</button><div><b>Omgång ${rd.n}</b><span>${b.when}${x&&x.chip?" · "+esc(CHIPINFO[x.chip][0]):""}${x&&x.carried?" · last round's squad":""}</span></div><button class="bd-arr" data-round="${w.k+1}" ${w.k>=weeks.length-1?"disabled":""} aria-label="Nästa omgång">›</button></div>
+   <div class="bd-week"><button class="bd-arr" data-round="${w.k-1}" ${w.k<=0?"disabled":""} aria-label="Föregående omgång">‹</button><div><b>${rdName(rd)}</b><span>${b.when}${x&&x.chip?" · "+esc(CHIPINFO[x.chip][0]):""}${x&&x.carried?" · last round's squad":""}</span></div><button class="bd-arr" data-round="${w.k+1}" ${w.k>=weeks.length-1?"disabled":""} aria-label="Nästa omgång">›</button></div>
    <div class="bd-tabs"><button data-lteam="A" class="${lpTeam!=="B"?"on":""}">A-lag <small>×2</small></button><button data-lteam="B" class="${lpTeam==="B"?"on":""}">B-lag <small>×1</small></button></div>
    ${b.cards.length?`<div class="lineup">${[[0,3],[2],[1,4]].map(col=>`<div class="lu-col">${col.filter(k=>b.cards[k]).map(k=>fifaCard(b.cards[k],k)).join("")}</div>`).join("")}</div>`:`<p class="bd-empty">${x?"":"Välj alla "+D.squad+" löpare under Lag så syns de här."}</p>`}
   </section>
@@ -2316,7 +2348,7 @@ async function makeShareImage(){
   const S=[["BYTEN",String(b.tr)],["TOTALT",fp(b.total)],["SPELARE",b.players?String(b.players):"–"],["HÖGSTA",b.best!==null?fp(b.best):"–"]];
   S.forEach(([l,v],k)=>{const sx=540+(k%2)*240,sy=262+Math.floor(k/2)*150;c.textAlign="left";c.fillStyle=t3;c.font=`600 24px ${font}`;c.fillText(l,sx,sy);c.fillStyle=text;c.font=`800 72px ${dfont}`;c.fillText(v,sx,sy+72)});
   /* round */
-  c.textAlign="center";c.fillStyle=text;c.font=`800 60px ${dfont}`;c.fillText("Omgång "+b.rd.n,W/2,598);
+  c.textAlign="center";c.fillStyle=text;c.font=`800 60px ${dfont}`;c.fillText(rdName(b.rd),W/2,598);
   c.fillStyle=t2;c.font=`500 32px ${font}`;c.fillText(b.when+(b.x&&b.x.chip?" · "+CHIPINFO[b.x.chip][0]:""),W/2,644);
   /* the team switch, as on the board */
   const sw=PW-120,sx0=(W-sw)/2,sy0=680,sh=84;roundRect(c,sx0,sy0,sw,sh,42);c.fillStyle="rgba(255,255,255,.7)";c.fill();c.lineWidth=2;c.strokeStyle="rgba(15,23,42,.08)";c.stroke();
@@ -2505,7 +2537,7 @@ function leagueDetail(code){
    ${cur!==undefined?`<div class="chips" style="margin-top:12px">${sub("table","Tabell")}${sub("round","Omgång")}${sub("teams","Lag")}</div>`:""}</div>`;
   if(cur===undefined||lgSub==="table")return head+`<div class="card">${leagueTable(code)}</div>`;
   const r=lgRound!==null&&rs.includes(lgRound)?lgRound:cur,ix=rs.indexOf(r),S=lgStats(code,r),live=!isFinal(r);
-  const nav=`<div class="rnav"><button class="btn" data-lground="${rs[ix-1]}" ${ix<=0?"disabled":""}>Föregående</button><b>Omgång ${D.rounds[r].n} <span class="sub">${dshort(D.rounds[r].start)}–${dshort(D.rounds[r].end)}</span>${live?' <span class="livedot">Live</span>':""}</b><button class="btn" data-lground="${rs[ix+1]}" ${ix>=rs.length-1?"disabled":""}>Nästa</button></div>`;
+  const nav=`<div class="rnav"><button class="btn" data-lground="${rs[ix-1]}" ${ix<=0?"disabled":""}>Föregående</button><b>${rdName(D.rounds[r])} <span class="sub">${dshort(D.rounds[r].start)}–${dshort(D.rounds[r].end)}</span>${live?' <span class="livedot">Live</span>':""}</b><button class="btn" data-lground="${rs[ix+1]}" ${ix>=rs.length-1?"disabled":""}>Nästa</button></div>`;
   if(lgSub==="teams")return head+nav+`<div class="grid2">${S.rows.slice().sort((a,b)=>b.by[r].total-a.by[r].total).slice(0,code==="GLOBAL"?20:1e9).map((m,k)=>teamCard(code,m,r,k)).join("")||'<div class="card">Ingen hade en trupp den här omgången.</div>'}</div>`;
   const ranked=S.rows.slice().sort((a,b)=>b.by[r].total-a.by[r].total).slice(0,code==="GLOBAL"?20:1e9);
   const hl=(k,v,s2)=>`<div class="hl"><span>${k}</span><b>${v}</b><span class="sub">${s2}</span></div>`;
@@ -2528,7 +2560,7 @@ function managerSheet(code,id,r0){
   const r=rs.includes(r0)?r0:rs[rs.length-1],x=r!==undefined?m.by[r]:null,ix=rs.indexOf(r),row=st.rows.find(y=>y.id===id);
   const bars=st.rs.map(q=>{const v=ptsOf(m,q);return {q,v:v===null?0:v,has:v!==null}}),mx=Math.max(100,...bars.map(b=>b.v));
   const body=!x?`<p class="note">${esc(m.name)} har ingen trupp i en omgång som har startat än.</p>`:`
-   <div class="rnav"><button class="btn" data-mgrr="${esc(code)}|${esc(id)}|${rs[ix-1]}" ${ix<=0?"disabled":""}>Föregående</button><b>Omgång ${D.rounds[r].n}${!isFinal(r)?' <span class="livedot">Live</span>':""}</b><button class="btn" data-mgrr="${esc(code)}|${esc(id)}|${rs[ix+1]}" ${ix>=rs.length-1?"disabled":""}>Nästa</button></div>
+   <div class="rnav"><button class="btn" data-mgrr="${esc(code)}|${esc(id)}|${rs[ix-1]}" ${ix<=0?"disabled":""}>Föregående</button><b>${rdName(D.rounds[r])}${!isFinal(r)?' <span class="livedot">Live</span>':""}</b><button class="btn" data-mgrr="${esc(code)}|${esc(id)}|${rs[ix+1]}" ${ix>=rs.length-1?"disabled":""}>Nästa</button></div>
    <div class="stats"><div><b>${fp(x.total)}</b><span>Omgångspoäng</span></div><div><b>${fp(x.base)}</b><span>Från löpare</span></div><div><b>${x.capLive===null?"0.0":sg(x.capExtra)}</b><span>Boost${x.chip?" · "+CHIPINFO[x.chip][0]:""}</span></div><div><b class="${x.penalty?"dn":""}">${x.penalty?"-"+fp(x.penalty):"0.0"}</b><span>${x.transfers} transfer${x.transfers===1?"":"s"}</span></div></div>
    ${x.carried?`<p class="note">Ingen trupp låstes den här omgången, så truppen från omgången innan spelade.</p>`:""}${x.chip?`<p class="note"><b>${CHIPINFO[x.chip][0]}</b> spelat: ${CHIPINFO[x.chip][1].toLowerCase()}.</p>`:""}
    <div class="squad sheetsq">${x.squad.map((i,k)=>{const b=i===x.captain,raced=E.starts[r][i]>0,m2=multOf(i,x.squad,x.chip,x.capLive),p=E.pts[r][i]*m2;
@@ -2633,17 +2665,17 @@ function profile(i){
   const vis=E.visible(i,R()),s=E.stats(i,R()),wk=E.weeks(i,R()),first=wk.findIndex(x=>x.races),shownW=first<0?[]:wk.slice(first);
   /* points per game week as bars, weeks without a race as a flat mark */
   const hist=shownW.length?(()=>{const mx=Math.max(...shownW.map(x=>x.pts),10);
-    return `<div class="wkbars" role="img" aria-label="Poäng per spelvecka">${shownW.map(x=>`<span title="Omgång ${D.rounds[x.round].n}: ${x.races?fp(x.pts)+" poäng, "+x.races+" lopp":"inget lopp"}"><i class="${x.races?(x.pts<0?"neg":""):"none"}" style="height:${x.races?Math.max(3,Math.round(Math.abs(x.pts)/mx*54)):2}px"></i><b>${x.races?fp(x.pts):""}</b><small>${D.rounds[x.round].n}</small></span>`).join("")}</div>`})():"";
+    return `<div class="wkbars" role="img" aria-label="Poäng per spelvecka">${shownW.map(x=>`<span title="${rdName(D.rounds[x.round])}: ${x.races?fp(x.pts)+" poäng, "+x.races+" lopp":"inget lopp"}"><i class="${x.races?(x.pts<0?"neg":""):"none"}" style="height:${x.races?Math.max(3,Math.round(Math.abs(x.pts)/mx*54)):2}px"></i><b>${x.races?fp(x.pts):""}</b><small>${D.rounds[x.round].n}</small></span>`).join("")}</div>`})():"";
   const ev2r=new Map();D.rounds.forEach((rd,q)=>rd.ev.forEach(e=>ev2r.set(e,q)));
   const groups=[];vis.slice().reverse().forEach(h=>{const q=ev2r.has(h.ev)?ev2r.get(h.ev):-1;let g=groups[groups.length-1];if(!g||g.q!==q){g={q,list:[]};groups.push(g)}g.list.push(h)});
   showSheet("prof|"+i,nameOf(i),`
    <div class="hd"><div style="display:flex;gap:16px;align-items:center;min-width:0">${avatar(i,"lg")}<div style="min-width:0"><h2>${esc(nameOf(i))}${idleTag(i)}</h2><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}${idle(i)?" · "+(idle(i)===2?"inget lopp på 10 veckor":"sprang inte förra veckan"):""}</div></div></div><button class="btn" data-close="1">Stäng</button></div>
    <div class="stats"><div><b>${D.runners[i].p?fm(E.price(i,pr())):"–"}</b><span>Pris · ${TIERS[tierOf(i)][1]}</span></div><div><b>${s.starts}</b><span>Starter</span></div><div><b>${fp(s.total)}</b><span>Poäng</span></div><div><b>${fp(s.weeks?s.perWeek:0)}</b><span>Per vecka, senaste 5</span></div>${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Klassbetyg</span></div>`:""}</div>
-   ${(()=>{if(!Object.keys(ENT).length)return "";const r=R(),w=r<E.R?entOf(i,r):[],rd=D.rounds[r];return `<div class="entbox ${w.length?"on":""}"><span class="entered" aria-hidden="true">${w.length?"✓":"–"}</span><div><b>${w.length?"Anmäld den här spelveckan":"Inte anmäld den här spelveckan"}</b><span class="sub">${w.length?w.map(u=>esc(compName(u.name))+" ("+dayName(u.date).slice(0,3)+" "+dshort(u.date)+")").join(", "):rd?"Omgång "+rd.n+", "+dshort(rd.start)+" – "+dshort(rd.end):""}</span></div></div>`})()}
+   ${(()=>{if(!Object.keys(ENT).length)return "";const r=R(),w=r<E.R?entOf(i,r):[],rd=D.rounds[r];return `<div class="entbox ${w.length?"on":""}"><span class="entered" aria-hidden="true">${w.length?"✓":"–"}</span><div><b>${w.length?"Anmäld den här spelveckan":"Inte anmäld den här spelveckan"}</b><span class="sub">${w.length?w.map(u=>esc(compName(u.name))+" ("+dayName(u.date).slice(0,3)+" "+dshort(u.date)+")").join(", "):rd?rdName(rd)+", "+dshort(rd.start)+" – "+dshort(rd.end):""}</span></div></div>`})()}
    ${(()=>{const e=(ENT[i]||[]).map(k=>D.upcoming[k]).filter(Boolean);return e.length?`<p class="note entline"><span class="entered" aria-hidden="true">✓</span> Anmäld: ${e.map(u=>`${u.eo?`<a href="https://eventor.orientering.se/Events/Show/${u.eo}" target="_blank" rel="noopener">${esc(compName(u.name))}</a>`:esc(compName(u.name))} (${dshort(u.date)})`).join(", ")}</p>`:""})()}
    ${hist}
    <div class="tbl rtab" style="margin-top:12px"><table><thead><tr><th>Lopp</th><th>Plats</th><th>Efter</th><th>Tid</th><th>Poäng</th></tr></thead><tbody>
-   ${groups.map(g=>{const tot=g.list.reduce((a,h)=>a+h.pts,0);return `<tr class="wkhead"><td colspan="2"><b>${g.q<0?"Före omgång 1":"Omgång "+D.rounds[g.q].n}</b> <span class="sub">${g.q<0?"inte en del av en spelvecka":dshort(D.rounds[g.q].start)+" – "+dshort(D.rounds[g.q].end)+", "+g.list.length+" lopp"}</span></td><td></td><td></td><td class="${tot<0?"neg":"pos"}"><b>${sg(tot)}</b></td></tr>`+g.list.map(h=>{const e=D.events[h.ev];return `<tr><td>${esc(e.name)}<div class="sub">${dshort(e.date)}${e.tier>1?", x"+e.tier:""}</div></td><td>${h.kind?["","DNF","MP","DSQ"][h.kind]:h.rank+" av "+e.n}</td><td>${h.kind?"–":(h.gap/100).toFixed(1)+"%"}</td><td>${h.kind?"–":tm(h.t)}</td><td class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</td></tr>`}).join("")}).join("")||`<tr><td colspan="5" class="note">Inga resultat än.</td></tr>`}
+   ${groups.map(g=>{const tot=g.list.reduce((a,h)=>a+h.pts,0);return `<tr class="wkhead"><td colspan="2"><b>${g.q<0?"Före omgång 1":rdName(D.rounds[g.q])}</b> <span class="sub">${g.q<0?"inte en del av en spelvecka":dshort(D.rounds[g.q].start)+" – "+dshort(D.rounds[g.q].end)+", "+g.list.length+" lopp"}</span></td><td></td><td></td><td class="${tot<0?"neg":"pos"}"><b>${sg(tot)}</b></td></tr>`+g.list.map(h=>{const e=D.events[h.ev];return `<tr><td>${esc(e.name)}<div class="sub">${dshort(e.date)}${e.tier>1?", x"+e.tier:""}</div></td><td>${h.kind?["","DNF","MP","DSQ"][h.kind]:h.rank+" av "+e.n}</td><td>${h.kind?"–":(h.gap/100).toFixed(1)+"%"}</td><td>${h.kind?"–":tm(h.t)}</td><td class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</td></tr>`}).join("")}).join("")||`<tr><td colspan="5" class="note">Inga resultat än.</td></tr>`}
    </tbody></table></div>${!isLive()&&!done()?`<p class="note">Visar lopp före omgång ${D.rounds[R()].n}.</p>`:""}
    ${photoSection(i)}`);
 }
@@ -2783,7 +2815,7 @@ function adminGameCard(){
   if(!adminOn())return "";
   const live=D.rounds.map((rd,r)=>({rd,r})).filter(x=>x.r>=LIVE);
   const st=rd=>rd.forced==="on"?"Tvingad på":rd.forced==="off"?"Tvingad av":rd.skip?"Hoppas över":rd.pending?((rd.big||0)>=2?"Spelvecka (preliminär)":"Kan hoppas över"):"Spelvecka";
-  const wk=({rd})=>{const ref=rd.start,on=hasOvr("week_on",ref),off=hasOvr("week_off",ref);return `<div class="adm-row"><div><b>Omgång ${rd.n}</b> <span class="sub">${dshort(rd.start)} – ${dshort(rd.end)} · ${rd.big??"–"} stora · ${st(rd)}</span></div>
+  const wk=({rd})=>{const ref=rd.start,on=hasOvr("week_on",ref),off=hasOvr("week_off",ref);return `<div class="adm-row"><div><b>${rdName(rd)}</b> <span class="sub">${dshort(rd.start)} – ${dshort(rd.end)} · ${rd.big??"–"} stora · ${st(rd)}</span></div>
     <div class="seg"><button class="${!on&&!off?"on":""}" data-wkset="auto" data-wkref="${ref}">Auto</button><button class="${on?"on":""}" data-wkset="on" data-wkref="${ref}">På</button><button class="${off?"on":""}" data-wkset="off" data-wkref="${ref}">Av</button></div></div>`};
   const today=D.asof,soon=D.upcoming.filter(u=>u.eo);
   const added=ovr.filter(o=>o.kind==="race_add"),removed=ovr.filter(o=>o.kind==="race_remove");
@@ -3321,7 +3353,7 @@ document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)r
   if(t.id==="authOut"){cloud.ready=false;resetLocal();sqStore={};sqMem={};pfCache.clear();try{localStorage.removeItem(SQK)}catch(e){}localUid=null;try{localStorage.removeItem(KEY)}catch(e){}tab="profile";cloud.sb.auth.signOut().then(()=>{leagueRows={};render()})}
 });
 
-render();initCloud();
+render();launchTick();initCloud();
 if(AUTH_BACK.err){welcomed=true;welcomeSheet("err")}
 </script>
 </body>

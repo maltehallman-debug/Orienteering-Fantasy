@@ -315,6 +315,13 @@ if EVINFO is not None:
     os.makedirs(os.path.dirname(fp), exist_ok=True); json.dump(final, open(fp, "w"))
     print("races ahead (name, date, competitors, top runners entered):", [(ev["name"], ev["dates"][0], EVBIG[ev["eid"]]["n"], EVBIG[ev["eid"]]["top"]) for ev in sorted(EVINFO, key=lambda x: x["dates"][0]) if ev["dates"] and ev["dates"][0] >= TODAY.isoformat()])
     print("big competitions:", sorted(((ev["name"], ev["dates"][0], EVBIG[ev["eid"]]["n"], EVBIG[ev["eid"]]["top"]) for ev in EVINFO if EVBIG[ev["eid"]]["big"]), key=lambda x: x[1]))
+# The O-Event week is the beta test round. After it the game waits for the official launch, the week of
+# Sverigepremiären (its dates come from Eventor; the week below is kept until they do): every week in between is
+# skipped, the launch week is on.
+BETA_WEEK = "2026-11-02"
+LAUNCH = _j("eventor/launch.json", None) or {"name": "Sverigepremiären", "dates": ["2027-03-05", "2027-03-06", "2027-03-07"], "guess": True}
+LAUNCH_WEEK = monday(dt.date.fromisoformat(LAUNCH["dates"][0])).isoformat()
+print("launch week", LAUNCH_WEEK, LAUNCH["dates"], "(not yet confirmed by Eventor)" if LAUNCH.get("guess") else "(from Eventor)")
 rounds = []
 wk = SEASON_START; i = 0
 while wk <= LAST_ROUND_START:
@@ -323,10 +330,12 @@ while wk <= LAST_ROUND_START:
     w = EVWEEKS.get(wk.isoformat()) if EVWEEKS is not None else None
     big = w["big"] if w else None; decided = bool(w and w["final"])
     k = wk.isoformat()
-    skip = wk >= LIVE_START and (k in WEEK_OFF or (k not in WEEK_ON and w is not None and decided and big < 2))
-    pending = wk >= LIVE_START and w is not None and not decided and k not in WEEK_ON and k not in WEEK_OFF
+    wait = BETA_WEEK < k < LAUNCH_WEEK
+    skip = wait or (wk >= LIVE_START and k != LAUNCH_WEEK and (k in WEEK_OFF or (k not in WEEK_ON and w is not None and decided and big < 2)))
+    pending = wk >= LIVE_START and not wait and k != LAUNCH_WEEK and w is not None and not decided and k not in WEEK_ON and k not in WEEK_OFF
     rounds.append({"n": i + 1, "start": k, "end": end.isoformat(), "events": [] if skip else ids, "final": end < TODAY, "big": big, "skip": skip,
-                   "pending": pending, "forced": "on" if k in WEEK_ON else "off" if k in WEEK_OFF else None})
+                   "pending": pending, "forced": "on" if k in WEEK_ON or k == LAUNCH_WEEK else "off" if k in WEEK_OFF or wait else None,
+                   "beta": k == BETA_WEEK, "launch": k == LAUNCH_WEEK, "wait": wait})
     wk += dt.timedelta(days=7); i += 1
 print("rounds", len(rounds), [len(r["events"]) for r in rounds])
 print("skipped live weeks", [r["start"] for r in rounds if r.get("skip")], "big per live week", [(r["start"], r["big"]) for r in rounds if r["start"] >= LIVE_START.isoformat()])
