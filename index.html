@@ -1549,6 +1549,15 @@ td,th{border-color:#ededed!important}
 @media (max-width:560px){.lgl-long{display:none}.lgl-short{display:inline}}
 @media (max-width:430px){.lgl-h,.lgl-r{grid-template-columns:42px minmax(0,1fr) 44px 50px;gap:7px}.lgl-r{padding:10px 11px}.lgl-r .tm{gap:7px}.lgl-r .tm .mdot{width:26px;height:26px;font-size:11px}.lgl-r .tm b{font-size:12.5px}.lgl-r .tm .sub{font-size:11px}.lgl-r .n{font-size:13px}.lgl-r .pl{font-size:14px}.lgl-r .pl small{font-size:11px}}
 @media (max-width:380px){.lgl-h,.lgl-r{grid-template-columns:36px minmax(0,1fr) 40px 46px;gap:6px}.lgl-r{padding:10px 9px}.lgl-r .tm .mdot{width:22px;height:22px;font-size:10px}.lgl-r .tm b{font-size:11.5px}.lgl-r .n{font-size:12px}.lgl-r .pl{font-size:13px}}
+.btn.danger{background:#d6261c!important;color:#fff!important;border-color:#d6261c!important}
+/* league cards: the name, then the buttons in a row, left-aligned like everywhere else */
+.lg-card-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.lg-card-head h3{margin:0}
+.lg-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+.lghead .lg-actions{margin:12px 0 0}
+.shr .eyebrow{display:block;margin:10px 0 6px}
+.shr-code{font:800 26px/1.1 var(--font);letter-spacing:.04em;background:var(--surface-2);border-radius:14px;padding:14px 16px;overflow-wrap:anywhere;user-select:all;-webkit-user-select:all}
+.shr-link{font:500 14px/1.4 var(--font);color:var(--text-2);background:var(--surface-2);border-radius:14px;padding:12px 16px;overflow-wrap:anywhere;user-select:all;-webkit-user-select:all}
 /* the team view from a league: a quiet bar with the placing above the board */
 #modal .bd-me b{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word;line-height:1.2}
 #modal .bd-head{align-items:flex-start}
@@ -2794,12 +2803,23 @@ function lgStats(code,r){
   const mb=[...boost.entries()].sort((a,b)=>b[1]-a[1])[0];
   return {rows,pick,best,topRunner,diff,mb,diffOwner:diff?rows.find(m=>m.by[r].squad.includes(diff.i)):null};
 }
+/* sharing a league: its code and invite link, to copy or send */
+function shareSheet(code){
+  const u=inviteUrl(code);
+  showSheet("share|"+code,"Bjud in till "+lgName(code),`<div class="shr">
+    <div class="hd"><div><span class="eyebrow">Bjud in</span><h2 style="margin:2px 0 0">${esc(lgName(code))}</h2></div><button class="btn" data-close="1">Stäng</button></div>
+    <p class="note" style="margin:6px 0 14px">Skicka länken, så går dina kompisar med när de öppnar den. Eller ge dem koden att skriva in under Gå med via kod.</p>
+    <span class="eyebrow">Kod</span><div class="shr-code">${esc(code)}</div>
+    <span class="eyebrow">Länk</span><div class="shr-link">${esc(u)}</div>
+    <div class="lg-actions" style="margin-top:14px"><button class="btn on" data-copy="${esc(code)}">${copied===code?"Länken kopierad ✓":"Kopiera länk"}</button><button class="btn" data-copycode="${esc(code)}">${copied==="code:"+code?"Koden kopierad ✓":"Kopiera kod"}</button>${navigator.share?`<button class="btn" data-share="${esc(code)}">Dela via …</button>`:""}</div>
+  </div>`);
+}
 function leagueDetail(code){
   const st=standings(code),{rows,rs,cur}=st;
   const sub=(k,l)=>`<button class="btn ${lgSub===k?"on":""}" data-lgsub="${k}">${l}</button>`;
   const head=`<div class="lghead"><button class="btn quiet" data-lgback="1">← Alla ligor</button>
    <div class="lgtitle"><h2 style="margin:0">${esc(lgName(code))}</h2>${myOwn[code]?`<span class="host">Du är värd</span>`:""}</div>
-   ${code==="DEMO"?`<p class="note" style="margin:6px 0 0"><span class="host">Admin</span> Påhittade managers med riktiga resultat från ${dshort(D.rounds[demoRs[0]].start)} till ${dshort(D.rounds[demoRs[demoRs.length-1]].end)}. Syns bara för dig och sparas inte.</p>`:code==="GLOBAL"?`${(leagueRows.GLOBAL||[]).length?`<p class="note" style="margin:6px 0 0">${leagueRows.GLOBAL.length} spelare</p>`:""}`:`<div class="codebox"><code>${esc(code)}</code><button class="btn on" data-copy="${esc(code)}">${copied===code?"Länken kopierad":"Kopiera inbjudningslänk"}</button>${navigator.share?`<button class="btn" data-share="${esc(code)}">Dela</button>`:""}</div>`}
+   ${code==="DEMO"?`<p class="note" style="margin:6px 0 0"><span class="host">Admin</span> Påhittade managers med riktiga resultat från ${dshort(D.rounds[demoRs[0]].start)} till ${dshort(D.rounds[demoRs[demoRs.length-1]].end)}. Syns bara för dig och sparas inte.</p>`:code==="GLOBAL"?`${(leagueRows.GLOBAL||[]).length?`<p class="note" style="margin:6px 0 0">${leagueRows.GLOBAL.length} spelare</p>`:""}`:`<div class="lg-actions"><button class="btn on" data-sharesheet="${esc(code)}">Dela ligan</button></div>`}
    ${dbOk&&!myTeam?`<div class="nudge"><span><b>Ge ditt lag ett namn</b></span><button class="btn on" data-tab="profile" data-focus="teamName">Namnge ditt lag</button></div>`:""}
    ${cur!==undefined?`<div class="chips" style="margin-top:12px">${sub("table","Tabell")}${sub("round","Omgång")}${sub("teams","Lag")}</div>`:""}</div>`;
   if(cur===undefined||lgSub==="table")return head+`<div class="card">${leagueTable(code)}</div>`;
@@ -2880,8 +2900,8 @@ function leaguesView(){
   ${leagueMsg?`<p class="note" style="margin:10px 0 0">${esc(leagueMsg)}</p>`:""}
   ${adminOn()?`<div class="card admin" style="margin-top:12px"><div class="ev" style="border:0;padding:0;align-items:center"><div><span class="eyebrow">Admin</span><h3 style="margin:2px 0 0">Demoliga</h3><div class="sub">Så ser en liga ut mitt i en spelvecka, med påhittade managers och riktiga resultat.</div></div><button class="btn on" data-demo="1">Visa demoliga</button></div></div>`:""}
   ${isLive()?weekCard()+globalCard():""}
-  ${myLeagues.length?myLeagues.map(c=>`<div class="card" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><h3 style="margin:0;display:inline">${esc(lgName(c))}</h3>${myOwn[c]?`<span class="host">Du är värd</span>`:""} <button class="btn on" data-lgopen="${esc(c)}" style="margin-left:8px">Öppna ligan</button>
-    <div class="codebox"><code>${esc(c)}</code><button class="btn" data-copy="${esc(c)}">${copied===c?"Länken kopierad":"Kopiera inbjudningslänk"}</button>${navigator.share?`<button class="btn" data-share="${esc(c)}">Dela</button>`:""}</div></div><button class="btn quiet" data-leave="${esc(c)}">Lämna</button></div>${leagueTable(c)}</div>`).join(""):`<div class="card" style="margin-top:12px"><h3>Inga ligor än</h3><p class="note" style="margin:0">Starta en ovan och skicka inbjudningslänken till dina kompisar.</p></div>`}`;
+  ${myLeagues.length?myLeagues.map(c=>`<div class="card" style="margin-top:12px"><div class="lg-card-head"><h3>${esc(lgName(c))}</h3>${myOwn[c]?`<span class="host">Du är värd</span>`:""}</div>
+    <div class="lg-actions"><button class="btn on" data-lgopen="${esc(c)}">Öppna ligan</button><button class="btn" data-sharesheet="${esc(c)}">Dela</button><button class="btn quiet" data-leave="${esc(c)}">Lämna</button></div>${leagueTable(c)}</div>`).join(""):`<div class="card" style="margin-top:12px"><h3>Inga ligor än</h3><p class="note" style="margin:0">Starta en ovan och skicka inbjudningslänken till dina kompisar.</p></div>`}`;
 }
 function rulesView(){
   return `<p class="eyebrow pg-k">04 · Spelets regler</p><h2 style="margin-top:0">Så funkar det</h2>
@@ -3286,7 +3306,10 @@ document.addEventListener("click",ev=>{
   if(t.id==="mode"){if(!confirmMode){confirmMode=true;render();return}
     const toLive=!isLive();state=E.newState(toLive?LIVE:0);plan={squad:[],captain:null,vice:null,chip:null};lock=null;confirmMode=false;viewRound=0;
     if(toLive)liveSync();save();tab="team";animNext=true;render();toTop();return}
-  if(d.copy){const u=inviteUrl(d.copy),done=()=>{copied=d.copy;render();setTimeout(()=>{copied="";render()},2200)};
+  if(d.sharesheet){shareSheet(d.sharesheet);return}
+  if(d.copycode){const c=d.copycode,done=()=>{copied="code:"+c;shareSheet(c);setTimeout(()=>{copied="";if(document.querySelector('#modal .sheet[data-key="share|'+c+'"]'))shareSheet(c)},2200)};
+    try{navigator.clipboard.writeText(c).then(done,()=>{})}catch(e){}return}
+  if(d.copy){const u=inviteUrl(d.copy),inSheet=!!document.querySelector('#modal .sheet[data-key="share|'+d.copy+'"]'),done=()=>{copied=d.copy;if(inSheet)shareSheet(d.copy);else render();setTimeout(()=>{copied="";if(inSheet&&document.querySelector('#modal .sheet[data-key="share|'+d.copy+'"]'))shareSheet(d.copy);else render()},2200)};
     try{navigator.clipboard.writeText(u).then(done,()=>{prompt("Kopiera inbjudningslänken",u)})}catch(e){prompt("Kopiera inbjudningslänken",u)}return}
   if(d.share){try{navigator.share({title:"Gå med i "+lgName(d.share)+" på Fantasy Orientering",text:"Gå med i min liga "+lgName(d.share)+" på Fantasy Orientering",url:inviteUrl(d.share)}).catch(()=>{})}catch(e){}return}
   if(d.jump){const m=document.getElementById("market");if(m)m.scrollIntoView({behavior:RM?"auto":"smooth",block:"start"});return}
@@ -3309,7 +3332,12 @@ document.addEventListener("click",ev=>{
     if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
   if(t.id==="createLeague"){const n=newLeague.trim();if(!n){leagueMsg="Ge ligan ett namn först.";render();return}joinLeague(mkCode(n),n).then(ok=>{if(ok)newLeague="";render()});return}
   if(t.id==="joinLeague"){joinLeague(joinCode,"").then(ok=>{if(ok)joinCode="";render()});return}
-  if(d.leave){const c=d.leave;myLeagues=myLeagues.filter(x=>x!==c);delete myLgn[c];if(leagueUnsubs[c]){try{leagueUnsubs[c]()}catch(e){}delete leagueUnsubs[c]}if(cloud.sb&&cloud.uid)cloud.sb.from("league_members").delete().eq("code",c).eq("user_id",cloud.uid).then(()=>{});leagueMsg="";save();render();return}
+  if(d.leave){const c=d.leave;
+    /* leaving needs a second tap: one stray tap must not take you out of a league */
+    showSheet("leave|"+c,"Lämna "+lgName(c),`<div class="hd"><div><span class="eyebrow">Lämna ligan</span><h2 style="margin:2px 0 0">Lämna ${esc(lgName(c))}?</h2></div></div>
+      <p class="note" style="margin:10px 0 16px">Ditt lag försvinner ur ligans tabell. Du kan gå med igen med koden <b>${esc(c)}</b>${myOwn[c]?", och då är du fortfarande värd":""}.</p>
+      <div class="lg-actions"><button class="btn danger" data-leaveok="${esc(c)}">Ja, lämna ligan</button><button class="btn" data-close="1">Avbryt</button></div>`);return}
+  if(d.leaveok){const c=d.leaveok;$("#modal").innerHTML="";if(lgOpen===c)lgOpen=null;myLeagues=myLeagues.filter(x=>x!==c);delete myLgn[c];if(leagueUnsubs[c]){try{leagueUnsubs[c]()}catch(e){}delete leagueUnsubs[c]}if(cloud.sb&&cloud.uid)cloud.sb.from("league_members").delete().eq("code",c).eq("user_id",cloud.uid).then(()=>{});leagueMsg="";save();render();return}
 });
 document.addEventListener("keydown",ev=>{
   if(ev.key==="Escape"&&!(myFlag&&document.querySelector('#modal .sheet[data-key="rename"]'))){closeModal();profileOpen=null;phForm=null;phMsg=""}
