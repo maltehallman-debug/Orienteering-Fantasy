@@ -28,9 +28,153 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%23003c68'/%3E%3Cg transform='translate%28-.4 -.9%29 scale%28.0322%29'%3E%3Cpath d='M540 120l18 37 41 6-30 29 7 41-36-19-36 19 7-41-30-29 41-6z' fill='%23fff'/%3E%3Cg transform='translate%28540 240%29'%3E%3Cpath d='M-210 0H210C210 220 120 350 0 370C-120 350-210 220-210 0Z' fill='%23ffe74d'/%3E%3Cpath d='M-205 50C-320 50-330 190-205 235M205 50C320 50 330 190 205 235' fill='none' stroke='%23ffe74d' stroke-width='40' stroke-linecap='round'/%3E%3Crect x='-30' y='360' width='60' height='110' fill='%23ffe74d'/%3E%3Cpath d='M-140 580H140L112 470H-112Z' fill='%23ffe74d'/%3E%3Ccircle cx='0' cy='145' r='88' fill='none' stroke='%23003c68' stroke-width='34'/%3E%3C/g%3E%3Cpath d='M150 610L120 690H230ZM930 610L960 690H850Z' fill='%23c9d3dc'/%3E%3Cpath d='M95 560H230V700H95L140 630ZM985 560H850V700H985L940 630Z' fill='%23e8edf2'/%3E%3Crect x='190' y='530' width='700' height='150' rx='8' fill='%23fff'/%3E%3Ctext x='540' y='652' font-family='Montserrat,Arial,sans-serif' font-weight='900' font-size='112' letter-spacing='6' fill='%23003c68' text-anchor='middle'%3EFANTASY%3C/text%3E%3C/g%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap">
+<!-- the fonts are served from this site, not from Google: a visitor's address is never sent anywhere else (SIL OFL, licences in fonts/) -->
+<style>
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/BarlowCondensed-latin-ext-477044.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/BarlowCondensed-latin-79f19b.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(fonts/BarlowCondensed-latin-ext-93cdc0.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(fonts/BarlowCondensed-latin-b57619.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/BarlowCondensed-latin-ext-aaa351.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/BarlowCondensed-latin-f60870.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(fonts/BarlowCondensed-latin-ext-dc56a7.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(fonts/BarlowCondensed-latin-7f8439.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/Montserrat-latin-ext-ccd96b.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/Montserrat-latin-e56e84.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/Montserrat-latin-ext-ccd96b.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/Montserrat-latin-e56e84.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(fonts/Montserrat-latin-ext-ccd96b.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(fonts/Montserrat-latin-e56e84.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/Montserrat-latin-ext-ccd96b.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/Montserrat-latin-e56e84.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(fonts/Montserrat-latin-ext-ccd96b.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(fonts/Montserrat-latin-e56e84.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
 <script>/* apply the saved theme before first paint, so the page never flashes the wrong colours */
 document.documentElement.dataset.theme="light";try{localStorage.removeItem("of-theme")}catch(e){}
 /* iPhone and iPad (Safari's touch-callout support is iOS-only): Apple's Liquid Glass look. ?glass=1 previews it elsewhere */
@@ -1552,6 +1696,11 @@ td,th{border-color:#ededed!important}
 @media (max-width:430px){.lgl-h,.lgl-r{grid-template-columns:42px minmax(0,1fr) 44px 50px;gap:7px}.lgl-r{padding:10px 11px}.lgl-r .tm{gap:7px}.lgl-r .tm .mdot{width:26px;height:26px;font-size:11px}.lgl-r .tm b{font-size:12.5px}.lgl-r .tm .sub{font-size:11px}.lgl-r .n{font-size:13px}.lgl-r .pl{font-size:14px}.lgl-r .pl small{font-size:11px}}
 @media (max-width:380px){.lgl-h,.lgl-r{grid-template-columns:36px minmax(0,1fr) 40px 46px;gap:6px}.lgl-r{padding:10px 9px}.lgl-r .tm .mdot{width:22px;height:22px;font-size:10px}.lgl-r .tm b{font-size:11.5px}.lgl-r .n{font-size:12px}.lgl-r .pl{font-size:13px}}
 .btn.danger{background:#d6261c!important;color:#fff!important;border-color:#d6261c!important}
+.legal h3{margin:18px 0 6px;font-size:16px}.legal p{margin:0 0 10px;line-height:1.55;max-width:68ch}
+.agree{display:flex;gap:10px;align-items:flex-start;margin:4px 0 14px;font-size:14px;line-height:1.45}.agree input{width:20px;height:20px;margin-top:1px;flex:none}
+.agree .linkish,.fanline .linkish{padding:0;font-size:inherit}
+textarea.name{border-radius:18px!important;resize:vertical;min-height:96px;padding:12px 16px}
+select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px solid #111;border-radius:999px;padding:13px 44px 13px 18px;font:500 16px/1.2 var(--font);color:var(--text);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23111' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 18px center}
 /* league cards: the name, then the buttons in a row, left-aligned like everywhere else */
 .lg-card-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
 .lg-card-head h3{margin:0}
@@ -1612,13 +1761,13 @@ td,th{border-color:#ededed!important}
 <div class="course" id="course"></div>
 <main id="view"></main>
 <nav class="bigpills" aria-label="Genvägar"><button type="button" data-tab="rules">Regler <i>↗</i></button><button type="button" data-tab="leagues">Ligor <i>↗</i></button><a href="https://eventor.orientering.se" target="_blank" rel="noopener">Eventor <i>↗</i></a></nav>
-<p class="fanline">Fantasy Orientering är ett fristående, ideellt fanprojekt och har ingen koppling till Svensk Orientering. Resultaten kommer från Eventor och liveresultat.orientering.se.</p>
+<p class="fanline">Fantasy Orientering är ett fristående, ideellt fanprojekt och har ingen koppling till Svenska Orienteringsförbundet. Resultaten kommer från Eventor och liveresultat.orientering.se.<br><button type="button" class="linkish" data-info="terms">Villkor</button> · <button type="button" class="linkish" data-info="privacy">Integritet</button> · <button type="button" class="linkish" data-info="contact">Kontakt och anmälan</button></p>
 </div>
 <nav class="tabbar" id="tabbar" aria-label="Sektioner"></nav>
 <div id="modal"></div>
 <div id="fx" aria-hidden="true"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="vendor/supabase-2.45.4.min.js"></script>
 <script>
 const D=/*DATA*/null;
 /*ENGINE*/
@@ -2119,6 +2268,9 @@ const dayName=s=>DAYS[new Date(s+"T12:00:00Z").getUTCDay()];
 /* ---------- orienteering maps as pictures: the photos on orientering.se, as real O-maps ----------
    Pieces of a real orienteering map (Järvafältet, 1:15 000, text removed) with a purple course drawn on top for each
    race. One seed picks the piece, the part of it shown and the course, so a race always gets the same picture. */
+/* the legal pages: who is responsible for the data, and the date the terms and policy apply from */
+const LEGAL_DATE="25 oktober 2026";
+const CONTROLLER="Fantasy Orientering drivs av en privatperson, som är personuppgiftsansvarig.";
 /* the official launch: the round of Sverigepremiären. The countdown runs to its start (Monday, when squads lock) */
 const launchDates=()=>{const ds=(D.launch&&D.launch.dates)||[];if(!ds.length)return "";const a=ds[0],b=ds[ds.length-1],[,ma]=a.split("-"),[,mb]=b.split("-");
   return a===b?dshort(a):ma===mb?(+a.split("-")[2])+"–"+dshort(b):dshort(a)+" – "+dshort(b)};
@@ -2478,6 +2630,7 @@ function authCard(){
    ${authMsg?`<p class="note" style="margin:12px 0 0;color:${authOk?"var(--good)":"var(--warn)"}">${esc(authMsg)}</p>`:""}</div>`;
   return `<div class="card"><h3>${authMode==="up"?"Skapa ditt konto":"Logga in"}</h3>
    <p class="note" style="margin:0 0 14px">${authMode==="up"?"En e-postadress och ett lösenord. Din trupp följer med till alla enheter.":"Välkommen tillbaka."}</p>
+   ${authMode==="up"?`<label class="agree"><input type="checkbox" id="authAgree" ${authAgree?"checked":""}> <span>Jag är minst 13 år och godkänner <button type="button" class="linkish" data-info="terms">villkoren</button> och <button type="button" class="linkish" data-info="privacy">integritetspolicyn</button>.</span></label>`:""}
    ${authMode==="up"?`<div class="field"><label for="authName">Managernamn</label><input class="name" id="authName" maxlength="24" value="${esc(authName)}" autocomplete="nickname" autocapitalize="words"></div>`:""}
    <div class="field"><label for="authEmail">E-post</label><input class="name" id="authEmail" type="email" value="${esc(authEmail)}" autocomplete="email" autocapitalize="none" autocorrect="off" inputmode="email"></div>
    <div class="field"><label for="authPw">Lösenord${authMode==="up"?" (minst 8 tecken)":""}</label><input class="name" id="authPw" type="password" value="${esc(authPw)}" autocomplete="${authMode==="up"?"new-password":"current-password"}" enterkeyhint="go"></div>
@@ -2750,7 +2903,7 @@ function rulesView(){
   <li>Poäng för att gå i mål, för varje löpare du slår, för att vara nära vinnaren och för pallplats.</li>
   <li>Starkare startfält och mästerskap är värda mer. En felstämpling kostar lite.</li>
   <li>En bra vecka för ett helt lag är runt 100.</li></ul></div></div>
-  <div class="info-row"><button class="btn" data-info="points">Så räknas poängen</button><button class="btn" data-info="more">Chips, nivåer och ligor</button><button class="btn" data-info="data">Om datan</button><button class="btn" data-info="privacy">Integritet</button></div>`;
+  <div class="info-row"><button class="btn" data-info="points">Så räknas poängen</button><button class="btn" data-info="more">Chips, nivåer och ligor</button><button class="btn" data-info="data">Om datan</button><button class="btn" data-info="privacy">Integritet</button><button class="btn" data-info="terms">Villkor</button><button class="btn" data-info="contact">Kontakt och anmälan</button></div>`;
 }
 /* the details live in small sheets so the rules page stays short */
 function infoSheet(k){
@@ -2778,17 +2931,41 @@ function infoSheet(k){
   <li>Datan gäller till och med ${dshort(D.asof)}. Priserna för varje omgång bygger bara på lopp före den. Sidan uppdateras med nya lopp varje dag.</li><li>Lopp som pågår, eller som inte finns på liveresultat än (som O-Event 6–8 november), visas i schemat och räknas när en klass har 3 eller fler i mål.</li>
   <li>Priset kommer från löparens placering i sin klass (H16, D21 och så vidare) efter ett viktat snitt av tidigare poäng, där senare lopp väger tyngre. I varje klass kostar den bästa löparen 22k, topp tre 20k eller mer, ungefär den 15:e bästa 14,5k och resten av fältet ner till 2,5k. Löpare utan historik kostar 2,5k.</li>
   <li>Spelet har ${D.runners.filter(x=>x.p).length} löpare med minst 3 starter.</li></ul></div>`};
-  body.privacy=()=>hd("Integritet och borttagning","Integritet")+`<div class="info"><ul class="rules">
-  <li><b>Löpare:</b> spelet visar löparnas namn, klubbar, klasser och resultat i D/H 16–21. Det är de offentliga resultaten från Eventor och liveresultat.orientering.se. Inget annat om en löpare används: inga födelsedatum, adresser eller kontaktuppgifter. Löpare under 15 år är inte med i spelet.</li>
-  <li><b>Foton</b> på löpare visas bara när löparen (eller för en junior, en förälder) har skickat in ett och en admin har godkänt det. De kan tas bort när som helst.</li>
-  <li><b>Ditt konto:</b> din e-postadress, ditt managernamn, lagnamn, din bild, trupper och poäng. De lagras hos Supabase i Frankfurt (EU) och används bara för att driva spelet. Andra managers ser ditt managernamn, lagnamn, din bild, trupper och poäng, aldrig din e-post.</li>
-  <li><b>Gratis och ideellt:</b> ingen reklam, inga spårningscookies och inget säljs eller delas. Antalet besök räknas med Vercel Web Analytics, utan cookies och utan något som kan peka ut dig.</li>
-  <li><b>Radera ditt konto</b> på Profilsidan när som helst; allt i det raderas.</li></ul></div>
-  <div class="info"><h3>Ta bort en löpare från spelet</h3><p class="note" style="margin:4px 0 10px">En löpare, eller en förälder till en junior, kan be om att löparen tas bort från spelet. Inget konto behövs.</p>
-   <div class="field"><label for="rmRunner">Löparens namn och klubb</label><input class="name" id="rmRunner" maxlength="120" value="${esc(rmF.runner)}" autocomplete="off"></div>
-   <div class="field"><label for="rmMsg">Meddelande (frivilligt)</label><input class="name" id="rmMsg" maxlength="1000" value="${esc(rmF.msg)}" autocomplete="off"></div>
-   <div class="field"><label for="rmContact">E-post eller telefon om du vill ha svar (frivilligt)</label><input class="name" id="rmContact" maxlength="200" value="${esc(rmF.contact)}" autocomplete="email"></div>
-   <div class="row" style="margin-top:10px"><button class="btn on" id="rmSend" ${rmBusy?"disabled":""}>Skicka</button>${rmStat?`<span class="note">${esc(rmStat)}</span>`:""}</div></div>`;
+  /* ---------- terms, privacy and the contact point ---------- */
+  const lk=(k,t)=>`<button class="linkish" data-info="${k}">${t}</button>`;
+  body.terms=()=>hd("Användarvillkor","Villkor")+`<div class="info legal">
+  <p class="note">Gäller från ${LEGAL_DATE}. Genom att skapa ett konto godkänner du villkoren.</p>
+  <h3>1. Om tjänsten</h3><p>Fantasy Orientering är ett gratis, ideellt fanprojekt som drivs av en privatperson. Det har ingen koppling till Svenska Orienteringsförbundet (Svensk Orientering), Eventor, liveresultat.orientering.se eller någon klubb eller arrangör, och är inte godkänt av dem. Namn och varumärken som nämns tillhör sina ägare.</p>
+  <h3>2. Inga pengar, inga priser</h3><p>Spelet är gratis. Det finns inga insatser, inga avgifter och inga vinster i pengar eller annat värde, och spelet är inte ett spel om pengar. Om deltagarna i en privat liga själva bestämmer om något pris sker det helt utanför tjänsten och på deras eget ansvar.</p>
+  <h3>3. Ditt konto</h3><p>Du måste vara minst 13 år för att skapa ett konto. Ett konto per person. Håll ditt lösenord för dig själv. Du kan radera ditt konto när som helst på Profilsidan.</p>
+  <h3>4. Uppförande</h3><p>Managernamn, lagnamn, ligors namn och bilder får inte vara kränkande, hotfulla, diskriminerande, sexuella eller olagliga, får inte utge sig för att vara någon annan och får inte innehålla reklam. Ladda bara upp bilder som du har rätt att använda. Foton av någon under 18 år kräver tillstånd från en vårdnadshavare. Försök inte störa tjänsten eller komma åt andras konton.</p>
+  <h3>5. Vad vi får göra</h3><p>Vi kan utan förvarning ändra eller ta bort namn, bilder och ligor och stänga av eller radera konton som bryter mot villkoren. Det du laddar upp äger du, men du ger oss rätt att visa det i spelet så länge det finns kvar.</p>
+  <h3>6. Resultat och poäng</h3><p>Resultaten kommer från offentliga källor och kan vara fel, sena eller ändras i efterhand. Poäng och tabeller kan då räknas om. Spelets poäng är bara för skojs skull och ger ingen rätt till något.</p>
+  <h3>7. Ansvar</h3><p>Tjänsten tillhandahålls i befintligt skick, utan garantier. Den kan ändras, ha fel, vara nere eller läggas ned när som helst utan ersättning. Så långt lagen tillåter ansvarar vi inte för skador eller förluster som uppstår av att använda eller inte kunna använda tjänsten.</p>
+  <h3>8. Anmäl innehåll eller begär borttagning</h3><p>Anmäl namn eller bilder som bryter mot villkoren, eller be att en löpare tas bort, via ${lk("contact","kontaktformuläret")}. Den som har rättigheter till material som visas här, till exempel en arrangör, en kartägare eller Svenska Orienteringsförbundet, kan begära att det tas bort. Vi tar bort det skyndsamt.</p>
+  <h3>9. Ändringar och lag</h3><p>Villkoren kan ändras. Vid större ändringar meddelar vi det i spelet. Svensk lag gäller.</p>
+  <p>${lk("privacy","Integritetspolicy")} · ${lk("contact","Kontakt och anmälan")}</p></div>`;
+  body.privacy=()=>hd("Integritetspolicy","Integritet")+`<div class="info legal">
+  <p class="note">Gäller från ${LEGAL_DATE}.</p>
+  <h3>Personuppgiftsansvarig</h3><p>${CONTROLLER} Frågor och begäranden skickas via ${lk("contact","kontaktformuläret")}.</p>
+  <h3>Löpare i spelet</h3><p><b>Vilka uppgifter:</b> namn, klubb, klass, resultat och anmälningar i D/H 16–21 från offentliga resultatlistor i Eventor och liveresultat.orientering.se. Inga födelsedatum, adresser eller kontaktuppgifter. Löpare under 15 år är inte med.</p>
+  <p><b>Varför och på vilken grund:</b> för att spelet ska kunna räkna poäng på riktiga lopp. Grunden är berättigat intresse (GDPR artikel 6.1 f). Uppgifterna är redan offentliga idrottsresultat, urvalet är litet och varje löpare kan invända och tas bort. <b>Du kan invända när som helst</b> via ${lk("contact","kontaktformuläret")}, inget konto behövs. Då tar vi bort löparen ur spelet, och uppgiften används inte igen.</p>
+  <p><b>Foton på löpare</b> visas bara om löparen själv, eller en vårdnadshavare för den som är under 18, har skickat in dem (samtycke, artikel 6.1 a). Samtycket kan återkallas när som helst, och då tas fotot bort.</p>
+  <h3>Ditt konto</h3><p><b>Vilka uppgifter:</b> e-postadress, lösenord (som bara sparas krypterat), managernamn, lagnamn, bild, trupper, poäng och ligor. Andra spelare ser ditt managernamn, lagnamn, bild, trupper och poäng, aldrig din e-post.</p>
+  <p><b>Varför och på vilken grund:</b> för att driva ditt konto och spelet (avtal, artikel 6.1 b). <b>Hur länge:</b> tills du raderar kontot. Då raderas allt i det direkt. Om tjänsten läggs ned raderas alla konton.</p>
+  <h3>Kontaktformuläret</h3><p>Det du skriver, och kontaktuppgifter om du lämnar dem, används bara för att hantera ditt ärende (berättigat intresse) och raderas när ärendet är klart.</p>
+  <h3>Vilka som behandlar uppgifterna åt oss</h3><p><b>Supabase</b> (databas och inloggning, servrar i Frankfurt, EU). <b>Vercel</b> (webbhotell och besöksstatistik). Vercel är ett amerikanskt företag som omfattas av EU:s och USA:s dataskyddsramverk, och dess servrar kan se din IP-adress när sidan laddas. <b>GitHub</b> (sajtens kod och den gamla adressen). Vi säljer eller lämnar aldrig ut uppgifter till någon annan.</p>
+  <h3>Cookies och lagring</h3><p>Inga reklam- eller spårningscookies. Webbläsaren sparar ditt lag och din inloggning lokalt (localStorage). Det behövs för att tjänsten ska fungera och kräver därför inget samtycke. Besök räknas med Vercel Web Analytics utan cookies och utan något som kan peka ut dig. Typsnitt och kod hämtas från den här sajten, inte från Google eller andra.</p>
+  <h3>Dina rättigheter</h3><p>Du kan begära att få veta vilka uppgifter vi har om dig, få dem rättade, raderade eller begränsade, få ut dem (dataportabilitet) och invända mot behandlingen. Skicka din begäran via ${lk("contact","kontaktformuläret")}, så svarar vi inom en månad. Är du missnöjd kan du klaga hos Integritetsskyddsmyndigheten (imy.se).</p>
+  <p>Inga automatiska beslut med rättslig verkan fattas om dig. Uppgifterna används inte för reklam eller profilering.</p>
+  <p>${lk("terms","Användarvillkor")} · ${lk("contact","Kontakt och anmälan")}</p></div>`;
+  body.contact=()=>hd("Kontakt och anmälan","Kontakt")+`<div class="info"><p class="note" style="margin:0 0 12px">Här kan du be att en löpare tas bort, anmäla ett namn eller en bild, fråga om dina personuppgifter eller kontakta oss om något annat. Inget konto behövs. Vi läser allt och svarar om du lämnar en kontaktuppgift.</p>
+   <div class="field"><label for="rmKind">Gäller</label><select class="name" id="rmKind">${[["runner","Ta bort en löpare ur spelet"],["report","Anmäl ett namn, en bild eller en liga"],["rights","Mina personuppgifter (se, rätta, radera …)"],["privacy","Upphovsrätt eller annat material som ska bort"],["other","Något annat"]].map(([v,l])=>`<option value="${v}" ${rmF.kind===v?"selected":""}>${l}</option>`).join("")}</select></div>
+   <div class="field"><label for="rmRunner">${rmF.kind==="runner"?"Löparens namn och klubb":rmF.kind==="report"?"Vilket namn, lag eller vilken liga":"Ämne"}</label><input class="name" id="rmRunner" maxlength="120" value="${esc(rmF.runner)}" autocomplete="off"></div>
+   <div class="field"><label for="rmMsg">Meddelande${rmF.kind==="runner"?" (frivilligt)":""}</label><textarea class="name" id="rmMsg" maxlength="1000" rows="4">${esc(rmF.msg)}</textarea></div>
+   <div class="field"><label for="rmContact">E-post eller telefon om du vill ha svar${rmF.kind==="rights"?"":" (frivilligt)"}</label><input class="name" id="rmContact" maxlength="200" value="${esc(rmF.contact)}" autocomplete="email"></div>
+   <div class="row" style="margin-top:10px"><button class="btn on" id="rmSend" ${rmBusy?"disabled":""}>Skicka</button>${rmStat?`<span class="note">${esc(rmStat)}</span>`:""}</div>
+   <p class="note" style="margin:14px 0 0">${lk("privacy","Integritetspolicy")} · ${lk("terms","Användarvillkor")}</p></div>`;
   showSheet("info|"+k,"Regler",(body[k]||body.points)());
 }
 /* cards glide from where they were to where they are now (swaps between A and B, adds, removals) */
@@ -2908,7 +3085,7 @@ const BADW=/(fitta|fittor|knull|fuck|cunt|nigg|whore|slut|pussy|penis|vagina|por
 const nameOk=t=>{if(!t)return true;const x=String(t).toLowerCase().replace(/[013457@$]/g,c=>({"0":"o","1":"i","3":"e","4":"a","5":"s","7":"t","@":"a","$":"s"})[c]);return !BADW.test(x)&&!BADS.test(x)};
 /* admin: removal requests and managers' names */
 let myFlag=null,myPf={name:"",team:""},rnF={name:"",team:""},rnMsg="",rnBusy=false;
-let rmReqs=[],allPf=[],modMsg="",rmF={runner:"",msg:"",contact:""},rmStat="",rmBusy=false,delAsk=false,delBusy=false,delMsg="";
+let rmReqs=[],allPf=[],modMsg="",rmF={kind:"runner",runner:"",msg:"",contact:""},rmStat="",rmBusy=false,delAsk=false,delBusy=false,delMsg="";
 /* "Apply now": a server function checks you are an admin and starts the data refresh on GitHub straight away */
 async function applyNow(){
   if(applyBusy)return;applyBusy=true;applyMsg="Starting…";render();
@@ -2919,18 +3096,21 @@ async function applyNow(){
   applyBusy=false;render();
 }
 async function loadOvr(){if(!cloud.admin)return;try{const [q,r,p]=await Promise.all([cloud.sb.from("game_overrides").select("id,kind,ref,label,created_at").order("created_at"),
-  cloud.sb.from("removal_requests").select("id,runner,message,contact,created_at").eq("handled",false).order("created_at"),cloud.sb.from("profiles").select("id,name,team,name_flag").order("created_at").limit(2000)]);
+  cloud.sb.from("removal_requests").select("*").eq("handled",false).order("created_at"),cloud.sb.from("profiles").select("id,name,team,name_flag").order("created_at").limit(2000)]);
   if(!q.error)ovr=q.data||[];if(!r.error)rmReqs=r.data||[];if(!p.error)allPf=p.data||[]}catch(e){}render()}
 async function modProfile(id,patch,what){try{const q=await cloud.sb.from("profiles").update(patch).eq("id",id);modMsg=q.error?"Kunde inte spara: "+q.error.message:what;pfCache.delete(id)}catch(e){modMsg="Kunde inte spara."}await loadOvr()}
 async function rmDone(id){try{await cloud.sb.from("removal_requests").update({handled:true}).eq("id",id)}catch(e){}await loadOvr()}
 /* someone asks for a runner to be left out of the game (no account needed) */
 async function sendRemoval(){
-  if(rmBusy)return;const f={runner:rmF.runner.trim(),message:rmF.msg.trim()||null,contact:rmF.contact.trim()||null};
-  if(f.runner.length<2){rmStat="Skriv löparens namn och klubb.";infoSheet("privacy");return}
-  rmBusy=true;rmStat="Skickar…";infoSheet("privacy");
-  try{const q=await cloud.sb.from("removal_requests").insert(f);if(q.error)throw q.error;rmF={runner:"",msg:"",contact:""};rmStat="Tack. Vi tar bort löparen från spelet inom några dagar."}
+  if(rmBusy)return;const kind=rmF.kind||"runner",f={kind,runner:rmF.runner.trim(),message:rmF.msg.trim()||null,contact:rmF.contact.trim()||null};
+  if(f.runner.length<2){rmStat=kind==="runner"?"Skriv löparens namn och klubb.":"Skriv vad det gäller.";infoSheet("contact");return}
+  if(kind==="rights"&&!f.contact){rmStat="Skriv en e-postadress eller ett telefonnummer så att vi kan svara.";infoSheet("contact");return}
+  rmBusy=true;rmStat="Skickar…";infoSheet("contact");
+  try{let q=await cloud.sb.from("removal_requests").insert(f);
+    if(q.error&&/kind/.test(q.error.message||"")){const g=Object.assign({},f);delete g.kind;g.message=("["+kind+"] "+(g.message||"")).trim();q=await cloud.sb.from("removal_requests").insert(g)}
+    if(q.error)throw q.error;rmF={kind,runner:"",msg:"",contact:""};rmStat=kind==="runner"?"Tack. Vi tar bort löparen från spelet inom några dagar.":"Tack, vi har fått ditt meddelande."}
   catch(e){rmStat="Kunde inte skicka. Försök igen om en stund."}
-  rmBusy=false;infoSheet("privacy");
+  rmBusy=false;infoSheet("contact");
 }
 /* the account and everything in it, for good: a server function checks it is your own account and deletes it */
 async function deleteAccount(){
@@ -2976,7 +3156,7 @@ function adminGameCard(){
 function adminModCard(){
   const hidden=ovr.filter(o=>o.kind==="runner_hide");
   const match=t=>{const w=String(t).toLowerCase().split(/[\s,]+/).filter(x=>x.length>1);if(!w.length)return [];const out=[];D.runners.forEach((r,i)=>{const n=(r.n+" "+r.c).toLowerCase();if(w.filter(x=>n.includes(x)).length>=Math.min(2,w.length))out.push(i)});return out.slice(0,6)};
-  const req=x=>`<div class="adm-row col"><div><b>${esc(x.runner)}</b> <span class="sub">${esc(dshort(String(x.created_at).slice(0,10)))}${x.contact?" · "+esc(x.contact):""}</span>${x.message?`<p class="note" style="margin:4px 0 0">${esc(x.message)}</p>`:""}</div>
+  const req=x=>`<div class="adm-row col"><div>${x.kind&&x.kind!=="runner"?`<span class="host">${{report:"Anmälan",rights:"Personuppgifter",privacy:"Material",other:"Övrigt"}[x.kind]||esc(x.kind)}</span> `:""}<b>${esc(x.runner)}</b> <span class="sub">${esc(dshort(String(x.created_at).slice(0,10)))}${x.contact?" · "+esc(x.contact):""}</span>${x.message?`<p class="note" style="margin:4px 0 0">${esc(x.message)}</p>`:""}</div>
     <div class="row">${match(x.runner).map(i=>`<button class="btn" data-rmhide="${esc(D.runners[i].id)}" data-rmlabel="${esc(nameOf(i)+", "+clubOf(i))}">Dölj ${esc(nameOf(i))} · ${esc(clubOf(i))} · ${esc(D.runners[i].k)}</button>`).join("")||'<span class="note">Ingen löpare med det namnet i spelet.</span>'}<button class="btn quiet" data-rmdone="${x.id}">Klar</button></div></div>`;
   const bad=allPf.filter(p=>!nameOk(p.name)||!nameOk(p.team)||p.name_flag),pf=p=>{const f=p.name_flag,tf=f==="team"||f==="both",nf=f==="name"||f==="both",flag=(t,n)=>t&&n?"both":t?"team":n?"name":"";
     return `<div class="adm-row col"><div><b>${esc(p.team||"Inget lagnamn")}</b> <span class="sub">${esc(p.name||"")}</span>${f?` <span class="flagtag">Måste välja nytt ${f==="both"?"namn och lagnamn":f==="team"?"lagnamn":"namn"}</span>`:""}</div><div class="row">
@@ -3185,6 +3365,7 @@ document.addEventListener("input",ev=>{const t=ev.target;
   if(t.id==="mgrName"){mgrName=t.value.slice(0,24);nameNote();save()}
   if(t.id==="teamName"){myTeam=t.value.slice(0,30);nameNote();save()}
   if(t.id==="rmRunner")rmF.runner=t.value.slice(0,120);
+  if(t.id==="rmKind"){rmF.kind=t.value;infoSheet("contact")}
   if(t.id==="rnName")rnF.name=t.value.slice(0,24);
   if(t.id==="rnTeam")rnF.team=t.value.slice(0,30);
   if(t.id==="rmMsg")rmF.msg=t.value.slice(0,1000);
@@ -3223,7 +3404,7 @@ function welcomeSheet(kind){
   if(kind==="ok")setTimeout(()=>burst(innerWidth/2,innerHeight*.3,70),500);
 }
 const SB_URL="https://hjpfmubvpvftxyyemltn.supabase.co",SB_KEY="sb_publishable_Ent2RuVrh-iKyjT1or8gOw_UFdZ74ch";
-let authEmail="",authPw="",authName="",authMode=pendingJoin?"up":"in",authMsg="",authOk=false,authBusy=false,copied="";
+let authAgree=false,authEmail="",authPw="",authName="",authMode=pendingJoin?"up":"in",authMsg="",authOk=false,authBusy=false,copied="";
 function queueCloud(){if(!cloud.ready)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,1200)}
 /* an admin has flagged this manager's name: a sheet that stays until they choose a new one */
 function renameSheet(){
@@ -3466,6 +3647,7 @@ async function doAuth(kind){
   const email=authEmail.trim(),pw=authPw;
   if(!email||!pw){authMsg="Fyll i din e-post och ett lösenord.";render();return}
   if(kind==="up"&&pw.length<8){authMsg="Lösenordet måste vara minst 8 tecken.";render();return}
+  if(kind==="up"&&!authAgree){authMsg="Kryssa i att du är minst 13 år och godkänner villkoren.";render();return}
   authBusy=true;render();
   try{
     if(kind==="up"){
@@ -3491,7 +3673,7 @@ async function joinLeague(code,name){
   if(!name){try{const lg=await cloud.sb.from("leagues").select("name").eq("code",code).maybeSingle();if(lg.data&&lg.data.name)myLgn[code]=String(lg.data.name).slice(0,24)}catch(e){}}
   myLeagues.push(code);if(name){myLgn[code]=name;myOwn[code]=true}watchLeague(code);save();pushCloud();leagueMsg="Du är med i "+lgName(code)+".";return true;
 }
-document.addEventListener("input",e=>{const t=e.target;if(t.id==="authEmail")authEmail=t.value;if(t.id==="authPw")authPw=t.value;if(t.id==="authName")authName=t.value});
+document.addEventListener("input",e=>{const t=e.target;if(t.id==="authAgree")authAgree=t.checked;if(t.id==="authEmail")authEmail=t.value;if(t.id==="authPw")authPw=t.value;if(t.id==="authName")authName=t.value});
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&["authEmail","authPw","authName"].includes(e.target.id))doAuth(authMode);if(e.key==="Enter"&&["pwNew","pwNew2"].includes(e.target.id))savePw()});
 document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;
   if(t.id==="authIn"||t.id==="authUp")doAuth(t.id==="authUp"?"up":"in");
