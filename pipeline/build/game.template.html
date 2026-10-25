@@ -1514,6 +1514,8 @@ td,th{border-color:#ededed!important}
 #modal .sheet[data-key="rename"] input.name:focus{box-shadow:inset 0 0 0 2px #fff,0 0 0 4px rgba(255,255,255,.18)!important}
 #modal .sheet[data-key="rename"] #rnSave{background:#fff!important;color:#991b1b!important}
 .wkd{border-radius:22px!important;padding:14px 18px!important}
+.wmarrow{width:38px;height:38px;min-width:38px;padding:0!important;display:grid;place-items:center;font:700 22px/1 var(--font)!important;letter-spacing:0!important}
+.wmarrow:disabled{opacity:.35}
 /* the countdown to the official launch, on every page until it comes */
 .launchbar{margin:14px 0 4px;background:#003c68!important;color:#fff;border-radius:24px;padding:14px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;box-shadow:0 10px 30px -18px rgba(0,30,60,.6)}
 .launchbar .lb-clock{display:flex;gap:8px;align-items:flex-end}
@@ -2475,7 +2477,7 @@ function seasonView(){
    <button class="btn" id="mode">${confirmMode?(live?"Bekräfta: starta en övningsomgång":"Bekräfta: avsluta och gå tillbaka"):live?"Öva med en omspelning från "+dshort(D.rounds[0].start):"Tillbaka till säsongen"}</button>
    ${live?`<p class="note" style="margin:10px 0 0">Dina riktiga trupper sparas medan du övar.</p>`:`<button class="btn quiet" id="reset">${confirmReset?"Bekräfta: radera omspelningen och börja om":"Börja om"}</button>`}</div>`;
 }
-function lgName(code){if(code==="GLOBAL")return "Topp 20 totalt";return myLgn[code]||code.replace(/-[A-Z0-9]{4}$/,"").replace(/_/g," ")}
+function lgName(code){if(code==="GLOBAL")return "Årets manager";return myLgn[code]||code.replace(/-[A-Z0-9]{4}$/,"").replace(/_/g," ")}
 /* open a sheet, or swap its content in place when the same sheet is already open (no replayed animation) */
 /* sheets leave the way they came (reverse of the entrance), then are removed */
 function closeModal(){const md=document.querySelector("#modal .modal");if(!md)return;
@@ -2589,20 +2591,37 @@ function managerSheet(code,id,r0){
 function inviteBanner(){
   return pendingJoin&&!myLeagues.includes(pendingJoin)?`<div class="invite"><span class="next-k">Du är inbjuden</span><b>${esc(lgName(pendingJoin))}</b><span class="note">${dbOk?"Går med i ligan…":"Skapa ett konto eller logga in, så går du med i ligan automatiskt."}</span></div>`:"";
 }
+/* Veckans manager: everyone's points in one round, the top 20 (and you, if you are further down). Arrows step
+   back through the rounds that have been played. */
+let wmR=null;
+function weekCard(){
+  const st=standings("GLOBAL"),rs=st.rs;if(!leagueRows.GLOBAL||st.cur===undefined)return "";
+  if(wmR===null||!rs.includes(wmR))wmR=st.cur;
+  const r=wmR,i=rs.indexOf(r),live=!isFinal(r);
+  const all=st.rows.filter(m=>ptsOf(m,r)!==null).map(m=>({m,p:ptsOf(m,r)})).sort((a,b)=>b.p-a.p||a.m.name.localeCompare(b.m.name,"sv"));
+  all.forEach((x,k)=>{x.rank=k>0&&all[k-1].p===x.p?all[k-1].rank:k+1});
+  let rows=all.slice(0,20);const me=all.find(x=>x.m.id===cloud.uid);if(me&&!rows.includes(me))rows=rows.concat([me]);
+  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0;align-items:center"><div><span class="eyebrow">Topp 20 i omgången</span><h3 style="margin:2px 0 0">Veckans manager</h3>${me?`<div class="sub">Du är #${me.rank} av ${all.length} i ${rdName(D.rounds[r]).toLowerCase()}</div>`:""}</div>
+    <div class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn wmarrow" data-weekr="${i>0?rs[i-1]:""}" ${i>0?"":"disabled"} aria-label="Föregående omgång">‹</button><b style="white-space:nowrap">${esc(rdName(D.rounds[r]))}${live?' <span class="livedot">Live</span>':""}</b><button class="btn wmarrow" data-weekr="${i<rs.length-1?rs[i+1]:""}" ${i<rs.length-1?"":"disabled"} aria-label="Nästa omgång">›</button></div></div>
+    ${all.length?`<div class="tbl lgt"><table><thead><tr><th>#</th><th>Lag</th><th>Poäng</th></tr></thead><tbody>
+    ${rows.map((x,k)=>`${k===20?'<tr class="gap"><td colspan="3">⋯</td></tr>':""}<tr class="${x.m.id===cloud.uid?"in":""} ${x.rank<=3?"pod":""}" style="--i:${k}" data-mgr="GLOBAL|${esc(x.m.id)}" tabindex="0"><td>${x.rank<=3?`<b class="medal m${x.rank}">${x.rank}</b>`:`<b>${x.rank}</b>`}</td>
+      <td><div class="who-wrap">${mgrDot(x.m)}<div><b>${esc(x.m.name)}</b>${x.m.id===cloud.uid?' <span class="sub">(du)</span>':""}${subName(x.m)}</div></div></td><td><b>${fp(x.p)}</b></td></tr>`).join("")}
+    </tbody></table></div>`:`<p class="note" style="margin:6px 0 0">Ingen hade en trupp den här omgången.</p>`}</div>`;
+}
 function globalCard(){
   const rows=leagueRows.GLOBAL||[],st=standings("GLOBAL"),me=st.rows.find(m=>m.id===cloud.uid);
-  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><span class="eyebrow">Alla</span><h3 style="margin:2px 0 0">Topp 20 totalt</h3>${me&&st.cur!==undefined?`<div class="sub">Du är #${me.rank} av ${rows.length}</div>`:""}</div>${st.cur!==undefined&&rows.length?`<button class="btn on" data-lgopen="GLOBAL">Öppna topplistan</button>`:""}</div>${leagueTable("GLOBAL")}</div>`;
+  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><span class="eyebrow">Topp 20 totalt</span><h3 style="margin:2px 0 0">Årets manager</h3>${me&&st.cur!==undefined?`<div class="sub">Du är #${me.rank} av ${rows.length}</div>`:""}</div>${st.cur!==undefined&&rows.length?`<button class="btn on" data-lgopen="GLOBAL">Öppna topplistan</button>`:""}</div>${leagueTable("GLOBAL")}</div>`;
 }
 function leaguesView(){
   if(dbOk&&lgOpen&&(myLeagues.includes(lgOpen)||lgOpen==="GLOBAL"))return leagueDetail(lgOpen);
-  if(!dbOk)return `<p class="eyebrow pg-k">03 · Tävla</p><h2 style="margin-top:0">Ligor</h2>${inviteBanner()}<div class="grid2"><div class="promo"><span class="pimg" style="background:${omapVar("ligor",700,420)}"></span><div class="pbody"><h3>Spela mot dina kompisar</h3><p>Starta en liga, skicka länken och se vem som valde bäst varje vecka. Ligor kräver ett konto.</p><button class="btn" data-tab="profile">Logga in eller skapa ett konto</button></div></div><div class="card"><h3>Så fungerar ligor</h3><ol class="steps"><li>Skapa ett konto och starta en liga.</li><li>Skicka inbjudningslänken. Kompisar registrerar sig och hamnar i din liga.</li><li>Alla låser en trupp före måndag.</li><li>Sedan ser ni varandras lag och poäng.</li></ol></div></div><div class="card global" style="margin-top:12px"><span class="eyebrow">Alla</span><h3 style="margin:2px 0 6px">Topp 20 totalt</h3><p class="note" style="margin:0">Alla spelare rankas på en topplista. Logga in för att se den och var du ligger.</p></div>`;
+  if(!dbOk)return `<p class="eyebrow pg-k">03 · Tävla</p><h2 style="margin-top:0">Ligor</h2>${inviteBanner()}<div class="grid2"><div class="promo"><span class="pimg" style="background:${omapVar("ligor",700,420)}"></span><div class="pbody"><h3>Spela mot dina kompisar</h3><p>Starta en liga, skicka länken och se vem som valde bäst varje vecka. Ligor kräver ett konto.</p><button class="btn" data-tab="profile">Logga in eller skapa ett konto</button></div></div><div class="card"><h3>Så fungerar ligor</h3><ol class="steps"><li>Skapa ett konto och starta en liga.</li><li>Skicka inbjudningslänken. Kompisar registrerar sig och hamnar i din liga.</li><li>Alla låser en trupp före måndag.</li><li>Sedan ser ni varandras lag och poäng.</li></ol></div></div><div class="card global" style="margin-top:12px"><span class="eyebrow">Topp 20 totalt och varje omgång</span><h3 style="margin:2px 0 6px">Årets manager och Veckans manager</h3><p class="note" style="margin:0">Alla spelare rankas, både över hela säsongen och för varje omgång. Logga in för att se listorna och var du ligger.</p></div>`;
   return `<p class="eyebrow pg-k">03 · Tävla</p><h2 style="margin-top:0">Ligor</h2>${inviteBanner()}
   ${isLive()?"":`<p class="note" style="margin:0 0 12px;color:var(--warn)">Du är i en övningsomgång. Ligor räknar bara säsongen.</p>`}
   <div class="grid2">
    <div class="card"><h3>Starta en liga</h3><div class="row"><input class="name" id="newLeague" maxlength="24" placeholder="Ligans namn" value="${esc(newLeague)}" aria-label="Ligans namn" style="flex:1;max-width:none"><button class="btn on" id="createLeague">Skapa</button></div></div>
    <div class="card"><h3>Gå med via kod</h3><div class="row"><input class="name" id="joinCode" maxlength="40" placeholder="NAMN-1A2B" value="${esc(joinCode)}" aria-label="Ligakod" autocapitalize="characters" autocorrect="off" style="flex:1;max-width:none"><button class="btn on" id="joinLeague">Gå med</button></div></div></div>
   ${leagueMsg?`<p class="note" style="margin:10px 0 0">${esc(leagueMsg)}</p>`:""}
-  ${isLive()?globalCard():""}
+  ${isLive()?weekCard()+globalCard():""}
   ${myLeagues.length?myLeagues.map(c=>`<div class="card" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><h3 style="margin:0;display:inline">${esc(lgName(c))}</h3>${myOwn[c]?`<span class="host">Du är värd</span>`:""} <button class="btn on" data-lgopen="${esc(c)}" style="margin-left:8px">Öppna ligan</button>
     <div class="codebox"><code>${esc(c)}</code><button class="btn" data-copy="${esc(c)}">${copied===c?"Länken kopierad":"Kopiera inbjudningslänk"}</button>${navigator.share?`<button class="btn" data-share="${esc(c)}">Dela</button>`:""}</div></div><button class="btn quiet" data-leave="${esc(c)}">Lämna</button></div>${leagueTable(c)}</div>`).join(""):`<div class="card" style="margin-top:12px"><h3>Inga ligor än</h3><p class="note" style="margin:0">Starta en ovan och skicka inbjudningslänken till dina kompisar.</p></div>`}`;
 }
@@ -3353,6 +3372,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Enter"&&["authEmail","authPw
 document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;
   if(t.id==="authIn"||t.id==="authUp")doAuth(t.id==="authUp"?"up":"in");
   if(t.id==="authSwap"){authMode=authMode==="in"?"up":"in";authMsg="";authOk=false;render()}
+  if(t.dataset.weekr!==undefined&&t.dataset.weekr!==""){wmR=+t.dataset.weekr;render();return}
   if(t.id==="authForgot"){authMode="forgot";authMsg="";authOk=false;render();setTimeout(()=>{const x=$("#authEmail");x&&x.focus()},30)}
   if(t.id==="authBack"){authMode="in";authMsg="";authOk=false;render()}
   if(t.id==="authReset")sendReset();
