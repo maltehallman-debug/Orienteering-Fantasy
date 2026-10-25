@@ -1545,6 +1545,8 @@ td,th{border-color:#ededed!important}
   .lgl-r .tm b{font-size:14.5px}.lgl-r .tm .sub{font-size:12px}
   .lgl-r .n{font-size:14px}
 }
+.lgl-short{display:none}
+@media (max-width:560px){.lgl-long{display:none}.lgl-short{display:inline}}
 @media (max-width:430px){.lgl-h,.lgl-r{grid-template-columns:42px minmax(0,1fr) 44px 50px;gap:7px}.lgl-r{padding:10px 11px}.lgl-r .tm{gap:7px}.lgl-r .tm .mdot{width:26px;height:26px;font-size:11px}.lgl-r .tm b{font-size:12.5px}.lgl-r .tm .sub{font-size:11px}.lgl-r .n{font-size:13px}.lgl-r .pl{font-size:14px}.lgl-r .pl small{font-size:11px}}
 @media (max-width:380px){.lgl-h,.lgl-r{grid-template-columns:36px minmax(0,1fr) 40px 46px;gap:6px}.lgl-r{padding:10px 9px}.lgl-r .tm .mdot{width:22px;height:22px;font-size:10px}.lgl-r .tm b{font-size:11.5px}.lgl-r .n{font-size:12px}.lgl-r .pl{font-size:13px}}
 /* the team view from a league: a quiet bar with the placing above the board */
@@ -1819,11 +1821,14 @@ const save=()=>{autoSave();localTs=Date.now();try{localStorage.setItem(KEY,JSON.
 const R=()=>state.round, done=()=>state.round>=E.R, pr=()=>Math.min(state.round,E.R-1);
 /* Rounds are numbered from the official launch, Sverigepremiären = Omgång 1, and skipped weeks get no number
    ("no" comes from the build). The O-Event week is the beta test round; the replayable weeks before it are practice. */
-const rdName=rd=>!rd?"":rd.beta?"Betatestrunda":rd.no==null?"Uppehåll":(rd.pre?"Övningsomgång ":"Omgång ")+rd.no;
+/* while the demo league is open, its weeks are called Omgång 1 to 4, as they would be in the season */
+let demoRs=null,demoMap=null;
+const demoNo=rd=>demoMap&&lgOpen==="DEMO"?demoMap.get(rd):undefined;
+const rdName=rd=>!rd?"":demoNo(rd)?"Omgång "+demoNo(rd):rd.beta?"Betatestrunda":rd.no==null?"Uppehåll":(rd.pre?"Övningsomgång ":"Omgång ")+rd.no;
 /* in a sentence: "betatestrundan", "omgång 1" */
 const rdThe=rd=>!rd?"":rd.beta?"betatestrundan":rdName(rd).toLowerCase();
-const rdNo=rd=>!rd?"":rd.beta?"B":rd.no==null?"–":String(rd.no);
-const rdHead=rd=>!rd?"":rd.beta?"Beta":rd.no==null?"–":"Omg "+rd.no;
+const rdNo=rd=>!rd?"":demoNo(rd)?String(demoNo(rd)):rd.beta?"B":rd.no==null?"–":String(rd.no);
+const rdHead=rd=>!rd?"":demoNo(rd)?"Omg "+demoNo(rd):rd.beta?"Beta":rd.no==null?"–":"Omg "+rd.no;
 /* a round locks the evening before its week's first big race ("lock", from the build); otherwise Monday 00:00 */
 const stoOff=d=>{try{const h=+new Date(d+"T12:00:00Z").toLocaleString("sv-SE",{timeZone:"Europe/Stockholm",hour:"2-digit",hour12:false});return h-12}catch(e){return 1}};
 const lockAt=r=>{const rd=D.rounds[r];return rd.lock?Date.parse(rd.lock):Date.parse(rd.start+"T00:00:00Z")-stoOff(rd.start)*36e5};
@@ -2289,7 +2294,7 @@ const surname=n=>{const w=n.trim().split(/\s+/);return w.length>1?w.slice(1).joi
 const shortRace=e=>{const n=compName(e.name).replace(/\((?:[DH]\d\d[^)]*|[^)]*relay)\)/g,"").replace(/^(DM|GM|SM)[, ]+/i,"$1 ").split(/[,:–-]/)[0].trim();return n.length>14?n.slice(0,13)+"…":n};
 /* everything the board shows, worked out once: the page and the share picture are drawn from the same numbers */
 function boardData(src){
-  const own=!src,L=own?state.log:src.m.sim.rounds.filter(x=>startedRounds().includes(x.round)),weeks=L.map((x,k)=>({k,x,r:x.round}));if(own&&!done())weeks.push({k:L.length,x:null,r:R()});
+  const own=!src,L=own?state.log:src.m.sim.rounds.filter(x=>(src.rs||startedRounds()).includes(x.round)),weeks=L.map((x,k)=>({k,x,r:x.round}));if(own&&!done())weeks.push({k:L.length,x:null,r:R()});
   if(!weeks.length)return null;
   const view=own?viewRound:(src.view===null?weeks.length-1:src.view);
   const w=weeks[Math.max(0,Math.min(view,weeks.length-1))],x=w.x,r=w.r,rd=D.rounds[r];
@@ -2530,7 +2535,7 @@ function seasonView(){
    <button class="btn" id="mode">${confirmMode?(live?"Bekräfta: starta en övningsomgång":"Bekräfta: avsluta och gå tillbaka"):live?"Öva med en omspelning från "+dshort(D.rounds[0].start):"Tillbaka till säsongen"}</button>
    ${live?`<p class="note" style="margin:10px 0 0">Dina riktiga trupper sparas medan du övar.</p>`:`<button class="btn quiet" id="reset">${confirmReset?"Bekräfta: radera omspelningen och börja om":"Börja om"}</button>`}</div>`;
 }
-function lgName(code){if(code==="GLOBAL")return "Årets manager";return myLgn[code]||code.replace(/-[A-Z0-9]{4}$/,"").replace(/_/g," ")}
+function lgName(code){if(code==="GLOBAL")return "Årets manager";if(code==="DEMO")return "Demoliga";return myLgn[code]||code.replace(/-[A-Z0-9]{4}$/,"").replace(/_/g," ")}
 /* open a sheet, or swap its content in place when the same sheet is already open (no replayed animation) */
 /* sheets leave the way they came (reverse of the entrance), then are removed */
 function closeModal(){const md=document.querySelector("#modal .modal");if(!md)return;
@@ -2548,13 +2553,38 @@ function showSheet(key,label,inner,wide){
 /* ===== leagues: table, rounds, every manager's team ===== */
 let lgOpen=null,lgSub="table",lgRound=null;
 const startedRounds=()=>{const o=openRound(),a=[];for(let r=LIVE;r<Math.min(o,E.R);r++)a.push(r);return a};
+/* The demo league (admins only): eight made-up managers playing the last four weeks that have real results, with the
+   game's own rules (budget, three per club, a couple of transfers a week, now and then a chip). You are one of them.
+   It lives only in this page; nothing is saved or sent anywhere. */
+const roundsOf=code=>code==="DEMO"?(demoRs||[]):startedRounds();
+function buildDemo(){
+  let end=-1;for(let r=0;r<E.R;r++)if(D.rounds[r].start<=TODAY&&D.rounds[r].ev.length)end=r;
+  if(end<0)return false;
+  const rs=[];for(let r=Math.max(0,end-3);r<=end;r++)rs.push(r);demoRs=rs;demoMap=new Map(rs.map((r,k)=>[D.rounds[r],k+1]));
+  let seed=20261102;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+  const pick=r=>{const pool=D.runners.map((x,i)=>[i,E.price(i,r)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+    for(let t=0;t<400;t++){const sq=[],clubs={},left=pool.slice();let cost=0;
+      while(sq.length<D.squad&&left.length){const [i,pr]=left.splice(Math.floor(Math.pow(rnd(),2.2)*left.length*.6),1)[0],c=D.runners[i].c;
+        if((clubs[c]||0)>=D.clubMax||cost+pr>D.budget-(D.squad-sq.length-1)*25)continue;sq.push(i);clubs[c]=(clubs[c]||0)+1;cost+=pr}
+      if(sq.length===D.squad)return sq}return null};
+  const people=[[cloud.uid||"me",mgrName||"Du",myTeam||"Ditt lag"],["d1","Ella","Kurvlinjen FC"],["d2","Hugo","Skogsmullarna"],["d3","Vera","Vägvalet"],
+    ["d4","Oskar","Felstämplarna"],["d5","Saga","Höjdkurvan"],["d6","Liam","Mossans hjältar"],["d7","Alva","Kompassen"]];
+  leagueRows.DEMO=people.map(([id,mgr,team],n)=>{
+    const pk={};let sq=null;
+    rs.forEach((r,k)=>{if(!sq)sq=pick(r);else{const fresh=pick(r)||[];const sw=Math.floor(rnd()*3);for(let q=0;q<sw;q++){const nw=fresh.find(x=>!sq.includes(x));if(nw!==undefined){sq=sq.slice();sq[AS+Math.floor(rnd()*(D.squad-AS))]=nw}}}
+      if(sq)pk[r]={squad:sq.slice(),captain:sq[Math.floor(rnd()*AS)],chip:k===rs.length-1&&n===2?"tc":k===rs.length-2&&n===4?"bb":null}});
+    const sim=E.season(pk,rs[0],rs[rs.length-1]),by={};sim.rounds.forEach(x=>{by[x.round]=x});
+    return {id,name:team,mgr,team,av:id===cloud.uid?myAv:null,sim,by,total:sim.state.total,demo:true};
+  });
+  return true;
+}
 const mgrHue=id=>hsh(String(id))%360;
 const mgrDot=(m,big)=>m.av?`<span class="mdot ph${big?" big":""}" aria-hidden="true"><img src="${esc(avPublic(m.av))}" alt="" loading="lazy" decoding="async"></span>`:`<span class="mdot${big?" big":""}" style="--h:${mgrHue(m.id)}" aria-hidden="true">${esc((m.name||"M").slice(0,1).toUpperCase())}</span>`;
 /* the manager's own name on its own line under a team name (nothing when the manager has inget lag name) */
 const subName=m=>m.team&&m.mgr?`<span class="mgrline">${esc(m.mgr)}</span>`:"";
 const ptsOf=(m,r)=>m.by[r]?m.by[r].total:null;
 function standings(code){
-  const rows=(leagueRows[code]||[]).slice(),rs=startedRounds(),cur=rs[rs.length-1],prev=rs[rs.length-2];
+  const rows=(leagueRows[code]||[]).slice(),rs=roundsOf(code),cur=rs[rs.length-1],prev=rs[rs.length-2];
   const tot=(m,upto)=>rs.filter(r=>r<=upto).reduce((a,r)=>a+(ptsOf(m,r)||0),0);
   rows.forEach(m=>{m.t=cur===undefined?0:tot(m,cur);m.tp=prev===undefined?0:tot(m,prev)});
   const rank=(arr,k)=>{const s=arr.slice().sort((a,b)=>b[k]-a[k]||a.name.localeCompare(b.name,"sv"));const out={};s.forEach((m,i)=>{out[m.id]=i>0&&s[i-1][k]===m[k]?out[s[i-1].id]:i+1});return out};
@@ -2577,7 +2607,7 @@ function leagueTable(code){
   const live=!isFinal(cur),wk=st.rows.filter(m=>ptsOf(m,cur)!==null).sort((a,b)=>ptsOf(b,cur)-ptsOf(a,cur)),wrank={};
   wk.forEach((m,k)=>{wrank[m.id]=k>0&&ptsOf(wk[k-1],cur)===ptsOf(m,cur)?wrank[wk[k-1].id]:k+1});
   return `<div class="lgl" role="table" aria-label="Tabell">
-   <div class="lgl-h" role="row"><span role="columnheader">Placering</span><span role="columnheader">Lag</span><span role="columnheader">Vecka${live?' <i class="lgl-live" title="Live"></i>':""}</span><span role="columnheader">Total</span></div>
+   <div class="lgl-h" role="row"><span role="columnheader"><span class="lgl-long">Placering</span><span class="lgl-short" aria-hidden="true">Plac.</span></span><span role="columnheader">Lag</span><span role="columnheader">Vecka${live?' <i class="lgl-live" title="Live"></i>':""}</span><span role="columnheader">Total</span></div>
    ${rows.map((m,k)=>`${code==="GLOBAL"&&k===20?'<div class="lgl-gap" aria-hidden="true">⋯</div>':""}<div class="lgl-r ${m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="${esc(code)}|${esc(m.id)}" tabindex="0">
      <span class="pl" role="cell">${m.rank}<small>(${wrank[m.id]||"–"})</small></span>
      <span class="tm" role="cell">${mgrDot(m)}<span><b>${esc(m.name)}</b>${m.team&&m.mgr!==m.name?`<span class="sub">${esc(m.mgr)}${m.id===cloud.uid?" · du":""}</span>`:m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span>
@@ -2600,7 +2630,7 @@ function leagueDetail(code){
   const sub=(k,l)=>`<button class="btn ${lgSub===k?"on":""}" data-lgsub="${k}">${l}</button>`;
   const head=`<div class="lghead"><button class="btn quiet" data-lgback="1">← Alla ligor</button>
    <div class="lgtitle"><h2 style="margin:0">${esc(lgName(code))}</h2>${myOwn[code]?`<span class="host">Du är värd</span>`:""}</div>
-   ${code==="GLOBAL"?`${(leagueRows.GLOBAL||[]).length?`<p class="note" style="margin:6px 0 0">${leagueRows.GLOBAL.length} spelare</p>`:""}`:`<div class="codebox"><code>${esc(code)}</code><button class="btn on" data-copy="${esc(code)}">${copied===code?"Länken kopierad":"Kopiera inbjudningslänk"}</button>${navigator.share?`<button class="btn" data-share="${esc(code)}">Dela</button>`:""}</div>`}
+   ${code==="DEMO"?`<p class="note" style="margin:6px 0 0"><span class="host">Admin</span> Påhittade managers med riktiga resultat från ${dshort(D.rounds[demoRs[0]].start)} till ${dshort(D.rounds[demoRs[demoRs.length-1]].end)}. Syns bara för dig och sparas inte.</p>`:code==="GLOBAL"?`${(leagueRows.GLOBAL||[]).length?`<p class="note" style="margin:6px 0 0">${leagueRows.GLOBAL.length} spelare</p>`:""}`:`<div class="codebox"><code>${esc(code)}</code><button class="btn on" data-copy="${esc(code)}">${copied===code?"Länken kopierad":"Kopiera inbjudningslänk"}</button>${navigator.share?`<button class="btn" data-share="${esc(code)}">Dela</button>`:""}</div>`}
    ${dbOk&&!myTeam?`<div class="nudge"><span><b>Ge ditt lag ett namn</b></span><button class="btn on" data-tab="profile" data-focus="teamName">Namnge ditt lag</button></div>`:""}
    ${cur!==undefined?`<div class="chips" style="margin-top:12px">${sub("table","Tabell")}${sub("round","Omgång")}${sub("teams","Lag")}</div>`:""}</div>`;
   if(cur===undefined||lgSub==="table")return head+`<div class="card">${leagueTable(code)}</div>`;
@@ -2628,7 +2658,7 @@ let mgrOpen=null;
 function managerSheet(code,id,view){
   const m=(leagueRows[code]||[]).find(x=>x.id===id);if(!m)return;
   mgrOpen={code,id,view:view==null||isNaN(view)?null:view};
-  const src={m,view:mgrOpen.view},b=boardData(src),st=standings(code),row=st.rows.find(y=>y.id===id),me=(leagueRows[code]||[]).find(x=>x.id===cloud.uid);
+  const src={m,view:mgrOpen.view,rs:code==="DEMO"?demoRs:null},b=boardData(src),st=standings(code),row=st.rows.find(y=>y.id===id),me=(leagueRows[code]||[]).find(x=>x.id===cloud.uid);
   const x=b&&b.x,r=b&&b.r;
   const extra=!x?"":`${x.in&&x.in.length?`<p class="note" style="margin:14px 0 0"><b style="color:var(--good)">In:</b> ${x.in.map(i=>esc(nameOf(i))).join(", ")} &nbsp; <b style="color:var(--bad)">Ut:</b> ${x.out.map(i=>esc(nameOf(i))).join(", ")}</p>`:""}
    ${me&&me.id!==id&&me.by[r]?(()=>{const a=new Set(me.by[r].squad),both=x.squad.filter(i=>a.has(i)),only=x.squad.filter(i=>!a.has(i)),mine=me.by[r].squad.filter(i=>!x.squad.includes(i));
@@ -2640,7 +2670,7 @@ function managerSheet(code,id,view){
    <div class="mgr-top"><span>${row?`<b>Plats ${row.rank}</b> av ${st.rows.length} · ${fp(m.total)} poäng totalt`:`${fp(m.total)} poäng totalt`}${id===cloud.uid?" · ditt lag":""}</span><button class="btn" data-close="1">Stäng</button></div>
    ${b?weekBoard(src):`<p class="note">${esc(m.name)} har ingen trupp i en omgång som har startat än.</p>`}
    ${extra}
-   ${nx<E.R&&id!==cloud.uid?`<p class="note" style="margin-top:12px">Trupperna för ${rdThe(D.rounds[nx])} syns när den låses ${lockText(nx)}.</p>`:""}`,true);
+   ${nx<E.R&&id!==cloud.uid&&code!=="DEMO"?`<p class="note" style="margin-top:12px">Trupperna för ${rdThe(D.rounds[nx])} syns när den låses ${lockText(nx)}.</p>`:""}`,true);
 }
 function inviteBanner(){
   return pendingJoin&&!myLeagues.includes(pendingJoin)?`<div class="invite"><span class="next-k">Du är inbjuden</span><b>${esc(lgName(pendingJoin))}</b><span class="note">${dbOk?"Går med i ligan…":"Skapa ett konto eller logga in, så går du med i ligan automatiskt."}</span></div>`:"";
@@ -2659,7 +2689,7 @@ function weekCard(){
   let rows=all.slice(0,20);const me=all.find(x=>x.m.id===cloud.uid);if(me&&!rows.includes(me))rows=rows.concat([me]);
   return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0;align-items:center"><div><span class="eyebrow">Topp 20 i omgången</span><h3 style="margin:2px 0 0">Veckans manager</h3>${me?`<div class="sub">Du är #${me.rank} av ${all.length} i ${rdThe(D.rounds[r])}</div>`:""}</div>
     <div class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn wmarrow" data-weekr="${i>0?rs[i-1]:""}" ${i>0?"":"disabled"} aria-label="Föregående omgång">‹</button><b style="white-space:nowrap">${esc(rdName(D.rounds[r]))}${live?' <span class="livedot">Live</span>':""}</b><button class="btn wmarrow" data-weekr="${i<rs.length-1?rs[i+1]:""}" ${i<rs.length-1?"":"disabled"} aria-label="Nästa omgång">›</button></div></div>
-    ${all.length?`<div class="lgl" role="table" aria-label="Veckans manager"><div class="lgl-h" role="row"><span role="columnheader">Placering</span><span role="columnheader">Lag</span><span role="columnheader">Vecka${live?' <i class="lgl-live" title="Live"></i>':""}</span><span role="columnheader">Total</span></div>
+    ${all.length?`<div class="lgl" role="table" aria-label="Veckans manager"><div class="lgl-h" role="row"><span role="columnheader"><span class="lgl-long">Placering</span><span class="lgl-short" aria-hidden="true">Plac.</span></span><span role="columnheader">Lag</span><span role="columnheader">Vecka${live?' <i class="lgl-live" title="Live"></i>':""}</span><span role="columnheader">Total</span></div>
     ${rows.map((x,k)=>`${k===20?'<div class="lgl-gap" aria-hidden="true">⋯</div>':""}<div class="lgl-r ${x.m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="GLOBAL|${esc(x.m.id)}" tabindex="0">
       <span class="pl" role="cell">${x.rank}</span>
       <span class="tm" role="cell">${mgrDot(x.m)}<span><b>${esc(x.m.name)}</b>${x.m.team&&x.m.mgr!==x.m.name?`<span class="sub">${esc(x.m.mgr)}${x.m.id===cloud.uid?" · du":""}</span>`:x.m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span>
@@ -2671,7 +2701,7 @@ function globalCard(){
   return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><span class="eyebrow">Topp 20 totalt</span><h3 style="margin:2px 0 0">Årets manager</h3>${me&&st.cur!==undefined?`<div class="sub">Du är #${me.rank} av ${rows.length}</div>`:""}</div>${st.cur!==undefined&&rows.length?`<button class="btn on" data-lgopen="GLOBAL">Öppna topplistan</button>`:""}</div>${leagueTable("GLOBAL")}</div>`;
 }
 function leaguesView(){
-  if(dbOk&&lgOpen&&(myLeagues.includes(lgOpen)||lgOpen==="GLOBAL"))return leagueDetail(lgOpen);
+  if(dbOk&&lgOpen&&(myLeagues.includes(lgOpen)||lgOpen==="GLOBAL"||lgOpen==="DEMO"&&adminOn()&&leagueRows.DEMO))return leagueDetail(lgOpen);
   if(!dbOk)return `<p class="eyebrow pg-k">03 · Tävla</p><h2 style="margin-top:0">Ligor</h2>${inviteBanner()}<div class="grid2"><div class="promo"><span class="pimg" style="background:${omapVar("ligor",700,420)}"></span><div class="pbody"><h3>Spela mot dina kompisar</h3><p>Starta en liga, skicka länken och se vem som valde bäst varje vecka. Ligor kräver ett konto.</p><button class="btn" data-tab="profile">Logga in eller skapa ett konto</button></div></div><div class="card"><h3>Så fungerar ligor</h3><ol class="steps"><li>Skapa ett konto och starta en liga.</li><li>Skicka inbjudningslänken. Kompisar registrerar sig och hamnar i din liga.</li><li>Alla låser en trupp före måndag.</li><li>Sedan ser ni varandras lag och poäng.</li></ol></div></div><div class="card global" style="margin-top:12px"><span class="eyebrow">Topp 20 totalt och varje omgång</span><h3 style="margin:2px 0 6px">Årets manager och Veckans manager</h3><p class="note" style="margin:0">Alla spelare rankas, både över hela säsongen och för varje omgång. Logga in för att se listorna och var du ligger.</p></div>`;
   return `<p class="eyebrow pg-k">03 · Tävla</p><h2 style="margin-top:0">Ligor</h2>${inviteBanner()}
   ${isLive()?"":`<p class="note" style="margin:0 0 12px;color:var(--warn)">Du är i en övningsomgång. Ligor räknar bara säsongen.</p>`}
@@ -2679,6 +2709,7 @@ function leaguesView(){
    <div class="card"><h3>Starta en liga</h3><div class="row"><input class="name" id="newLeague" maxlength="24" placeholder="Ligans namn" value="${esc(newLeague)}" aria-label="Ligans namn" style="flex:1;max-width:none"><button class="btn on" id="createLeague">Skapa</button></div></div>
    <div class="card"><h3>Gå med via kod</h3><div class="row"><input class="name" id="joinCode" maxlength="40" placeholder="NAMN-1A2B" value="${esc(joinCode)}" aria-label="Ligakod" autocapitalize="characters" autocorrect="off" style="flex:1;max-width:none"><button class="btn on" id="joinLeague">Gå med</button></div></div></div>
   ${leagueMsg?`<p class="note" style="margin:10px 0 0">${esc(leagueMsg)}</p>`:""}
+  ${adminOn()?`<div class="card admin" style="margin-top:12px"><div class="ev" style="border:0;padding:0;align-items:center"><div><span class="eyebrow">Admin</span><h3 style="margin:2px 0 0">Demoliga</h3><div class="sub">Så ser en liga ut mitt i en spelvecka, med påhittade managers och riktiga resultat.</div></div><button class="btn on" data-demo="1">Visa demoliga</button></div></div>`:""}
   ${isLive()?weekCard()+globalCard():""}
   ${myLeagues.length?myLeagues.map(c=>`<div class="card" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><h3 style="margin:0;display:inline">${esc(lgName(c))}</h3>${myOwn[c]?`<span class="host">Du är värd</span>`:""} <button class="btn on" data-lgopen="${esc(c)}" style="margin-left:8px">Öppna ligan</button>
     <div class="codebox"><code>${esc(c)}</code><button class="btn" data-copy="${esc(c)}">${copied===c?"Länken kopierad":"Kopiera inbjudningslänk"}</button>${navigator.share?`<button class="btn" data-share="${esc(c)}">Dela</button>`:""}</div></div><button class="btn quiet" data-leave="${esc(c)}">Lämna</button></div>${leagueTable(c)}</div>`).join(""):`<div class="card" style="margin-top:12px"><h3>Inga ligor än</h3><p class="note" style="margin:0">Starta en ovan och skicka inbjudningslänken till dina kompisar.</p></div>`}`;
@@ -3066,6 +3097,7 @@ document.addEventListener("click",ev=>{
   if(d.round!==undefined){viewRound=+d.round;render();return}
   if(d.lteam){lpTeam=d.lteam;render();if(mgrOpen&&document.querySelector("#modal .sheet"))managerSheet(mgrOpen.code,mgrOpen.id,mgrOpen.view);return}
   if(d.mround!==undefined&&mgrOpen){managerSheet(mgrOpen.code,mgrOpen.id,+d.mround);return}
+  if(d.demo&&adminOn()){if(buildDemo()){lgOpen="DEMO";lgSub="table";lgRound=null;render();toTop()}return}
   if(t.id==="shareBoard"){shareBoard();return}
   if(t.id==="more"){shown+=40;refreshMarket();return}
   if(t.id==="play"){try{
