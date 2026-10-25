@@ -2347,7 +2347,7 @@ function weekBoard(src){
    <div class="bd-tabs"><button data-lteam="A" class="${lpTeam!=="B"?"on":""}">A-lag <small>×2</small></button><button data-lteam="B" class="${lpTeam==="B"?"on":""}">B-lag <small>×1</small></button></div>
    ${b.cards.length?`<div class="lineup">${[[0,3],[2],[1,4]].map(col=>`<div class="lu-col">${col.filter(k=>b.cards[k]).map(k=>fifaCard(b.cards[k],k)).join("")}</div>`).join("")}</div>`:`<p class="bd-empty">${x?"":"Välj alla "+D.squad+" löpare under Lag så syns de här."}</p>`}
   </section>
-  ${b.own&&b.cards.length?`<div class="bd-share"><button class="btn on" id="shareBoard" ${shareBusy?"disabled":""}>${SHAREIC}${shareBusy?"Skapar bilden…":"Dela "+(b.team==="B"?"B-laget":"A-laget")+" och poäng"}</button>${shareMsg?`<span class="note">${esc(shareMsg)}</span>`:""}</div>`:""}`;
+  ${b.cards.length?`<div class="bd-share"><button class="btn on" ${b.own?'id="shareBoard"':'data-sharemgr="1"'} ${shareBusy?"disabled":""}>${SHAREIC}${shareBusy?"Skapar bilden…":"Dela "+(b.team==="B"?"B-laget":"A-laget")+" och poäng"}</button>${shareMsg?`<span class="note">${esc(shareMsg)}</span>`:""}</div>`:""}`;
 }
 /* ---------- the share picture: drawn on a canvas (1080x1350, 4:5) from the same data, so it is sharp and exact ---------- */
 let shareBusy=false,shareMsg="";
@@ -2401,8 +2401,8 @@ async function terrainImg(w,h){
 }
 /* the share picture (1080x1760): the board as it looks on screen, its header, round, team switch and the cards in the
    same three staggered columns, on the same contour map */
-async function makeShareImage(){
-  const b=boardData();if(!b||!b.cards.length)throw new Error("inget lag");
+async function makeShareImage(src){
+  const b=boardData(src);if(!b||!b.cards.length)throw new Error("inget lag");
   try{await Promise.all(["800 40px","700 40px","600 40px","500 40px"].map(f=>document.fonts.load(f+' "Barlow Condensed"')));await document.fonts.ready}catch(e){}
   const W=1080,H=1760,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
   const font=getComputedStyle(document.body).fontFamily||"sans-serif",dfont=css("--display")||font,acc=css("--accent"),bg=css("--bg"),text=css("--text"),t2=css("--text-2"),t3=css("--text-3"),line=css("--line-2");
@@ -2443,16 +2443,18 @@ async function makeShareImage(){
   c.textAlign="center";c.fillStyle=t3;c.font=`500 26px ${font}`;c.fillText(location.host?location.host+location.pathname.replace(/index\.html$/,""):"Fantasy Orientering",W/2,H-70);
   return await new Promise((res,rej)=>cv.toBlob(bl=>bl?res(bl):rej(new Error("picture")),"image/png"));
 }
-async function shareBoard(){
-  if(shareBusy)return;shareBusy=true;shareMsg="";render();
+/* the share picture, of your own team or (src) a league-mate's, drawn the same way */
+async function shareBoard(src){
+  const redraw=()=>{if(src&&mgrOpen&&document.querySelector("#modal .sheet"))managerSheet(mgrOpen.code,mgrOpen.id,mgrOpen.view);else render()};
+  if(shareBusy)return;shareBusy=true;shareMsg="";redraw();
   try{
-    const b=boardData(),blob=await makeShareImage(),name=`orienteering-fantasy-round-${b.rd.n}-${b.team}-team.png`;
-    const file=new File([blob],name,{type:"image/png"}),text=`${b.me}: ${b.x?fp(b.score)+" poäng i "+rdThe(b.rd):"mitt lag för "+rdThe(b.rd)} · Fantasy Orientering`;
+    const b=boardData(src),blob=await makeShareImage(src),name=`fantasy-orientering-${rdThe(b.rd).replace(/\s+/g,"-")}-${b.me.replace(/[^\wåäöÅÄÖ-]+/g,"-")}-${b.team}-lag.png`;
+    const file=new File([blob],name,{type:"image/png"}),text=`${b.me}: ${b.x?fp(b.score)+" poäng i "+rdThe(b.rd):(src?"laget för ":"mitt lag för ")+rdThe(b.rd)} · Fantasy Orientering`;
     if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:"Fantasy Orientering",text})}catch(e){if(e&&e.name!=="AbortError")throw e}}
     else{const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);shareMsg="Bilden sparades i dina hämtade filer."}
     window.__lastShare={size:blob.size,name};
   }catch(e){shareMsg="Kunde inte skapa bilden. Försök igen."}
-  shareBusy=false;render();
+  shareBusy=false;redraw();
 }
 function roundsView(){
   const board=weekBoard();
@@ -3119,6 +3121,7 @@ document.addEventListener("click",ev=>{
   if(d.round!==undefined){viewRound=+d.round;render();return}
   if(d.lteam){lpTeam=d.lteam;render();if(mgrOpen&&document.querySelector("#modal .sheet"))managerSheet(mgrOpen.code,mgrOpen.id,mgrOpen.view);return}
   if(d.mround!==undefined&&mgrOpen){managerSheet(mgrOpen.code,mgrOpen.id,+d.mround);return}
+  if(d.sharemgr&&mgrOpen){const m=(leagueRows[mgrOpen.code]||[]).find(x=>x.id===mgrOpen.id);if(m)shareBoard({m,view:mgrOpen.view,rs:mgrOpen.code==="DEMO"?demoRs:null});return}
   if(d.demo&&adminOn()){if(buildDemo()){lgOpen="DEMO";lgSub="table";lgRound=null;render();toTop()}return}
   if(t.id==="shareBoard"){shareBoard();return}
   if(t.id==="more"){shown+=40;refreshMarket();return}
