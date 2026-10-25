@@ -1516,6 +1516,20 @@ td,th{border-color:#ededed!important}
 .wkd{border-radius:22px!important;padding:14px 18px!important}
 .wmarrow{width:38px;height:38px;min-width:38px;padding:0!important;display:grid;place-items:center;font:700 22px/1 var(--font)!important;letter-spacing:0!important}
 .wmarrow:disabled{opacity:.35}
+/* league tables on phones: fixed columns so the points always fit, the move under the rank, Live under the heading */
+@media (max-width:560px){
+  .lgt table{width:100%;table-layout:fixed}
+  .lgt th:first-child,.lgt td:first-child{width:46px;padding-left:12px!important;padding-right:4px!important}
+  .lgt th:nth-child(n+3),.lgt td:nth-child(n+3){width:60px;padding-left:4px!important}
+  .lgt th:last-child,.lgt td:last-child{padding-right:14px!important}
+  .lgt td:first-child .mv{display:block;margin-top:3px;font-size:10px;line-height:1}
+  .lgt th .livedot{display:block;width:max-content;margin:3px 0 0 auto}
+  .lgt td:nth-child(n+3){font-size:15px}
+  .lgt tr.pod td:nth-child(n+3){font-size:16px}
+  .lgt td:nth-child(2) b{display:block;overflow-wrap:break-word;hyphens:auto}
+  .lgt .mdot{width:24px;height:24px;font-size:11px}
+  .lgt .who-wrap{gap:7px}
+}
 /* the countdown to the official launch, on every page until it comes */
 .launchbar{margin:14px 0 4px;background:#003c68!important;color:#fff;border-radius:24px;padding:14px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;box-shadow:0 10px 30px -18px rgba(0,30,60,.6)}
 .launchbar .lb-clock{display:flex;gap:8px;align-items:flex-end}
@@ -2559,7 +2573,7 @@ function leagueDetail(code){
     ${S.topRunner&&S.topRunner.p>0?hl("Bästa valda löpare",esc(nameOf(S.topRunner.i)),sg(S.topRunner.p)+", i "+S.topRunner.n+" av "+S.rows.length+" lag"):""}
     ${S.diff&&S.diff.p>0&&(!S.topRunner||S.diff.i!==S.topRunner.i||S.rows.length>2)?hl("Bästa unika val",esc(nameOf(S.diff.i)),sg(S.diff.p)+", bara "+esc(S.diffOwner.name)):""}
     ${S.mb&&S.mb[1]>1?hl("Mest boostad",esc(nameOf(S.mb[0])),S.mb[1]+" av "+S.rows.length+" managers"):""}`;
-  return head+nav+(hlsHtml.trim()?`<div class="hls">${hlsHtml}</div>`:"")+`   <div class="grid2"><div class="card"><h3>Omgångens ranking</h3>${ranked.map((m,k)=>{const x=m.by[r];return `<div class="ev" data-mgr="${esc(code)}|${esc(m.id)}" style="cursor:pointer"><span style="display:flex;gap:10px;align-items:center">${k+1}. ${mgrDot(m)}<span><b>${esc(m.name)}</b>${subName(m)}<span class="sub" style="display:block">Boost ${esc(nameOf(x.captain))}${x.capLive===null?" (sprang inte)":" "+sg(x.capExtra)}${x.chip?", "+CHIPINFO[x.chip][0]:""}${x.penalty?", -"+fp(x.penalty)+" transfers":""}${x.carried?", squad carried over":""}</span></span></span><b>${fp(x.total)}</b></div>`}).join("")}</div>
+  return head+nav+(hlsHtml.trim()?`<div class="hls">${hlsHtml}</div>`:"")+`   <div class="grid2"><div class="card"><h3>Omgångens ranking</h3>${ranked.map((m,k)=>{const x=m.by[r];return `<div class="ev" data-mgr="${esc(code)}|${esc(m.id)}" style="cursor:pointer;flex-wrap:nowrap;align-items:center;gap:10px"><span style="display:flex;gap:10px;align-items:center;min-width:0;flex:1">${k+1}. ${mgrDot(m)}<span><b>${esc(m.name)}</b>${subName(m)}<span class="sub" style="display:block">Boost ${esc(nameOf(x.captain))}${x.capLive===null?" (sprang inte)":" "+sg(x.capExtra)}${x.chip?", "+CHIPINFO[x.chip][0]:""}${x.penalty?", -"+fp(x.penalty)+" för byten":""}${x.carried?", förra truppen spelade":""}</span></span></span><b>${fp(x.total)}</b></div>`}).join("")}</div>
    <div class="card"><h3>Vem valde vem</h3>${S.pick.slice(0,12).map(x=>`<div class="ev"><span style="display:flex;gap:10px;align-items:center">${avatar(x.i,"sm")}<span><button class="who" style="font-size:14.5px" data-prof="${x.i}">${esc(nameOf(x.i))}</button><span class="sub" style="display:block">${Math.round(x.n/S.rows.length*100)}% av lagen${x.started?"":", sprang inte"}</span></span></span><b class="${x.p<0?"neg":x.p>0?"pos":""}">${sg(x.p)}</b></div>`).join("")}</div></div>`;
 }
 function teamCard(code,m,r,k){
@@ -2574,7 +2588,7 @@ function managerSheet(code,id,r0){
   const bars=st.rs.map(q=>{const v=ptsOf(m,q);return {q,v:v===null?0:v,has:v!==null}}),mx=Math.max(100,...bars.map(b=>b.v));
   const body=!x?`<p class="note">${esc(m.name)} har ingen trupp i en omgång som har startat än.</p>`:`
    <div class="rnav"><button class="btn" data-mgrr="${esc(code)}|${esc(id)}|${rs[ix-1]}" ${ix<=0?"disabled":""}>Föregående</button><b>${rdName(D.rounds[r])}${!isFinal(r)?' <span class="livedot">Live</span>':""}</b><button class="btn" data-mgrr="${esc(code)}|${esc(id)}|${rs[ix+1]}" ${ix>=rs.length-1?"disabled":""}>Nästa</button></div>
-   <div class="stats"><div><b>${fp(x.total)}</b><span>Omgångspoäng</span></div><div><b>${fp(x.base)}</b><span>Från löpare</span></div><div><b>${x.capLive===null?"0.0":sg(x.capExtra)}</b><span>Boost${x.chip?" · "+CHIPINFO[x.chip][0]:""}</span></div><div><b class="${x.penalty?"dn":""}">${x.penalty?"-"+fp(x.penalty):"0.0"}</b><span>${x.transfers} transfer${x.transfers===1?"":"s"}</span></div></div>
+   <div class="stats"><div><b>${fp(x.total)}</b><span>Omgångspoäng</span></div><div><b>${fp(x.base)}</b><span>Från löpare</span></div><div><b>${x.capLive===null?"0":sg(x.capExtra)}</b><span>Boost${x.chip?" · "+CHIPINFO[x.chip][0]:""}</span></div><div><b class="${x.penalty?"dn":""}">${x.penalty?"-"+fp(x.penalty):"0"}</b><span>${x.transfers} byte${x.transfers===1?"":"n"}</span></div></div>
    ${x.carried?`<p class="note">Ingen trupp låstes den här omgången, så truppen från omgången innan spelade.</p>`:""}${x.chip?`<p class="note"><b>${CHIPINFO[x.chip][0]}</b> spelat: ${CHIPINFO[x.chip][1].toLowerCase()}.</p>`:""}
    <div class="squad sheetsq">${x.squad.map((i,k)=>{const b=i===x.captain,raced=E.starts[r][i]>0,m2=multOf(i,x.squad,x.chip,x.capLive),p=E.pts[r][i]*m2;
      return `${k===0?'<div class="eyebrow" style="grid-column:1/-1">A-lag · ×2</div>':k===AS?'<div class="eyebrow" style="grid-column:1/-1;margin-top:4px">B-lag · ×1</div>':""}<div class="rc tier-${TIERS[tierOf(i,r)][0]} ${b?"boosted":""}"><span class="plate" aria-hidden="true"></span><span class="tm ${m2>(k<AS?2:1)?"hi":""}">×${m2}${b?" · boost":""}</span><div class="top"><span style="width:30px"></span>${avatar(i)}</div><div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}</div></div>
