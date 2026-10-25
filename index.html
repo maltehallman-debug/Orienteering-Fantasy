@@ -1610,7 +1610,7 @@ a.ncard{text-decoration:none}
 .ncard b{display:block;padding:8px 16px 18px;font-size:14px;font-weight:700;line-height:1.3}
 @media (hover:hover) and (pointer:fine){.ncard .nimg{transition:transform .25s ease}.ncard:hover .nimg{transform:scale(1.02)}.ncard:hover b{text-decoration:underline}}
 .news-more{display:flex;justify-content:flex-end;margin-top:16px}
-@media (max-width:760px){.news-grid{grid-template-columns:1fr;gap:14px}.ncard{border-radius:22px}.ncard .nrow{padding:10px 12px 0;font-size:10.5px;flex-wrap:wrap}.ncard b{padding:6px 12px 14px;font-size:13px}}
+@media (max-width:760px){.news-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ncard{border-radius:22px}.ncard .nrow{padding:10px 12px 0;font-size:10.5px;flex-wrap:wrap}.ncard b{padding:6px 12px 14px;font-size:13px}}
 /* the yellow panel: a picture on the left, yellow on the right */
 .promo{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);background:var(--gul);margin-bottom:12px;min-height:220px}
 .promo .pimg{display:block;background-size:cover;background-position:center;min-height:180px}
@@ -1714,7 +1714,6 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 /* the maps belong to Attunda OK: their credit sits in a corner of every map picture */
 .next.omhero::after,.nimg::after,.pimg::after{content:"Karta © Attunda OK";display:block!important;position:absolute;left:auto;top:auto;right:10px;bottom:8px;width:auto;height:auto;background:rgba(255,255,255,.78)!important;color:#333;font:600 9.5px/1 var(--font);letter-spacing:.02em;padding:4px 7px;border-radius:999px;pointer-events:none;z-index:2;animation:none!important}
 .nimg,.pimg{position:relative}
-.nimg::after{font-size:8.5px!important;padding:3px 7px!important;right:8px!important;bottom:7px!important;opacity:.9}
 .next.omhero::after{z-index:3;writing-mode:vertical-rl;transform:rotate(180deg);right:6px;bottom:24px;padding:6px 3px!important}
 /* stat boxes hold two-line labels: rounded corners, not pills, so the text stays inside */
 .stats>div,.kv>div,.hl{border-radius:22px!important}
