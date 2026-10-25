@@ -2,6 +2,23 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
+<script>/* the game has moved to Vercel. The old GitHub Pages address sends everyone on, invite links and login links
+   included; a player's game saved in this browser (team, squads, settings, never the login) travels along in the
+   address's #fragment, which is not sent to any server, and is put back on the new site if it has none there */
+(function(){var NEW="https://fantasyorientering.vercel.app/";
+  if(/\.github\.io$/.test(location.hostname)){var h=location.hash;
+    if(!h){try{var o={},n=0;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(/^(orienteering-fantasy|of-)/.test(k)){o[k]=localStorage.getItem(k);n++}}
+      var j=JSON.stringify(o);if(n&&j.length<40000)h="#flytt="+btoa(unescape(encodeURIComponent(j))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}catch(e){}}
+    location.replace(NEW+location.search+h);return}
+  var m=/^#flytt=([A-Za-z0-9_-]+)$/.exec(location.hash);if(!m)return;
+  try{if(!localStorage.getItem("orienteering-fantasy-v5")&&!localStorage.getItem("orienteering-fantasy-v4")){
+    var t=m[1].replace(/-/g,"+").replace(/_/g,"/");while(t.length%4)t+="=";var o=JSON.parse(decodeURIComponent(escape(atob(t))));
+    for(var k in o)if(/^(orienteering-fantasy|of-)/.test(k)&&typeof o[k]=="string")localStorage.setItem(k,o[k])}}catch(e){}
+  history.replaceState(null,"",location.pathname+location.search)})();
+</script>
+<!-- Vercel Web Analytics: page views counted without cookies or anything that identifies a visitor -->
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
+<script defer src="/_vercel/insights/script.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#ffffff" id="themeColor">
 <meta name="description" content="Fantasy Orientering för D/H 16–21: välj tio löpare, dubbla ditt A-lag och få poäng från de riktiga resultaten i Eventor.">
@@ -2584,7 +2601,7 @@ function infoSheet(k){
   <li><b>Löpare:</b> spelet visar löparnas namn, klubbar, klasser och resultat i D/H 16–21. Det är de offentliga resultaten från Eventor och liveresultat.orientering.se. Inget annat om en löpare används: inga födelsedatum, adresser eller kontaktuppgifter. Löpare under 15 år är inte med i spelet.</li>
   <li><b>Foton</b> på löpare visas bara när löparen (eller för en junior, en förälder) har skickat in ett och en admin har godkänt det. De kan tas bort när som helst.</li>
   <li><b>Ditt konto:</b> din e-postadress, ditt managernamn, lagnamn, din bild, trupper och poäng. De lagras hos Supabase i Frankfurt (EU) och används bara för att driva spelet. Andra managers ser ditt managernamn, lagnamn, din bild, trupper och poäng, aldrig din e-post.</li>
-  <li><b>Gratis och ideellt:</b> ingen reklam, ingen spårning och inget säljs eller delas.</li>
+  <li><b>Gratis och ideellt:</b> ingen reklam, inga spårningscookies och inget säljs eller delas. Antalet besök räknas med Vercel Web Analytics, utan cookies och utan något som kan peka ut dig.</li>
   <li><b>Radera ditt konto</b> på Profilsidan när som helst; allt i det raderas.</li></ul></div>
   <div class="info"><h3>Ta bort en löpare från spelet</h3><p class="note" style="margin:4px 0 10px">En löpare, eller en förälder till en junior, kan be om att löparen tas bort från spelet. Inget konto behövs.</p>
    <div class="field"><label for="rmRunner">Löparens namn och klubb</label><input class="name" id="rmRunner" maxlength="120" value="${esc(rmF.runner)}" autocomplete="off"></div>
