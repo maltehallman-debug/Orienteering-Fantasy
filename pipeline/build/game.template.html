@@ -1516,6 +1516,7 @@ td,th{border-color:#ededed!important}
 .wkd{border-radius:22px!important;padding:14px 18px!important}
 .logo .beta{font:800 13px/1 var(--font);font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:#d6261c;padding:6px 9px 5px;border-radius:999px;transform:rotate(-4deg);box-shadow:0 2px 6px rgba(214,38,28,.35);flex:none}
 @media (max-width:420px){.logo{gap:7px}.logo b{font-size:15px!important}.logo .mark{width:28px;height:28px}.logo .beta{font-size:11px;padding:5px 7px 4px}}
+.linkish{background:none;border:0;padding:2px 0 10px;color:var(--accent);font:600 14px/1.2 var(--font);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -2355,13 +2356,20 @@ function roundsView(){
 
 /* ---------- profile ---------- */
 function authCard(){
+  /* forgotten password: Supabase mails a link back here, where a new password is set */
+  if(authMode==="forgot")return `<div class="card"><h3>Glömt lösenordet</h3>
+   <p class="note" style="margin:0 0 14px">Skriv e-postadressen du loggar in med, så skickar vi en länk där du väljer ett nytt lösenord.</p>
+   <div class="field"><label for="authEmail">E-post</label><input class="name" id="authEmail" type="email" value="${esc(authEmail)}" autocomplete="email" autocapitalize="none" autocorrect="off" inputmode="email" enterkeyhint="send"></div>
+   <div class="row" style="margin-top:6px"><button class="btn light" id="authReset" ${authBusy?"disabled":""}>${authBusy?"Ett ögonblick…":"Skicka länken"}</button><button class="btn quiet" id="authBack">Tillbaka till inloggningen</button></div>
+   ${authMsg?`<p class="note" style="margin:12px 0 0;color:${authOk?"var(--good)":"var(--warn)"}">${esc(authMsg)}</p>`:""}</div>`;
   return `<div class="card"><h3>${authMode==="up"?"Skapa ditt konto":"Logga in"}</h3>
    <p class="note" style="margin:0 0 14px">${authMode==="up"?"En e-postadress och ett lösenord. Din trupp följer med till alla enheter.":"Välkommen tillbaka."}</p>
    ${authMode==="up"?`<div class="field"><label for="authName">Managernamn</label><input class="name" id="authName" maxlength="24" value="${esc(authName)}" autocomplete="nickname" autocapitalize="words"></div>`:""}
    <div class="field"><label for="authEmail">E-post</label><input class="name" id="authEmail" type="email" value="${esc(authEmail)}" autocomplete="email" autocapitalize="none" autocorrect="off" inputmode="email"></div>
    <div class="field"><label for="authPw">Lösenord${authMode==="up"?" (minst 8 tecken)":""}</label><input class="name" id="authPw" type="password" value="${esc(authPw)}" autocomplete="${authMode==="up"?"new-password":"current-password"}" enterkeyhint="go"></div>
+   ${authMode==="up"?"":`<button class="linkish" id="authForgot" type="button">Glömt lösenordet?</button>`}
    <div class="row" style="margin-top:6px"><button class="btn light" id="${authMode==="up"?"authUp":"authIn"}" ${authBusy?"disabled":""}>${authBusy?"Ett ögonblick…":authMode==="up"?"Skapa konto":"Logga in"}</button><button class="btn quiet" id="authSwap">${authMode==="up"?"Jag har redan ett konto":"Ny här? Skapa ett konto"}</button></div>
-   ${authMsg?`<p class="note" style="margin:12px 0 0;color:var(--warn)">${esc(authMsg)}</p>`:""}</div>`;
+   ${authMsg?`<p class="note" style="margin:12px 0 0;color:${authOk?"var(--good)":"var(--warn)"}">${esc(authMsg)}</p>`:""}</div>`;
 }
 function profileView(){
   if(!dbOk)return `<p class="eyebrow pg-k">05 · Ditt konto</p><h2 style="margin-top:0">Profil</h2>${inviteBanner()}<div class="grid2">${authCard()}
@@ -3031,7 +3039,7 @@ function welcomeSheet(kind){
   if(kind==="ok")setTimeout(()=>burst(innerWidth/2,innerHeight*.3,70),500);
 }
 const SB_URL="https://hjpfmubvpvftxyyemltn.supabase.co",SB_KEY="sb_publishable_Ent2RuVrh-iKyjT1or8gOw_UFdZ74ch";
-let authEmail="",authPw="",authName="",authMode=pendingJoin?"up":"in",authMsg="",authBusy=false,copied="";
+let authEmail="",authPw="",authName="",authMode=pendingJoin?"up":"in",authMsg="",authOk=false,authBusy=false,copied="";
 function queueCloud(){if(!cloud.ready)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,1200)}
 /* an admin has flagged this manager's name: a sheet that stays until they choose a new one */
 function renameSheet(){
@@ -3215,18 +3223,53 @@ async function onSession(session){
     else{const ok=await joinLeague(c,"");if(ok||/No league has that code|look right/.test(leagueMsg))clearPending()}tab="leagues"}
   render();
   if(myFlag){renameSheet();return}
-  if(AUTH_BACK.ok&&!welcomed){welcomed=true;welcomeSheet("ok")}
+  if(AUTH_BACK.ok&&!welcomed){welcomed=true;if(AUTH_BACK.type==="recovery")pwSheet();else welcomeSheet("ok")}
 }
 async function initCloud(){
   try{
     if(!window.supabase||!window.supabase.createClient){authMsg="Kunde inte ladda inloggningen. Ladda om sidan.";return}
     cloud.sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-    cloud.sb.auth.onAuthStateChange((ev,session)=>{setTimeout(()=>onSession(session),0)});
+    cloud.sb.auth.onAuthStateChange((ev,session)=>{setTimeout(()=>onSession(session),0);if(ev==="PASSWORD_RECOVERY"&&!pwOpen){welcomed=true;setTimeout(pwSheet,0)}});
     loadPhotos();
   }catch(e){}
 }
+/* the new-password sheet, opened by the link in the reset email (which also signs the player in) */
+let pwOpen=false,pwMsg="",pwBusy=false;
+function pwSheet(){pwOpen=true;
+  $("#modal").innerHTML=`<div class="modal"><div class="sheet welcome" role="dialog" aria-modal="true" aria-label="Välj ett nytt lösenord">
+    <h2>Välj ett nytt lösenord</h2><p>Minst 8 tecken. Sedan är du inloggad som vanligt.</p>
+    <div class="field"><label for="pwNew">Nytt lösenord</label><input class="name" id="pwNew" type="password" autocomplete="new-password" minlength="8"></div>
+    <div class="field"><label for="pwNew2">Samma lösenord igen</label><input class="name" id="pwNew2" type="password" autocomplete="new-password" enterkeyhint="done"></div>
+    <p class="note" id="pwMsg" style="margin:8px 0 0;color:var(--warn)">${esc(pwMsg)}</p>
+    <div class="row"><button class="btn on" id="pwSave" ${pwBusy?"disabled":""}>${pwBusy?"Ett ögonblick…":"Spara lösenordet"}</button><button class="btn" id="pwLater">Senare</button></div></div></div>`;
+  setTimeout(()=>{const x=$("#pwNew");x&&x.focus()},60);
+}
+async function savePw(){
+  if(pwBusy||!cloud.sb)return;const a=($("#pwNew")||{}).value||"",b=($("#pwNew2")||{}).value||"",m=$("#pwMsg");
+  const say=t=>{pwMsg=t;if(m)m.textContent=t};
+  if(a.length<8)return say("Lösenordet måste vara minst 8 tecken.");
+  if(a!==b)return say("Lösenorden är inte likadana.");
+  pwBusy=true;const btn=$("#pwSave");if(btn){btn.disabled=true;btn.textContent="Ett ögonblick…"}
+  try{const r=await cloud.sb.auth.updateUser({password:a});
+    if(r.error){say(/different from the old/i.test(r.error.message)?"Välj ett annat lösenord än det gamla.":/session|expired|missing/i.test(r.error.message)?"Länken har gått ut. Be om en ny under Logga in.":"Det gick inte att spara. Försök igen.")}
+    else{pwOpen=false;pwMsg="";$("#modal").innerHTML=`<div class="modal" data-close="1"><div class="sheet welcome" role="dialog" aria-modal="true" aria-label="Lösenordet är bytt"><svg class="tick" viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="40"/><path d="M29 47 l11 11 l23 -25"/></svg><h2>Lösenordet är bytt</h2><p>Du är inloggad. Nästa gång loggar du in med det nya lösenordet.</p><div class="row"><button class="btn on" data-close="1">Klart</button></div></div></div>`}
+  }catch(e){say("Det gick inte att spara. Försök igen.")}
+  pwBusy=false;const b2=$("#pwSave");if(b2){b2.disabled=false;b2.textContent="Spara lösenordet"}
+}
+async function sendReset(){
+  if(authBusy||!cloud.sb)return;authMsg="";authOk=false;const email=authEmail.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){authMsg="Skriv en riktig e-postadress.";render();return}
+  authBusy=true;render();
+  try{const r=await cloud.sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+    /* the same answer whether or not the address has an account, so the form never tells who plays */
+    if(r.error&&/rate|too many|seconds/i.test(r.error.message))authMsg="Vänta en stund innan du ber om en ny länk.";
+    else{authOk=true;authMsg="Om det finns ett konto med den adressen har vi skickat en länk. Kolla din e-post, även skräpposten."}
+  }catch(e){authMsg="Något gick fel. Försök igen."}
+  authBusy=false;render();
+}
 async function doAuth(kind){
-  if(authBusy||!cloud.sb)return;authMsg="";
+  if(kind==="forgot")return sendReset();
+  if(authBusy||!cloud.sb)return;authMsg="";authOk=false;
   const email=authEmail.trim(),pw=authPw;
   if(!email||!pw){authMsg="Fyll i din e-post och ett lösenord.";render();return}
   if(kind==="up"&&pw.length<8){authMsg="Lösenordet måste vara minst 8 tecken.";render();return}
@@ -3253,13 +3296,18 @@ async function joinLeague(code,name){
   const m=await cloud.sb.from("league_members").insert({code,user_id:cloud.uid});
   if(m.error){leagueMsg=m.error.code==="23503"?"Ingen liga har den koden.":"Kunde inte gå med i ligan. Försök igen.";return false}
   if(!name){try{const lg=await cloud.sb.from("leagues").select("name").eq("code",code).maybeSingle();if(lg.data&&lg.data.name)myLgn[code]=String(lg.data.name).slice(0,24)}catch(e){}}
-  myLeagues.push(code);if(name){myLgn[code]=name;myOwn[code]=true}watchLeague(code);save();pushCloud();leagueMsg="Joined "+lgName(code)+".";return true;
+  myLeagues.push(code);if(name){myLgn[code]=name;myOwn[code]=true}watchLeague(code);save();pushCloud();leagueMsg="Du är med i "+lgName(code)+".";return true;
 }
 document.addEventListener("input",e=>{const t=e.target;if(t.id==="authEmail")authEmail=t.value;if(t.id==="authPw")authPw=t.value;if(t.id==="authName")authName=t.value});
-document.addEventListener("keydown",e=>{if(e.key==="Enter"&&["authEmail","authPw","authName"].includes(e.target.id))doAuth(authMode)});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&["authEmail","authPw","authName"].includes(e.target.id))doAuth(authMode);if(e.key==="Enter"&&["pwNew","pwNew2"].includes(e.target.id))savePw()});
 document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;
   if(t.id==="authIn"||t.id==="authUp")doAuth(t.id==="authUp"?"up":"in");
-  if(t.id==="authSwap"){authMode=authMode==="in"?"up":"in";authMsg="";render()}
+  if(t.id==="authSwap"){authMode=authMode==="in"?"up":"in";authMsg="";authOk=false;render()}
+  if(t.id==="authForgot"){authMode="forgot";authMsg="";authOk=false;render();setTimeout(()=>{const x=$("#authEmail");x&&x.focus()},30)}
+  if(t.id==="authBack"){authMode="in";authMsg="";authOk=false;render()}
+  if(t.id==="authReset")sendReset();
+  if(t.id==="pwSave")savePw();
+  if(t.id==="pwLater"){pwOpen=false;$("#modal").innerHTML=""}
   if(t.id==="avDel"){delAvatar();return}
   if(t.id==="authOut"){cloud.ready=false;resetLocal();sqStore={};sqMem={};pfCache.clear();try{localStorage.removeItem(SQK)}catch(e){}localUid=null;try{localStorage.removeItem(KEY)}catch(e){}tab="profile";cloud.sb.auth.signOut().then(()=>{leagueRows={};render()})}
 });
