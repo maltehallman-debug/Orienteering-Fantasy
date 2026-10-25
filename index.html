@@ -1610,7 +1610,7 @@ a.ncard{text-decoration:none}
 .ncard b{display:block;padding:8px 16px 18px;font-size:14px;font-weight:700;line-height:1.3}
 @media (hover:hover) and (pointer:fine){.ncard .nimg{transition:transform .25s ease}.ncard:hover .nimg{transform:scale(1.02)}.ncard:hover b{text-decoration:underline}}
 .news-more{display:flex;justify-content:flex-end;margin-top:16px}
-@media (max-width:760px){.news-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ncard{border-radius:22px}.ncard .nrow{padding:10px 12px 0;font-size:10.5px;flex-wrap:wrap}.ncard b{padding:6px 12px 14px;font-size:13px}}
+@media (max-width:760px){.news-grid{grid-template-columns:1fr;gap:14px}.ncard{border-radius:22px}.ncard .nrow{padding:10px 12px 0;font-size:10.5px;flex-wrap:wrap}.ncard b{padding:6px 12px 14px;font-size:13px}}
 /* the yellow panel: a picture on the left, yellow on the right */
 .promo{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);background:var(--gul);margin-bottom:12px;min-height:220px}
 .promo .pimg{display:block;background-size:cover;background-position:center;min-height:180px}
@@ -1637,6 +1637,11 @@ a.ncard{text-decoration:none}
 .course .ctl.taken text.pts{fill:var(--text-2);font-weight:600}
 .course .ctl.taken .ring{opacity:0}
 .course .ctl .punch circle{fill:#c2187c!important;stroke:#fff!important;stroke-width:2}
+.course .ctl text{font:700 13px var(--font);letter-spacing:0}
+.course .ctl .pts{font:600 12.5px var(--font);fill:var(--text-2);letter-spacing:.01em;paint-order:stroke;stroke:var(--bg);stroke-width:5px;stroke-linejoin:round}
+.course .ctl.done .pts,.course .ctl.now .pts{fill:var(--text);font-weight:700}
+.introCourse text{font:800 19px var(--font);fill:var(--accent);paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round}
+.introCourse .lab{font:600 14.5px var(--font);fill:var(--text);letter-spacing:.005em}
 .course .ctl .punch path{fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .course .leg.draw{stroke:var(--navy);stroke-dasharray:none;opacity:.9}
 
@@ -1709,6 +1714,7 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 /* the maps belong to Attunda OK: their credit sits in a corner of every map picture */
 .next.omhero::after,.nimg::after,.pimg::after{content:"Karta © Attunda OK";display:block!important;position:absolute;left:auto;top:auto;right:10px;bottom:8px;width:auto;height:auto;background:rgba(255,255,255,.78)!important;color:#333;font:600 9.5px/1 var(--font);letter-spacing:.02em;padding:4px 7px;border-radius:999px;pointer-events:none;z-index:2;animation:none!important}
 .nimg,.pimg{position:relative}
+.nimg::after{font-size:8.5px!important;padding:3px 7px!important;right:8px!important;bottom:7px!important;opacity:.9}
 .next.omhero::after{z-index:3;writing-mode:vertical-rl;transform:rotate(180deg);right:6px;bottom:24px;padding:6px 3px!important}
 /* stat boxes hold two-line labels: rounded corners, not pills, so the text stays inside */
 .stats>div,.kv>div,.hl{border-radius:22px!important}
@@ -2276,9 +2282,9 @@ function courseSvg(){
   let c="";
   for(let k=1;k<=n;k++){
     const ri=w0+k-1,[x,y]=P[k],entry=state.log.find(l=>l.round===ri),played=!!entry,now=!done()&&ri===state.round,taken=ri<cur;
-    const lab=played?Math.round(entry.total/10):taken?"tagen":(lock&&lock.round===ri?"låst":"");
+    const lab=played?Math.round(entry.total/10)+" p":(lock&&lock.round===ri?"Låst":"");
     const sub=dshort(D.rounds[ri].start);
-    c+=`<g class="ctl ${played?"done":""} ${taken?"taken":""} ${now?"now":""}" data-ctrl="${ri}" role="button" tabindex="0" aria-label="${rdName(D.rounds[ri])}, veckan ${sub}${played?", "+lab+" poäng":taken?", tagen":""}">
+    c+=`<g class="ctl ${played?"done":""} ${taken?"taken":""} ${now?"now":""}" data-ctrl="${ri}" role="button" tabindex="0" aria-label="${rdName(D.rounds[ri])}, veckan ${sub}${played?", "+lab.replace(" p"," poäng"):taken?", passerad":""}">
       <circle class="ring" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${cr}"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${cr}"/>
       <text x="${x.toFixed(1)}" y="${y.toFixed(1)}">${rdNo(D.rounds[ri])}</text>${taken?`<g class="punch"><circle cx="${(x+cr*.8).toFixed(1)}" cy="${(y-cr*.8).toFixed(1)}" r="7.5"/><path d="M${(x+cr*.8-3.4).toFixed(1)} ${(y-cr*.8).toFixed(1)}l2.4 2.4 4.4-4.6"/></g>`:""}
       <text class="pts" x="${x.toFixed(1)}" y="${(y+(k%2?-26:38)).toFixed(1)}" style="dominant-baseline:auto">${lab!==""?lab:sub}</text></g>`;
@@ -3380,8 +3386,8 @@ function introCourse(){
   for(let k=0;k<P.length-1;k++){const [ax,ay]=P[k],[bx,by]=P[k+1],L=Math.hypot(bx-ax,by-ay),ux=(bx-ax)/L,uy=(by-ay)/L,r0=k?24:20,r1=k===P.length-2?30:24;
     const a=[ax+ux*r0,ay+uy*r0],b=[bx-ux*r1,by-uy*r1];legs+=`<line class="leg" style="--k:${k};--len:${Math.hypot(b[0]-a[0],b[1]-a[1]).toFixed(0)}" x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"/>`}
   const [sx,sy]=P[0];ctl+=`<g class="cg" style="--k:-0.4"><polygon class="c" points="${sx},${sy-22} ${sx-19},${sy+12} ${sx+19},${sy+12}"/></g>`;
-  for(let k=1;k<P.length-1;k++){const [x,y]=P[k];ctl+=`<g class="cg" style="--k:${k-1}"><circle class="c" cx="${x}" cy="${y}" r="22"/><text x="${x+28}" y="${y-18}">${k}</text><text class="lab" x="${x+28}" y="${y+2}">${lab[k-1]}</text></g>`}
-  const [fx,fy]=P[P.length-1];ctl+=`<g class="cg" style="--k:${P.length-2}"><circle class="c" cx="${fx}" cy="${fy}" r="18"/><circle class="c" cx="${fx}" cy="${fy}" r="27"/><text class="lab" x="${fx-30}" y="${fy+50}">${lab[4]}</text></g>`;
+  for(let k=1;k<P.length-1;k++){const [x,y]=P[k];ctl+=`<g class="cg" style="--k:${k-1}"><circle class="c" cx="${x}" cy="${y}" r="22"/><text x="${x+30}" y="${y-12}">${k}</text><text class="lab" x="${x+31}" y="${y+10}">${lab[k-1]}</text></g>`}
+  const [fx,fy]=P[P.length-1];ctl+=`<g class="cg" style="--k:${P.length-2}"><circle class="c" cx="${fx}" cy="${fy}" r="18"/><circle class="c" cx="${fx}" cy="${fy}" r="27"/><text class="lab" x="${fx}" y="${fy+52}" text-anchor="middle">${lab[4]}</text></g>`;
   return `<svg class="introCourse" viewBox="0 0 640 300" aria-hidden="true">${legs}${ctl}</svg>`;
 }
 function renderHero(){
