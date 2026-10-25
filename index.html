@@ -2439,7 +2439,7 @@ const dayName=s=>DAYS[new Date(s+"T12:00:00Z").getUTCDay()];
    race. One seed picks the piece, the part of it shown and the course, so a race always gets the same picture. */
 /* the legal pages: who is responsible for the data, and the date the terms and policy apply from */
 const LEGAL_DATE="25 oktober 2026";
-const CONTROLLER="Fantasy Orientering drivs av en privatperson, som är personuppgiftsansvarig.";
+const CONTROLLER="Fantasy Orientering drivs av Malte Hallman som privatperson, och han är personuppgiftsansvarig.";
 /* the official launch: the round of Sverigepremiären. The countdown runs to its start (Monday, when squads lock) */
 const launchDates=()=>{const ds=(D.launch&&D.launch.dates)||[];if(!ds.length)return "";const a=ds[0],b=ds[ds.length-1],[,ma]=a.split("-"),[,mb]=b.split("-");
   return a===b?dshort(a):ma===mb?(+a.split("-")[2])+"–"+dshort(b):dshort(a)+" – "+dshort(b)};
@@ -3104,7 +3104,7 @@ function infoSheet(k){
   const lk=(k,t)=>`<button class="linkish" data-info="${k}">${t}</button>`;
   body.terms=()=>hd("Användarvillkor","Villkor")+`<div class="info legal">
   <p class="note">Gäller från ${LEGAL_DATE}. Genom att skapa ett konto godkänner du villkoren.</p>
-  <h3>1. Om tjänsten</h3><p>Fantasy Orientering är ett gratis, ideellt fanprojekt som drivs av en privatperson. Det har ingen koppling till Svenska Orienteringsförbundet (Svensk Orientering), Eventor, liveresultat.orientering.se eller någon klubb eller arrangör, och är inte godkänt av dem. Namn och varumärken som nämns tillhör sina ägare.</p>
+  <h3>1. Om tjänsten</h3><p>Fantasy Orientering är ett gratis, ideellt fanprojekt som drivs av Malte Hallman som privatperson. Det har ingen koppling till Svenska Orienteringsförbundet (Svensk Orientering), Eventor, liveresultat.orientering.se eller någon klubb eller arrangör, och är inte godkänt av dem. Namn och varumärken som nämns tillhör sina ägare.</p>
   <h3>2. Inga pengar, inga priser</h3><p>Spelet är gratis. Det finns inga insatser, inga avgifter och inga vinster i pengar eller annat värde, och spelet är inte ett spel om pengar. Om deltagarna i en privat liga själva bestämmer om något pris sker det helt utanför tjänsten och på deras eget ansvar.</p>
   <h3>3. Ditt konto</h3><p>Du måste vara minst 13 år för att skapa ett konto. Ett konto per person. Håll ditt lösenord för dig själv. Du kan radera ditt konto när som helst på Profilsidan.</p>
   <h3>4. Uppförande</h3><p>Managernamn, lagnamn, ligors namn och bilder får inte vara kränkande, hotfulla, diskriminerande, sexuella eller olagliga, får inte utge sig för att vara någon annan och får inte innehålla reklam. Ladda bara upp bilder som du har rätt att använda. Foton av någon under 18 år kräver tillstånd från en vårdnadshavare. Försök inte störa tjänsten eller komma åt andras konton.</p>
