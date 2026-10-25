@@ -1516,6 +1516,42 @@ td,th{border-color:#ededed!important}
 .wkd{border-radius:22px!important;padding:14px 18px!important}
 .wmarrow{width:38px;height:38px;min-width:38px;padding:0!important;display:grid;place-items:center;font:700 22px/1 var(--font)!important;letter-spacing:0!important}
 .wmarrow:disabled{opacity:.35}
+/* the league table: one rounded row per team, placing (week's placing), team and manager, week, total */
+.lgl{display:grid;gap:8px}
+.lgl-h,.lgl-r{display:grid;grid-template-columns:76px minmax(0,1fr) 64px 70px;align-items:center;gap:10px}
+.lgl-h{padding:2px 16px 4px;font:700 11px/1 var(--font);letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+.lgl-h span:nth-child(n+3),.lgl-r .n{text-align:right}
+.lgl-live{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e5484d;margin-left:4px;vertical-align:1px;animation:lglPulse 1.6s ease-in-out infinite}
+@keyframes lglPulse{50%{opacity:.35}}
+.lgl-r{background:var(--surface-2);border-radius:16px;padding:12px 16px;cursor:pointer;box-shadow:inset 0 0 0 1px var(--line);transition:background-color .15s ease,transform .12s ease}
+@media (hover:hover) and (pointer:fine){.lgl-r:hover{background:color-mix(in srgb,var(--surface-2) 88%,#003c68)}}
+.lgl-r:active{transform:scale(.99)}
+.lgl-r.in{background:color-mix(in srgb,var(--surface-2) 82%,#2f6fa8);box-shadow:inset 0 0 0 1.5px #003c68}
+.lgl-r .pl{font:600 17px/1 var(--font);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lgl-r .pl small{font-weight:500;font-size:14px;color:var(--text-2);margin-left:2px}
+.lgl-r .tm{display:flex;gap:12px;align-items:center;min-width:0}
+.lgl-r .tm>span{min-width:0}
+.lgl-r .tm b{display:block;font:700 16px/1.2 var(--font);overflow-wrap:break-word}
+.lgl-r .tm .sub{display:block;font-size:13.5px;margin-top:2px}
+.lgl-r .n{font:600 16px/1 var(--font);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lgl-r .n b{font-weight:800}
+.lgl-gap{text-align:center;color:var(--text-3);line-height:1}
+@media (max-width:560px){
+  .lgl-h,.lgl-r{grid-template-columns:48px minmax(0,1fr) 46px 52px;gap:8px}
+  .lgl-h{padding:2px 12px 4px;font-size:9.5px;letter-spacing:.06em}
+  .lgl-r{padding:11px 12px;border-radius:14px}
+  .lgl-r .pl{font-size:15px}.lgl-r .pl small{font-size:12px}
+  .lgl-r .tm{gap:8px}.lgl-r .tm .mdot{width:28px;height:28px;font-size:12px;flex:none}
+  .lgl-r .tm b{font-size:14.5px}.lgl-r .tm .sub{font-size:12px}
+  .lgl-r .n{font-size:14px}
+}
+@media (max-width:430px){.lgl-h,.lgl-r{grid-template-columns:42px minmax(0,1fr) 44px 50px;gap:7px}.lgl-r{padding:10px 11px}.lgl-r .tm{gap:7px}.lgl-r .tm .mdot{width:26px;height:26px;font-size:11px}.lgl-r .tm b{font-size:12.5px}.lgl-r .tm .sub{font-size:11px}.lgl-r .n{font-size:13px}.lgl-r .pl{font-size:14px}.lgl-r .pl small{font-size:11px}}
+@media (max-width:380px){.lgl-h,.lgl-r{grid-template-columns:36px minmax(0,1fr) 40px 46px;gap:6px}.lgl-r{padding:10px 9px}.lgl-r .tm .mdot{width:22px;height:22px;font-size:10px}.lgl-r .tm b{font-size:11.5px}.lgl-r .n{font-size:12px}.lgl-r .pl{font-size:13px}}
+/* the team view from a league: a quiet bar with the placing above the board */
+#modal .bd-me b{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word;line-height:1.2}
+#modal .bd-head{align-items:flex-start}
+.mgr-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 12px;font-size:14px;color:var(--text-2)}
+.mgr-top b{color:var(--text)}
 /* league tables on phones: fixed columns so the points always fit, the move under the rank, Live under the heading */
 @media (max-width:560px){
   .lgt table{width:100%;table-layout:fixed}
@@ -2252,10 +2288,11 @@ let lpTeam="A";
 const surname=n=>{const w=n.trim().split(/\s+/);return w.length>1?w.slice(1).join(" "):w[0]};
 const shortRace=e=>{const n=compName(e.name).replace(/\((?:[DH]\d\d[^)]*|[^)]*relay)\)/g,"").replace(/^(DM|GM|SM)[, ]+/i,"$1 ").split(/[,:–-]/)[0].trim();return n.length>14?n.slice(0,13)+"…":n};
 /* everything the board shows, worked out once: the page and the share picture are drawn from the same numbers */
-function boardData(){
-  const L=state.log,weeks=L.map((x,k)=>({k,x,r:x.round}));if(!done())weeks.push({k:L.length,x:null,r:R()});
+function boardData(src){
+  const own=!src,L=own?state.log:src.m.sim.rounds.filter(x=>startedRounds().includes(x.round)),weeks=L.map((x,k)=>({k,x,r:x.round}));if(own&&!done())weeks.push({k:L.length,x:null,r:R()});
   if(!weeks.length)return null;
-  const w=weeks[Math.max(0,Math.min(viewRound,weeks.length-1))],x=w.x,r=w.r,rd=D.rounds[r];
+  const view=own?viewRound:(src.view===null?weeks.length-1:src.view);
+  const w=weeks[Math.max(0,Math.min(view,weeks.length-1))],x=w.x,r=w.r,rd=D.rounds[r];
   const sq=x?x.squad.slice():(picks[r]&&isLive()?picks[r].squad.slice():ordered(plan));
   const cap=x?x.capLive:(picks[r]&&isLive()?picks[r].captain:plan.captain),chip=x?x.chip:(picks[r]&&isLive()?picks[r].chip:plan.chip);
   const total=x?L.slice(0,w.k+1).reduce((a,l)=>a+l.total,0):state.total;
@@ -2271,8 +2308,8 @@ function boardData(){
       pts:played?(E.starts[r][i]?fp(E.pts[r][i]*m):"0"):"–",price:fm(E.price(i,Math.min(r,E.R-1))),nraces:played?String(races.length):"–",form:fp(st.form),avg:fp(st.perWeek),
       race:played?(races.length?shortRace(D.events[races[0].ev])+" "+(races[0].kind?["","DNF","MP","DSQ"][races[0].kind]:fp(races[0].pts*m)+"p"):"Inget lopp"):"Inte tävlat än",
       ph,ini:nameOf(i).split(/\s+/).filter(Boolean).map(w=>w[0]).filter((c,k,a)=>k===0||k===a.length-1).join("").toUpperCase(),hue:hsh(D.runners[i].c)%360}});
-  const me=myTeam||mgrName||"Mitt lag";
-  return {w,weeks,x,r,rd,sq,cap,chip,total,tr,players:G.length,best,score,frac:Math.max(0,Math.min(1,score/Math.max(best||0,1000))),when,cards,me,mgr:myTeam&&mgrName?mgrName:"",team:lpTeam==="B"?"B":"A"};
+  const me=own?myTeam||mgrName||"Mitt lag":src.m.name,mgr=own?(myTeam&&mgrName?mgrName:""):(src.m.team&&src.m.mgr!==src.m.name?src.m.mgr:"");
+  return {own,src,w,weeks,x,r,rd,sq,cap,chip,total,tr,players:G.length,best,score,frac:Math.max(0,Math.min(1,score/Math.max(best||0,1000))),when,cards,me,mgr,team:lpTeam==="B"?"B":"A"};
 }
 const kSuf=v=>String(v).replace(/k$/,"<small>k</small>");
 function fifaCard(c,k){
@@ -2283,18 +2320,18 @@ function fifaCard(c,k){
     <b class="lc-name">${esc(c.name)}</b>
     <span class="lc-st"><span><b>${kSuf(c.price)}</b><i>Pris</i></span><span><b>${c.avg}</b><i>P / v</i></span></span><span class="lc-club">${esc(c.club)}</span></button>`;
 }
-function weekBoard(){
-  const b=boardData();if(!b)return "";const {w,weeks,x,r,rd}=b;
+function weekBoard(src){
+  const b=boardData(src);if(!b)return "";const {w,weeks,x,r,rd}=b,arr=b.own?"data-round":"data-mround";
   return `<section class="board" aria-label="${rdName(rd)}">
-   <div class="bd-head"><span class="bd-brand">Fantasy<em>Orientering</em></span><span class="bd-me"><span><b>${esc(b.me)}</b>${b.mgr?`<small>${esc(b.mgr)}</small>`:""}</span>${dbOk?mgrDot({id:cloud.uid,name:mgrName||"M",av:myAv}):""}</span></div>
+   <div class="bd-head"><span class="bd-brand">Fantasy<em>Orientering</em></span><span class="bd-me"><span><b>${esc(b.me)}</b>${b.mgr?`<small>${esc(b.mgr)}</small>`:""}</span>${b.own?(dbOk?mgrDot({id:cloud.uid,name:mgrName||"M",av:myAv}):""):mgrDot(b.src.m)}</span></div>
    <div class="bd-top"><div class="bd-gauge"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="g0" cx="100" cy="100" r="80" pathLength="100"/>${b.frac>0?`<circle class="g1" cx="100" cy="100" r="80" pathLength="100" style="--f:${(b.frac*75).toFixed(2)}"/>`:""}</svg>
     <div class="bd-score"><b class="score" data-count="${b.score/10}" data-key="board${r}">${x?fp(b.score):"–"}</b><span>${x?(isFinal(r)?"poäng":"hittills"):"inte spelad"}</span></div></div>
    <div class="bd-stats"><div><span>Byten</span><b>${b.tr}</b></div><div><span>Totalt</span><b>${fp(b.total)}</b></div><div><span>Spelare</span><b>${b.players||"–"}</b></div><div><span>Högsta</span><b>${b.best!==null?fp(b.best):"–"}</b></div></div></div>
-   <div class="bd-week"><button class="bd-arr" data-round="${w.k-1}" ${w.k<=0?"disabled":""} aria-label="Föregående omgång">‹</button><div><b>${rdName(rd)}</b><span>${b.when}${x&&x.chip?" · "+esc(CHIPINFO[x.chip][0]):""}${x&&x.carried?" · last round's squad":""}</span></div><button class="bd-arr" data-round="${w.k+1}" ${w.k>=weeks.length-1?"disabled":""} aria-label="Nästa omgång">›</button></div>
+   <div class="bd-week"><button class="bd-arr" ${arr}="${w.k-1}" ${w.k<=0?"disabled":""} aria-label="Föregående omgång">‹</button><div><b>${rdName(rd)}</b><span>${b.when}${x&&x.chip?" · "+esc(CHIPINFO[x.chip][0]):""}${x&&x.carried?" · förra truppen spelade":""}</span></div><button class="bd-arr" ${arr}="${w.k+1}" ${w.k>=weeks.length-1?"disabled":""} aria-label="Nästa omgång">›</button></div>
    <div class="bd-tabs"><button data-lteam="A" class="${lpTeam!=="B"?"on":""}">A-lag <small>×2</small></button><button data-lteam="B" class="${lpTeam==="B"?"on":""}">B-lag <small>×1</small></button></div>
    ${b.cards.length?`<div class="lineup">${[[0,3],[2],[1,4]].map(col=>`<div class="lu-col">${col.filter(k=>b.cards[k]).map(k=>fifaCard(b.cards[k],k)).join("")}</div>`).join("")}</div>`:`<p class="bd-empty">${x?"":"Välj alla "+D.squad+" löpare under Lag så syns de här."}</p>`}
   </section>
-  ${b.cards.length?`<div class="bd-share"><button class="btn on" id="shareBoard" ${shareBusy?"disabled":""}>${SHAREIC}${shareBusy?"Skapar bilden…":"Dela "+(b.team==="B"?"B-laget":"A-laget")+" och poäng"}</button>${shareMsg?`<span class="note">${esc(shareMsg)}</span>`:""}</div>`:""}`;
+  ${b.own&&b.cards.length?`<div class="bd-share"><button class="btn on" id="shareBoard" ${shareBusy?"disabled":""}>${SHAREIC}${shareBusy?"Skapar bilden…":"Dela "+(b.team==="B"?"B-laget":"A-laget")+" och poäng"}</button>${shareMsg?`<span class="note">${esc(shareMsg)}</span>`:""}</div>`:""}`;
 }
 /* ---------- the share picture: drawn on a canvas (1080x1350, 4:5) from the same data, so it is sharp and exact ---------- */
 let shareBusy=false,shareMsg="";
@@ -2536,12 +2573,16 @@ function leagueTable(code){
   if(!rows.length)return `<p class="note">Laddar medlemmar…</p>`;
   if(cur===undefined)return `<p class="note" style="margin:6px 0 10px">Spelet startar med ${rdThe(D.rounds[LIVE])}, som låses ${lockText(LIVE)}. Lag och poäng syns här när den har startat.</p>
    <div class="lgmembers">${rows.map(m=>`<span class="tag">${mgrDot(m)} <span><b>${esc(m.name)}</b>${m.id===cloud.uid?" (du)":""}${subName(m)}</span></span>`).join("")}</div>`;
-  const live=!isFinal(cur);
-  return `<div class="tbl lgt"><table><thead><tr><th>#</th><th>Lag</th><th>${rdHead(D.rounds[cur])}${live?' <span class="livedot">Live</span>':""}</th>${prev!==undefined?`<th class="prevcol">${rdHead(D.rounds[prev])}</th>`:""}<th>Totalt</th></tr></thead><tbody>
-   ${rows.map((m,k)=>`${code==="GLOBAL"&&k===20?'<tr class="gap"><td colspan="5">⋯</td></tr>':""}<tr class="${m.id===cloud.uid?"in":""} ${m.rank<=3?"pod":""}" style="--i:${k}" data-mgr="${esc(code)}|${esc(m.id)}" tabindex="0"><td>${m.rank<=3?`<b class="medal m${m.rank}">${m.rank}</b>`:`<b>${m.rank}</b>`} ${m.move>0?`<span class="mv up">▲${m.move}</span>`:m.move<0?`<span class="mv dn">▼${-m.move}</span>`:`<span class="mv">–</span>`}</td>
-    <td><div class="who-wrap">${mgrDot(m)}<div><b>${esc(m.name)}</b>${m.id===cloud.uid?' <span class="sub">(du)</span>':""}${subName(m)}<div class="sub">${chipTags(m)}</div></div></div></td>
-    <td>${ptsOf(m,cur)!==null?fp(ptsOf(m,cur)):"–"}</td>${prev!==undefined?`<td class="prevcol">${ptsOf(m,prev)!==null?fp(ptsOf(m,prev)):"–"}</td>`:""}<td><b>${fp(m.t)}</b></td></tr>`).join("")}
-   </tbody></table></div>`;
+  /* placing overall, and in the week in brackets; the week's points, then the total */
+  const live=!isFinal(cur),wk=st.rows.filter(m=>ptsOf(m,cur)!==null).sort((a,b)=>ptsOf(b,cur)-ptsOf(a,cur)),wrank={};
+  wk.forEach((m,k)=>{wrank[m.id]=k>0&&ptsOf(wk[k-1],cur)===ptsOf(m,cur)?wrank[wk[k-1].id]:k+1});
+  return `<div class="lgl" role="table" aria-label="Tabell">
+   <div class="lgl-h" role="row"><span role="columnheader">Placering</span><span role="columnheader">Lag</span><span role="columnheader">Vecka${live?' <i class="lgl-live" title="Live"></i>':""}</span><span role="columnheader">Total</span></div>
+   ${rows.map((m,k)=>`${code==="GLOBAL"&&k===20?'<div class="lgl-gap" aria-hidden="true">⋯</div>':""}<div class="lgl-r ${m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="${esc(code)}|${esc(m.id)}" tabindex="0">
+     <span class="pl" role="cell">${m.rank}<small>(${wrank[m.id]||"–"})</small></span>
+     <span class="tm" role="cell">${mgrDot(m)}<span><b>${esc(m.name)}</b>${m.team&&m.mgr!==m.name?`<span class="sub">${esc(m.mgr)}${m.id===cloud.uid?" · du":""}</span>`:m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span>
+     <span class="n" role="cell">${ptsOf(m,cur)!==null?fp(ptsOf(m,cur))+"p":"–"}</span><span class="n" role="cell"><b>${fp(m.t)}p</b></span></div>`).join("")}
+  </div>`;
 }
 function chipTags(m){const c=m.sim.state.chips,u=E.CHIPS.filter(k=>c[k]);return u.length?u.map(k=>CHIPINFO[k][0]).join(", ")+" använt":"Alla chips kvar"}
 function lgStats(code,r){
@@ -2581,28 +2622,25 @@ function teamCard(code,m,r,k){
   return `<div class="card tc" style="--i:${k}" data-mgr="${esc(code)}|${esc(m.id)}"><div class="ev" style="border:0;padding:0 0 8px;align-items:center"><span style="display:flex;gap:10px;align-items:center">${mgrDot(m)}<span><b>${esc(m.name)}</b>${subName(m)}</span></span><span class="pts-big">${fp(x.total)}</span></div>
    <div class="mini">${x.squad.map((i,k)=>{const b=i===x.captain,m2=multOf(i,x.squad,x.chip,x.capLive),p=E.pts[r][i]*m2;return `${k===0?'<span class="eyebrow">A-lag</span>':k===AS?'<span class="eyebrow" style="margin-top:6px">B-lag</span>':""}<div class="mr ${b?"b":""}">${avatar(i,"sm")}<span>${esc(nameOf(i).split(" ").slice(-1)[0])}${b?` <i>boost</i>`:""} <span class="sub" style="font-size:11px">×${m2}</span></span><b class="${E.starts[r][i]?(p<0?"neg":"pos"):"sub"}">${E.starts[r][i]?sg(p):"–"}</b></div>`}).join("")}</div></div>`;
 }
-function managerSheet(code,id,r0){
+/* a league-mate's team, shown the way your own is under Omgångar: the board with the score, the week's lineup and the
+   arrows through the rounds; below it who came in and went out, and how they did against you */
+let mgrOpen=null;
+function managerSheet(code,id,view){
   const m=(leagueRows[code]||[]).find(x=>x.id===id);if(!m)return;
-  const st=standings(code),rs=st.rs.filter(r=>m.by[r]),me=(leagueRows[code]||[]).find(x=>x.id===cloud.uid);
-  const r=rs.includes(r0)?r0:rs[rs.length-1],x=r!==undefined?m.by[r]:null,ix=rs.indexOf(r),row=st.rows.find(y=>y.id===id);
-  const bars=st.rs.map(q=>{const v=ptsOf(m,q);return {q,v:v===null?0:v,has:v!==null}}),mx=Math.max(100,...bars.map(b=>b.v));
-  const body=!x?`<p class="note">${esc(m.name)} har ingen trupp i en omgång som har startat än.</p>`:`
-   <div class="rnav"><button class="btn" data-mgrr="${esc(code)}|${esc(id)}|${rs[ix-1]}" ${ix<=0?"disabled":""}>Föregående</button><b>${rdName(D.rounds[r])}${!isFinal(r)?' <span class="livedot">Live</span>':""}</b><button class="btn" data-mgrr="${esc(code)}|${esc(id)}|${rs[ix+1]}" ${ix>=rs.length-1?"disabled":""}>Nästa</button></div>
-   <div class="stats"><div><b>${fp(x.total)}</b><span>Omgångspoäng</span></div><div><b>${fp(x.base)}</b><span>Från löpare</span></div><div><b>${x.capLive===null?"0":sg(x.capExtra)}</b><span>Boost${x.chip?" · "+CHIPINFO[x.chip][0]:""}</span></div><div><b class="${x.penalty?"dn":""}">${x.penalty?"-"+fp(x.penalty):"0"}</b><span>${x.transfers} byte${x.transfers===1?"":"n"}</span></div></div>
-   ${x.carried?`<p class="note">Ingen trupp låstes den här omgången, så truppen från omgången innan spelade.</p>`:""}${x.chip?`<p class="note"><b>${CHIPINFO[x.chip][0]}</b> spelat: ${CHIPINFO[x.chip][1].toLowerCase()}.</p>`:""}
-   <div class="squad sheetsq">${x.squad.map((i,k)=>{const b=i===x.captain,raced=E.starts[r][i]>0,m2=multOf(i,x.squad,x.chip,x.capLive),p=E.pts[r][i]*m2;
-     return `${k===0?'<div class="eyebrow" style="grid-column:1/-1">A-lag · ×2</div>':k===AS?'<div class="eyebrow" style="grid-column:1/-1;margin-top:4px">B-lag · ×1</div>':""}<div class="rc tier-${TIERS[tierOf(i,r)][0]} ${b?"boosted":""}"><span class="plate" aria-hidden="true"></span><span class="tm ${m2>(k<AS?2:1)?"hi":""}">×${m2}${b?" · boost":""}</span><div class="top"><span style="width:30px"></span>${avatar(i)}</div><div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}</div></div>
-     <div class="meta"><span class="sub">${raced?E.hist[i].filter(h=>D.rounds[r].ev.includes(h.ev)).length+" lopp":"sprang inte"}</span><b class="pts-big ${p<0?"neg":""}">${raced?sg(p):"0"}</b></div></div>`}).join("")}</div>
-   ${x.in&&x.in.length?`<p class="note"><b style="color:var(--good)">In:</b> ${x.in.map(i=>esc(nameOf(i))).join(", ")} &nbsp; <b style="color:var(--bad)">Ut:</b> ${x.out.map(i=>esc(nameOf(i))).join(", ")}</p>`:""}
+  mgrOpen={code,id,view:view==null||isNaN(view)?null:view};
+  const src={m,view:mgrOpen.view},b=boardData(src),st=standings(code),row=st.rows.find(y=>y.id===id),me=(leagueRows[code]||[]).find(x=>x.id===cloud.uid);
+  const x=b&&b.x,r=b&&b.r;
+  const extra=!x?"":`${x.in&&x.in.length?`<p class="note" style="margin:14px 0 0"><b style="color:var(--good)">In:</b> ${x.in.map(i=>esc(nameOf(i))).join(", ")} &nbsp; <b style="color:var(--bad)">Ut:</b> ${x.out.map(i=>esc(nameOf(i))).join(", ")}</p>`:""}
    ${me&&me.id!==id&&me.by[r]?(()=>{const a=new Set(me.by[r].squad),both=x.squad.filter(i=>a.has(i)),only=x.squad.filter(i=>!a.has(i)),mine=me.by[r].squad.filter(i=>!x.squad.includes(i));
      const sum=l=>l.reduce((s2,i)=>s2+E.pts[r][i],0);
-     return `<div class="card" style="margin-top:12px"><h3>Du mot ${esc(m.name)} den här omgången</h3><p class="note" style="margin:0 0 6px">${both.length} löpare i båda lagen. Deras egna val gav ${sg(sum(only))}, dina ${sg(sum(mine))}. Totalt ${fp(me.by[r].total)} mot ${fp(x.total)}.</p>
+     return `<div class="card" style="margin-top:14px"><h3>Du mot ${esc(m.name)}</h3><p class="note" style="margin:0 0 6px">${both.length} löpare i båda lagen. Deras egna val gav ${sg(sum(only))}, dina ${sg(sum(mine))}. ${fp(me.by[r].total)} mot ${fp(x.total)} i ${rdThe(D.rounds[r])}.</p>
       <div class="sub">Bara de: ${only.map(i=>esc(nameOf(i))).join(", ")||"inga"}</div><div class="sub">Bara du: ${mine.map(i=>esc(nameOf(i))).join(", ")||"inga"}</div></div>`})():""}`;
+  const nx=openRound();
   showSheet("mgr|"+code+"|"+id,m.name,`
-   <div class="hd"><div style="display:flex;gap:14px;align-items:center">${mgrDot(m,1)}<div><h2>${esc(m.name)}${id===cloud.uid?' <span class="sub">(du)</span>':""}</h2>${m.team?`<div class="sub">Manager: ${esc(m.mgr)}</div>`:""}<div class="sub">${row?"Plats "+row.rank+" av "+st.rows.length+", ":""}${fp(m.total)} poäng, ${chipTags(m)}</div></div></div><button class="btn" data-close="1">Stäng</button></div>
-   <div class="mbars" role="img" aria-label="Poäng per omgång">${bars.map(b=>`<button class="${b.q===r?"on":""}" data-mgrr="${esc(code)}|${esc(id)}|${b.q}" ${b.has?"":"disabled"} title="${rdName(D.rounds[b.q])}: ${b.has?fp(b.v):"ingen trupp"}"><i style="height:${Math.max(3,Math.round(Math.max(0,b.v)/mx*64))}px"></i><span>${rdNo(D.rounds[b.q])}</span></button>`).join("")}</div>
-   ${body}
-   ${openRound()<E.R?`<p class="note" style="margin-top:12px">${id===cloud.uid?(picks[openRound()]?"Din trupp för omgång "+D.rounds[openRound()].n+" är sparad.":"Du har ingen komplett trupp för omgång "+D.rounds[openRound()].n+" än."):"Trupperna för omgång "+D.rounds[openRound()].n+" är dolda tills den startar måndag "+dshort(D.rounds[openRound()].start)+"."}</p>`:""}`,true);
+   <div class="mgr-top"><span>${row?`<b>Plats ${row.rank}</b> av ${st.rows.length} · ${fp(m.total)} poäng totalt`:`${fp(m.total)} poäng totalt`}${id===cloud.uid?" · ditt lag":""}</span><button class="btn" data-close="1">Stäng</button></div>
+   ${b?weekBoard(src):`<p class="note">${esc(m.name)} har ingen trupp i en omgång som har startat än.</p>`}
+   ${extra}
+   ${nx<E.R&&id!==cloud.uid?`<p class="note" style="margin-top:12px">Trupperna för ${rdThe(D.rounds[nx])} syns när den låses ${lockText(nx)}.</p>`:""}`,true);
 }
 function inviteBanner(){
   return pendingJoin&&!myLeagues.includes(pendingJoin)?`<div class="invite"><span class="next-k">Du är inbjuden</span><b>${esc(lgName(pendingJoin))}</b><span class="note">${dbOk?"Går med i ligan…":"Skapa ett konto eller logga in, så går du med i ligan automatiskt."}</span></div>`:"";
@@ -2621,10 +2659,12 @@ function weekCard(){
   let rows=all.slice(0,20);const me=all.find(x=>x.m.id===cloud.uid);if(me&&!rows.includes(me))rows=rows.concat([me]);
   return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0;align-items:center"><div><span class="eyebrow">Topp 20 i omgången</span><h3 style="margin:2px 0 0">Veckans manager</h3>${me?`<div class="sub">Du är #${me.rank} av ${all.length} i ${rdThe(D.rounds[r])}</div>`:""}</div>
     <div class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn wmarrow" data-weekr="${i>0?rs[i-1]:""}" ${i>0?"":"disabled"} aria-label="Föregående omgång">‹</button><b style="white-space:nowrap">${esc(rdName(D.rounds[r]))}${live?' <span class="livedot">Live</span>':""}</b><button class="btn wmarrow" data-weekr="${i<rs.length-1?rs[i+1]:""}" ${i<rs.length-1?"":"disabled"} aria-label="Nästa omgång">›</button></div></div>
-    ${all.length?`<div class="tbl lgt"><table><thead><tr><th>#</th><th>Lag</th><th>Poäng</th></tr></thead><tbody>
-    ${rows.map((x,k)=>`${k===20?'<tr class="gap"><td colspan="3">⋯</td></tr>':""}<tr class="${x.m.id===cloud.uid?"in":""} ${x.rank<=3?"pod":""}" style="--i:${k}" data-mgr="GLOBAL|${esc(x.m.id)}" tabindex="0"><td>${x.rank<=3?`<b class="medal m${x.rank}">${x.rank}</b>`:`<b>${x.rank}</b>`}</td>
-      <td><div class="who-wrap">${mgrDot(x.m)}<div><b>${esc(x.m.name)}</b>${x.m.id===cloud.uid?' <span class="sub">(du)</span>':""}${subName(x.m)}</div></div></td><td><b>${fp(x.p)}</b></td></tr>`).join("")}
-    </tbody></table></div>`:`<p class="note" style="margin:6px 0 0">Ingen hade en trupp den här omgången.</p>`}</div>`;
+    ${all.length?`<div class="lgl" role="table" aria-label="Veckans manager"><div class="lgl-h" role="row"><span role="columnheader">Placering</span><span role="columnheader">Lag</span><span role="columnheader">Vecka${live?' <i class="lgl-live" title="Live"></i>':""}</span><span role="columnheader">Total</span></div>
+    ${rows.map((x,k)=>`${k===20?'<div class="lgl-gap" aria-hidden="true">⋯</div>':""}<div class="lgl-r ${x.m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="GLOBAL|${esc(x.m.id)}" tabindex="0">
+      <span class="pl" role="cell">${x.rank}</span>
+      <span class="tm" role="cell">${mgrDot(x.m)}<span><b>${esc(x.m.name)}</b>${x.m.team&&x.m.mgr!==x.m.name?`<span class="sub">${esc(x.m.mgr)}${x.m.id===cloud.uid?" · du":""}</span>`:x.m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span>
+      <span class="n" role="cell"><b>${fp(x.p)}p</b></span><span class="n" role="cell">${fp(st.rows.find(y=>y.id===x.m.id).t)}p</span></div>`).join("")}
+    </div>`:`<p class="note" style="margin:6px 0 0">Ingen hade en trupp den här omgången.</p>`}</div>`;
 }
 function globalCard(){
   const rows=leagueRows.GLOBAL||[],st=standings("GLOBAL"),me=st.rows.find(m=>m.id===cloud.uid);
@@ -3024,7 +3064,8 @@ document.addEventListener("click",ev=>{
   if(d.chip!==undefined){const c=d.chip||null;if(c!==plan.chip){plan.chip=c;justChip=c;save()}render();if(c){const [x,y]=centerOf(t);burst(x,y)}return}
   if(d.sort){if(sortKey===d.sort)sortDir=-sortDir;else{sortKey=d.sort;sortDir=d.sort==="name"?1:-1}render();return}
   if(d.round!==undefined){viewRound=+d.round;render();return}
-  if(d.lteam){lpTeam=d.lteam;render();return}
+  if(d.lteam){lpTeam=d.lteam;render();if(mgrOpen&&document.querySelector("#modal .sheet"))managerSheet(mgrOpen.code,mgrOpen.id,mgrOpen.view);return}
+  if(d.mround!==undefined&&mgrOpen){managerSheet(mgrOpen.code,mgrOpen.id,+d.mround);return}
   if(t.id==="shareBoard"){shareBoard();return}
   if(t.id==="more"){shown+=40;refreshMarket();return}
   if(t.id==="play"){try{
@@ -3062,7 +3103,7 @@ document.addEventListener("click",ev=>{
   if(d.lgback){nav(()=>{lgOpen=null});return}
   if(d.lgsub){lgSub=d.lgsub;render();return}
   if(d.lground!==undefined&&d.lground!=="undefined"){lgRound=+d.lground;render();return}
-  if(d.mgrr){const [c,id,r]=d.mgrr.split("|");if(r!=="undefined")managerSheet(c,id,+r);return}
+  if(d.mgrr){const [c,id]=d.mgrr.split("|");managerSheet(c,id,null);return}
   if(t.id==="wTeam"||t.id==="wLeague"||t.id==="wSignIn"){$("#modal").innerHTML="";const nt=t.id==="wTeam"?"team":t.id==="wSignIn"?"profile":"leagues";if(t.id==="wSignIn"){authMode="in"}
     if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
   if(t.id==="createLeague"){const n=newLeague.trim();if(!n){leagueMsg="Ge ligan ett namn först.";render();return}joinLeague(mkCode(n),n).then(ok=>{if(ok)newLeague="";render()});return}
