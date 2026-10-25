@@ -1,0 +1,4 @@
+# the site is index.html and the map pictures; the data pipeline and database files stay off the web
+pipeline/
+supabase/
+README.md

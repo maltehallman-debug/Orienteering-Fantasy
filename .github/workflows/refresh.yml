@@ -57,3 +57,11 @@ jobs:
           git commit -m "Daily data refresh $(date -u +%F)"
           git pull --rebase -X theirs origin "$GITHUB_REF_NAME"
           git push
+      # Vercel builds on every push, but may skip commits made by the GitHub bot; its deploy hook makes sure the new
+      # data goes live. Does nothing until the VERCEL_DEPLOY_HOOK secret is set.
+      - name: Redeploy on Vercel
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$VERCEL_DEPLOY_HOOK" ]; then echo "No Vercel deploy hook set"; exit 0; fi
+          curl -fsS -X POST "$VERCEL_DEPLOY_HOOK" > /dev/null && echo "Vercel redeploy started"
