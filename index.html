@@ -176,6 +176,9 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 </style>
+<script>/* the opening plays on a blue screen: show the blue from the first paint so the page never flashes before it */
+try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&!/access_token|error=|join=/.test(location.href))document.documentElement.classList.add("reel-pre")}catch(e){}</script>
+<style>html.reel-pre::after{content:"";position:fixed;inset:0;z-index:99;background:#003c68}</style>
 <script>/* apply the saved theme before first paint, so the page never flashes the wrong colours */
 document.documentElement.dataset.theme="light";try{localStorage.removeItem("of-theme")}catch(e){}
 /* iPhone and iPad (Safari's touch-callout support is iOS-only): Apple's Liquid Glass look. ?glass=1 previews it elsewhere */
@@ -795,30 +798,8 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
    is clipped to its own line box, which is what cut the g and y before.
    The page entrance waits underneath (paused) and plays as the titles leave, and the map behind the titles is
    the page's own map, so the hand-over is seamless. */
-#reel{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg);pointer-events:none;overflow:hidden}
-#reel .map{position:absolute;left:-10%;top:-10%;width:120%;height:120%;opacity:var(--contour-op)}
-#reel .map path{fill:none;stroke:var(--contour);stroke-width:var(--sw,1);stroke-dasharray:1;stroke-dashoffset:1;animation:mapDraw 1.7s var(--ease-cine) both;animation-delay:var(--d,0s)}
-#reel .map path.ix{stroke-width:calc(var(--sw,1) * 2)}
-#reel .map .veg,#reel .map .lake{stroke:none;stroke-dasharray:none;animation:mapFill 1.2s ease-out .5s both}
-#reel .map .veg{fill:var(--contour);opacity:.05}#reel .map .lake{fill:var(--c2);opacity:.06}
-#reel .in{position:relative;display:grid;justify-items:center;gap:clamp(14px,2.4vw,22px);will-change:transform,opacity}
-#reel .leg{width:clamp(190px,34vw,300px);height:auto;overflow:visible}
-#reel .leg .st,#reel .leg .ln,#reel .leg .ring{fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1}
-#reel .leg .st{animation:legDraw .5s var(--ease-out) .15s forwards}
-#reel .leg .ln{animation:legDraw .6s var(--ease-io) .5s forwards}
-#reel .leg .ring{animation:legDraw .55s var(--ease-out) 1s forwards}
-#reel .leg .flag{transform-box:fill-box;transform-origin:50% 50%;animation:flagIn .7s var(--spring) 1.3s both}
-#reel .leg .ping{fill:none;stroke:var(--accent);stroke-width:2;transform-box:fill-box;transform-origin:50% 50%;opacity:0;animation:ping .9s var(--ease-out) 1.35s forwards}
-#reel .t{display:flex;font:700 clamp(30px,9.4vw,76px)/1.25 var(--display);color:var(--text);white-space:nowrap}
-#reel .t span{display:inline-block;opacity:0;transform:translateY(.42em) rotate(8deg);transform-origin:0 100%;animation:rise .9s var(--ease-cine) forwards;animation-delay:calc(1.3s + var(--i) * 28ms)}
-#reel .t em{font-style:normal;color:var(--accent);display:flex}
-#reel .t .sp{width:.22em}
-#reel .k{font:600 clamp(11px,2.8vw,13px)/1 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);opacity:0;animation:fadeUp .7s var(--ease-out) 2s forwards}
-#reel .rule{width:0;height:2px;border-radius:2px;background:var(--accent);opacity:.35;animation:ruleIn .8s var(--ease-cine) 1.9s forwards;margin-top:-4px}
-#reel.out .in{animation:reelOut .55s var(--ease-out) forwards}
-#reel.out{animation:bgOut .75s var(--ease-out) .1s forwards}
-#reel.skip .in{animation:reelOut .3s var(--ease-out) forwards}
-#reel.skip{animation:bgOut .4s var(--ease-out) forwards}
+#reel{position:fixed;inset:0;z-index:100;width:100%;height:100%;pointer-events:none;display:block}
+#reel.skip{transition:opacity .25s ease-out;opacity:0}
 @keyframes mapDraw{to{stroke-dashoffset:0}}
 @keyframes mapFill{from{opacity:0}}
 @keyframes legDraw{to{stroke-dashoffset:0}}
@@ -2049,30 +2030,54 @@ drawTerrain();
 /* opening titles: on every page load (a reload too), never when arriving from an email or invite link, never with
    reduced motion. A tap, scroll or key press sends them off early. */
 let reelEnd=0;
+/* the opening: a compass on the terrain, the needle swings once to north, the name, then the compass flies up
+   and becomes the logo in the header while the blue closes in around it. 1.55 s; any tap or key skips it */
 (function reel(){
-  if(RM||/access_token|error=|join=/.test(location.href))return;
-  let n=0;const word=w=>[...w].map(c=>`<span style="--i:${n++}">${c}</span>`).join("");
-  const letters=word("Fantasy")+`<span class="sp" style="--i:${n++}"></span><em>${word("Orientering")}</em>`;
-  const T=document.getElementById("terrain"),vb=T?T.getAttribute("viewBox")||"0 0 1600 1000":"0 0 1600 1000",[,,VW,VH]=vb.split(" ").map(Number);
-  const sw=1/Math.max(innerWidth*1.2/VW,innerHeight*1.2/VH);
-  const r=document.createElement("div");r.id="reel";r.setAttribute("aria-hidden","true");
-  r.innerHTML=`<svg class="map" viewBox="${vb}" preserveAspectRatio="xMidYMid slice" style="--sw:${sw.toFixed(3)}">${T?T.innerHTML:""}</svg>
-   <div class="in"><svg class="leg" viewBox="0 0 200 60"><path class="st" pathLength="1" d="M22 15.5 34 36.5H10Z"/><path class="ln" pathLength="1" d="M40 30H150"/>
-    <circle class="ping" cx="170" cy="30" r="16"/><circle class="ring" pathLength="1" cx="170" cy="30" r="16"/>
-    <g class="flag"><path d="M161 21h18v18h-18z" fill="#fff"/><path d="M179 21v18h-18z" fill="#f06a2b"/><path d="M161 21h18v18h-18z" fill="none" stroke="rgba(0,0,0,.25)" stroke-width=".8"/></g></svg>
-   <div class="t">${letters}</div><div class="rule"></div><div class="k">D/H 16–21 · säsongen 2026/27</div></div>`;
-  /* every contour draws in, hill by hill, from the middle of the screen outwards */
-  const ps=[...r.querySelectorAll(".map path:not(.veg):not(.lake)")];ps.forEach((p,k)=>{p.setAttribute("pathLength","1");p.style.setProperty("--d",(.05+(k/ps.length)*.7).toFixed(3)+"s")});
-  r.classList.add("fw");document.body.appendChild(r);document.body.classList.add("reel-hold");reelEnd=performance.now()+3400;
-  let gone=false,started=false;
-  const go=fast=>{if(gone)return;gone=true;off();reelEnd=performance.now();r.classList.add(fast?"skip":"out");
-    document.body.classList.remove("reel-hold");setTimeout(()=>r.remove(),fast?450:900)};
-  const skip=()=>go(true);
+  const unc=()=>document.documentElement.classList.remove("reel-pre");
+  if(RM||/access_token|error=|join=/.test(location.href)){unc();return}
+  const cv=document.createElement("canvas");cv.id="reel";cv.setAttribute("aria-hidden","true");
+  const g=cv.getContext("2d");if(!g){unc();return}
+  let W=innerWidth,H=innerHeight;const dpr=Math.min(2,devicePixelRatio||1);cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  document.body.appendChild(cv);document.body.classList.add("reel-hold");document.documentElement.classList.remove("reel-pre");
+  const T=document.getElementById("terrain"),vb=(T&&T.getAttribute("viewBox")||"0 0 1600 1000").split(" ").map(Number);
+  const TP=T?[...T.querySelectorAll("path")].filter(p=>!/veg|lake/.test(p.getAttribute("class")||"")).map(p=>({p:new Path2D(p.getAttribute("d")),ix:/ix/.test(p.getAttribute("class")||"")})):[];
+  const NAVY="#003c68",YEL="#ffe74d",DUR=1550,EX=950;
+  const cl=(a,b,t)=>Math.max(0,Math.min(1,(t-a)/(b-a))),eo=t=>1-Math.pow(1-t,3),eio=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  const U=Math.min(W,H)/1080,PORT=H>W,CX=W/2,R0=150*U,CY0=H/2-(PORT?150:120)*U;
+  const FONT='"Montserrat",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif';
+  const word=(s,x,y,size,col,sp)=>{g.font=`800 ${size}px ${FONT}`;g.fillStyle=col;g.textBaseline="middle";g.textAlign="left";
+    let w=0;for(const c of s)w+=g.measureText(c).width+sp;w-=sp;let cx=x-w/2;for(const c of s){g.fillText(c,cx,y);cx+=g.measureText(c).width+sp}};
+  const logoAt=()=>{const m=document.querySelector(".logo .mark");const r=m&&m.getBoundingClientRect();
+    return r&&r.width?{x:r.left+r.width/2,y:r.top+r.height/2,w:r.width}:{x:CX,y:CY0,w:0}};
+  let t0=0,gone=false,released=false,raf=0;
+  const frame=now=>{if(gone)return;if(!t0)t0=now;const t=(now-t0)/1000;
+    if(!released&&t*1000>=EX){released=true;document.body.classList.remove("reel-hold")}
+    const L=logoAt(),ex=eio(cl(EX/1000,DUR/1000,t)),cx=CX+(L.x-CX)*ex,cy=CY0+(L.y-CY0)*ex,R=R0+(L.w/2-R0)*ex,k=R/R0;
+    g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+    g.save();if(ex>0){g.beginPath();g.arc(cx,cy,R+Math.hypot(W,H)*(1-ex),0,7);g.clip()}
+    g.fillStyle=NAVY;g.fillRect(0,0,W,H);
+    if(TP.length){const sc=Math.max(W*1.15/vb[2],H*1.15/vb[3]);g.save();g.translate(CX-vb[2]*sc/2,H/2-vb[3]*sc/2);g.scale(sc,sc);
+      g.strokeStyle=`rgba(255,255,255,${.09*eo(cl(0,.35,t))})`;for(const {p,ix} of TP){g.lineWidth=(ix?2:1)*Math.max(1,2.2*U)/sc;g.stroke(p)}g.restore()}
+    g.globalAlpha=eo(cl(0,.25,t));
+    g.strokeStyle="rgba(255,255,255,.9)";g.lineWidth=5*U*k;g.beginPath();g.arc(cx,cy,R,0,7);g.stroke();
+    for(let i=0;i<4;i++){const a=i*Math.PI/2,s=Math.sin(a),c=Math.cos(a);g.beginPath();g.moveTo(cx+s*(R-6*U*k),cy-c*(R-6*U*k));g.lineTo(cx+s*(R-28*U*k),cy-c*(R-28*U*k));g.stroke()}
+    const q=cl(.05,.75,t),ang=-1.2*Math.exp(-q*5)*Math.cos(q*9);
+    g.save();g.translate(cx,cy);g.rotate(ang);g.fillStyle="#ff3b30";g.beginPath();g.moveTo(0,-R*.8);g.lineTo(18*U*k,0);g.lineTo(-18*U*k,0);g.closePath();g.fill();
+    g.fillStyle="#fff";g.beginPath();g.moveTo(0,R*.8);g.lineTo(18*U*k,0);g.lineTo(-18*U*k,0);g.closePath();g.fill();g.restore();
+    g.fillStyle=YEL;g.beginPath();g.arc(cx,cy,10*U*k,0,7);g.fill();
+    const a=eo(cl(.45,.8,t)),b=eo(cl(.92,1.12,t)),w=a*(1-b);
+    if(w>0){g.globalAlpha=w;const dy=(1-a)*24*U-b*20*U;
+      word("FANTASY",CX,CY0+R0+(PORT?120:100)*U+dy,(PORT?130:115)*U,"#fff",5*U);word("ORIENTERING",CX,CY0+R0+(PORT?225:195)*U+dy,(PORT?82:72)*U,YEL,7*U)}
+    g.restore();
+    // the last frames: the compass fades as the real logo underneath takes its place
+    if(t*1000<DUR){raf=requestAnimationFrame(frame)}else end()};
+  const end=()=>{if(gone)return;gone=true;cancelAnimationFrame(raf);off();reelEnd=performance.now();document.body.classList.remove("reel-hold");cv.remove()};
+  const skip=()=>{if(gone)return;gone=true;cancelAnimationFrame(raf);off();reelEnd=performance.now();document.body.classList.remove("reel-hold");cv.classList.add("skip");setTimeout(()=>cv.remove(),300)};
   const evs=["pointerdown","wheel","keydown","touchstart"],off=()=>evs.forEach(e=>removeEventListener(e,skip,true));
   evs.forEach(e=>addEventListener(e,skip,{capture:true,passive:true}));
-  /* wait (at most 0.7s) for the display face, so no letter swaps font mid-flight; nothing is drawn while waiting */
-  const start=()=>{if(started||gone)return;started=true;r.classList.remove("fw");reelEnd=performance.now()+2700;setTimeout(()=>go(false),2700)};
-  try{document.fonts.load('700 60px "Barlow Condensed"').then(start,start)}catch(e){start()}setTimeout(start,700);
+  /* the compass starts at once; the name only shows at 0.45 s, by when the face has loaded */
+  try{document.fonts.load("800 60px Montserrat")}catch(e){}
+  reelEnd=performance.now()+DUR;raf=requestAnimationFrame(frame);
 })();
 /* the map moves slower than the page: depth */
 if(!RM){let raf=0;const prog=document.createElement("div");prog.id="prog";prog.setAttribute("aria-hidden","true");document.body.appendChild(prog);
