@@ -3183,6 +3183,8 @@ async function setOvr(kind,ref,label,on){
   }catch(e){ovrMsg="Kunde inte spara: "+(e.message||"error")}
   ovrBusy=false;await loadOvr();
 }
+/* the long lists of game weeks and races are folded away unless asked for (remembered on this device) */
+let admLists=(()=>{try{return localStorage.getItem("of-admlists")==="1"}catch(e){return false}})();
 function adminGameCard(){
   if(!adminOn())return "";
   const live=D.rounds.map((rd,r)=>({rd,r})).filter(x=>x.r>=LIVE);
@@ -3195,9 +3197,10 @@ function adminGameCard(){
   return `<div class="card admin"><h3>Admin · tävlingar och spelveckor</h3>
    <p class="note" style="margin:0 0 12px">Ändringar sparas direkt. De når sidan vid nästa datauppdatering: varje natt, eller tryck på Uppdatera nu. En tvingad vecka bortser från regeln om stora tävlingar.</p>
    <div class="row apply"><button class="btn on" id="applyNow" ${applyBusy?"disabled":""}>Uppdatera nu</button><span class="note">${esc(applyMsg||"Bygger om sidan med dina ändringar, ungefär 5 till 8 minuter.")}</span></div>
-   <h4>Spelveckor</h4><div class="adm-list">${live.map(wk).join("")}</div>
+   <label class="admsw" style="margin:4px 0 10px"><input type="checkbox" role="switch" id="admListSw" ${admLists?"":"checked"}><span class="trk" aria-hidden="true"></span><span><b>Dölj spelveckor och tävlingar</b><span class="sub">${admLists?"Visas":"Dolda"} · ${live.length} veckor, ${soon.length} tävlingar</span></span></label>
+   ${admLists?`   <h4>Spelveckor</h4><div class="adm-list">${live.map(wk).join("")}</div>
    <h4>Kommande tävlingar</h4><div class="adm-list">${soon.map(race).join("")||'<p class="note">Inga lopp från Eventor än.</p>'}</div>
-   ${removed.filter(o=>!soon.some(u=>String(u.eo)===String(o.ref))).length?`<h4>Removed</h4><div class="adm-list">${removed.filter(o=>!soon.some(u=>String(u.eo)===String(o.ref))).map(o=>`<div class="adm-row"><div><b>${esc(o.label||o.ref)}</b> <span class="sub">Eventor ${esc(o.ref)}</span></div><button class="btn" data-rcset="keep" data-rcref="${esc(o.ref)}">Ångra</button></div>`).join("")}</div>`:""}
+   ${removed.filter(o=>!soon.some(u=>String(u.eo)===String(o.ref))).length?`<h4>Borttagna</h4><div class="adm-list">${removed.filter(o=>!soon.some(u=>String(u.eo)===String(o.ref))).map(o=>`<div class="adm-row"><div><b>${esc(o.label||o.ref)}</b> <span class="sub">Eventor ${esc(o.ref)}</span></div><button class="btn" data-rcset="keep" data-rcref="${esc(o.ref)}">Ångra</button></div>`).join("")}</div>`:""}`:""}
    <h4>Lägg till en tävling</h4>
    <div class="row"><input class="name" id="ovrAdd" placeholder="Eventor-länk eller tävlings-id" value="${esc(ovrAdd)}" inputmode="url" autocomplete="off"><button class="btn on" id="ovrAddBtn" ${ovrBusy?"disabled":""}>Lägg till</button></div>
    ${added.length?`<div class="adm-list">${added.map(o=>`<div class="adm-row"><div><b>${esc(o.label||"Eventor "+o.ref)}</b> <span class="sub">Tillagd · räknas som stor</span></div><button class="btn" data-rcadd="${esc(o.ref)}">Ta bort</button></div>`).join("")}</div>`:""}
@@ -3545,6 +3548,7 @@ document.addEventListener("change",ev=>{const t=ev.target;
   if(t.id==="clubF"){clubF=t.value;shown=40;render()}
   if(t.id==="clsF"){clsF=t.value;shown=40;render()}
   if(t.id==="afford"){afford=t.checked;render()}
+  if(t.id==="admListSw"){admLists=!t.checked;try{localStorage.setItem("of-admlists",admLists?"1":"0")}catch(e){}render();return}
   if(t.id==="admSw"){showAdmin=t.checked;try{localStorage.setItem("of-admin",showAdmin?"1":"0")}catch(e){}renderTabs();render()}
   if(t.id==="entF"){entF=t.checked;shown=40;render()}});
 
