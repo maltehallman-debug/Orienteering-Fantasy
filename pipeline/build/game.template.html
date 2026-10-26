@@ -3222,7 +3222,8 @@ function adminModCard(){
    ${modMsg?`<p class="note" style="margin:10px 0 0">${esc(modMsg)}</p>`:""}</div>`;
 }
 /* admin: "Veckans lag" as a ready Instagram picture. The round's ten best runners, the five best as the A-lag
-   (counted twice, as in the game), what that team would have scored, and Veckans manager when the round is in the game */
+   (counted twice, as in the game), and what that team would have scored. Two looks: a list of all ten, or the A-lag
+   as full runner cards */
 let igR=null,igBusy=false,igMsg="";
 const igRounds=()=>{const o=[];for(let r=0;r<E.R;r++)if(D.rounds[r].ev.length)o.push(r);return o};
 function weekTop(r,n=10){const a=[];for(let i=0;i<D.runners.length;i++){const w=E.weeks(i,r+1)[r];if(w&&w.races)a.push({i,p:w.pts,races:w.races})}
@@ -3230,19 +3231,19 @@ function weekTop(r,n=10){const a=[];for(let i=0;i<D.runners.length;i++){const w=
 function igCard(){
   if(!adminOn())return "";const rs=igRounds();if(!rs.length)return "";
   if(igR===null||!rs.includes(igR))igR=rs[rs.length-1];
-  return `<div class="card admin"><h3>Instagram · Veckans lag</h3><p class="note" style="margin:0 0 10px">En färdig bild med omgångens tio bästa löpare, drömlagets poäng och veckans manager.</p>
+  return `<div class="card admin"><h3>Instagram · Veckans lag</h3><p class="note" style="margin:0 0 10px">En färdig bild med omgångens tio bästa löpare och drömlagets poäng, som lista eller med A-laget som hela löparkort.</p>
    <div class="field"><label for="igRound">Omgång</label><select class="name" id="igRound">${rs.slice().reverse().map(r=>`<option value="${r}" ${r===igR?"selected":""}>${esc(rdName(D.rounds[r]))} · ${dshort(D.rounds[r].start)} – ${dshort(D.rounds[r].end)}${isFinal(r)?"":" (pågår)"}</option>`).join("")}</select></div>
-   <div class="row"><button class="btn on" data-igdl="post" ${igBusy?"disabled":""}>${igBusy?"Skapar…":"Inlägg 4:5"}</button><button class="btn" data-igdl="story" ${igBusy?"disabled":""}>Story 9:16</button></div>
+   <p class="eyebrow" style="margin:6px 0 6px">Korten</p><div class="row"><button class="btn on" data-igdl="cpost" ${igBusy?"disabled":""}>Inlägg 4:5</button><button class="btn" data-igdl="cstory" ${igBusy?"disabled":""}>Story 9:16</button></div>
+   <p class="eyebrow" style="margin:12px 0 6px">Listan</p><div class="row"><button class="btn" data-igdl="post" ${igBusy?"disabled":""}>Inlägg 4:5</button><button class="btn" data-igdl="story" ${igBusy?"disabled":""}>Story 9:16</button></div>
+   ${igBusy?`<p class="note" style="margin:8px 0 0">Skapar bilden…</p>`:""}
    ${igMsg?`<p class="note" style="margin:8px 0 0">${esc(igMsg)}</p>`:""}</div>`;
 }
 async function igImage(r,kind){
+  if(kind==="cpost"||kind==="cstory")return igCards(r,kind==="cstory");
   const W=1080,H=kind==="story"?1920:1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
   const F='"Montserrat",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif';
   try{await Promise.all(["800 40px","700 40px","600 40px","500 40px"].map(f=>document.fonts.load(`${f} Montserrat`)))}catch(e){}
   const NAVY="#003c68",YEL="#ffe74d",INK="#0b0f14",top=weekTop(r),rd=D.rounds[r];
-  /* Veckans manager, when the round is one people played */
-  let wm=null;if(r>=LIVE&&cloud.uid){if(!leagueRows.GLOBAL)await fetchGlobal();const st=standings("GLOBAL");
-    st.rows.forEach(m=>{const p=ptsOf(m,r);if(p!==null&&(!wm||p>wm.p))wm={m,p}})}
   c.fillStyle=NAVY;c.fillRect(0,0,W,H);
   /* the site's own contour map, in white */
   try{const sv=document.getElementById("terrain");if(sv&&sv.getAttribute("viewBox")){const cl=sv.cloneNode(true);cl.setAttribute("xmlns","http://www.w3.org/2000/svg");cl.setAttribute("width",W);cl.setAttribute("height",H);cl.setAttribute("preserveAspectRatio","xMidYMid slice");
@@ -3274,17 +3275,52 @@ async function igImage(r,kind){
   c.fillStyle=YEL;roundRect(c,PX,yE,PW,story?120:96,24);c.fill();
   txt("DRÖMLAGET",PX+34,yE+(story?52:42),800,22,NAVY,"left",3);txt("Om du hade valt just dessa tio",PX+34,yE+(story?88:74),600,24,NAVY);
   txt(fp(team)+" p",PX+PW-34,yE+(story?82:66),800,story?64:54,NAVY,"right");
-  let yF=yE+(story?150:118);
-  if(wm){c.fillStyle="rgba(0,0,0,.28)";roundRect(c,PX,yF,PW,story?120:88,24);c.fill();
-    txt("VECKANS MANAGER",PX+34,yF+(story?48:36),800,20,YEL,"left",3);
-    txt(fit(wm.m.name+(wm.m.team&&wm.m.mgr&&wm.m.mgr!==wm.m.name?" · "+wm.m.mgr:""),800,story?36:32,PW-260),PX+34,yF+(story?94:72),800,story?36:32,"#fff");
-    txt(fp(wm.p)+" p",PX+PW-34,yF+(story?82:62),800,story?52:44,"#fff","right");yF+=story?150:104}
   txt("@fantasyorientering",W/2,H-(story?110:34),700,26,"rgba(255,255,255,.75)","center",1);
+  return await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error("bild")),"image/png"));
+}
+/* the card look: the A-lag as full runner cards, three staggered columns as on the share picture */
+async function igCards(r,story){
+  const W=1080,H=story?1920:1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
+  const F='"Montserrat",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif',CF='"Barlow Condensed",sans-serif';
+  try{await Promise.all([...["800 40px","700 40px","600 40px","500 40px"].map(f=>document.fonts.load(`${f} Montserrat`)),...["800 40px","600 40px","500 40px"].map(f=>document.fonts.load(`${f} "Barlow Condensed"`))])}catch(e){}
+  const NAVY="#003c68",YEL="#ffe74d",INK="#0b0f14",top=weekTop(r),A=top.slice(0,5),B=top.slice(5),rd=D.rounds[r];
+  c.fillStyle=NAVY;c.fillRect(0,0,W,H);
+  try{const sv=document.getElementById("terrain");if(sv&&sv.getAttribute("viewBox")){const cl=sv.cloneNode(true);cl.setAttribute("xmlns","http://www.w3.org/2000/svg");cl.setAttribute("width",W);cl.setAttribute("height",H);cl.setAttribute("preserveAspectRatio","xMidYMid slice");
+    const st=document.createElementNS("http://www.w3.org/2000/svg","style");st.textContent="path{fill:none;stroke:#fff;stroke-width:1.6}path.ix{stroke-width:3}path.veg,path.lake{display:none}";cl.insertBefore(st,cl.firstChild);
+    const im=await loadImg("data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(cl)));if(im){c.globalAlpha=.08;c.drawImage(im,0,0,W,H);c.globalAlpha=1}}}catch(e){}
+  const txt=(t,x,y,w,size,col,al="left",sp=0)=>{c.font=`${w} ${size}px ${F}`;c.fillStyle=col;c.textAlign=al;c.textBaseline="alphabetic";if("letterSpacing" in c)c.letterSpacing=sp+"px";c.fillText(t,x,y);if("letterSpacing" in c)c.letterSpacing="0px"};
+  const fit=(t,w,size,max)=>{c.font=`${w} ${size}px ${F}`;while(c.measureText(t).width>max&&t.length>3)t=t.slice(0,-2)+"…";return t};
+  const oy=story?150:0;
+  c.fillStyle=INK;c.fillRect(0,oy,W,88);c.fillStyle=YEL;c.fillRect(0,oy,330,88);
+  txt("VECKANS LAG",44,oy+57,800,30,INK,"left",2);txt("FANTASY ORIENTERING",W-56,oy+56,700,24,"#fff","right",4);
+  txt("Veckans lag",56,oy+212,800,100,"#fff","left",-2);
+  txt(`${rdName(rd)} · ${dshort(rd.start)} – ${dshort(rd.end)}`.toUpperCase(),60,oy+266,700,28,YEL,"left",3);
+  /* the five cards, each worth twice its week (the A-lag) */
+  const cards=A.map(x=>{const i=x.i,st=E.stats(i,Math.min(r+1,E.R));return {i,m:2,boost:false,boostX:2,tier:TIERS[tierOf(i,r)][0],cls:D.runners[i].k,club:clubOf(i),name:surname(nameOf(i)),full:nameOf(i),
+    pts:fp(x.p*2),price:fm(E.price(i,Math.min(r,E.R-1))),avg:fp(st.perWeek),ph:photoUrl.get(D.runners[i].id)||D.runners[i].ph||null,
+    ini:nameOf(i).split(/\s+/).filter(Boolean).map(w=>w[0]).filter((ch,k,a)=>k===0||k===a.length-1).join("").toUpperCase(),hue:hsh(D.runners[i].c)%360}});
+  const gap=story?16:16,cw=story?300:292,ch=Math.round(cw/.72),y0=oy+(story?316:300),x0=(W-(3*cw+2*gap))/2,col=k=>x0+k*(cw+gap);
+  const pos=[[col(0),y0],[col(2),y0],[col(1),y0+(ch+gap)/2],[col(0),y0+ch+gap],[col(2),y0+ch+gap]];
+  /* rank badges sit on each card's top edge */
+  for(let k=0;k<cards.length;k++){await drawFifa(c,cards[k],pos[k][0],pos[k][1],cw,ch,CF);
+    const bx=pos[k][0]+cw/2,by=pos[k][1]-4;c.fillStyle=YEL;c.beginPath();c.arc(bx,by,24,0,Math.PI*2);c.fill();c.lineWidth=4;c.strokeStyle=NAVY;c.stroke();txt(String(k+1),bx,by+10,800,28,NAVY,"center")}
+  /* the A-lag's points: below the cards */
+  const sumA=A.reduce((a,x)=>a+x.p,0),sumB=B.reduce((a,x)=>a+x.p,0);
+  let y=y0+2*ch+gap+(story?40:34);
+  if(story){/* the B-lag as a short list */
+    txt("B-LAG",56,y+18,800,22,"rgba(255,255,255,.65)","left",3);y+=34;
+    B.forEach((x,k)=>{const yy=y+k*62;c.fillStyle="rgba(255,255,255,.06)";roundRect(c,40,yy,W-80,56,16);c.fill();
+      txt(String(k+6),78,yy+38,800,28,"rgba(255,255,255,.55)","center");txt(fit(nameOf(x.i)+" · "+clubOf(x.i),700,26,W-340),112,yy+37,700,26,"#fff");txt(fp(x.p)+" p",W-70,yy+39,800,30,"#fff","right")});
+    y+=B.length*62+16}
+  c.fillStyle=YEL;roundRect(c,40,y,W-80,story?110:92,24);c.fill();
+  txt(story?"DRÖMLAGET":"A-LAGET",74,y+(story?48:40),800,22,NAVY,"left",3);txt(story?"A-laget dubbelt plus B-laget":"Fem bästa, dubbla poäng",74,y+(story?82:72),600,24,NAVY);
+  txt(fp(story?2*sumA+sumB:2*sumA)+" p",W-74,y+(story?76:66),800,story?60:54,NAVY,"right");
+  txt("@fantasyorientering",W/2,story?Math.min(H-60,y+110+64):H-30,700,26,"rgba(255,255,255,.75)","center",1);
   return await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error("bild")),"image/png"));
 }
 async function igDownload(kind){
   if(igBusy)return;igBusy=true;igMsg="";render();
-  try{const r=igR,blob=await igImage(r,kind),name=`veckans-lag-${rdThe(D.rounds[r]).replace(/\s+/g,"-")}-${kind==="story"?"story":"inlagg"}.png`;
+  try{const r=igR,blob=await igImage(r,kind),name=`veckans-lag-${rdThe(D.rounds[r]).replace(/\s+/g,"-")}-${kind[0]==="c"?"kort-":""}${/story/.test(kind)?"story":"inlagg"}.png`;
     const file=new File([blob],name,{type:"image/png"});
     if(navigator.canShare&&navigator.canShare({files:[file]})&&matchMedia("(pointer:coarse)").matches){try{await navigator.share({files:[file],title:"Veckans lag"})}catch(e){if(e&&e.name!=="AbortError")throw e}}
     else{const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);igMsg="Bilden sparades i dina hämtade filer."}
