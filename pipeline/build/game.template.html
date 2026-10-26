@@ -3451,6 +3451,19 @@ function doPlay(chip){
   state=o.state;plan={squad:state.squad.slice(),a:state.squad.slice(0,AS),captain:state.captain,vice:null,chip:null};save();
 }
 
+/* haptics: a short tick on phones for the moments that matter (buy, sell, boost, chips, A/B swaps, tabs).
+   Android uses the vibration API. iOS Safari has none, but toggling a hidden switch control gives the system's own
+   tick (iOS 17.4+), so that is used there. Desktops and anything else simply do nothing. */
+const buzz=(()=>{
+  const coarse=(()=>{try{return matchMedia("(pointer:coarse)").matches}catch(e){return false}})();
+  const canVib=typeof navigator.vibrate==="function";
+  let lab=null;const tick=()=>{try{if(!lab){lab=document.createElement("label");lab.setAttribute("aria-hidden","true");lab.style.cssText="position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;opacity:0";
+      const i=document.createElement("input");i.type="checkbox";i.setAttribute("switch","");i.tabIndex=-1;lab.appendChild(i);document.body.appendChild(lab)}lab.click()}catch(e){}};
+  const P={tap:[8],ok:[12,50,16],big:[22,40,30],warn:[30,60,30]};
+  return kind=>{if(!coarse)return;const p=P[kind]||P.tap;
+    if(canVib){try{navigator.vibrate(p.length>1?p:p[0])}catch(e){}return}
+    tick();if(p.length>1)setTimeout(tick,p[0]+p[1])}
+})();
 const toTop=()=>{if(leaving)return;try{window.scrollTo(0,0)}catch(e){}};
 document.addEventListener("click",ev=>{
   const g=ev.target.closest("[data-ctrl]");
@@ -3480,14 +3493,14 @@ document.addEventListener("click",ev=>{
   if(t.id==="delNo"){delAsk=false;render();return}
   if(t.id==="delYes"){deleteAccount();return}
   if(t.id==="ovrAddBtn"){const v=($("#ovrAdd")||{}).value||"";const m=v.match(/(?:eventId=|Show\/|^\s*)(\d{3,7})/i);if(!m){ovrMsg="Klistra in en Eventor-länk eller tävlingens nummer.";render();return}ovrAdd="";setOvr("race_add",m[1],"Eventor "+m[1],true);return}
-  if(d.tab){const nt=d.tab;if(d.focus)setTimeout(()=>{const f=document.getElementById(d.focus);if(f)f.focus()},700);if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
-  if(d.add!==undefined){const i=+d.add;if(!canAddReason(i)){plan.squad.push(i);if(!Array.isArray(plan.a))plan.a=[];if(plan.a.length<AS)plan.a.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
-  if(d.sell!==undefined){const i=+d.sell;plan.squad=plan.squad.filter(j=>j!==i);plan.a=(plan.a||[]).filter(j=>j!==i);if(swapSel===i)swapSel=null;fixLeaders();save();render();return}
-  if(d.swap!==undefined){const i=+d.swap;swapSel=swapSel===i?null:i;render();return}
-  if(d.swapwith!==undefined){const j=+d.swapwith,i=swapSel;swapSel=null;if(i!==null&&i!==j){const ia=plan.a.includes(i),ja=plan.a.includes(j);if(ia!==ja){if(ia)plan.a[plan.a.indexOf(i)]=j;else plan.a[plan.a.indexOf(j)]=i;justSwapped=[i,j];save()}}render();return}
-  if(d.moveto){const i=swapSel;swapSel=null;if(i!==null){if(d.moveto==="A"&&!plan.a.includes(i)&&plan.a.length<AS)plan.a.push(i);else if(d.moveto==="B"&&plan.a.includes(i)&&plan.squad.length-plan.a.length<D.squad-AS)plan.a=plan.a.filter(x=>x!==i);justSwapped=[i];fixLeaders();save()}render();return}
-  if(d.boost!==undefined){const i=+d.boost;if(!isLive()&&lock&&lock.round===R())return;if(plan.squad.includes(i)&&plan.captain!==i){plan.captain=i;plan.vice=null;justBoosted=i;save();const [x,y]=centerOf(t);burst(x,y,30)}render();return}
-  if(d.chip!==undefined){const c=d.chip||null;if(c!==plan.chip){plan.chip=c;justChip=c;save()}render();if(c){const [x,y]=centerOf(t);burst(x,y)}return}
+  if(d.tab){const nt=d.tab;if(nt!==tab)buzz("tap");if(d.focus)setTimeout(()=>{const f=document.getElementById(d.focus);if(f)f.focus()},700);if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
+  if(d.add!==undefined){const i=+d.add;buzz(canAddReason(i)?"warn":"ok");if(!canAddReason(i)){plan.squad.push(i);if(!Array.isArray(plan.a))plan.a=[];if(plan.a.length<AS)plan.a.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
+  if(d.sell!==undefined){const i=+d.sell;buzz("tap");plan.squad=plan.squad.filter(j=>j!==i);plan.a=(plan.a||[]).filter(j=>j!==i);if(swapSel===i)swapSel=null;fixLeaders();save();render();return}
+  if(d.swap!==undefined){const i=+d.swap;buzz("tap");swapSel=swapSel===i?null:i;render();return}
+  if(d.swapwith!==undefined){const j=+d.swapwith,i=swapSel;buzz("ok");swapSel=null;if(i!==null&&i!==j){const ia=plan.a.includes(i),ja=plan.a.includes(j);if(ia!==ja){if(ia)plan.a[plan.a.indexOf(i)]=j;else plan.a[plan.a.indexOf(j)]=i;justSwapped=[i,j];save()}}render();return}
+  if(d.moveto){const i=swapSel;buzz("ok");swapSel=null;if(i!==null){if(d.moveto==="A"&&!plan.a.includes(i)&&plan.a.length<AS)plan.a.push(i);else if(d.moveto==="B"&&plan.a.includes(i)&&plan.squad.length-plan.a.length<D.squad-AS)plan.a=plan.a.filter(x=>x!==i);justSwapped=[i];fixLeaders();save()}render();return}
+  if(d.boost!==undefined){const i=+d.boost;if(!isLive()&&lock&&lock.round===R())return;if(plan.squad.includes(i)&&plan.captain!==i){buzz("big");plan.captain=i;plan.vice=null;justBoosted=i;save();const [x,y]=centerOf(t);burst(x,y,30)}render();return}
+  if(d.chip!==undefined){const c=d.chip||null;if(c!==plan.chip){buzz(c?"big":"tap");plan.chip=c;justChip=c;save()}render();if(c){const [x,y]=centerOf(t);burst(x,y)}return}
   if(d.sort){if(sortKey===d.sort)sortDir=-sortDir;else{sortKey=d.sort;sortDir=d.sort==="name"?1:-1}render();return}
   if(d.round!==undefined){viewRound=+d.round;render();return}
   if(d.lteam){lpTeam=d.lteam;render();if(mgrOpen&&document.querySelector("#modal .sheet"))managerSheet(mgrOpen.code,mgrOpen.id,mgrOpen.view);return}
