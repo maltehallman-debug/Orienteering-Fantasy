@@ -2696,7 +2696,7 @@ function profileView(){
   const live=isLive();
   return `<div class="pfhead">${mgrDot(me,1)}<div><h2>${esc(myTeam||me.name)}</h2><div class="sub">${myTeam?esc(me.name)+" · ":""}${esc(cloud.email)}</div></div></div>
   ${cloud.admin?`<label class="admsw"><input type="checkbox" role="switch" id="admSw" ${showAdmin?"checked":""}><span class="trk" aria-hidden="true"></span><span><b>Adminverktyg</b><span class="sub">${showAdmin?"Visas":"Dolda"}</span></span></label>`:""}
-  ${adminGameCard()}${reviewCard()}
+  ${adminGameCard()}${igCard()}${reviewCard()}
   <div class="kv"><div><span>Poäng</span><b>${fp(state.total)}</b></div><div><span>Omgångar</span><b>${L.length}</b></div><div><span>Bästa omgång</span><b>${best?fp(best.total):"–"}</b></div><div><span>Chips kvar</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length}</b></div></div>
   ${L.length?seasonBars():""}
   <div class="grid2" style="margin-top:12px">
@@ -3221,6 +3221,77 @@ function adminModCard(){
    <details style="margin-top:10px"><summary>Alla managers (${allPf.length})</summary><div class="adm-list">${allPf.map(pf).join("")}</div></details>
    ${modMsg?`<p class="note" style="margin:10px 0 0">${esc(modMsg)}</p>`:""}</div>`;
 }
+/* admin: "Veckans lag" as a ready Instagram picture. The round's ten best runners, the five best as the A-lag
+   (counted twice, as in the game), what that team would have scored, and Veckans manager when the round is in the game */
+let igR=null,igBusy=false,igMsg="";
+const igRounds=()=>{const o=[];for(let r=0;r<E.R;r++)if(D.rounds[r].ev.length)o.push(r);return o};
+function weekTop(r,n=10){const a=[];for(let i=0;i<D.runners.length;i++){const w=E.weeks(i,r+1)[r];if(w&&w.races)a.push({i,p:w.pts,races:w.races})}
+  a.sort((x,y)=>y.p-x.p||nameOf(x.i).localeCompare(nameOf(y.i),"sv"));return a.slice(0,n)}
+function igCard(){
+  if(!adminOn())return "";const rs=igRounds();if(!rs.length)return "";
+  if(igR===null||!rs.includes(igR))igR=rs[rs.length-1];
+  return `<div class="card admin"><h3>Instagram · Veckans lag</h3><p class="note" style="margin:0 0 10px">En färdig bild med omgångens tio bästa löpare, drömlagets poäng och veckans manager.</p>
+   <div class="field"><label for="igRound">Omgång</label><select class="name" id="igRound">${rs.slice().reverse().map(r=>`<option value="${r}" ${r===igR?"selected":""}>${esc(rdName(D.rounds[r]))} · ${dshort(D.rounds[r].start)} – ${dshort(D.rounds[r].end)}${isFinal(r)?"":" (pågår)"}</option>`).join("")}</select></div>
+   <div class="row"><button class="btn on" data-igdl="post" ${igBusy?"disabled":""}>${igBusy?"Skapar…":"Inlägg 4:5"}</button><button class="btn" data-igdl="story" ${igBusy?"disabled":""}>Story 9:16</button></div>
+   ${igMsg?`<p class="note" style="margin:8px 0 0">${esc(igMsg)}</p>`:""}</div>`;
+}
+async function igImage(r,kind){
+  const W=1080,H=kind==="story"?1920:1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
+  const F='"Montserrat",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif';
+  try{await Promise.all(["800 40px","700 40px","600 40px","500 40px"].map(f=>document.fonts.load(`${f} Montserrat`)))}catch(e){}
+  const NAVY="#003c68",YEL="#ffe74d",INK="#0b0f14",top=weekTop(r),rd=D.rounds[r];
+  /* Veckans manager, when the round is one people played */
+  let wm=null;if(r>=LIVE&&cloud.uid){if(!leagueRows.GLOBAL)await fetchGlobal();const st=standings("GLOBAL");
+    st.rows.forEach(m=>{const p=ptsOf(m,r);if(p!==null&&(!wm||p>wm.p))wm={m,p}})}
+  c.fillStyle=NAVY;c.fillRect(0,0,W,H);
+  /* the site's own contour map, in white */
+  try{const sv=document.getElementById("terrain");if(sv&&sv.getAttribute("viewBox")){const cl=sv.cloneNode(true);cl.setAttribute("xmlns","http://www.w3.org/2000/svg");cl.setAttribute("width",W);cl.setAttribute("height",H);cl.setAttribute("preserveAspectRatio","xMidYMid slice");
+    const st=document.createElementNS("http://www.w3.org/2000/svg","style");st.textContent="path{fill:none;stroke:#fff;stroke-width:1.6}path.ix{stroke-width:3}path.veg,path.lake{display:none}";cl.insertBefore(st,cl.firstChild);
+    const im=await loadImg("data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(cl)));if(im){c.globalAlpha=.08;c.drawImage(im,0,0,W,H);c.globalAlpha=1}}}catch(e){}
+  const txt=(t,x,y,w,size,col,al="left",sp=0)=>{c.font=`${w} ${size}px ${F}`;c.fillStyle=col;c.textAlign=al;c.textBaseline="alphabetic";if("letterSpacing" in c)c.letterSpacing=sp+"px";c.fillText(t,x,y);if("letterSpacing" in c)c.letterSpacing="0px"};
+  const fit=(t,w,size,max)=>{c.font=`${w} ${size}px ${F}`;while(c.measureText(t).width>max&&t.length>3)t=t.slice(0,-2)+"…";return t};
+  const story=kind==="story",oy=story?150:0;
+  /* the black strip with the yellow tag, as on the posts */
+  c.fillStyle=INK;c.fillRect(0,oy,W,88);c.fillStyle=YEL;c.fillRect(0,oy,330,88);
+  txt("VECKANS LAG",44,oy+57,800,30,INK,"left",2);txt("FANTASY ORIENTERING",W-56,oy+56,700,24,"#fff","right",4);
+  txt("Veckans lag",56,oy+222,800,104,"#fff","left",-2);
+  txt(`${rdName(rd)} · ${dshort(rd.start)} – ${dshort(rd.end)}`.toUpperCase(),60,oy+280,700,28,YEL,"left",3);
+  /* the ten rows: the five best are the A-lag */
+  const y0=oy+(story?360:350),rh=story?100:76,PX=40,PW=W-80;
+  const sumA=top.slice(0,5).reduce((a,x)=>a+x.p,0),sumB=top.slice(5).reduce((a,x)=>a+x.p,0);
+  top.forEach((x,k)=>{const y=y0+k*rh+(k>=5?18:0),a=k<5;
+    if(a){c.fillStyle="rgba(255,255,255,.10)";roundRect(c,PX,y,PW,rh-8,20);c.fill()}else{c.fillStyle="rgba(255,255,255,.04)";roundRect(c,PX,y,PW,rh-8,20);c.fill()}
+    const mid=y+(rh-8)/2;
+    txt(String(k+1),PX+46,mid+14,800,40,a?YEL:"rgba(255,255,255,.55)","center");
+    txt(fit(nameOf(x.i),800,story?40:36,600),PX+96,mid-2,800,story?40:36,"#fff");
+    txt(fit(`${clubOf(x.i)} · ${D.runners[x.i].k}`,500,story?24:22,600),PX+96,mid+(story?32:28),500,story?24:22,"rgba(255,255,255,.7)");
+    txt(fp(x.p)+" p",PX+PW-30-(a?70:0),mid+16,800,story?48:44,a?YEL:"#fff","right");
+    if(a)txt("×2",PX+PW-30,mid+14,700,30,"rgba(255,231,77,.75)","right")});
+  /* section labels and the team's total */
+  const yA=y0-16,yE=y0+10*rh+18+18;
+  txt("A-LAG",PX,yA,800,20,YEL,"left",3);txt("B-LAG",PX,y0+5*rh+12,800,20,"rgba(255,255,255,.6)","left",3);
+  const team=2*sumA+sumB;
+  c.fillStyle=YEL;roundRect(c,PX,yE,PW,story?120:96,24);c.fill();
+  txt("DRÖMLAGET",PX+34,yE+(story?52:42),800,22,NAVY,"left",3);txt("Om du hade valt just dessa tio",PX+34,yE+(story?88:74),600,24,NAVY);
+  txt(fp(team)+" p",PX+PW-34,yE+(story?82:66),800,story?64:54,NAVY,"right");
+  let yF=yE+(story?150:118);
+  if(wm){c.fillStyle="rgba(0,0,0,.28)";roundRect(c,PX,yF,PW,story?120:88,24);c.fill();
+    txt("VECKANS MANAGER",PX+34,yF+(story?48:36),800,20,YEL,"left",3);
+    txt(fit(wm.m.name+(wm.m.team&&wm.m.mgr&&wm.m.mgr!==wm.m.name?" · "+wm.m.mgr:""),800,story?36:32,PW-260),PX+34,yF+(story?94:72),800,story?36:32,"#fff");
+    txt(fp(wm.p)+" p",PX+PW-34,yF+(story?82:62),800,story?52:44,"#fff","right");yF+=story?150:104}
+  txt("@fantasyorientering",W/2,H-(story?110:34),700,26,"rgba(255,255,255,.75)","center",1);
+  return await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error("bild")),"image/png"));
+}
+async function igDownload(kind){
+  if(igBusy)return;igBusy=true;igMsg="";render();
+  try{const r=igR,blob=await igImage(r,kind),name=`veckans-lag-${rdThe(D.rounds[r]).replace(/\s+/g,"-")}-${kind==="story"?"story":"inlagg"}.png`;
+    const file=new File([blob],name,{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})&&matchMedia("(pointer:coarse)").matches){try{await navigator.share({files:[file],title:"Veckans lag"})}catch(e){if(e&&e.name!=="AbortError")throw e}}
+    else{const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);igMsg="Bilden sparades i dina hämtade filer."}
+    window.__lastIg={size:blob.size,name};
+  }catch(e){igMsg="Kunde inte skapa bilden. Försök igen."}
+  igBusy=false;render();
+}
 function reviewCard(){
   if(!adminOn())return "";
   const byId=RI;
@@ -3332,6 +3403,7 @@ document.addEventListener("click",ev=>{
   if(d.rmhide){setOvr("runner_hide",d.rmhide,d.rmlabel||"",true);return}
   if(d.rmshow){setOvr("runner_hide",d.rmshow,"",false);return}
   if(d.rmdone){rmDone(+d.rmdone);return}
+  if(d.igdl){igDownload(d.igdl);return}
   if(d.fbdone){fbDone(+d.fbdone);return}
   if(d.fbkind){fbKind=d.fbkind;document.querySelectorAll("[data-fbkind]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.fbkind===fbKind)));const x=$("#fbText");if(x)x.placeholder=FBK[fbKind][2];return}
   if(d.pfflag){modProfile(d.pfflag,{name_flag:d.flag||null},d.flag?"Sparat. Managern måste välja ett nytt namn nästa gång spelet öppnas.":"Markeringen borttagen.");return}
@@ -3420,6 +3492,7 @@ document.addEventListener("input",ev=>{const t=ev.target;
   if(t.id==="teamName"){myTeam=t.value.slice(0,30);nameNote();save()}
   if(t.id==="rmRunner")rmF.runner=t.value.slice(0,120);
   if(t.id==="rmKind"){rmF.kind=t.value;infoSheet("contact")}
+  if(t.id==="igRound"){igR=+t.value;igMsg="";return}
   if(t.id==="rnName")rnF.name=t.value.slice(0,24);
   if(t.id==="rnTeam")rnF.team=t.value.slice(0,30);
   if(t.id==="rmMsg")rmF.msg=t.value.slice(0,1000);
