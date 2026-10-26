@@ -3414,10 +3414,32 @@ function adminModCard(){
    ${modMsg?`<p class="note" style="margin:10px 0 0">${esc(modMsg)}</p>`:""}</div>`;
 }
 /* admin: "Veckans lag" as a ready Instagram picture. The round's ten best runners, the five best as the A-lag
-   (counted twice, as in the game) with the best of them boosted (×4), and what that team would have scored. Two looks: a list of all ten, or the A-lag
+   (counted twice, as in the game) with the best of them boosted (×4): the best team within the budget (bestTeam). Two looks: a list of all ten, or the A-lag
    as full runner cards */
 let igR=null,igBusy=false,igMsg="";
 const igRounds=()=>{const o=[];for(let r=0;r<E.R;r++)if(D.rounds[r].ev.length)o.push(r);return o};
+/* the week's best possible team, as a manager could have picked it: ten runners within the budget at that round's
+   prices, at most clubMax from one club, the five best as the A-lag (x2) and the very best boosted (x4).
+   The ten are taken in points order, so slot k's weight is fixed (4,2,2,2,2,1,1,1,1,1) and a small search does it:
+   runners another ten cheaper-and-better runners beat can never be needed and are dropped first, then a DP over
+   (players taken, money spent) keeps a few best partial teams per cell so the club limit can be honoured. */
+function bestTeam(r){
+  const WT=[4,2,2,2,2,1,1,1,1,1],NQ=D.squad,BUD=D.budget,CM=D.clubMax,pr=i=>E.price(i,Math.min(r,E.R-1));
+  let c=[];for(let i=0;i<D.runners.length;i++){if(!D.runners[i].p)continue;const w=E.weeks(i,r+1)[r];if(w&&w.races&&w.pts>0)c.push({i,p:w.pts,c:pr(i),k:clubOf(i)})}
+  c.sort((a,b)=>b.p-a.p||a.c-b.c);
+  c=c.filter((x,j)=>{let n=0;for(let q=0;q<j&&n<NQ+CM;q++)if(c[q].c<=x.c)n++;return n<NQ+CM});
+  /* cell (players taken, money spent) -> a few best partial teams; a new runner only extends the cells as they were
+     before him, so nobody can be taken twice */
+  const K=5,S=BUD+1,dp=new Array((NQ+1)*S);dp[0]=[{v:0,cost:0,list:[],cl:{}}];const live=[0];
+  const ins=(a,ns)=>{if(a.length>=K&&ns.v<=a[a.length-1].v)return;let q=a.length;a.push(ns);while(q>0&&a[q-1].v<ns.v){a[q]=a[q-1];q--}a[q]=ns;if(a.length>K)a.length=K};
+  for(const x of c){const add=[];
+    for(const cell of live){const k=Math.floor(cell/S),cost=cell%S;if(k>=NQ||cost+x.c>BUD)continue;
+      for(const st of dp[cell]){if((st.cl[x.k]||0)>=CM)continue;
+        add.push([cell+S+x.c,{v:st.v+WT[k]*x.p,cost:cost+x.c,list:st.list.concat(x),cl:Object.assign({},st.cl,{[x.k]:(st.cl[x.k]||0)+1})}])}}
+    for(const [cell,ns] of add){if(!dp[cell]){dp[cell]=[];live.push(cell)}ins(dp[cell],ns)}}
+  let best=null;for(let cost=0;cost<=BUD;cost++){const a=dp[NQ*S+cost];if(a)for(const st of a)if(!best||st.v>best.v)best=st}
+  if(!best)return null;
+  return {top:best.list.map(x=>({i:x.i,p:x.p,price:x.c})),total:best.v,cost:best.cost}}
 function weekTop(r,n=10){const a=[];for(let i=0;i<D.runners.length;i++){const w=E.weeks(i,r+1)[r];if(w&&w.races)a.push({i,p:w.pts,races:w.races})}
   a.sort((x,y)=>y.p-x.p||nameOf(x.i).localeCompare(nameOf(y.i),"sv"));return a.slice(0,n)}
 function igCard(){
@@ -3435,7 +3457,7 @@ async function igImage(r,kind){
   const W=1080,H=kind==="story"?1920:1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
   const F='"Montserrat",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif';
   try{await Promise.all(["800 40px","700 40px","600 40px","500 40px"].map(f=>document.fonts.load(`${f} Montserrat`)))}catch(e){}
-  const NAVY="#003c68",YEL="#ffe74d",INK="#0b0f14",top=weekTop(r),rd=D.rounds[r];
+  const NAVY="#003c68",YEL="#ffe74d",INK="#0b0f14",bt=bestTeam(r),top=bt?bt.top:[],rd=D.rounds[r];
   c.fillStyle=NAVY;c.fillRect(0,0,W,H);
   /* the site's own contour map, in white */
   try{const sv=document.getElementById("terrain");if(sv&&sv.getAttribute("viewBox")){const cl=sv.cloneNode(true);cl.setAttribute("xmlns","http://www.w3.org/2000/svg");cl.setAttribute("width",W);cl.setAttribute("height",H);cl.setAttribute("preserveAspectRatio","xMidYMid slice");
@@ -3466,9 +3488,9 @@ async function igImage(r,kind){
   /* section labels and the team's total */
   const yA=y0-16,yE=y0+10*rh+18+18;
   txt("A-LAG",PX,yA,800,20,YEL,"left",3);txt("B-LAG",PX,y0+5*rh+12,800,20,"rgba(255,255,255,.6)","left",3);
-  const team=2*sumA+2*(top[0]?top[0].p:0)+sumB;
+  const team=bt?bt.total:0;
   c.fillStyle=YEL;roundRect(c,PX,yE,PW,story?120:96,24);c.fill();
-  txt("DRÖMLAGET",PX+34,yE+(story?52:42),800,22,NAVY,"left",3);txt("Dessa tio, med etta boostad",PX+34,yE+(story?88:74),600,24,NAVY);
+  txt("DRÖMLAGET",PX+34,yE+(story?52:42),800,22,NAVY,"left",3);txt(`Bästa laget inom budget · ${fm(bt?bt.cost:0)} av ${fm(D.budget)}`,PX+34,yE+(story?88:74),600,24,NAVY);
   txt(fp(team)+" p",PX+PW-34,yE+(story?82:66),800,story?64:54,NAVY,"right");
   txt("@fantasyorientering",W/2,H-(story?110:34),700,26,"rgba(255,255,255,.75)","center",1);
   return await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error("bild")),"image/png"));
@@ -3478,7 +3500,7 @@ async function igCards(r,story){
   const W=1080,H=story?1920:1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
   const F='"Montserrat",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif',CF='"Barlow Condensed",sans-serif';
   try{await Promise.all([...["800 40px","700 40px","600 40px","500 40px"].map(f=>document.fonts.load(`${f} Montserrat`)),...["800 40px","600 40px","500 40px"].map(f=>document.fonts.load(`${f} "Barlow Condensed"`))])}catch(e){}
-  const NAVY="#003c68",YEL="#ffe74d",INK="#0b0f14",top=weekTop(r),A=top.slice(0,5),B=top.slice(5),rd=D.rounds[r];
+  const NAVY="#003c68",YEL="#ffe74d",INK="#0b0f14",bt=bestTeam(r),top=bt?bt.top:[],A=top.slice(0,5),B=top.slice(5),rd=D.rounds[r];
   c.fillStyle=NAVY;c.fillRect(0,0,W,H);
   try{const sv=document.getElementById("terrain");if(sv&&sv.getAttribute("viewBox")){const cl=sv.cloneNode(true);cl.setAttribute("xmlns","http://www.w3.org/2000/svg");cl.setAttribute("width",W);cl.setAttribute("height",H);cl.setAttribute("preserveAspectRatio","xMidYMid slice");
     const st=document.createElementNS("http://www.w3.org/2000/svg","style");st.textContent="path{fill:none;stroke:#fff;stroke-width:1.6}path.ix{stroke-width:3}path.veg,path.lake{display:none}";cl.insertBefore(st,cl.firstChild);
@@ -3509,8 +3531,8 @@ async function igCards(r,story){
     y+=B.length*62+16}
   c.fillStyle=YEL;roundRect(c,40,y,W-80,story?110:92,24);c.fill();
   const bst=A[0]?A[0].p:0;
-  txt(story?"DRÖMLAGET":"A-LAGET",74,y+(story?48:40),800,22,NAVY,"left",3);txt(story?"A-laget dubbelt, etta boostad, plus B-laget":"Fem bästa dubbelt, etta boostad ×4",74,y+(story?82:72),600,24,NAVY);
-  txt(fp(story?2*sumA+2*bst+sumB:2*sumA+2*bst)+" p",W-74,y+(story?76:66),800,story?60:54,NAVY,"right");
+  txt("DRÖMLAGET",74,y+(story?48:40),800,22,NAVY,"left",3);txt(`Bästa laget inom budget · ${fm(bt?bt.cost:0)} av ${fm(D.budget)}`,74,y+(story?82:72),600,24,NAVY);
+  txt(fp(bt?bt.total:0)+" p",W-74,y+(story?76:66),800,story?60:54,NAVY,"right");
   txt("@fantasyorientering",W/2,story?Math.min(H-60,y+110+64):H-30,700,26,"rgba(255,255,255,.75)","center",1);
   return await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error("bild")),"image/png"));
 }
