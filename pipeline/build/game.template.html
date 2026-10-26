@@ -1800,13 +1800,17 @@ const FINE=(()=>{try{return matchMedia("(hover: hover) and (pointer: fine)").mat
 const hsh=s=>{let h=2166136261;for(let k=0;k<s.length;k++){h^=s.charCodeAt(k);h=Math.imul(h,16777619)}return h>>>0};
 /* a photo when the runner sent one, otherwise their initials on their club's colour */
 function avatar(i,cls){
-  const r=D.runners[i],ph=photoUrl.get(r.id)||r.ph;
+  const r=D.runners[i],ph=runnerPhoto(i);
   if(ph)return `<div class="av ph ${cls||""}" aria-hidden="true"><img src="${esc(ph)}" alt="" loading="lazy" decoding="async"></div>`;
   const ini=r.n.split(/\s+/).filter(Boolean).map(w=>w[0]).filter((c,k,a)=>k===0||k===a.length-1).join("").toUpperCase();
   return `<div class="av ${cls||""}" style="--h:${hsh(r.c)%360}" aria-hidden="true">${esc(ini)}</div>`;
 }
 /* photos runners sent themselves (or a parent did), shown once approved */
 const photoUrl=new Map();
+/* runner photos are switched off for now: every runner shows initials and the photo upload is hidden.
+   Set to false to bring the photos back; nothing has been deleted. */
+const PHOTOS_OFF=true;
+const runnerPhoto=i=>PHOTOS_OFF?null:(photoUrl.get(D.runners[i].id)||D.runners[i].ph||null);
 let myPhotos=[],pendingPhotos=[],phForm=null,phMsg="",phBusy=false;
 const avPublic=path=>SB_URL+"/storage/v1/object/public/avatars/"+path.split("/").map(encodeURIComponent).join("/");
 const photoPublic=path=>SB_URL+"/storage/v1/object/public/runner-photos/"+path.split("/").map(encodeURIComponent).join("/");
@@ -2528,7 +2532,7 @@ function boardData(src){
   const team=sq.length===D.squad?(lpTeam==="B"?sq.slice(AS):sq.slice(0,AS)):[];
   const cards=team.map(i=>{
     const m=multOf(i,sq,chip,cap),played=!!x,st=E.stats(i,pr()),races=played?E.hist[i].filter(h=>rd.ev.includes(h.ev)):[];
-    const ph=photoUrl.get(D.runners[i].id)||D.runners[i].ph||null;
+    const ph=runnerPhoto(i);
     return {i,m,boost:i===cap&&(!x||E.starts[r][i]>0),boostX:chip==="tc"?3:2,tier:TIERS[tierOf(i,r)][0],cls:D.runners[i].k,club:clubOf(i),name:surname(nameOf(i)),full:nameOf(i),
       pts:played?(E.starts[r][i]?fp(E.pts[r][i]*m):"0"):"–",price:fm(E.price(i,Math.min(r,E.R-1))),nraces:played?String(races.length):"–",form:fp(st.form),avg:fp(st.perWeek),
       race:played?(races.length?shortRace(D.events[races[0].ev])+" "+(races[0].kind?["","DNF","MP","DSQ"][races[0].kind]:fp(races[0].pts*m)+"p"):"Inget lopp"):"Inte tävlat än",
@@ -3056,6 +3060,7 @@ function profile(i){
    ${photoSection(i)}`);
 }
 function photoSection(i){
+  if(PHOTOS_OFF)return "";
   const id=D.runners[i].id,mine=myPhotos.filter(x=>RI.get(x.runner_id)===i);
   const list=mine.map(x=>`<div class="mine"><span>Ditt foto <span class="st ${x.status}">${x.status==="approved"?"shown":x.status==="pending"?"väntar på godkännande":"inte godkänt"}</span></span><button class="btn quiet" data-phdel="${esc(x.id)}">${x.status==="approved"?"Ta bort det":"Withdraw"}</button></div>`).join("");
   if(!dbOk)return `<div class="phbox"><h3>Är det här du?</h3><p class="note" style="margin:0">Logga in för att lägga till ett eget foto${youthCls(i)?", eller så kan en förälder eller vårdnadshavare göra det åt dig":""}. Det syns på ditt kort när det har godkänts.</p><div class="row"><button class="btn" id="phSignIn">Logga in för att lägga till ett foto</button></div></div>`;
@@ -3311,7 +3316,7 @@ async function igCards(r,story){
   txt(`${rdName(rd)} · ${dshort(rd.start)} – ${dshort(rd.end)}`.toUpperCase(),60,oy+266,700,28,YEL,"left",3);
   /* the five cards, each worth twice its week (the A-lag) */
   const cards=A.map((x,k)=>{const i=x.i,st=E.stats(i,Math.min(r+1,E.R)),bo=k===0;return {i,m:bo?4:2,boost:bo,boostX:2,tier:TIERS[tierOf(i,r)][0],cls:D.runners[i].k,club:clubOf(i),name:surname(nameOf(i)),full:nameOf(i),
-    pts:fp(x.p*(bo?4:2)),price:fm(E.price(i,Math.min(r,E.R-1))),avg:fp(st.perWeek),ph:photoUrl.get(D.runners[i].id)||D.runners[i].ph||null,
+    pts:fp(x.p*(bo?4:2)),price:fm(E.price(i,Math.min(r,E.R-1))),avg:fp(st.perWeek),ph:runnerPhoto(i),
     ini:nameOf(i).split(/\s+/).filter(Boolean).map(w=>w[0]).filter((ch,k,a)=>k===0||k===a.length-1).join("").toUpperCase(),hue:hsh(D.runners[i].c)%360}});
   const gap=story?16:16,cw=story?300:292,ch=Math.round(cw/.72),y0=oy+(story?316:300),x0=(W-(3*cw+2*gap))/2,col=k=>x0+k*(cw+gap);
   const pos=[[col(0),y0],[col(2),y0],[col(1),y0+(ch+gap)/2],[col(0),y0+ch+gap],[col(2),y0+ch+gap]];
