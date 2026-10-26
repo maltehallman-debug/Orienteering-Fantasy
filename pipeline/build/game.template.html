@@ -1270,6 +1270,15 @@ nav.tabs .ind.on{opacity:1}
 .seg{display:inline-flex;border-radius:10px;box-shadow:inset 0 0 0 1.5px var(--line-2);overflow:hidden}
 .seg button{border:0;background:none;padding:7px 11px;font:600 13px/1 var(--font);color:var(--text-2)}
 .seg button.on{background:var(--accent);color:var(--accent-ink)}
+.fbcard{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:12px}
+.fbcard h3{margin:0 0 4px}
+.fbkind{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 14px}
+.fbkind button{border:0;border-radius:16px;padding:12px 8px;background:var(--surface-2);color:var(--text);font:600 14px/1.2 var(--font);display:grid;justify-items:center;gap:6px;cursor:pointer}
+.fbkind button i{font-style:normal;font-size:22px;line-height:1}
+.fbkind button[aria-checked="true"]{background:var(--accent);color:var(--accent-ink)}
+.fbitem .sub{display:block;margin-top:2px}
+#fbText{font:500 16px/1.45 var(--font);letter-spacing:0;text-transform:none}
+.fbitem p{margin:6px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
 /* cards cast a clear shadow and glow in their own metal, also on phones where there is no hover */
 .sqc-sh{--glow:rgba(127,138,155,.42);filter:drop-shadow(0 2px 2px var(--cs1)) drop-shadow(0 12px 14px var(--cs2)) drop-shadow(0 4px 18px var(--glow))}
 .sqc-sh:has(.fifa-gold){--glow:rgba(214,163,40,.55)}
@@ -2696,6 +2705,7 @@ function profileView(){
     <div class="row" style="margin-top:12px"><button class="btn" id="authOut">Logga ut</button></div></div>
    <div class="card"><h3>Dina ligor</h3>${myLeagues.length?`<div class="lglist">${myLeagues.map(c=>`<button class="lgi" data-lgopen="${esc(c)}"><span>${esc(lgName(c))}${myOwn[c]?'<span class="host">Värd</span>':""}</span><span class="sub">Öppna →</span></button>`).join("")}</div>`:`<p class="note" style="margin:0 0 12px">Du är inte med i någon liga än.</p><button class="btn on" data-tab="leagues">Starta eller gå med i en liga</button>`}</div>
   </div>
+  <div class="card fbcard"><div><h3>Hittat en bugg eller har en idé?</h3><p class="note" style="margin:0">Spelet är i beta. Allt du märker hjälper oss att göra det bättre.</p></div><button class="btn on" id="fbOpen">Tipsa oss</button></div>
   ${practiceCard()}${privacyCard()}`;
 }
 /* privacy, leaving a runner out, and deleting your account */
@@ -3132,6 +3142,7 @@ async function applyNow(){
 }
 async function loadOvr(){if(!cloud.admin)return;try{const [q,r,p]=await Promise.all([cloud.sb.from("game_overrides").select("id,kind,ref,label,created_at").order("created_at"),
   cloud.sb.from("removal_requests").select("*").eq("handled",false).order("created_at"),cloud.sb.from("profiles").select("id,name,team,name_flag").order("created_at").limit(2000)]);
+  try{const f=await cloud.sb.from("feedback").select("*").eq("handled",false).order("created_at",{ascending:false}).limit(200);if(!f.error)fbList=f.data||[]}catch(e){}
   if(!q.error)ovr=q.data||[];if(!r.error)rmReqs=r.data||[];if(!p.error)allPf=p.data||[]}catch(e){}render()}
 async function modProfile(id,patch,what){try{const q=await cloud.sb.from("profiles").update(patch).eq("id",id);modMsg=q.error?"Kunde inte spara: "+q.error.message:what;pfCache.delete(id)}catch(e){modMsg="Kunde inte spara."}await loadOvr()}
 async function rmDone(id){try{await cloud.sb.from("removal_requests").update({handled:true}).eq("id",id)}catch(e){}await loadOvr()}
@@ -3198,6 +3209,7 @@ function adminModCard(){
       ${p.team?`<button class="btn ${tf?"on":""}" data-pfflag="${esc(p.id)}" data-flag="${flag(!tf,nf)}">${tf?"Lagnamn: ångra":"Lagnamnet är inte tillåtet"}</button>`:""}
       <button class="btn ${nf?"on":""}" data-pfflag="${esc(p.id)}" data-flag="${flag(tf,!nf)}">${nf?"Namn: ångra":"Namnet är inte tillåtet"}</button></div></div>`};
   return `<div class="card admin"><h3>Admin · löpare och managers</h3>
+   <h4>Tips från managers (${fbList.length})</h4><div class="adm-list">${fbList.map(x=>{const p=allPf.find(q=>q.id===x.user_id)||{};return `<div class="adm-row col fbitem"><div><b>${(FBK[x.kind]||FBK.other)[0]} ${(FBK[x.kind]||FBK.other)[1]}</b> · ${esc(p.name||"Manager")}${p.team?` <span class="sub" style="display:inline">(${esc(p.team)})</span>`:""}<span class="sub">${dshort(String(x.created_at).slice(0,10))} · ${esc(x.context||"")}</span><p>${esc(x.message)}</p></div><div class="row"><button class="btn quiet" data-fbdone="${x.id}">Klar</button></div></div>`}).join("")||'<p class="note">Inga tips.</p>'}</div>
    <h4>Vill tas bort (${rmReqs.length})</h4><div class="adm-list">${rmReqs.map(req).join("")||'<p class="note">Inga förfrågningar.</p>'}</div>
    ${hidden.length?`<h4>Dolda löpare</h4><div class="adm-list">${hidden.map(o=>`<div class="adm-row"><div><b>${esc(o.label||o.ref)}</b> <span class="sub">Borttagen från spelet</span></div><button class="btn" data-rmshow="${esc(o.ref)}">Ångra</button></div>`).join("")}</div>`:""}
    <h4>Namn att granska (${bad.length})</h4><p class="note" style="margin:0 0 8px">Markera ett namn som inte tillåtet så måste managern välja ett nytt nästa gång hen öppnar spelet. Tills dess ser andra "Manager".</p><div class="adm-list">${bad.map(pf).join("")||'<p class="note">Inga.</p>'}</div>
@@ -3315,6 +3327,8 @@ document.addEventListener("click",ev=>{
   if(d.rmhide){setOvr("runner_hide",d.rmhide,d.rmlabel||"",true);return}
   if(d.rmshow){setOvr("runner_hide",d.rmshow,"",false);return}
   if(d.rmdone){rmDone(+d.rmdone);return}
+  if(d.fbdone){fbDone(+d.fbdone);return}
+  if(d.fbkind){fbKind=d.fbkind;document.querySelectorAll("[data-fbkind]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.fbkind===fbKind)));const x=$("#fbText");if(x)x.placeholder=FBK[fbKind][2];return}
   if(d.pfflag){modProfile(d.pfflag,{name_flag:d.flag||null},d.flag?"Sparat. Managern måste välja ett nytt namn nästa gång spelet öppnas.":"Markeringen borttagen.");return}
   if(d.rcadd){setOvr("race_add",d.rcadd,"",false);return}
   if(t.id==="applyNow"){applyNow();return}
@@ -3639,6 +3653,30 @@ async function initCloud(){
 }
 /* the new-password sheet, opened by the link in the reset email (which also signs the player in) */
 let pwOpen=false,pwMsg="",pwBusy=false;
+/* tips from managers: a bug, an idea or anything else; only admins read them */
+const TABS_SV={team:"Lag",rounds:"Omgångar",leagues:"Ligor",rules:"Regler",profile:"Profil",market:"Köp/sälj"};
+let fbKind="bug",fbBusy=false,fbMsg="",fbList=[];
+const FBK={bug:["🐞","Bugg","Vad hände, och vad hade du väntat dig? Var i spelet var du?"],idea:["💡","Idé","Vad skulle göra spelet bättre?"],other:["💬","Annat","Skriv vad du vill."]};
+function fbSheet(){const t=($("#fbText")||{}).value;
+  $("#modal").innerHTML=`<div class="modal" data-close="1"><div class="sheet welcome" role="dialog" aria-modal="true" aria-label="Tipsa oss">
+    <h2>Tipsa oss</h2><p>Det du skickar går direkt till oss som gör spelet.</p>
+    <div class="fbkind" role="radiogroup" aria-label="Vad gäller det?">${Object.entries(FBK).map(([k,[ic,l]])=>`<button type="button" role="radio" aria-checked="${fbKind===k}" data-fbkind="${k}"><i aria-hidden="true">${ic}</i>${l}</button>`).join("")}</div>
+    <div class="field"><label for="fbText">Ditt tips</label><textarea class="name" id="fbText" maxlength="4000" rows="5" placeholder="${FBK[fbKind][2]}">${esc(t||"")}</textarea></div>
+    <p class="note" id="fbMsg" style="margin:8px 0 0;color:var(--warn)">${esc(fbMsg)}</p>
+    <div class="row"><button class="btn on" id="fbSend" ${fbBusy?"disabled":""}>${fbBusy?"Skickar…":"Skicka"}</button><button class="btn" data-close="1">Avbryt</button></div></div></div>`;
+  setTimeout(()=>{const x=$("#fbText");x&&x.focus()},60);
+}
+async function sendFb(){
+  if(fbBusy||!cloud.sb||!cloud.uid)return;const m=(($("#fbText")||{}).value||"").trim();
+  if(m.length<3){fbMsg="Skriv lite mer, så att vi förstår.";fbSheet();return}
+  fbBusy=true;fbMsg="";fbSheet();
+  const ctx=(`${TABS_SV[tab]||tab} · ${innerWidth}×${innerHeight} · ${navigator.userAgent}`).slice(0,500);
+  try{const q=await cloud.sb.from("feedback").insert({kind:fbKind,message:m.slice(0,4000),context:ctx});if(q.error)throw q.error;
+    fbBusy=false;fbMsg="";
+    $("#modal").innerHTML=`<div class="modal" data-close="1"><div class="sheet welcome" role="dialog" aria-modal="true" aria-label="Tack"><svg class="tick" viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="40"/><path d="M29 47 l11 11 l23 -25"/></svg><h2>Tack!</h2><p>Vi har fått ditt tips och läser allt som kommer in.</p><div class="row"><button class="btn on" data-close="1">Klart</button></div></div></div>`}
+  catch(e){fbBusy=false;fbMsg="Kunde inte skicka just nu. Försök igen om en stund.";fbSheet()}
+}
+async function fbDone(id){try{await cloud.sb.from("feedback").update({handled:true}).eq("id",id)}catch(e){}await loadOvr()}
 function pwSheet(){pwOpen=true;
   $("#modal").innerHTML=`<div class="modal"><div class="sheet welcome" role="dialog" aria-modal="true" aria-label="Välj ett nytt lösenord">
     <h2>Välj ett nytt lösenord</h2><p>Minst 8 tecken. Sedan är du inloggad som vanligt.</p>
@@ -3718,6 +3756,8 @@ document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)r
   if(t.id==="authBack"){authMode="in";authMsg="";authOk=false;render()}
   if(t.id==="authReset")sendReset();
   if(t.id==="pwSave")savePw();
+  if(t.id==="fbOpen"){fbMsg="";fbSheet();return}
+  if(t.id==="fbSend"){sendFb();return}
   if(t.id==="pwLater"){pwOpen=false;$("#modal").innerHTML=""}
   if(t.id==="avDel"){delAvatar();return}
   if(t.id==="authOut"){cloud.ready=false;resetLocal();sqStore={};sqMem={};pfCache.clear();try{localStorage.removeItem(SQK)}catch(e){}localUid=null;try{localStorage.removeItem(KEY)}catch(e){}tab="profile";cloud.sb.auth.signOut().then(()=>{leagueRows={};render()})}
