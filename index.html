@@ -3402,7 +3402,7 @@ function adminModCard(){
    ${modMsg?`<p class="note" style="margin:10px 0 0">${esc(modMsg)}</p>`:""}</div>`;
 }
 /* admin: "Veckans lag" as a ready Instagram picture. The round's ten best runners, the five best as the A-lag
-   (counted twice, as in the game), and what that team would have scored. Two looks: a list of all ten, or the A-lag
+   (counted twice, as in the game) with the best of them boosted (×4), and what that team would have scored. Two looks: a list of all ten, or the A-lag
    as full runner cards */
 let igR=null,igBusy=false,igMsg="";
 const igRounds=()=>{const o=[];for(let r=0;r<E.R;r++)if(D.rounds[r].ev.length)o.push(r);return o};
@@ -3447,13 +3447,16 @@ async function igImage(r,kind){
     txt(fit(nameOf(x.i),800,story?40:36,600),PX+96,mid-2,800,story?40:36,"#fff");
     txt(fit(`${clubOf(x.i)} · ${D.runners[x.i].k}`,500,story?24:22,600),PX+96,mid+(story?32:28),500,story?24:22,"rgba(255,255,255,.7)");
     txt(fp(x.p)+" p",PX+PW-30-(a?70:0),mid+16,800,story?48:44,a?YEL:"#fff","right");
-    if(a)txt("×2",PX+PW-30,mid+14,700,30,"rgba(255,231,77,.75)","right")});
+    if(a)txt(k===0?"×4":"×2",PX+PW-30,mid+14,700,30,k===0?YEL:"rgba(255,231,77,.75)","right");
+    /* the boosted runner: the best of the week, counted twice again */
+    if(k===0){c.font=`800 ${story?40:36}px ${F}`;const nw=c.measureText(fit(nameOf(x.i),800,story?40:36,600)).width,bx=PX+96+nw+16,bw=112,bh=32,by=mid-(story?30:28);
+      c.fillStyle=YEL;roundRect(c,bx,by,bw,bh,16);c.fill();txt("BOOST",bx+bw/2,by+23,800,18,NAVY,"center",2)}});
   /* section labels and the team's total */
   const yA=y0-16,yE=y0+10*rh+18+18;
   txt("A-LAG",PX,yA,800,20,YEL,"left",3);txt("B-LAG",PX,y0+5*rh+12,800,20,"rgba(255,255,255,.6)","left",3);
-  const team=2*sumA+sumB;
+  const team=2*sumA+2*(top[0]?top[0].p:0)+sumB;
   c.fillStyle=YEL;roundRect(c,PX,yE,PW,story?120:96,24);c.fill();
-  txt("DRÖMLAGET",PX+34,yE+(story?52:42),800,22,NAVY,"left",3);txt("Om du hade valt just dessa tio",PX+34,yE+(story?88:74),600,24,NAVY);
+  txt("DRÖMLAGET",PX+34,yE+(story?52:42),800,22,NAVY,"left",3);txt("Dessa tio, med etta boostad",PX+34,yE+(story?88:74),600,24,NAVY);
   txt(fp(team)+" p",PX+PW-34,yE+(story?82:66),800,story?64:54,NAVY,"right");
   txt("@fantasyorientering",W/2,H-(story?110:34),700,26,"rgba(255,255,255,.75)","center",1);
   return await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error("bild")),"image/png"));
@@ -3476,8 +3479,8 @@ async function igCards(r,story){
   txt("Veckans lag",56,oy+212,800,100,"#fff","left",-2);
   txt(`${rdName(rd)} · ${dshort(rd.start)} – ${dshort(rd.end)}`.toUpperCase(),60,oy+266,700,28,YEL,"left",3);
   /* the five cards, each worth twice its week (the A-lag) */
-  const cards=A.map(x=>{const i=x.i,st=E.stats(i,Math.min(r+1,E.R));return {i,m:2,boost:false,boostX:2,tier:TIERS[tierOf(i,r)][0],cls:D.runners[i].k,club:clubOf(i),name:surname(nameOf(i)),full:nameOf(i),
-    pts:fp(x.p*2),price:fm(E.price(i,Math.min(r,E.R-1))),avg:fp(st.perWeek),ph:photoUrl.get(D.runners[i].id)||D.runners[i].ph||null,
+  const cards=A.map((x,k)=>{const i=x.i,st=E.stats(i,Math.min(r+1,E.R)),bo=k===0;return {i,m:bo?4:2,boost:bo,boostX:2,tier:TIERS[tierOf(i,r)][0],cls:D.runners[i].k,club:clubOf(i),name:surname(nameOf(i)),full:nameOf(i),
+    pts:fp(x.p*(bo?4:2)),price:fm(E.price(i,Math.min(r,E.R-1))),avg:fp(st.perWeek),ph:photoUrl.get(D.runners[i].id)||D.runners[i].ph||null,
     ini:nameOf(i).split(/\s+/).filter(Boolean).map(w=>w[0]).filter((ch,k,a)=>k===0||k===a.length-1).join("").toUpperCase(),hue:hsh(D.runners[i].c)%360}});
   const gap=story?16:16,cw=story?300:292,ch=Math.round(cw/.72),y0=oy+(story?316:300),x0=(W-(3*cw+2*gap))/2,col=k=>x0+k*(cw+gap);
   const pos=[[col(0),y0],[col(2),y0],[col(1),y0+(ch+gap)/2],[col(0),y0+ch+gap],[col(2),y0+ch+gap]];
@@ -3493,8 +3496,9 @@ async function igCards(r,story){
       txt(String(k+6),78,yy+38,800,28,"rgba(255,255,255,.55)","center");txt(fit(nameOf(x.i)+" · "+clubOf(x.i),700,26,W-340),112,yy+37,700,26,"#fff");txt(fp(x.p)+" p",W-70,yy+39,800,30,"#fff","right")});
     y+=B.length*62+16}
   c.fillStyle=YEL;roundRect(c,40,y,W-80,story?110:92,24);c.fill();
-  txt(story?"DRÖMLAGET":"A-LAGET",74,y+(story?48:40),800,22,NAVY,"left",3);txt(story?"A-laget dubbelt plus B-laget":"Fem bästa, dubbla poäng",74,y+(story?82:72),600,24,NAVY);
-  txt(fp(story?2*sumA+sumB:2*sumA)+" p",W-74,y+(story?76:66),800,story?60:54,NAVY,"right");
+  const bst=A[0]?A[0].p:0;
+  txt(story?"DRÖMLAGET":"A-LAGET",74,y+(story?48:40),800,22,NAVY,"left",3);txt(story?"A-laget dubbelt, etta boostad, plus B-laget":"Fem bästa dubbelt, etta boostad ×4",74,y+(story?82:72),600,24,NAVY);
+  txt(fp(story?2*sumA+2*bst+sumB:2*sumA+2*bst)+" p",W-74,y+(story?76:66),800,story?60:54,NAVY,"right");
   txt("@fantasyorientering",W/2,story?Math.min(H-60,y+110+64):H-30,700,26,"rgba(255,255,255,.75)","center",1);
   return await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error("bild")),"image/png"));
 }
