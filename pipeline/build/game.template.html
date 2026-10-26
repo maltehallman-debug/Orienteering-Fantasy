@@ -3366,9 +3366,11 @@ function reviewCard(){
 function introCourse(){
   const P=[[110,250],[220,120],[350,210],[320,62],[480,140],[575,46]],lab=["Välj tio","A-lag ×2","Auto-lås","Poäng","Vinn"];
   let legs="",ctl="";
-  for(let k=0;k<P.length-1;k++){const [ax,ay]=P[k],[bx,by]=P[k+1],L=Math.hypot(bx-ax,by-ay),ux=(bx-ax)/L,uy=(by-ay)/L,r0=k?24:20,r1=k===P.length-2?30:24;
+  for(let k=0;k<P.length-1;k++){const [ax,ay]=P[k],[bx,by]=P[k+1],L=Math.hypot(bx-ax,by-ay),ux=(bx-ax)/L,uy=(by-ay)/L,r0=k?24:22,r1=k===P.length-2?30:24;
     const a=[ax+ux*r0,ay+uy*r0],b=[bx-ux*r1,by-uy*r1];legs+=`<line class="leg" style="--k:${k};--len:${Math.hypot(b[0]-a[0],b[1]-a[1]).toFixed(0)}" x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"/>`}
-  const [sx,sy]=P[0];ctl+=`<g class="cg" style="--k:-0.4"><polygon class="c" points="${sx},${sy-22} ${sx-19},${sy+12} ${sx+19},${sy+12}"/></g>`;
+  /* the start triangle points along the first leg, the line leaving from its tip */
+  const [sx,sy]=P[0],sa=Math.atan2(P[1][1]-sy,P[1][0]-sx),tri=[0,1,2].map(j=>{const t=sa+j*2*Math.PI/3;return `${(sx+22*Math.cos(t)).toFixed(1)},${(sy+22*Math.sin(t)).toFixed(1)}`}).join(" ");
+  ctl+=`<g class="cg" style="--k:-0.4"><polygon class="c" points="${tri}"/></g>`;
   for(let k=1;k<P.length-1;k++){const [x,y]=P[k];ctl+=`<g class="cg" style="--k:${k-1}"><circle class="c" cx="${x}" cy="${y}" r="22"/><text x="${x+30}" y="${y-12}">${k}</text><text class="lab" x="${x+31}" y="${y+10}">${lab[k-1]}</text></g>`}
   const [fx,fy]=P[P.length-1];ctl+=`<g class="cg" style="--k:${P.length-2}"><circle class="c" cx="${fx}" cy="${fy}" r="18"/><circle class="c" cx="${fx}" cy="${fy}" r="27"/><text class="lab" x="${fx}" y="${fy+52}" text-anchor="middle">${lab[4]}</text></g>`;
   return `<svg class="introCourse" viewBox="0 0 640 300" aria-hidden="true">${legs}${ctl}</svg>`;
