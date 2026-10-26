@@ -2126,7 +2126,7 @@ function courseSvg(){
   let legs="";
   for(let k=0;k<P.length-1;k++){
     const [ax,ay]=P[k],[bx,by]=P[k+1],dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L;
-    const r0=k===0?13:cr+2,r1=k===P.length-2?cr+8:cr+2;
+    const r0=k===0?14:cr+2,r1=k===P.length-2?cr+8:cr+2;
     const a=[ax+ux*r0,ay+uy*r0],b=[bx-ux*r1,by-uy*r1];
     const played=(w0+k)<cur; // leg k arrives at round w0+k: run once that control is taken
     legs+=`<line class="leg ${played?"draw":"todo"}" style="--k:${k};--len:${Math.hypot(b[0]-a[0],b[1]-a[1]).toFixed(0)}" x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"/>`;
@@ -2142,7 +2142,9 @@ function courseSvg(){
       <text class="pts" x="${x.toFixed(1)}" y="${(y+cr+21).toFixed(1)}" style="dominant-baseline:auto">${lab!==""?lab:sub}</text></g>`;
   }
   const [sx,sy]=P[0],[fx,fy]=P[n+1];
-  const start=`<polygon class="sta" points="${sx},${sy-13} ${sx-12},${sy+9} ${sx+12},${sy+9}"/>`;
+  /* the start triangle points along the first leg, as on a real map: the line leaves from its tip */
+  const sa=Math.atan2(P[1][1]-sy,P[1][0]-sx),tri=[0,1,2].map(j=>{const t=sa+j*2*Math.PI/3;return `${(sx+14*Math.cos(t)).toFixed(1)},${(sy+14*Math.sin(t)).toFixed(1)}`}).join(" ");
+  const start=`<polygon class="sta" points="${tri}"/>`;
   const fin=`<circle class="fin" cx="${fx}" cy="${fy}" r="${cr-3}"/><circle class="fin" cx="${fx}" cy="${fy}" r="${cr+4}"/>`;
   return `<svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Säsongens bana, ${rdThe(D.rounds[w0])} till ${rdThe(D.rounds[w1-1])}">${legs}${start}${c}${fin}</svg>`;
 }
