@@ -2049,8 +2049,9 @@ drawTerrain();
 /* opening titles: on every page load (a reload too), never when arriving from an email or invite link, never with
    reduced motion. A tap, scroll or key press sends them off early. */
 let reelEnd=0;
-/* the opening: a compass on the terrain, the needle swings once to north, the name, then the compass flies up
-   and becomes the logo in the header while the blue closes in around it. 1.55 s; any tap or key skips it */
+/* the opening: a compass on the terrain, the needle swings once to north, the name, then the trophy of the logo
+   forms around the compass, which becomes the O in the cup, and the whole logo flies up into the header while the
+   blue closes in around it. 1.9 s; any tap or key skips it */
 (function reel(){
   const unc=()=>document.documentElement.classList.remove("reel-pre");
   if(RM||/access_token|error=|join=/.test(location.href)){unc();return}
@@ -2060,10 +2061,23 @@ let reelEnd=0;
   document.body.appendChild(cv);document.body.classList.add("reel-hold");document.documentElement.classList.remove("reel-pre");
   const T=document.getElementById("terrain"),vb=(T&&T.getAttribute("viewBox")||"0 0 1600 1000").split(" ").map(Number);
   const TP=T?[...T.querySelectorAll("path")].filter(p=>!/veg|lake/.test(p.getAttribute("class")||"")).map(p=>({p:new Path2D(p.getAttribute("d")),ix:/ix/.test(p.getAttribute("class")||"")})):[];
-  const NAVY="#003c68",YEL="#ffe74d",DUR=1550,EX=950;
+  const NAVY="#003c68",YEL="#ffe74d",DUR=1900,EX=1200;
   const cl=(a,b,t)=>Math.max(0,Math.min(1,(t-a)/(b-a))),eo=t=>1-Math.pow(1-t,3),eio=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
   const U=Math.min(W,H)/1080,PORT=H>W,CX=W/2,R0=150*U,CY0=H/2-(PORT?150:120)*U;
   const FONT='"Montserrat",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif';
+  /* the logo's trophy, drawn in the mark's own 34-unit box. Its O (the ring in the cup) sits at OX,OY with radius OR:
+     the compass is drawn there, so the trophy is placed and sized from the compass */
+  const OX=16.988,OY=11.497,K=88*.0322/34,TROPHY=[["M540 120l18 37 41 6-30 29 7 41-36-19-36 19 7-41-30-29 41-6z","#fff"],
+    ["M330 240H750C750 460 660 590 540 610C420 590 330 460 330 240Z",YEL],["M510 600h60v110h-60z",YEL],["M400 820H680L652 710H428Z",YEL],
+    ["M150 610L120 690H230ZM930 610L960 690H850Z","#c9d3dc"],["M95 560H230V700H95L140 630ZM985 560H850V700H985L940 630Z","#e8edf2"]].map(([d,c])=>[new Path2D(d),c]);
+  const HANDLES=new Path2D("M335 290C220 290 210 430 335 475M745 290C860 290 870 430 745 475");
+  const trophy=(ox,oy,S,al)=>{if(al<=0)return;g.save();g.globalAlpha=al;g.translate(ox-OX/34*S,oy-OY/34*S);g.scale(S/34,S/34);g.translate(-.4,-.9);g.scale(.0322,.0322);
+    for(const [p,c] of TROPHY){g.fillStyle=c;g.fill(p)}
+    g.strokeStyle=YEL;g.lineWidth=40;g.lineCap="round";g.stroke(HANDLES);
+    g.fillStyle="#fff";g.beginPath();g.roundRect?g.roundRect(190,530,700,150,8):g.rect(190,530,700,150);g.fill();
+    g.fillStyle=NAVY;g.font=`900 112px ${FONT}`;g.textAlign="center";g.textBaseline="alphabetic";try{g.letterSpacing="6px"}catch(e){}g.fillText("FANTASY",540,652);try{g.letterSpacing="0px"}catch(e){}
+    g.restore()};
+  const mix=(a,b,f)=>{const p=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16));const A=p(a),B=p(b);return `rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*f)).join(",")})`};
   const word=(s,x,y,size,col,sp)=>{g.font=`800 ${size}px ${FONT}`;g.fillStyle=col;g.textBaseline="middle";g.textAlign="left";
     let w=0;for(const c of s)w+=g.measureText(c).width+sp;w-=sp;let cx=x-w/2;for(const c of s){g.fillText(c,cx,y);cx+=g.measureText(c).width+sp}};
   const logoAt=()=>{const m=document.querySelector(".logo .mark");const r=m&&m.getBoundingClientRect();
@@ -2071,20 +2085,29 @@ let reelEnd=0;
   let t0=0,gone=false,released=false,raf=0;
   const frame=now=>{if(gone)return;if(!t0)t0=now;const t=(now-t0)/1000;
     if(!released&&t*1000>=EX){released=true;document.body.classList.remove("reel-hold")}
-    const L=logoAt(),ex=eio(cl(EX/1000,DUR/1000,t)),cx=CX+(L.x-CX)*ex,cy=CY0+(L.y-CY0)*ex,R=R0+(L.w/2-R0)*ex,k=R/R0;
+    const L=logoAt(),ex=eio(cl(EX/1000,DUR/1000,t)),m=eio(cl(.8,1.1,t)),ta=eo(cl(.95,1.2,t));
+    // before the flight the compass shrinks to the size where the whole trophy fits the screen, centred
+    const St=Math.min(W*.9,H*.72),Rt=St*K,c2x=W/2,c2y=H/2-(17-OY)/34*St;
+    const ax=CX+(c2x-CX)*m,ay=CY0+(c2y-CY0)*m,aR=R0+(Rt-R0)*m;
+    const tx=L.w?L.x+(OX-17)/34*L.w:CX,ty=L.w?L.y+(OY-17)/34*L.w:CY0,tR=L.w?L.w*K:Rt;
+    const cx=ax+(tx-ax)*ex,cy=ay+(ty-ay)*ex,R=aR+(tR-aR)*ex,k=R/R0,S=R/K;
     g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
-    g.save();if(ex>0){g.beginPath();g.arc(cx,cy,R+Math.hypot(W,H)*(1-ex),0,7);g.clip()}
+    g.save();if(ex>0){g.beginPath();g.arc(cx+(17-OX)/34*S,cy+(17-OY)/34*S,S*.56+Math.hypot(W,H)*(1-ex),0,7);g.clip()}
     g.fillStyle=NAVY;g.fillRect(0,0,W,H);
     if(TP.length){const sc=Math.max(W*1.15/vb[2],H*1.15/vb[3]);g.save();g.translate(CX-vb[2]*sc/2,H/2-vb[3]*sc/2);g.scale(sc,sc);
       g.strokeStyle=`rgba(255,255,255,${.09*eo(cl(0,.35,t))})`;for(const {p,ix} of TP){g.lineWidth=(ix?2:1)*Math.max(1,2.2*U)/sc;g.stroke(p)}g.restore()}
+    // the trophy grows in around the compass, a little from below
+    trophy(cx,cy,S*(.9+.1*ta),ta);
     g.globalAlpha=eo(cl(0,.25,t));
-    g.strokeStyle="rgba(255,255,255,.9)";g.lineWidth=5*U*k;g.beginPath();g.arc(cx,cy,R,0,7);g.stroke();
+    // the ring turns from white to the logo's navy as the cup appears behind it
+    const ring=mix("#ffffff",NAVY,ta);g.strokeStyle=ring;g.lineWidth=5*U*k*(1-ta)+ta*.0322*S;g.beginPath();g.arc(cx,cy,R,0,7);g.stroke();
+    g.lineWidth=5*U*k;
     for(let i=0;i<4;i++){const a=i*Math.PI/2,s=Math.sin(a),c=Math.cos(a);g.beginPath();g.moveTo(cx+s*(R-6*U*k),cy-c*(R-6*U*k));g.lineTo(cx+s*(R-28*U*k),cy-c*(R-28*U*k));g.stroke()}
     const q=cl(.05,.75,t),ang=-1.2*Math.exp(-q*5)*Math.cos(q*9);
     g.save();g.translate(cx,cy);g.rotate(ang);g.fillStyle="#ff3b30";g.beginPath();g.moveTo(0,-R*.8);g.lineTo(18*U*k,0);g.lineTo(-18*U*k,0);g.closePath();g.fill();
     g.fillStyle="#fff";g.beginPath();g.moveTo(0,R*.8);g.lineTo(18*U*k,0);g.lineTo(-18*U*k,0);g.closePath();g.fill();g.restore();
     g.fillStyle=YEL;g.beginPath();g.arc(cx,cy,10*U*k,0,7);g.fill();
-    const a=eo(cl(.45,.8,t)),b=eo(cl(.92,1.12,t)),w=a*(1-b);
+    const a=eo(cl(.45,.8,t)),b=eo(cl(.75,.92,t)),w=a*(1-b);
     if(w>0){g.globalAlpha=w;const dy=(1-a)*24*U-b*20*U;
       word("FANTASY",CX,CY0+R0+(PORT?120:100)*U+dy,(PORT?130:115)*U,"#fff",5*U);word("ORIENTERING",CX,CY0+R0+(PORT?225:195)*U+dy,(PORT?82:72)*U,YEL,7*U)}
     g.restore();
