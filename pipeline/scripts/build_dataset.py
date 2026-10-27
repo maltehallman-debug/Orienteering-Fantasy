@@ -278,14 +278,14 @@ print("runners total", len(names), "pool", len(pool))
 
 # ---- rounds ----
 # A live game week needs at least two big competitions. A big competition has at least 100 competitors (everyone
-# entered, all classes, from Eventor) and a good field: at least 5 of the game's top runners (top 15% by class
+# entered, all classes, from Eventor; or at least 40 entered in D/H 15-21 when Eventor gives no total) and a good field: at least 5 of the game's top runners (top 15% by class
 # rating) entered or racing in D/H 16-21. Admins can add or remove races and force a week on or off. A week is
 # decided when it starts (from the data on its Monday morning) and then kept; until then it is shown as provisional.
 LIVE_START = dt.date(2026, 11, 2)
 EVINFO = _j("eventor_events.json", None)
 OVR = _j("game_overrides.json", [])
 WEEK_ON = {o["ref"] for o in OVR if o["kind"] == "week_on"}; WEEK_OFF = {o["ref"] for o in OVR if o["kind"] == "week_off"}
-BIG_N, BIG_TOP = 100, 5
+BIG_N, BIG_NY, BIG_TOP = 100, 40, 5   # BIG_NY: entries in D/H 15-21 only, when Eventor gives no total
 EVWEEKS = None; EVBIG = {}
 if EVINFO is not None:
     top_in = collections.defaultdict(set)
@@ -297,7 +297,7 @@ if EVINFO is not None:
         if eid: top_in[eid] |= {rkey(r, e) for r in e["fin"]} & TOP
     weeks_now = collections.defaultdict(set)
     for ev in EVINFO:
-        big = ev.get("forced") or ((ev.get("n") or 0) >= BIG_N and len(top_in.get(ev["eid"], ())) >= BIG_TOP)
+        big = ev.get("forced") or (((ev.get("n") or 0) >= BIG_N or (ev.get("ny") or 0) >= BIG_NY) and len(top_in.get(ev["eid"], ())) >= BIG_TOP)
         EVBIG[ev["eid"]] = {"big": bool(big), "n": ev.get("n"), "top": len(top_in.get(ev["eid"], ()))}
         if big:
             for d in ev["dates"]: weeks_now[monday(dt.date.fromisoformat(d)).isoformat()].add(ev["eid"])

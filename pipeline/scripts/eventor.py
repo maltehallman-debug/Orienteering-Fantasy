@@ -251,6 +251,10 @@ else:
     if got: jsave(ep, {"want": want, "entries": entries})
     elif not entries: entries = ec.get("entries", [])   # Eventor did not answer: yesterday's list will do
 jsave(f"{S}/data/eventor_entries.json", entries)
+# Eventor's class list often reports no entry counts; the field size is then the entries in the game's classes ("ny")
+_ny = collections.Counter(e["eid"] for e in entries)
+for e in evinfo: e["ny"] = _ny.get(e["eid"], 0)
+jsave(f"{S}/data/eventor_events.json", evinfo)
 print("entries per event:", dict(collections.Counter(e["eid"] for e in entries)), "competitors per event:", {e: cl.get(e, {}).get("_n") for e in want})
 print("entries in D/H 15-21 for", len(want), "events:", len(entries))
 print("eventor calls", dict(calls))
