@@ -948,9 +948,20 @@ body.reel-hold>:not(#reel),body.reel-hold>:not(#reel) *,body.reel-hold>:not(#ree
 [data-theme="dark"] .t-gold{color:#422006;background:linear-gradient(110deg,#f59e0b 0%,#fde68a 12.5%,#f59e0b 25%,#b45309 37.5%,#f59e0b 50%,#fde68a 62.5%,#f59e0b 75%,#b45309 87.5%,#f59e0b 100%);background-size:200% 100%;}
 [data-theme="dark"] .t-silver{color:#0f172a;background:linear-gradient(110deg,#cbd5e1 0%,#f1f5f9 12.5%,#cbd5e1 25%,#64748b 37.5%,#cbd5e1 50%,#f1f5f9 62.5%,#cbd5e1 75%,#64748b 87.5%,#cbd5e1 100%);background-size:200% 100%;}
 [data-theme="dark"] .t-bronze{color:#431407;background:linear-gradient(110deg,#fb923c 0%,#fed7aa 12.5%,#fb923c 25%,#9a3412 37.5%,#fb923c 50%,#fed7aa 62.5%,#fb923c 75%,#9a3412 87.5%,#fb923c 100%);background-size:200% 100%;}
-tbody tr.tr-gold td:first-child{box-shadow:inset 4px 0 0 #f59e0b}
-tbody tr.tr-silver td:first-child{box-shadow:inset 4px 0 0 #94a3b8}
-tbody tr.tr-bronze td:first-child{box-shadow:inset 4px 0 0 #ea580c}
+tbody tr.tr-gold td:first-child{box-shadow:inset 4px 0 0 #f59e0b,inset 14px 0 14px -10px rgba(245,158,11,.5)}
+tbody tr.tr-silver td:first-child{box-shadow:inset 4px 0 0 #94a3b8,inset 14px 0 14px -10px rgba(148,163,184,.55)}
+tbody tr.tr-bronze td:first-child{box-shadow:inset 4px 0 0 #ea580c,inset 14px 0 14px -10px rgba(234,88,12,.4)}
+/* a little glimmer on the level's edge: a soft glow, and a spark that twinkles on it now and then, at a different
+   height and time on each row */
+tbody tr[class*="tr-"] td:first-child{position:relative}
+tbody tr.tr-gold{--glim:#f59e0b}tbody tr.tr-silver{--glim:#64748b}tbody tr.tr-bronze{--glim:#ea580c}
+tbody tr[class*="tr-"] td:first-child::after{content:"";position:absolute;left:-4px;top:28%;width:14px;height:14px;pointer-events:none;opacity:0;
+  background:radial-gradient(circle,#fff 0 22%,var(--glim) 60%);clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%)}
+tbody tr:nth-child(3n+1) td:first-child::after{top:62%;animation-delay:-1.4s!important}
+tbody tr:nth-child(3n+2) td:first-child::after{top:40%;animation-delay:-2.6s!important}
+tbody tr:nth-child(4n) td:first-child::after{top:72%;animation-delay:-.6s!important}
+@media (prefers-reduced-motion:no-preference){tbody tr[class*="tr-"] td:first-child::after{animation:glimmer 3.6s ease-in-out infinite}}
+@keyframes glimmer{0%,70%,100%{opacity:0;transform:translateX(2px) scale(.3) rotate(0)}80%{opacity:1;transform:translateX(2px) scale(1) rotate(45deg)}90%{opacity:0;transform:translateX(2px) scale(.4) rotate(90deg)}}
 /* tier cards: the whole card is the metal. --t1 text accent, --t2 edge, --t3 tint, --tg glow, --tbg the plate, --tring the moving light on the edge */
 @property --ang{syntax:"<angle>";inherits:false;initial-value:0deg}
 .rc.tier-gold,.lc.lt-gold{--t1:#78350f;--t2:#d97706;--t3:rgba(146,64,14,.13);--tg:rgba(245,158,11,.55);
