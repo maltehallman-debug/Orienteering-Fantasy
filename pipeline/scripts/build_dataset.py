@@ -315,6 +315,79 @@ if EVINFO is not None:
     os.makedirs(os.path.dirname(fp), exist_ok=True); json.dump(final, open(fp, "w"))
     print("races ahead (name, date, competitors, top runners entered):", [(ev["name"], ev["dates"][0], EVBIG[ev["eid"]]["n"], EVBIG[ev["eid"]]["top"]) for ev in sorted(EVINFO, key=lambda x: x["dates"][0]) if ev["dates"] and ev["dates"][0] >= TODAY.isoformat()])
     print("big competitions:", sorted(((ev["name"], ev["dates"][0], EVBIG[ev["eid"]]["n"], EVBIG[ev["eid"]]["top"]) for ev in EVINFO if EVBIG[ev["eid"]]["big"]), key=lambda x: x[1]))
+# ---- without Eventor ----
+# The nightly job keeps a copy of Eventor's race list (data/eventor is cached between runs), added to night by night.
+# When the key is missing the game carries on with what it has: liveresultat's races, that copy, hand-entered races and
+# start lists, and it judges which races are big from what it knows (see guess_big). Weeks and locks then follow the
+# same rules as with Eventor, only from those guesses; admins can still force anything.
+SNAP_P = f"{S}/data/eventor/snapshot.json"
+SNAP = _j("eventor/snapshot.json", {"events": {}, "upcoming": {}})
+if EVINFO is not None:
+    for ev in EVINFO:
+        SNAP["events"][str(ev["eid"])] = {"name": ev.get("name", ""), "dates": ev.get("dates", []), "big": EVBIG.get(ev["eid"], {}).get("big", False)}
+    for u in _j("eventor_upcoming.json", []):
+        SNAP["upcoming"][str(u["eid"])] = u
+    SNAP["asof"] = TODAY.isoformat()
+    os.makedirs(os.path.dirname(SNAP_P), exist_ok=True); json.dump(SNAP, open(SNAP_P, "w"), ensure_ascii=False)
+NO_EVENTOR = EVINFO is None
+STARTLISTS = _j("lr_startlists.json", {})
+CHAMP = re.compile(r"\bsm\b|\bsm[,:\s-]|ungdoms-sm|\busm\b|swedish league|sverigepremi|\bdm\b|distriktsmästerskap|o-ringen|25-?manna|tiomila|smålandskavlen|silva league|nationell", re.I)
+def race_series(n):
+    # one name for the same race year after year: no digits, no stage words, no punctuation
+    n = re.sub(r"\d+|\b(dag|etapp|stage|day|del)\b|[^a-zåäöü ]", " ", clean_name(n).lower())
+    return " ".join(n.split())
+_cfin = collections.defaultdict(int); _ctop = collections.defaultdict(set)
+for e in events:
+    _cfin[e["cid"]] += len(e["fin"]); _ctop[e["cid"]] |= {rkey(r, e) for r in e["fin"]} & TOP
+BIG_SERIES = {race_series(comps[c]["name"]) for c in _cfin if c in comps and _cfin[c] >= 40 and len(_ctop[c]) >= BIG_TOP}
+def sl_top(cid):
+    rows = STARTLISTS.get(str(cid), [])
+    return len(rows), len({rkey({"name": r["name"], "club": r["club"]}, {"g": r["cls"][0]}) for r in rows} & TOP)
+def guess_big(name, cid=None, known=None):
+    if known: return True, "eventor"
+    if CHAMP.search(name): return True, "namn"
+    if race_series(name) in BIG_SERIES: return True, "tidigare"
+    if cid:
+        n, t = sl_top(cid)
+        if n >= 40 and t >= BIG_TOP: return True, "startlista"
+    return False, ""
+AHEAD = []   # every race known from the week before today on: {"name", "date", "cid", "eo", "big"}
+if NO_EVENTOR:
+    _from = (monday(TODAY) - dt.timedelta(days=7)).isoformat()
+    for c in comps.values():
+        if c["date"] >= _from and c["id"] not in EXCLUDE and c["id"] < EV_OFFSET and real_comp(c):
+            AHEAD.append({"name": clean_name(c["name"]), "date": c["date"], "cid": c["id"], "eo": 0})
+    for eid, ev in SNAP.get("events", {}).items():
+        for d in ev.get("dates", []):
+            if d >= _from: AHEAD.append({"name": ev["name"], "date": d, "cid": None, "eo": int(eid), "snapbig": ev.get("big")})
+    for m in _j("manual_events.json", []):
+        if m["date"] >= _from: AHEAD.append({"name": m["name"], "date": m["date"], "cid": None, "eo": 0})
+    _seen = {}
+    for a in AHEAD:
+        key = (a["date"], race_series(a["name"]))
+        b, why = guess_big(a["name"], a.get("cid"), a.get("snapbig"))
+        a["big"], a["why"] = b, why
+        if key in _seen: _seen[key]["big"] = _seen[key]["big"] or b; _seen[key]["cid"] = _seen[key]["cid"] or a["cid"]; _seen[key]["eo"] = _seen[key]["eo"] or a["eo"]
+        else: _seen[key] = a
+    AHEAD = sorted(_seen.values(), key=lambda a: (a["date"], a["name"]))
+    weeks_big = collections.defaultdict(int); weeks_all = collections.defaultdict(int)
+    for a in AHEAD:
+        k = monday(dt.date.fromisoformat(a["date"])).isoformat(); weeks_all[k] += 1
+        if a["big"]: weeks_big[k] += 1
+    fp = f"{S}/data/eventor/weeks_final.json"; final = _j("eventor/weeks_final.json", {})
+    EVWEEKS = {}
+    wk = SEASON_START
+    while wk <= LAST_ROUND_START:
+        k = wk.isoformat(); wk_started = wk <= TODAY
+        if wk_started and k in final: EVWEEKS[k] = final[k]
+        elif wk >= monday(TODAY):
+            # a week with no big race known but several races is played: better a round too many than one lost
+            n = weeks_big.get(k, 0)
+            EVWEEKS[k] = {"big": n if n >= 2 or weeks_all.get(k, 0) < 4 else 2, "final": wk_started, "guess": True}
+            if wk_started: final[k] = EVWEEKS[k]
+        wk += dt.timedelta(days=7)
+    os.makedirs(os.path.dirname(fp), exist_ok=True); json.dump(final, open(fp, "w"))
+    print("WITHOUT EVENTOR: races ahead", len(AHEAD), "judged big", [(a["date"], a["name"], a["why"]) for a in AHEAD if a["big"]][:40])
 # The O-Event week is the beta test round. After it the game waits for the official launch, the week of
 # Sverigepremiären (its dates come from Eventor; the week below is kept until they do): every week in between is
 # skipped, the launch week is on.
@@ -334,12 +407,17 @@ if EVINFO is not None:
             for d in ev["dates"]:
                 k = monday(dt.date.fromisoformat(d)).isoformat()
                 first_big[k] = min(first_big.get(k, d), d)
+first_any = {}
+for a in AHEAD:
+    k = monday(dt.date.fromisoformat(a["date"])).isoformat()
+    first_any[k] = min(first_any.get(k, a["date"]), a["date"])
+    if a["big"]: first_big[k] = min(first_big.get(k, a["date"]), a["date"])
 first_big[LAUNCH_WEEK] = min(first_big.get(LAUNCH_WEEK, LAUNCH["dates"][0]), LAUNCH["dates"][0])
 lk_path = f"{S}/data/eventor/locks_final.json"; locks_final = _j("eventor/locks_final.json", {})
 def lock_of(wk, ids):
     k = wk.isoformat()
     if k in locks_final: return locks_final[k]
-    first = first_big.get(k) or min((e["d"].isoformat() for e in events if e["id"] in ids), default=None)
+    first = first_big.get(k) or first_any.get(k) or min((e["d"].isoformat() for e in events if e["id"] in ids), default=None)
     if not first: return None
     t = dt.datetime.combine(dt.date.fromisoformat(first) - dt.timedelta(days=1), dt.time(20, 0), STO)
     if t <= NOW: locks_final[k] = t.isoformat()
@@ -470,7 +548,18 @@ if EVUP is not None:
     upcoming = [{"id": 0, "eo": u["eid"], "name": clean_name(u["name"]), "date": u["date"], "big": 1 if EVBIG.get(u["eid"], {}).get("big") else 0}
                 for u in EVUP if (u["ages"] >= 2 or u["cls"] == 1) and not TRAINING.search(u["name"]) and not OTHER_SPORT.search(u["name"])]
     _seen = set(); upcoming = [u for u in upcoming if not ((u["name"].lower(), u["date"]) in _seen or _seen.add((u["name"].lower(), u["date"])))]
-print("upcoming races", len(upcoming))
+if NO_EVENTOR:
+    _have = {(u["date"], race_series(u["name"])) for u in upcoming}
+    for u in upcoming:
+        a = next((a for a in AHEAD if a["date"] == u["date"] and race_series(a["name"]) == race_series(u["name"])), None)
+        if a and a["big"]: u["big"] = 1
+        if a and a.get("eo"): u["eo"] = a["eo"]
+    for a in AHEAD:
+        if a["date"] >= TODAY.isoformat() and a["date"] <= "2027-10-31" and (a["date"], race_series(a["name"])) not in _have and not a.get("cid") \
+                and not TRAINING.search(a["name"]) and not OTHER_SPORT.search(a["name"]):
+            upcoming.append({"id": 0, "eo": a.get("eo") or 0, "name": clean_name(a["name"]), "date": a["date"], "big": 1 if a["big"] else 0}); _have.add((a["date"], race_series(a["name"])))
+    upcoming.sort(key=lambda x: (x["date"], x["name"]))
+print("upcoming races", len(upcoming), "(without Eventor)" if NO_EVENTOR else "")
 # entries (Eventor): which pool runners have entered which upcoming race, matched like results (name, club, sex)
 entered = collections.defaultdict(list)
 _upix = {}
@@ -490,9 +579,24 @@ for en in _j("eventor_entries.json", []):
         k = c[0]
     for i in _upix.get(en["eid"], []):
         if i not in entered[k]: entered[k].append(i)
+# start lists on liveresultat: runners set to start in the coming days count as entered too
+_sl_n = 0
+for cid, rows in STARTLISTS.items():
+    c = comps.get(int(cid))
+    if not c: continue
+    ix = [i for i, u in enumerate(upcoming) if u.get("id") == int(cid) or (u["date"] == c["date"] and race_series(u["name"]) == race_series(c["name"]))]
+    for r in rows:
+        k = rkey({"name": r["name"], "club": r["club"]}, {"g": r["cls"][0]})
+        if k not in pset0:
+            cc = _byname.get((r["name"].strip().lower(), r["cls"][0]), [])
+            if len(cc) != 1: continue
+            k = cc[0]
+        for i in ix:
+            if i not in entered[k]: entered[k].append(i); _sl_n += 1
+print("entries from liveresultat start lists", _sl_n)
 print("pool runners with entries", len(entered), "entries not matched to a pool runner", len(_miss), _miss[:15])
 json.dump({"entered": entered, "upcoming": upcoming, "events": [{k: v for k, v in e.items() if k not in ("rows", "fin", "d")} for e in events],
-           "rounds": rounds, "pool": pool,
+           "rounds": rounds, "pool": pool, "noEventor": NO_EVENTOR,
            "names": {k: names[k].most_common(1)[0][0] for k in pool},
            "clubs": {k: pick_club(clubs[k]) for k in pool},
            "cls": CLS, "alias": ALIAS,

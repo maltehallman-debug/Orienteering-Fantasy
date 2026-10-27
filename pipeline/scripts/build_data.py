@@ -65,6 +65,8 @@ data = {"runners": runners, "events": out_events, "rounds": out_rounds, "res": r
         "asof": ASOF, "upcoming": [dict({"name": u["name"], "date": u["date"]}, **({"lr": u["id"]} if u.get("id") else {}), **({"eo": u["eo"]} if u.get("eo") else {}), **({"big": 1} if u.get("big") else {})) for u in upcoming], "liveStart": live_start,
         # runner index -> the upcoming races (indexes into "upcoming") they have entered in Eventor
         "entered": entered,
+        # set when the nightly job ran without Eventor: weeks, locks and big races are then judged from liveresultat
+        **({"noEventor": 1} if D.get("noEventor") else {}),
         # the official launch: Sverigepremiären's dates (from Eventor when it has them)
         "launch": {k: v for k, v in (json.load(open(f"{S}/data/eventor/launch.json")) if os.path.exists(f"{S}/data/eventor/launch.json") else {"name": "Sverigepremiären", "dates": ["2027-03-05", "2027-03-06", "2027-03-07"], "guess": True}).items() if k in ("name", "dates", "guess")},
         # old runner keys (a joint relay club used to count as a club) -> runner index, so saved squads still load

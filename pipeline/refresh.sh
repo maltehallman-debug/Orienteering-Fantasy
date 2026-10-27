@@ -10,6 +10,8 @@ python3 "$S/scripts/classes.py" "$S"
 python3 "$S/scripts/fetch_results.py" "$S"
 # official results, entries and the race list from Eventor (needs EVENTOR_API_KEY; skipped without it)
 python3 "$S/scripts/eventor.py" "$S"
+# start lists for the coming days from liveresultat (who is set to run; also used when Eventor is missing)
+python3 "$S/scripts/startlists.py" "$S" || echo "start lists skipped"
 python3 "$S/scripts/build_dataset.py" "$S"
 python3 "$S/scripts/build_data.py" "$S"
 python3 "$S/scripts/sync_locks.py" "$S"
