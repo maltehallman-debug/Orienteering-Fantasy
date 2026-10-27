@@ -7,8 +7,10 @@ ev_round = {}
 for r in rounds:
     for eid in r["events"]: ev_round[eid] = r["n"] - 1
 KIND = {"F": 0, "DNF": 1, "MP": 2, "DSQ": 3}
-# race points are scaled so a good week is about 100 and rounded to whole points (stored in tenths like everything else)
-PSCALE = 0.32
+# race points are scaled so one runner's really good week is about 10 and rounded to whole points (stored in tenths
+# like everything else). A finish is always worth at least 1; a mispunch, DNF or DSQ is -1.
+PSCALE = 0.11
+def game_pts(s): return max(1, round(s["pts"] * PSCALE)) if s["k"] == "F" else round(s["pts"] * PSCALE)
 out_events = []; res = []; evpos = {}
 for i, e in enumerate(events):
     evpos[e["id"]] = i
@@ -18,7 +20,7 @@ for i, e in enumerate(events):
     rows = []
     for k, s in e["scores"].items():
         if k not in ridx: continue
-        rows.append([ridx[k], KIND[s["k"]], s.get("rank", 0), s.get("t", 0), int(round(s.get("gap", 0) * 10000)), int(round(s["pts"] * PSCALE)) * 10, s.get("topb", 0)])
+        rows.append([ridx[k], KIND[s["k"]], s.get("rank", 0), s.get("t", 0), int(round(s.get("gap", 0) * 10000)), game_pts(s) * 10, s.get("topb", 0)])
     rows.sort(key=lambda x: (x[1] != 0, x[2] if x[1] == 0 else 0, -x[5]))
     res.append(rows)
 out_rounds = [{"n": r["n"], "start": r["start"], "end": r["end"], "ev": [evpos[x] for x in r["events"]], "final": 1 if r["final"] else 0,
@@ -72,7 +74,7 @@ data = {"runners": runners, "events": out_events, "rounds": out_rounds, "res": r
         # old runner keys (a joint relay club used to count as a club) -> runner index, so saved squads still load
         "alias": {a: ridx[k] for a, k in D.get("alias", {}).items() if k in ridx},
         # money is in tenths of a thousand (205 = 20.5k); ten runners, the first five are the A team and score double
-        "budget": 1000, "squad": 10, "aSize": 5, "clubMax": 3, "freeTransfers": 2, "penalty": 200, "dnfPts": -30,
+        "budget": 1000, "squad": 10, "aSize": 5, "clubMax": 3, "freeTransfers": 2, "penalty": 70, "dnfPts": -30,
         # price tiers (lower bounds): gold from 17.5k (about the top 8 in a class), silver from 10k; the rest is bronze
         "tiers": [175, 100]}
 json.dump(data, open(f"{S}/build/data.json", "w"), ensure_ascii=False, separators=(",", ":"))
