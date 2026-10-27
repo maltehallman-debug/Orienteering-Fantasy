@@ -1649,20 +1649,23 @@ a.ncard{text-decoration:none}
 .course .ctl.skip circle{stroke-dasharray:2 4;stroke-opacity:.5}
 .course .ctl:not(.taken):not(.now) circle{fill:var(--bg)}
 
-/* chips as controls: the white and orange control flag with its code, the chip's mark on the orange half.
-   The chip in play gets the purple course circle around it, as a control on a printed course. */
-.coin .disc{width:52px;height:52px;border-radius:7px;color:#fff;
-  background:linear-gradient(135deg,#fff 0 49.5%,#f06a2b 50.5% 100%)!important;
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.14),0 6px 12px -6px rgba(0,0,0,.35)!important}
+/* chips as round yellow badges with the navy mark, the effect in small type under the name.
+   The chip in play turns navy with a yellow ring; a used one goes grey. */
+.coin{gap:4px}
+.coin .disc{width:56px;height:56px;border-radius:50%;color:#003c68;background:#ffe74d!important;
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.08),0 6px 12px -8px rgba(0,0,0,.4)!important}
 .coin .disc::before,.coin .disc::after{display:none!important}
-.coin .disc .code{position:absolute;left:5px;top:3px;font:800 13px/1 var(--font);font-style:normal;color:#000}
-.coin .disc svg{position:absolute;right:4px;bottom:4px;width:20px;height:20px;stroke-width:2.2;filter:none!important}
-.coin b{font-family:var(--font);font-weight:600;font-size:11px;color:#000}
-.coin.on .disc{transform:translateY(-3px)!important;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14),0 0 0 4px #fff,0 0 0 6.5px #c2187c,0 12px 20px -8px rgba(194,24,124,.6)!important}
-.coin.on b{color:#c2187c!important}
-.coin:disabled .disc{filter:grayscale(1)!important;opacity:.38!important}
-@media (max-width:420px){.coin b{font-size:9.5px;letter-spacing:-.01em}.coin .disc{width:48px;height:48px}}
-.chipdesc[class*="c-"]{--cc:#c2187c;background:rgba(194,24,124,.07);box-shadow:inset 0 0 0 1px rgba(194,24,124,.3)}
+.coin .disc svg{width:24px;height:24px;stroke-width:2.2;filter:none!important}
+.coin{align-content:start}
+.coin b{font:800 10.5px/1.15 var(--font);letter-spacing:-.01em;color:#0b1b2b;margin-top:3px;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:normal}
+.coin small{font:600 8.5px/1.1 var(--font);color:#6b7783;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.coin.on .disc{background:#003c68!important;color:#ffe74d;transform:translateY(-3px)!important;
+  box-shadow:0 0 0 4px #fff,0 0 0 6.5px #ffe74d,0 12px 20px -8px rgba(0,60,104,.6)!important}
+.coin.on b{color:#003c68!important}
+.coin:disabled .disc{filter:none!important;opacity:1!important;background:#e7ebef!important;color:#b7c0c8;box-shadow:none!important}
+.coin:disabled b,.coin:disabled small{color:#9aa5b0}
+@media (max-width:420px){.coin b{font-size:9.5px}.coin small{font-size:8px}.coin .disc{width:50px;height:50px}.coin .disc svg{width:22px;height:22px}}
+.chipdesc[class*="c-"]{--cc:#003c68;background:rgba(0,60,104,.06);box-shadow:inset 0 0 0 1px rgba(0,60,104,.18)}
 
 /* the name warning keeps its red, in the site's type */
 #modal .sheet[data-key="rename"]{border-radius:30px 30px 0 0!important}
@@ -2259,6 +2262,7 @@ const ordered=p=>{const a=(p.a||[]).filter(i=>p.squad.includes(i));return [...a,
 const CHIPINFO={wc:["Vägval","Fria byten den här omgången"],tc:["Spurt","Boostad löpare får tredubbla poäng"],ax:["Elitklass","A-laget får ×4"],bb:["Stafett","B-laget får ×2"],yo:["Ungdoms-SM","D/H16-löpare får dubbla poäng"]};
 /* orienteering marks: a route choice that forks, a sprint, the elite podium, a relay baton, a championship medal */
 const CHIPICON={wc:'<path d="M12 21v-7M12 14 6.5 4M12 14l5.5-10M4.5 6 6.5 4l2 2M15.5 6l2-2 2 2"/>',tc:'<path d="M5 6l6 6-6 6M13 6l6 6-6 6"/>',ax:'<path d="M3 20h18M5 20v-5h4v5M10 20V9h4v11M15 20v-3h4v3"/>',bb:'<path d="M6.5 17.5 17.5 6.5M15 4.5l4.5 4.5M4.5 15 9 19.5"/>',yo:'<path d="M8.5 3 12 9l3.5-6"/><circle cx="12" cy="15" r="5.5"/><path d="M12 12.5v5"/>'};
+const CHIPFX={wc:"Fria byten",tc:"×3 boost",ax:"A-lag ×4",bb:"B-lag ×2",yo:"D/H16 ×2"};
 const CHIPSHORT={wc:"Vägval",tc:"Spurt",ax:"Elitklass",bb:"Stafett",yo:"Ungdoms-SM"};
 const chipSvg=c=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CHIPICON[c]||""}</svg>`;
 /* the multiplier a runner gets this round: their team, the chip, and the boost */
@@ -2655,7 +2659,7 @@ function teamView(){
   const lead=locked?(frozen?"Låst. Poängen kommer in i takt med resultaten.":"Låst för "+rdThe(rd)+"."):
      (!state.squad.length?"Välj "+D.squad+" löpare för "+fm(D.budget)+", högst "+D.clubMax+" per klubb.":D.freeTransfers+" fria byten den här omgången.");
   const chipsHtml=`<div class="chipset"><div class="coins">${E.CHIPS.map(c=>{const used=state.chips[c],on=plan.chip===c,off=locked||used||rd.skip||(c==="wc"&&!state.squad.length);
-      return `<button class="coin c-${c} ${on?"on":""} ${used?"used":""}" data-chip="${on?"":c}" aria-pressed="${on}" ${off?"disabled":""} title="${esc(CHIPINFO[c][0]+": "+CHIPINFO[c][1])}"><span class="disc"><i class="code">${31+E.CHIPS.indexOf(c)}</i>${chipSvg(c)}</span><b>${used?"Använd":CHIPSHORT[c]}</b></button>`}).join("")}</div>
+      return `<button class="coin c-${c} ${on?"on":""} ${used?"used":""}" data-chip="${on?"":c}" aria-pressed="${on}" ${off?"disabled":""} title="${esc(CHIPINFO[c][0]+": "+CHIPINFO[c][1])}"><span class="disc">${chipSvg(c)}</span><b>${used?"Använt":CHIPSHORT[c]}</b><small>${CHIPFX[c]}</small></button>`}).join("")}</div>
     <div class="chipdesc ${plan.chip?"c-"+plan.chip:""}">${plan.chip?`<span><b>${esc(CHIPINFO[plan.chip][0])}</b> ${esc(CHIPINFO[plan.chip][1].toLowerCase())}.</span>${locked?"":`<button class="btn quiet" data-chip="">Ta bort</button>`}`:`<span>${rd.skip?"Inga chips en vecka som hoppas över.":locked?"Inget chip den här omgången.":"Inget chip den här omgången. Tryck på ett för att spela det."}</span>`}</div></div>`;
   return `${hero(r)}${raceCards(r)}${liveNow()}<div class="two"><div class="panel squad-panel">
    <p class="eyebrow pg-k">01 · Bygg ditt lag</p><h2 style="margin-top:0">Din trupp</h2>
