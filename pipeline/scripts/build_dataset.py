@@ -522,12 +522,17 @@ def prices_before(cutoff):
         for age, (_, p) in enumerate(reversed(ser_sorted[k][:n])):
             w = DECAY ** age; num += w * p; den += w
         ratings[k] = (num + W0 * m0) / (den + W0)
-    # prices in thousands, set within each class (H16, D21, ...): the best runner 22k, three from 20k,
-    # about 17.5k for 8th, 14.5k for 15th, 11k for 30th, 7k for 60th, then down to 2.5-3k for the rest
+    # prices in thousands, set within each class (H16, D21, ...): the best runner 22k, then down the class's order.
+    # A bigger class has more good runners, so its scale is stretched by the square root of its size against the
+    # middle-sized class: in a class of middle size about 8 runners cost 17.5k or more, 36 cost 10k or more; H21,
+    # three to four times as big, has about twice as many at each price.
     out = {}
-    for c in {CLS[k] for k in ratings}:
-        order = sorted((k for k in ratings if CLS[k] == c), key=lambda k: -ratings[k])
-        for i, k in enumerate(order): out[k] = round(2.5 + 19.5 * math.exp(-(i / PTAU) ** PBETA), 1)
+    by = collections.defaultdict(list)
+    for k in ratings: by[CLS[k]].append(k)
+    sizes = sorted(len(v) for v in by.values()); ref = sizes[len(sizes) // 2]
+    for c, ks in by.items():
+        order = sorted(ks, key=lambda k: -ratings[k]); tau = PTAU * math.sqrt(len(ks) / ref)
+        for i, k in enumerate(order): out[k] = round(2.5 + 19.5 * math.exp(-(i / tau) ** PBETA), 1)
     return out
 price_by_round = []
 for r in rounds:
