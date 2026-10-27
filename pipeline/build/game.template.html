@@ -1667,25 +1667,6 @@ a.ncard{text-decoration:none}
 @media (max-width:420px){.coin b{font-size:9.5px}.coin small{font-size:8px}.coin .disc{width:50px;height:50px}.coin .disc svg{width:22px;height:22px}}
 .chipdesc[class*="c-"]{--cc:#003c68;background:rgba(0,60,104,.06);box-shadow:inset 0 0 0 1px rgba(0,60,104,.18)}
 
-/* the runner list: the level is in the price itself, a metal pill (gold, silver, bronze), and in a ring around the
-   face and a tinted edge on the row. The separate level column is gone; buying is a filled navy button. */
-#mrows tr{--tedge:#ea580c;--ttint:rgba(234,88,12,.07)}
-#mrows tr.tr-gold{--tedge:#f59e0b;--ttint:rgba(245,158,11,.11)}
-#mrows tr.tr-silver{--tedge:#94a3b8;--ttint:rgba(148,163,184,.13)}
-#mrows tr.tr-bronze{--tedge:#ea580c;--ttint:rgba(234,88,12,.07)}
-#mrows tr td:first-child{box-shadow:inset 5px 0 0 var(--tedge)!important;background-image:linear-gradient(90deg,var(--ttint),transparent 85%)}
-#mrows .who-wrap>.av{box-shadow:0 0 0 2px var(--surface,#fff),0 0 0 4px var(--tedge)}
-.mkt th:nth-child(2),.mkt td:nth-child(2){display:none}
-.pp{display:inline-flex;align-items:center;gap:4px;padding:5px 9px 5px 7px;border-radius:999px;white-space:nowrap;font-variant-numeric:tabular-nums}
-.pp svg{width:11px;height:11px;flex:none}
-.pp b{font:800 13.5px/1 var(--font)}
-.tierkey{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:4px 0 8px;font-size:13px;color:var(--text-2)}
-.tierkey .tier+.tier,.tierkey .tier{margin-left:4px}
-.mkt .btn.mk-buy{background:#003c68!important;color:#fff!important;box-shadow:0 6px 14px -8px rgba(0,60,104,.8)!important;border:0}
-.mkt .btn.mk-buy:disabled{background:#cfd6dd!important;color:#fff!important;box-shadow:none!important}
-.mkt .btn.mk-sell{background:transparent!important;color:#c0262d!important;box-shadow:inset 0 0 0 1.5px #c0262d!important}
-@media (max-width:560px){.mkt th:nth-child(3),.mkt td:nth-child(3){width:70px}.pp{padding:5px 8px}.pp svg{display:none}.pp b{font-size:13px}
-  .tierkey{font-size:12px}}
 /* the name warning keeps its red, in the site's type */
 #modal .sheet[data-key="rename"]{border-radius:30px 30px 0 0!important}
 @media (min-width:641px){#modal .sheet[data-key="rename"]{border-radius:30px!important}}
@@ -2315,8 +2296,8 @@ function marketBody(rows){mRows=rows;
   return (rows.slice(0,shown).map(rowHtml).join("")||`<tr><td colspan="10" class="note">Inga löpare matchar. Rensa sökningen eller ett filter.</td></tr>`);
 }
 function rowHtml(x){const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
-   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><span class="pp t-${TIERS[tierOf(x.i)][0]}" title="${TIERS[tierOf(x.i)][1]}">${GEM}<b>${fm(x.p)}</b></span></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
-   <td>${inS?`<button class="btn mk-sell" data-sell="${x.i}">Sälj</button>`:`<button class="btn mk-buy" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Köp</button>`}</td></tr>`}
+   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
+   <td>${inS?`<button class="btn" data-sell="${x.i}">Sälj</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Köp</button>`}</td></tr>`}
 /* the runner list grows as you scroll: a marker under it loads the next runners before you reach the end, and each
    new runner rises in on its own. A button stays as a fallback where the browser cannot watch the marker. */
 let mRows=[];
@@ -2345,7 +2326,6 @@ function marketHtml(){
    <select id="clsF" aria-label="Klass"><option value="">Alla klasser</option>${["H","D","H16","H18","H20","H21","D16","D18","D20","D21"].map(c=>`<option value="${c}" ${c===clsF?"selected":""}>${c==="H"?"Alla herrar (H)":c==="D"?"Alla damer (D)":c}</option>`).join("")}</select>
    <select id="clubF" aria-label="Klubb"><option value="">Alla klubbar</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
    <label><input type="checkbox" id="afford" ${afford?"checked":""}> Bara de jag har råd med</label>${Object.keys(ENT).length?`<label><input type="checkbox" id="entF" ${entF?"checked":""}> Anmäld den här veckan</label>`:""}</div>
-  <p class="tierkey"><span class="tier t-gold">${GEM}Guld</span> från ${fm((D.tiers||[140,60])[0])} <span class="tier t-silver">${GEM}Silver</span> från ${fm((D.tiers||[140,60])[1])} <span class="tier t-bronze">${GEM}Brons</span> under det</p>
   <p class="legend"><span class="idle y" aria-hidden="true">!</span> inget lopp förra veckan <span class="idle r" aria-hidden="true">!</span> inget på 10 veckor${Object.keys(ENT).length?` <span class="entered" aria-hidden="true">✓</span> anmäld den här veckan`:""}</p>
   <div class="tbl mkt"><table><thead><tr>${th("name","Löpare")}<th>Nivå</th>${th("price","Pris")}<th>Ändring</th>${th("form","Form","Snitt de senaste 3 tävlingsveckorna")}<th title="Poäng de senaste 6 veckorna de tävlade">Senaste 6 tävlingsveckorna</th>${th("avg","Per vecka","Snitt de senaste 5 tävlingsveckorna")}${th("total","Poäng")}${th("starts","Starter")}<th></th></tr></thead><tbody id="mrows">
   ${marketBody(rows)}
