@@ -2259,11 +2259,11 @@ const idleTag=i=>{const k=idle(i);if(!k)return "";const t=k===2?"Inget lopp de s
 const tierTag=(i,r)=>{const t=tierOf(i,r);return `<span class="tier t-${TIERS[t][0]}">${GEM}${TIERS[t][1]}</span>`};
 /* the A team is plan.a (up to five runners), the rest of plan.squad is the B team; ordered squads put the A team first */
 const ordered=p=>{const a=(p.a||[]).filter(i=>p.squad.includes(i));return [...a,...p.squad.filter(i=>!a.includes(i))]};
-const CHIPINFO={wc:["Vägval","Fria byten den här omgången"],tc:["Spurt","Boostad löpare får tredubbla poäng"],ax:["Elitklass","A-laget får ×4"],bb:["Stafett","B-laget får ×2"],yo:["Ungdoms-SM","D/H16-löpare får dubbla poäng"]};
+const CHIPINFO={wc:["Vägval","Fria byten den här omgången"],tc:["Spurt","Boostad löpare får tredubbla poäng"],ax:["Elitklass","A-laget får ×4"],bb:["Stafett","B-laget får ×2"],yo:["USM","D/H16-löpare får dubbla poäng"]};
 /* orienteering marks: a route choice that forks, a sprint, the elite podium, a relay baton, a championship medal */
 const CHIPICON={wc:'<path d="M12 21v-7M12 14 6.5 4M12 14l5.5-10M4.5 6 6.5 4l2 2M15.5 6l2-2 2 2"/>',tc:'<path d="M5 6l6 6-6 6M13 6l6 6-6 6"/>',ax:'<path d="M3 20h18M5 20v-5h4v5M10 20V9h4v11M15 20v-3h4v3"/>',bb:'<path d="M6.5 17.5 17.5 6.5M15 4.5l4.5 4.5M4.5 15 9 19.5"/>',yo:'<path d="M8.5 3 12 9l3.5-6"/><circle cx="12" cy="15" r="5.5"/><path d="M12 12.5v5"/>'};
 const CHIPFX={wc:"Fria byten",tc:"×3 boost",ax:"A-lag ×4",bb:"B-lag ×2",yo:"D/H16 ×2"};
-const CHIPSHORT={wc:"Vägval",tc:"Spurt",ax:"Elitklass",bb:"Stafett",yo:"Ungdoms-SM"};
+const CHIPSHORT={wc:"Vägval",tc:"Spurt",ax:"Elitklass",bb:"Stafett",yo:"USM"};
 const chipSvg=c=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CHIPICON[c]||""}</svg>`;
 /* the multiplier a runner gets this round: their team, the chip, and the boost */
 function multOf(i,squad,chip,cap){const k=squad.indexOf(i);return E.teamMult(i,k,chip)*(i===cap?(chip==="tc"?3:2):1)}
@@ -3160,7 +3160,7 @@ function infoSheet(k){
   <li><b>Felstämplat, utgått, diskvalificerad:</b> -5 före skalning. Ej start: 0.</li>
   <li><b>Dina poäng:</b> loppets summa multipliceras med 0,32 och avrundas till heltal. En målgång är värd minst 1, ett bra lopp 3 till 8, en seger i ett starkt fält 20 eller mer, en felstämpling -2. En bra vecka för ett helt lag är runt 100.</li></ul></div><div class="info"><h3>Klassbetyg</h3><p style="max-width:70ch;margin:6px 0">Varje löpares klassbetyg bygger på hur snabbt hen springer jämfört med resten av fältet, justerat för hur starkt fältet var, i alla ${D.events.length} lopp i datan. Det avgör hur mycket en slagen löpare är värd. Klassbetyget används bara för att räkna poäng. Priserna använder det aldrig, de bygger bara på resultat från före omgången.</p></div>`,
     more:()=>hd("Chips, nivåer och ligor","Fler regler")+`<div class="info"><ul class="rules">
-  <li><b>Chips</b>, ett användande var och ett per omgång: Vägval (fria byten), Spurt (boostad löpare ×3), Elitklass (A-laget ×4), Stafett (B-laget ×2) och Ungdoms-SM (D16- och H16-löpare får dubbla poäng).</li>
+  <li><b>Chips</b>, ett användande var och ett per omgång: Vägval (fria byten), Spurt (boostad löpare ×3), Elitklass (A-laget ×4), Stafett (B-laget ×2) och USM (D16- och H16-löpare får dubbla poäng).</li>
   <li><b>Boost:</b> en boostad löpare i A-laget räknas ×4. Inget lopp, ingen boost.</li>
   <li><b>Flyttar:</b> flytta löpare mellan A- och B-laget när som helst innan omgången startar.</li>
   <li><b>Nivåer</b> följer priset: Guld från ${fm(D.tiers[0])}, Silver från ${fm(D.tiers[1])}, Brons under det. Priserna följer formen, så en löpare kan flytta upp eller ner en nivå. Löpare säljs till dagens pris.</li>
