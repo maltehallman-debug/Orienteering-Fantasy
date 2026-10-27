@@ -3527,7 +3527,7 @@ document.addEventListener("click",ev=>{
   if(d.swapwith!==undefined){const j=+d.swapwith,i=swapSel;buzz("ok");swapSel=null;if(i!==null&&i!==j){const ia=plan.a.includes(i),ja=plan.a.includes(j);if(ia!==ja){if(ia)plan.a[plan.a.indexOf(i)]=j;else plan.a[plan.a.indexOf(j)]=i;justSwapped=[i,j];save()}}render();return}
   if(d.moveto){const i=swapSel;buzz("ok");swapSel=null;if(i!==null){if(d.moveto==="A"&&!plan.a.includes(i)&&plan.a.length<AS)plan.a.push(i);else if(d.moveto==="B"&&plan.a.includes(i)&&plan.squad.length-plan.a.length<D.squad-AS)plan.a=plan.a.filter(x=>x!==i);justSwapped=[i];fixLeaders();save()}render();return}
   if(d.boost!==undefined){const i=+d.boost;if(!isLive()&&lock&&lock.round===R())return;if(plan.squad.includes(i)&&plan.captain!==i){buzz("big");plan.captain=i;plan.vice=null;justBoosted=i;save();const [x,y]=centerOf(t);burst(x,y,30)}render();return}
-  if(d.chip!==undefined){const c=d.chip||null;if(c!==plan.chip){buzz(c?"big":"tap");plan.chip=c;justChip=c;save()}render();if(c){const [x,y]=centerOf(t);burst(x,y)}return}
+  if(d.chip!==undefined){const c=d.chip||null;if(c!==plan.chip){buzz(c?"big":"tap");plan.chip=c;justChip=c;save()}render();if(c){const dc=document.querySelector(`.coin.c-${c} .disc`);const [x,y]=centerOf(dc||t);burst(x,dc?y-3:y)}return}
   if(d.sort){if(sortKey===d.sort)sortDir=-sortDir;else{sortKey=d.sort;sortDir=d.sort==="name"?1:-1}render();return}
   if(d.round!==undefined){viewRound=+d.round;render();return}
   if(d.lteam){lpTeam=d.lteam;render();if(mgrOpen&&document.querySelector("#modal .sheet"))managerSheet(mgrOpen.code,mgrOpen.id,mgrOpen.view);return}
