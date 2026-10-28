@@ -1828,9 +1828,8 @@ function avatar(i,cls){
 }
 /* photos runners sent themselves (or a parent did), shown once approved */
 const photoUrl=new Map();
-/* runner photos are switched off for now: every runner shows initials and the photo upload is hidden.
-   Set to false to bring the photos back; nothing has been deleted. */
-const PHOTOS_OFF=true;
+/* runner photos can be switched off (true): every runner then shows initials and the photo upload is hidden. */
+const PHOTOS_OFF=false;
 const runnerPhoto=i=>PHOTOS_OFF?null:(photoUrl.get(D.runners[i].id)||D.runners[i].ph||null);
 let myPhotos=[],pendingPhotos=[],phForm=null,phMsg="",phBusy=false;
 const avPublic=path=>SB_URL+"/storage/v1/object/public/avatars/"+path.split("/").map(encodeURIComponent).join("/");
