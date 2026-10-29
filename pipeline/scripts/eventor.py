@@ -134,8 +134,15 @@ except StopIteration:
 except Exception as ex:
     print("launch: lookup failed", type(ex).__name__)
 
+# ---- the winter pause: after the beta round the game waits for the launch. Nothing is played then, so no entries
+# or class lists are needed and the race list is only looked at once a week, until three weeks before the launch ----
+BETA_END = dt.date(2026, 11, 8)
+_ld = jload(f"{C}/launch.json", {}).get("dates") or ["2027-03-05"]
+PAUSE_WINTER = BETA_END < TODAY < dt.date.fromisoformat(_ld[0]) - dt.timedelta(days=21)
+if PAUSE_WINTER: print("winter pause until", _ld[0], "- race list weekly, no entries or class lists")
+
 # ---- events: championship, national, district and local; foot orienteering, organised by Swedish clubs, not cancelled ----
-raw = cached("events.xml", "events", DAY, fromDate=FROM, toDate=SEASON_END, classificationIds="1,2,3,4")
+raw = cached("events.xml", "events", 7 * 86400 if PAUSE_WINTER else 2 * DAY + 4 * 3600, fromDate=FROM, toDate=SEASON_END, classificationIds="1,2,3,4")
 if not raw: print("eventor: event list unavailable, skipped"); sys.exit(0)
 events = []
 for e in ET.fromstring(raw):
@@ -159,14 +166,13 @@ events = [e for e in events if str(e["id"]) not in DROP]
 print("eventor events (Swedish, foot-O, not cancelled)", len(events), dict(collections.Counter(e["cls"] for e in events)))
 
 # ---- classes per event: which have D/H 16-21 classes, and their ids (entries are asked for those classes only).
-# Only for races in the next AHEAD days. A race that has been run is never asked about again; an upcoming one every
-# fourth day while it is more than ten days away, every second day after that. ----
+# Only for races in the next AHEAD days, once per race and once more in its last four days. ----
 def classes_of(ev):
-    # class names, plus "_n": everyone entered in the event (all classes), which decides whether it is a big competition
+    # class names and ids. Asked once per race, and once more in its last four days in case classes were added late
     p = f"{C}/classes/{ev['id']}.json"; old = jload(p, None)
-    if ev["end"] < TODAY.isoformat(): return old
-    soon = ev["date"] <= (TODAY + dt.timedelta(days=10)).isoformat()
-    if old is not None and "_eb" in old and age(p) < (2 if soon else 4) * 86400 - 4 * 3600: return old
+    if ev["end"] < TODAY.isoformat() or PAUSE_WINTER: return old
+    soon = ev["date"] <= (TODAY + dt.timedelta(days=4)).isoformat()
+    if old is not None and "_eb" in old and (not soon or old.get("_late")): return old
     raw = get("eventclasses", eventId=ev["id"], includeEntryBreakdown="true")   # numberOfEntries is only sent with the breakdown
     if raw is None: return old or {}
     out = {}; n = 0
@@ -176,6 +182,7 @@ def classes_of(ev):
         try: n += int(c.attrib.get("numberOfEntries", 0))
         except ValueError: pass
     out["_n"] = n; out["_eb"] = 1
+    if soon: out["_late"] = 1
     jsave(p, out); return out
 near = [e for e in events if e["date"] <= (TODAY + dt.timedelta(days=AHEAD)).isoformat() or e["id"] in ADD]
 cl = {e["id"]: c for e in near if (c := classes_of(e)) is not None}
@@ -228,7 +235,8 @@ want = sorted({u["eid"] for u in up if u["date"] <= horizon})
 cids = {e: sorted(k for k, v in cl.get(e, {}).items() if not k.startswith("_") and REAL.match(norm(v))) for e in want}
 want = [e for e in want if cids[e]]
 ep = f"{C}/entries.json"; ec = jload(ep, {})
-if ec.get("want") == want and age(ep) < DAY: entries = ec["entries"]; print("entries: today's copy reused")
+if PAUSE_WINTER: entries = []; print("entries: winter pause, not asked")
+elif ec.get("want") == want and age(ep) < DAY: entries = ec["entries"]; print("entries: today's copy reused")
 else:
     entries = []; got = True
     for i in range(0, len(want), 20):
