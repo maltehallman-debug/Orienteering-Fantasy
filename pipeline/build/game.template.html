@@ -1512,7 +1512,14 @@ html.glass .btn:not(.on):not(.go):not(.light):not(.quiet),html.glass .boost:not(
   --c2:#003c68;--c3:#ffc050;--contour:#d4d4d4;--hdr:#fff;--shadow:none;--shadow-lift:0 10px 30px -14px rgba(0,0,0,.25);--r:30px;--r-sm:999px}
 .lc,.sqc,.lineup,.squad,.bd-score,.sqc-sh{--display:"Barlow Condensed","Arial Narrow",sans-serif}
 body{letter-spacing:0}
-.terrain{background:#fff}.terrain svg{opacity:.35}
+.terrain{background:#fff}.terrain svg{opacity:.5}
+/* the numbers strip sits still: no entrance, no counting up */
+.enter .facts>div,.enter .facts>div::before{animation:none!important}
+/* texture over the whole page: a fine paper grain, like a printed map. Plain dark specks at low opacity (no blend
+   mode), so it costs nothing while scrolling; under the tab bar and the sheets */
+body::after{content:"";position:fixed;inset:0;z-index:44;pointer-events:none;opacity:.55;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.3 .78'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E") 0 0/220px 220px}
+[data-theme="dark"] body::after{filter:invert(1);opacity:.35}
 h1,h2,.intro h1,.modal h2,.next-main b,.teamhead b,.welcome h2{font-family:var(--display);font-weight:700;letter-spacing:-.01em}
 h2::after,.pg-k+h2::after{display:none!important}
 .eyebrow,.next-k,.facts span,th,.stats span,.kv span,.hl>span:first-child{font-family:var(--font);font-weight:600;letter-spacing:.08em;color:var(--text-2)}
@@ -2255,9 +2262,9 @@ function renderFacts(){
   const r=R(),bank=done()?state.bank:E.bankAfter(state,plan.squad);
   const where=done()?"Säsongen är slut":rdName(D.rounds[r])+": "+dshort(D.rounds[r].start)+" till "+dshort(D.rounds[r].end);
   const sv=plan.squad.reduce((a,i)=>a+E.price(i,pr()),0);
-  setHTML($("#facts"),`<div><span>Poäng</span><b data-count="${state.total/10}" data-key="pts">${fp(state.total)}</b></div>
-   <div><span>I banken</span><b class="${bank<0?"dn":""}" data-count="${bank/10}" data-key="bank" data-suf="k">${fm(bank)}</b></div>
-   <div><span>Trupp ${plan.squad.length}/${D.squad}</span><b ${plan.squad.length?`data-count="${sv/10}" data-key="val" data-suf="k"`:""}>${plan.squad.length?fm(sv):"–"}</b></div>
+  setHTML($("#facts"),`<div><span>Poäng</span><b>${fp(state.total)}</b></div>
+   <div><span>I banken</span><b class="${bank<0?"dn":""}">${fm(bank)}</b></div>
+   <div><span>Trupp ${plan.squad.length}/${D.squad}</span><b>${plan.squad.length?fm(sv):"–"}</b></div>
    <div><span>Chips kvar</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length} av ${E.CHIPS.length}</b></div>`);
 }
 
