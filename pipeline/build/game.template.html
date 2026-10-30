@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="sv" data-theme="light">
 <head>
 <meta charset="utf-8">
 <script>/* the game has moved to Vercel. The old GitHub Pages address sends everyone on, invite links and login links
@@ -448,8 +448,8 @@ main#view{padding-top:20px}
 .av{--s:46px;width:var(--s);height:var(--s);border-radius:50%;flex:none;position:relative;overflow:hidden;display:grid;place-items:center;background:hsl(var(--h,30) 45% 86%);color:hsl(var(--h,30) 55% 30%);font:700 calc(var(--s) * .38)/1 var(--font);letter-spacing:-.02em;transition:box-shadow .3s}
 [data-theme="dark"] .av:not(.ph){background:hsl(var(--h,30) 30% 26%);color:hsl(var(--h,30) 70% 82%)}
 .av.sm{--s:34px}.av.lg{--s:76px}
-.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.av.ph{background:var(--surface-3)}
+.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .35s ease}.av img.ok{opacity:1}
+
 td .who-wrap,.who-wrap{display:flex;align-items:center;gap:10px;min-width:0}
 
 /* ---------- market ---------- */
@@ -914,6 +914,8 @@ body.reel-hold>:not(#reel),body.reel-hold>:not(#reel) *,body.reel-hold>:not(#ree
 .squad.ab .rc .av{--s:40px}
 .squad.ab .rc .who{font-size:15px}
 .squad.ab .rc.slot{min-height:180px}
+/* the A/B team's empty places keep their card shape: their height follows the column's width, never the other way */
+.squad.ab .rc.sqc-slot{min-height:0;min-width:0;width:100%}
 .squad.ab .rc{padding:10px 10px 12px;text-align:center}
 .squad.ab .rc .top{justify-content:center;padding-top:6px}
 .squad.ab .rc .top>span[style]{display:none}
@@ -1613,6 +1615,8 @@ a.ncard{text-decoration:none}
 .ncard .nimg{display:block;aspect-ratio:48/25;max-width:100%;background-size:cover;background-position:center;border-bottom:1px solid #000}
 .ncard .nrow{display:flex;justify-content:space-between;gap:8px;padding:12px 16px 0;font-size:11.5px;color:#595959}
 .ncard b{display:block;padding:8px 16px 18px;font-size:14px;font-weight:700;line-height:1.3}
+/* the card's one column never grows past the card: a long race name (Novembertävlingarna) wraps instead of being cut */
+.ncard{grid-template-columns:minmax(0,1fr)}.ncard b{overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
 @media (hover:hover) and (pointer:fine){.ncard .nimg{transition:transform .25s ease}.ncard:hover .nimg{transform:scale(1.02)}.ncard:hover b{text-decoration:underline}}
 .news-more{display:flex;justify-content:flex-end;margin-top:16px}
 @media (max-width:760px){.news-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ncard{border-radius:22px}.ncard .nrow{padding:10px 12px 0;font-size:10.5px;flex-wrap:wrap}.ncard b{padding:6px 12px 14px;font-size:13px}}
@@ -1776,6 +1780,8 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 @media (max-width:520px){.launchbar{padding:12px 14px;gap:10px}.launchbar .lb-u b{min-width:0;width:100%;font-size:24px;padding:6px 6px 4px}.launchbar .lb-clock{display:grid;grid-template-columns:repeat(4,1fr);width:100%;gap:6px}.launchbar .lb-t strong{font-size:17px}}
 .logo .beta{font:800 13px/1 var(--font);font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:#d6261c;padding:6px 9px 5px;border-radius:999px;transform:rotate(-4deg);box-shadow:0 2px 6px rgba(214,38,28,.35);flex:none}
 @media (max-width:420px){.logo{gap:7px}.logo b{font-size:15px!important}.logo .mark{width:28px;height:28px}.logo .beta{font-size:11px;padding:5px 7px 4px}}
+/* the narrowest phones: the beta tag goes so the log-in button fits */
+@media (max-width:380px){.logo .beta{display:none}#mgr.out{padding:9px 13px}}
 .linkish{background:none;border:0;padding:2px 0 10px;color:var(--accent);font:600 14px/1.2 var(--font);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 </style>
 </head>
@@ -1822,8 +1828,9 @@ const hsh=s=>{let h=2166136261;for(let k=0;k<s.length;k++){h^=s.charCodeAt(k);h=
 /* a photo when the runner sent one, otherwise their initials on their club's colour */
 function avatar(i,cls){
   const r=D.runners[i],ph=runnerPhoto(i);
-  if(ph)return `<div class="av ph ${cls||""}" aria-hidden="true"><img src="${esc(ph)}" alt="" loading="lazy" decoding="async"></div>`;
   const ini=r.n.split(/\s+/).filter(Boolean).map(w=>w[0]).filter((c,k,a)=>k===0||k===a.length-1).join("").toUpperCase();
+  /* a photo fades in over the initials once it has loaded, instead of popping into an empty circle */
+  if(ph)return `<div class="av ph ${cls||""}" style="--h:${hsh(r.c)%360}" aria-hidden="true">${esc(ini)}<img class="pic" src="${esc(ph)}" alt="" loading="lazy" decoding="async"></div>`;
   return `<div class="av ${cls||""}" style="--h:${hsh(r.c)%360}" aria-hidden="true">${esc(ini)}</div>`;
 }
 /* photos runners sent themselves (or a parent did), shown once approved */
@@ -1962,6 +1969,8 @@ let reelEnd=0;
   try{document.fonts.load("800 60px Montserrat")}catch(e){}
   reelEnd=performance.now()+DUR;raf=requestAnimationFrame(frame);
 })();
+/* photos: shown once loaded (see avatar); a photo that fails keeps the initials */
+document.addEventListener("load",e=>{const x=e.target;if(x&&x.tagName==="IMG"&&x.parentElement&&x.parentElement.classList.contains("av"))x.classList.add("ok")},true);
 /* the map moves slower than the page: depth */
 if(!RM){let raf=0;const prog=document.createElement("div");prog.id="prog";prog.setAttribute("aria-hidden","true");document.body.appendChild(prog);
   addEventListener("scroll",()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const p=document.getElementById("par");if(p)p.style.transform=`translate3d(0,${(-scrollY*.18).toFixed(1)}px,0)`;
@@ -2196,7 +2205,7 @@ function courseSvg(){
   const fin=`<circle class="fin" cx="${fx}" cy="${fy}" r="${cr-3}"/><circle class="fin" cx="${fx}" cy="${fy}" r="${cr+4}"/>`;
   return `<svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Säsongens bana, ${rdThe(D.rounds[w0])} till ${rdThe(D.rounds[w1-1])}">${legs}${start}${c}${fin}</svg>`;
 }
-function renderCourse(){$("#course").innerHTML=(tab==="rounds"&&state.log.length)||(tab==="team"&&isLive()&&!done())?courseSvg():""}
+function renderCourse(){setHTML($("#course"),(tab==="rounds"&&state.log.length)||(tab==="team"&&isLive()&&!done())?courseSvg():"")}
 
 /* ---------- chrome ---------- */
 /* the tab indicator: one bar (desktop) or pill (phone) that glides to the selected tab, transform only */
@@ -2235,18 +2244,18 @@ function renderTabs(){
     el.querySelectorAll("[data-tab]").forEach(b=>{const on=b.dataset.tab===tab;b.setAttribute("aria-selected",on);b.setAttribute("aria-current",on?"page":"false")})});
   placeInd();
   const m=$("#mgr");
-  if(dbOk){const nm=mgrName||cloud.email.split("@")[0]||"Konto";m.className="";m.innerHTML=`${myAv?`<span class="dot ph"><img src="${esc(avPublic(myAv))}" alt=""></span>`:`<span class="dot">${esc(nm.slice(0,1).toUpperCase())}</span>`}<span class="nm">${esc(nm)}</span>${adminOn()&&pendingPhotos.length?`<span class="badge" title="Foton som väntar på godkännande">${pendingPhotos.length}</span>`:""}`;m.title="Din profil";m.setAttribute("aria-label","Konto: "+nm)}
-  else{m.className="out";m.textContent="Logga in";m.title="Logga in eller skapa ett konto";m.setAttribute("aria-label","Logga in eller skapa ett konto")}
+  if(dbOk){const nm=mgrName||cloud.email.split("@")[0]||"Konto";m.className="";setHTML(m,`${myAv?`<span class="dot ph"><img src="${esc(avPublic(myAv))}" alt=""></span>`:`<span class="dot">${esc(nm.slice(0,1).toUpperCase())}</span>`}<span class="nm">${esc(nm)}</span>${adminOn()&&pendingPhotos.length?`<span class="badge" title="Foton som väntar på godkännande">${pendingPhotos.length}</span>`:""}`);m.title="Din profil";m.setAttribute("aria-label","Konto: "+nm)}
+  else{m.className="out";setHTML(m,"Logga in");m.title="Logga in eller skapa ett konto";m.setAttribute("aria-label","Logga in eller skapa ett konto")}
 }
 function renderFacts(){
-  if(tab!=="team"||done()){$("#facts").innerHTML="";return}
+  if(tab!=="team"||done()){setHTML($("#facts"),"");return}
   const r=R(),bank=done()?state.bank:E.bankAfter(state,plan.squad);
   const where=done()?"Säsongen är slut":rdName(D.rounds[r])+": "+dshort(D.rounds[r].start)+" till "+dshort(D.rounds[r].end);
   const sv=plan.squad.reduce((a,i)=>a+E.price(i,pr()),0);
-  $("#facts").innerHTML=`<div><span>Poäng</span><b data-count="${state.total/10}" data-key="pts">${fp(state.total)}</b></div>
+  setHTML($("#facts"),`<div><span>Poäng</span><b data-count="${state.total/10}" data-key="pts">${fp(state.total)}</b></div>
    <div><span>I banken</span><b class="${bank<0?"dn":""}" data-count="${bank/10}" data-key="bank" data-suf="k">${fm(bank)}</b></div>
    <div><span>Trupp ${plan.squad.length}/${D.squad}</span><b ${plan.squad.length?`data-count="${sv/10}" data-key="val" data-suf="k"`:""}>${plan.squad.length?fm(sv):"–"}</b></div>
-   <div><span>Chips kvar</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length} av ${E.CHIPS.length}</b></div>`;
+   <div><span>Chips kvar</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length} av ${E.CHIPS.length}</b></div>`);
 }
 
 /* ---------- team ---------- */
@@ -2516,7 +2525,7 @@ function teamView(){
   const errs=plan.squad.length?E.planErrors(state,{squad:ordered(plan),captain:plan.captain,chip:plan.chip}):["Välj "+D.squad+" löpare för att börja"];
   const t=E.transfersFor(state,plan.squad),pen=plan.chip==="wc"||rd.skip?0:(!state.squad.length?0:Math.max(0,t.n-D.freeTransfers)*D.penalty);
   const A=(show.a||[]).filter(i=>show.squad.includes(i)),B=show.squad.filter(i=>!A.includes(i));
-  const slot=(k,team)=>{const can=swapSel!==null&&(team==="A"?!plan.a.includes(swapSel):plan.a.includes(swapSel));return `<div class="rc slot sqc-slot" style="--i:${k}"><div><b>${k+1}</b>${team==="A"?"A":"B"} lagplats${can?`<button class="swapto" data-moveto="${team}">Flytta ${esc(nameOf(swapSel).split(" ")[0])} hit</button>`:""}</div></div>`};
+  const slot=(k,team)=>{const can=swapSel!==null&&(team==="A"?!plan.a.includes(swapSel):plan.a.includes(swapSel));return `<div class="rc slot sqc-slot" style="--i:${k}"><div><b>${k+1}</b>${team==="A"?"A":"B"}-lagsplats${can?`<button class="swapto" data-moveto="${team}">Flytta ${esc(nameOf(swapSel).split(" ")[0])} hit</button>`:""}</div></div>`};
   const teamRows=(list,n,team,off)=>{const out=[];for(let k=0;k<n;k++)out.push(list[k]!==undefined?squadCard(list[k],off+k,show,locked,team):slot(off+k,team));return out.join("")};
   const fin=isFinal(r);
   const saved=isLive()&&isSaved(),cd=dshort(rd.start);
@@ -3153,14 +3162,20 @@ async function delAvatar(){
   if(p.error)avMsg="Kunde inte ta bort bilden. Försök igen.";else{myAv=null;cloud.sb.storage.from("avatars").remove([old]).then(()=>{},()=>{});Object.values(leagueRows).forEach(rs=>(rs||[]).forEach(m=>{if(m.id===cloud.uid)m.av=null}))}
   avBusy=false;render();
 }
-async function loadPhotos(){
+/* the approved photos are asked for when the login starts and again when it knows who you are: one request at a
+   time, and the page is only redrawn when the answer changed something */
+let photoLoad=null;
+function loadPhotos(again){if(photoLoad)return again?photoLoad.then(()=>loadPhotos()):photoLoad;photoLoad=loadPhotos1().finally(()=>{photoLoad=null});return photoLoad}
+async function loadPhotos1(){
   const sb=cloud.sb;if(!sb)return;
+  const before=JSON.stringify([[...photoUrl],myPhotos,pendingPhotos]);
   try{
     const a=await sb.from("photo_submissions").select("runner_id,path,reviewed_at").eq("status","approved");
     if(!a.error){photoUrl.clear();(a.data||[]).sort((x,y)=>String(x.reviewed_at).localeCompare(String(y.reviewed_at))).forEach(x=>{const i=RI.get(x.runner_id);if(i!==undefined)photoUrl.set(D.runners[i].id,photoPublic(x.path))})}
     if(cloud.uid){const m=await sb.from("photo_submissions").select("id,runner_id,path,status,created_at").eq("user_id",cloud.uid);if(!m.error)myPhotos=m.data||[]}else myPhotos=[];
     if(cloud.admin){const q=await sb.from("photo_submissions").select("id,runner_id,path,relation,created_at").eq("status","pending");if(!q.error)pendingPhotos=(q.data||[]).sort((x,y)=>String(x.created_at).localeCompare(String(y.created_at)))}else pendingPhotos=[];
   }catch(e){}
+  if(JSON.stringify([[...photoUrl],myPhotos,pendingPhotos])===before)return;
   if(!(document.activeElement&&document.activeElement.matches("input")))render();
   const pi=document.querySelector(".modal [data-phopen],.modal #phSignIn,.modal .phbox");if(pi&&profileOpen!==null)profile(profileOpen);
 }
@@ -3172,18 +3187,18 @@ async function sendPhoto(){
     const up=await st.upload(path,f.blob,{contentType:"image/jpeg",upsert:false});if(up.error)throw up.error;
     const ins=await cloud.sb.from("photo_submissions").insert({runner_id:D.runners[f.i].id,path,relation:f.rel,consent:true});
     if(ins.error){await st.remove([path]);throw ins.error}
-    phForm=null;phMsg="";await loadPhotos();phMsg="Skickat. Fotot syns på kortet när det har godkänts.";
+    phForm=null;phMsg="";await loadPhotos(true);phMsg="Skickat. Fotot syns på kortet när det har godkänts.";
   }catch(e){phMsg=/Too many/.test(e&&e.message||"")?"Du har redan 5 foton som väntar på godkännande.":"Kunde inte skicka fotot. Försök igen."}
   phBusy=false;if(profileOpen!==null)profile(profileOpen);
 }
 async function dropPhoto(id,asAdmin){
   const x=(asAdmin?pendingPhotos:myPhotos).find(y=>y.id===id);if(!x)return;
   try{await cloud.sb.storage.from("runner-photos").remove([x.path]);await cloud.sb.from("photo_submissions").delete().eq("id",id)}catch(e){}
-  await loadPhotos();
+  await loadPhotos(true);
 }
 async function approvePhoto(id){
   try{await cloud.sb.from("photo_submissions").update({status:"approved",reviewed_at:new Date().toISOString()}).eq("id",id)}catch(e){}
-  await loadPhotos();
+  await loadPhotos(true);
 }
 /* admins: add or remove competitions and force game weeks on or off (applied by the nightly data refresh) */
 let ovr=[],ovrMsg="",ovrBusy=false,ovrAdd="",applyMsg="",applyBusy=false;
@@ -3438,9 +3453,9 @@ function introCourse(){
 function renderHero(){
   const show=tab==="team"&&!dbOk&&!state.squad.length&&!plan.squad.length&&isLive();
   const w=(t,i0)=>t.split(" ").map((x,k)=>`<span class="w" style="--i:${i0+k}">${esc(x)}</span>`).join(" ");
-  $("#hero").innerHTML=show?`<div class="intro"><div><span class="eyebrow">Fantasy Orientering · D/H 16–21</span><h1 style="margin-top:14px">${w("Välj tio.",0)}<br>${w("Dubbla ditt A-lag.",2)}<br><em>${w("Slå alla.",6)}</em></h1>
+  setHTML($("#hero"),show?`<div class="intro"><div><span class="eyebrow">Fantasy Orientering · D/H 16–21</span><h1 style="margin-top:14px">${w("Välj tio.",0)}<br>${w("Dubbla ditt A-lag.",2)}<br><em>${w("Slå alla.",6)}</em></h1>
    <p>Officiella resultat från Eventor, varje vecka till oktober 2027.</p>
-   <div class="row"><button class="btn go" style="width:auto" data-jump="market">Välj din trupp</button><button class="btn" data-tab="profile">Skapa ett konto</button></div></div>${introCourse()}</div>`:"";
+   <div class="row"><button class="btn go" style="width:auto" data-jump="market">Välj din trupp</button><button class="btn" data-tab="profile">Skapa ett konto</button></div></div>${introCourse()}</div>`:"");
 }
 
 
@@ -3471,9 +3486,16 @@ function nav(apply){
   const done=()=>{if(!leaving)return;leaving=false;try{window.scrollTo(0,0)}catch(e){}render();leaveAnim.cancel();leaveAnim=null};
   leaveAnim.onfinish=done;setTimeout(done,700); /* never get stuck if the animation is interrupted */
 }
+/* the parts above the page (intro, numbers, course, account button) are redrawn on every render, and many renders come
+   in the first seconds (the login, photos, leagues answering). Writing them only when they changed, and then patching
+   them in place, keeps their entrance animations from starting over; a fresh page (a new tab, the first paint) still
+   builds them anew so they play once. */
+let freshPaint=true;
+function setHTML(el,html){if(!el)return;if(!freshPaint&&el._h===html)return;const had=el._h!==undefined&&el.firstChild;el._h=html;
+  if(freshPaint||!had){el.innerHTML=html;return}const tmp=document.createElement("div");tmp.innerHTML=html;morphKids(el,tmp)}
 /* a small DOM morph: keeps every node that is still there, changes only what differs */
 let lastTab=null;
-const KEEPCLS=["rv","rv-in","rv-up","settled","tilt"];
+const KEEPCLS=["rv","rv-in","rv-up","settled","tilt","ok"];   /* "ok": a photo that has loaded */
 function morphNode(a,b){
   if(a.nodeType!==b.nodeType||a.nodeName!==b.nodeName||(a.nodeType===1&&(a.dataset.card||"")!==(b.dataset.card||""))){a.replaceWith(b);return}
   if(a.nodeType!==1){if(a.nodeValue!==b.nodeValue)a.nodeValue=b.nodeValue;return}
@@ -3496,14 +3518,14 @@ function render(){
   const now=performance.now();
   const opening=animNext&&!RM;
   if(opening){const hold=Math.max(0,reelEnd-now);enterUntil=now+2600+hold;clearTimeout(enterTimer);enterTimer=setTimeout(()=>{document.body.classList.remove("enter");document.body.style.removeProperty("--dx");document.body.style.removeProperty("--dy")},2650+hold)}
-  animNext=false;document.body.classList.toggle("enter",now<enterUntil);
+  freshPaint=opening||lastTab!==tab;animNext=false;document.body.classList.toggle("enter",now<enterUntil);
   renderHero();renderTicker();renderCourse();renderTabs();renderFacts();
   if(tab==="season")tab="profile";
   const html=tab==="team"?teamView():tab==="rounds"?roundsView():tab==="leagues"?leaguesView():tab==="profile"?profileView():rulesView();
   /* on the same tab, patch the page in place: the cards stay painted (and their photos loaded) instead of being rebuilt,
      which phones showed as the cards blinking out for a moment after a tap */
   const v=$("#view");if(tab===lastTab&&!opening&&v.firstChild){const t=document.createElement("div");t.innerHTML=html;morphKids(v,t)}else v.innerHTML=html;lastTab=tab;
-  justAdded=null;justBoosted=null;justLocked=false;justChip=null;countUp();flip();
+  freshPaint=false;justAdded=null;justBoosted=null;justLocked=false;justChip=null;countUp();flip();
   armReveals();watchMore();
 }
 function doPlay(chip){
