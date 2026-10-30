@@ -665,7 +665,8 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 .lu-col{display:grid;gap:8px;min-width:0}
 /* FIFA-style cards: a shield cut from metal, the week's points as the big rating, class and multiplier under it.
    Everything inside is sized from the card's own width (cqw), so it is the same card on a phone and a desktop. */
-.lineup{filter:drop-shadow(0 2px 2px var(--cs1)) drop-shadow(0 14px 16px var(--cs2))}
+/* each card on the board carries its own shadow (see .lc-shd), drawn with the card, not a filter over the whole board */
+.lu-col>.lc-w{position:relative;isolation:isolate;display:block;min-width:0}
 .lc{--sh:polygon(0 7%,13% 1.5%,33% 3%,50% 0,67% 3%,87% 1.5%,100% 7%,100% 84%,50% 100%,0 84%);container-type:inline-size;
   position:relative;display:block;width:100%;border:0;padding:0;font:inherit;cursor:pointer;min-width:0;
   clip-path:var(--sh);background:var(--rim);color:var(--ink);text-align:center;aspect-ratio:.72}
@@ -1131,7 +1132,7 @@ body{font-feature-settings:"tnum" 0;-webkit-font-smoothing:antialiased}
 /* cursor: cards lean hard toward it and the glare slides with it; panels get a soft light under it */
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
   .sqc.tilt .lc,.lineup .lc.tilt{transform:perspective(600px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-6px) scale(1.06);transition:transform .35s var(--ease-out)}
-  .sqc.tilt .sqc-sh,.lineup:has(.lc.tilt){filter:drop-shadow(0 4px 4px var(--cs1)) drop-shadow(0 30px 26px var(--cs2))}
+  .sqc.tilt .sqc-sh{filter:drop-shadow(0 4px 4px var(--cs1)) drop-shadow(0 30px 26px var(--cs2))}
   .sqc.tilt,.lineup .lc.tilt{--g:1}
   .card,.side,.board,.facts>div,.kv>div,.hl,.livestrip{background:radial-gradient(420px circle at var(--sx,-500px) var(--sy,-500px),color-mix(in srgb,var(--accent) 8%,transparent),transparent 65%),var(--surface-grad)}
   .lit{transition:box-shadow .3s}
@@ -1238,7 +1239,6 @@ nav.tabs .ind.on{opacity:1}
   .lineup .lc{transition:transform .55s var(--ease-out),--g .45s var(--ease-out),--mx .3s var(--ease-out),--my .3s var(--ease-out)}
   .sqc .lc{transition:transform .55s var(--ease-out)}
   .sqc-sh{transition:filter .45s var(--ease-out)}
-  .lineup{transition:filter .45s var(--ease-out)}
 }
 /* card buttons never overflow the card: on a narrow card the boost button drops its word and keeps the bolt */
 .sqc{container-type:inline-size}
@@ -1280,9 +1280,12 @@ nav.tabs .ind.on{opacity:1}
    so phones draw it too). It follows the card's outline like a real shadow and deepens when the card lifts. */
 .sqc-sh,.sqc.tilt .sqc-sh,.sqc.boosted .sqc-sh{filter:none}
 .sqc-sh{position:relative;isolation:isolate}
-.lc-shd{position:absolute;inset:0;z-index:-1;pointer-events:none;filter:blur(9px);opacity:.42;transform:translate3d(0,9px,0) scale(.97);transition:transform .45s var(--ease-out),opacity .45s var(--ease-out)}
-.lc-shd::before{content:"";position:absolute;inset:0;background:#0f172a;clip-path:polygon(0 7%,13% 1.5%,33% 3%,50% 0,67% 3%,87% 1.5%,100% 7%,100% 84%,50% 100%,0 84%)}
-.sqc.tilt .lc-shd{transform:translate3d(0,18px,0) scale(.99);opacity:.5}
+/* the card's shadow: the shield shape, already blurred, as a mask. A live blur filter on its own 3D layer was painted
+   by Safari only after the card's entrance had finished, so the shadows came in late; this one is part of the card */
+.lc-shd{position:absolute;top:-12%;bottom:-12%;left:-15%;right:-15%;z-index:-1;pointer-events:none;opacity:.42;translate:0 9px;scale:.97;transition:translate .45s var(--ease-out),scale .45s var(--ease-out),opacity .45s var(--ease-out)}
+.lc-shd::before{content:"";position:absolute;inset:0;background:#0f172a;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-15 -12 130 124' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-30%' y='-30%' width='160%' height='160%'%3E%3CfeGaussianBlur stdDeviation='5.5 4.2'/%3E%3C/filter%3E%3Cpolygon points='0,7 13,1.5 33,3 50,0 67,3 87,1.5 100,7 100,84 50,100 0,84' filter='url(%23b)'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-15 -12 130 124' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-30%' y='-30%' width='160%' height='160%'%3E%3CfeGaussianBlur stdDeviation='5.5 4.2'/%3E%3C/filter%3E%3Cpolygon points='0,7 13,1.5 33,3 50,0 67,3 87,1.5 100,7 100,84 50,100 0,84' filter='url(%23b)'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
+.sqc.tilt .lc-shd,.lc-w:has(.lc.tilt) .lc-shd{translate:0 18px;scale:.99;opacity:.5}
+.lc-w:has(.lc.cap) .lc-shd::before{background:color-mix(in srgb,var(--accent) 55%,#0f172a)}
 .sqc.boosted .lc-shd::before{background:color-mix(in srgb,var(--accent) 55%,#0f172a)}
 .sqc.sel .lc-shd::before{background:var(--accent)}
 /* the runner list fits a phone: fixed columns, the name takes what is left and long names end in … */
@@ -2595,12 +2598,12 @@ function boardData(src){
 }
 const kSuf=v=>String(v).replace(/k$/,"<small>k</small>");
 function fifaCard(c,k){
-  return `<button class="lc fifa-${c.tier} ${c.boost?"cap":""}" style="--k:${k}" data-prof="${c.i}" aria-label="${esc(c.full)}">
+  return `<span class="lc-w"><span class="lc-shd" aria-hidden="true"></span><button class="lc fifa-${c.tier} ${c.boost?"cap":""}" style="--k:${k}" data-prof="${c.i}" aria-label="${esc(c.full)}">
     <span class="lc-rate"><b>${c.pts}</b><small>${c.cls}</small><small>×${c.m}</small></span>
     <span class="lc-ph">${avatar(c.i,"lg")}</span>
     ${c.boost?`<span class="lc-cap"><i>Boost ×${c.boostX}</i></span>`:""}
     <b class="lc-name">${esc(c.name)}</b>
-    <span class="lc-st"><span><b>${kSuf(c.price)}</b><i>Pris</i></span><span><b>${c.avg}</b><i>P / v</i></span></span><span class="lc-club">${esc(c.club)}</span></button>`;
+    <span class="lc-st"><span><b>${kSuf(c.price)}</b><i>Pris</i></span><span><b>${c.avg}</b><i>P / v</i></span></span><span class="lc-club">${esc(c.club)}</span></button></span>`;
 }
 function weekBoard(src){
   const b=boardData(src);if(!b)return "";const {w,weeks,x,r,rd}=b,arr=b.own?"data-round":"data-mround";
