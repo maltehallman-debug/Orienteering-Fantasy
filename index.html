@@ -2265,9 +2265,9 @@ let reelEnd=0;
 /* photos: shown once loaded (see avatar); a photo that fails keeps the initials */
 document.addEventListener("load",e=>{const x=e.target;if(x&&x.tagName==="IMG"&&x.parentElement&&x.parentElement.classList.contains("av"))x.classList.add("ok")},true);
 /* the map moves slower than the page: depth */
-if(!RM){let raf=0;const prog=document.createElement("div");prog.id="prog";prog.setAttribute("aria-hidden","true");document.body.appendChild(prog);
+if(!RM){let raf=0;
   addEventListener("scroll",()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const p=document.getElementById("par");if(p)p.style.transform=`translate3d(0,${(-scrollY*.18).toFixed(1)}px,0)`;
-    const max=document.documentElement.scrollHeight-innerHeight;prog.style.setProperty("--p",max>0?Math.min(1,scrollY/max).toFixed(4):0);prog.style.setProperty("--po",scrollY>40&&max>300?1:0);
+    
     /* a fast scroll can jump past something without it ever counting as on screen: whatever is above comes back from above, whatever is below from below */
     document.querySelectorAll("#view .rv:not(.rv-in)").forEach(el=>{const r=el.getBoundingClientRect();if(r.bottom<0)el.classList.add("rv-up");else if(r.top>innerHeight)el.classList.remove("rv-up")})})},{passive:true})}
 /* things further down the page fade up out of focus when they scroll into view */
