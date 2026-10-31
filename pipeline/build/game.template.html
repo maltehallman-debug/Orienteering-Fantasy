@@ -2366,7 +2366,7 @@ try{document.fonts.ready.then(()=>placeInd())}catch(e){}
   bar.addEventListener("click",e=>{if(bar.classList.contains("mini")){e.preventDefault();e.stopPropagation();set(false)}},true);
   window.tabbarOpen=()=>set(false)})();
 function renderTabs(){
-  const t=[["team","Lag"],["rounds","Omgångar"],["leagues","Ligor"],["rules","Regler"],["profile","Profil"]],I={team:'<path d="M4 20c0-3.3 3.6-5 8-5s8 1.7 8 5"/><circle cx="12" cy="8" r="4"/>',rounds:'<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>',leagues:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 6h3v1a3 3 0 0 1-3 3M7 6H4v1a3 3 0 0 0 3 3"/>',rules:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',profile:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5c1.2-2 3.2-3 5.5-3s4.3 1 5.5 3"/>'};
+  const t=[["team","Lag"],["rounds","Poäng"],["leagues","Ligor"],["rules","Regler"],["profile","Profil"]],I={team:'<path d="M4 20c0-3.3 3.6-5 8-5s8 1.7 8 5"/><circle cx="12" cy="8" r="4"/>',rounds:'<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>',leagues:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 6h3v1a3 3 0 0 1-3 3M7 6H4v1a3 3 0 0 0 3 3"/>',rules:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',profile:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5c1.2-2 3.2-3 5.5-3s4.3 1 5.5 3"/>'};
   const html=t.map(([k,l])=>`<button aria-current="${tab===k?"page":"false"}" aria-selected="${tab===k}" data-tab="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg><span>${l}</span></button>`).join("");
   ["#tabs","#tabbar"].forEach(sel=>{const el=$(sel);if(!el.querySelector("[data-tab]"))el.innerHTML=html+'<i class="ind" aria-hidden="true"></i>';
     el.querySelectorAll("[data-tab]").forEach(b=>{const on=b.dataset.tab===tab;b.setAttribute("aria-selected",on);b.setAttribute("aria-current",on?"page":"false")})});
@@ -4050,7 +4050,7 @@ async function initCloud(){
 /* the new-password sheet, opened by the link in the reset email (which also signs the player in) */
 let pwOpen=false,pwMsg="",pwBusy=false;
 /* tips from managers: a bug, an idea or anything else; only admins read them */
-const TABS_SV={team:"Lag",rounds:"Omgångar",leagues:"Ligor",rules:"Regler",profile:"Profil",market:"Köp/sälj"};
+const TABS_SV={team:"Lag",rounds:"Poäng",leagues:"Ligor",rules:"Regler",profile:"Profil",market:"Köp/sälj"};
 let fbKind="bug",fbBusy=false,fbMsg="",fbList=[];
 const FBK={bug:["🐞","Bugg","Vad hände, och vad hade du väntat dig? Var i spelet var du?"],idea:["💡","Idé","Vad skulle göra spelet bättre?"],other:["💬","Annat","Skriv vad du vill."]};
 function fbSheet(){const t=($("#fbText")||{}).value;
