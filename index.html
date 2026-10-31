@@ -3014,7 +3014,7 @@ function authCard(){
   return `<div class="card"><h3>${authMode==="up"?"Skapa ditt konto":"Logga in"}</h3>
    <p class="note" style="margin:0 0 14px">${authMode==="up"?"En e-postadress och ett lösenord. Din trupp följer med till alla enheter.":"Välkommen tillbaka."}</p>
    ${authMode==="up"?`<label class="agree"><input type="checkbox" id="authAgree" ${authAgree?"checked":""}> <span>Jag är minst 13 år och godkänner <button type="button" class="linkish" data-info="terms">villkoren</button> och <button type="button" class="linkish" data-info="privacy">integritetspolicyn</button>.</span></label>`:""}
-   ${authMode==="up"?`<div class="field"><label for="authName">Managernamn</label><input class="name" id="authName" maxlength="24" value="${esc(authName)}" autocomplete="nickname" autocapitalize="words"></div>`:""}
+   ${authMode==="up"?`<div class="field"><label for="authName">Managernamn</label><input class="name" id="authName" maxlength="24" value="${esc(authName)}" autocomplete="nickname" autocapitalize="words"></div><div class="field"><label for="authTeam">Lagnamn</label><input class="name" id="authTeam" maxlength="30" value="${esc(authTeam)}" placeholder="Syns i ligorna" autocomplete="off" autocapitalize="words"></div>`:""}
    <div class="field"><label for="authEmail">E-post</label><input class="name" id="authEmail" type="email" value="${esc(authEmail)}" autocomplete="email" autocapitalize="none" autocorrect="off" inputmode="email"></div>
    <div class="field"><label for="authPw">Lösenord${authMode==="up"?" (minst 8 tecken)":""}</label><input class="name" id="authPw" type="password" value="${esc(authPw)}" autocomplete="${authMode==="up"?"new-password":"current-password"}" enterkeyhint="go"></div>
    ${authMode==="up"?"":`<button class="linkish" id="authForgot" type="button">Glömt lösenordet?</button>`}
@@ -3845,6 +3845,7 @@ document.addEventListener("click",ev=>{
   if(t.id==="applyNow"){applyNow();return}
   if(t.id==="rmSend"){sendRemoval();return}
   if(t.id==="rnSave"){saveRename();return}
+  if(t.id==="tsSave"){saveTeamSheet();return}
   if(t.id==="delAcc"){delAsk=true;delMsg="";render();return}
   if(t.id==="delNo"){delAsk=false;render();return}
   if(t.id==="delYes"){deleteAccount();return}
@@ -3966,9 +3967,22 @@ function welcomeSheet(kind){
   if(kind==="ok")setTimeout(()=>burst(innerWidth/2,innerHeight*.3,70),500);
 }
 const SB_URL="https://hjpfmubvpvftxyyemltn.supabase.co",SB_KEY="sb_publishable_Ent2RuVrh-iKyjT1or8gOw_UFdZ74ch";
-let authAgree=false,authEmail="",authPw="",authName="",authMode=pendingJoin?"up":"in",authMsg="",authOk=false,authBusy=false,copied="";
+let authAgree=false,authEmail="",authPw="",authName="",authTeam="",authMode=pendingJoin?"up":"in",authMsg="",authOk=false,authBusy=false,copied="";
 function queueCloud(){if(!cloud.ready)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,1200)}
 /* an admin has flagged this manager's name: a sheet that stays until they choose a new one */
+/* an account without a team name gets asked for one: it is what others see in the leagues */
+let tsMsg="";
+function teamSheet(){
+  $("#modal").innerHTML=`<div class="modal"><div class="sheet welcome" role="dialog" aria-modal="true" aria-label="Välj ett lagnamn">
+    <h2>Välj ett lagnamn</h2><p>Lagnamnet syns i ligorna och i topplistorna. Du kan ändra det senare under Profil.</p>
+    <div class="field"><label for="tsTeam">Lagnamn</label><input class="name" id="tsTeam" maxlength="30" autocapitalize="words" autocomplete="off" placeholder="Till exempel Skogsmullarna"></div>
+    <p class="note" style="margin:8px 0 0;color:var(--warn)">${esc(tsMsg)}</p>
+    <div class="row"><button class="btn on" id="tsSave">Spara</button></div></div></div>`;
+  setTimeout(()=>{const x=$("#tsTeam");x&&x.focus()},60);
+}
+function saveTeamSheet(){const v=(($("#tsTeam")||{}).value||"").trim().slice(0,30);
+  if(!v){tsMsg="Skriv ett lagnamn.";return teamSheet()}if(!nameOk(v)){tsMsg="Det lagnamnet är inte tillåtet. Välj ett annat.";return teamSheet()}
+  myTeam=v;tsMsg="";$("#modal").innerHTML="";save();pushCloud();render()}
 function renameSheet(){
   if(!myFlag)return;const nf=myFlag==="name"||myFlag==="both",tf=myFlag==="team"||myFlag==="both";
   const what=nf&&tf?"Ditt managernamn och lagnamn":nf?"Ditt managernamn":"Ditt lagnamn";
@@ -4134,7 +4148,7 @@ async function onSession(session){
       if(state.squad.length&&!plan.squad.length)startRound();fixLeaders();if(lock)lock.vice=null;
     }
     if(!mgrName&&pf.data&&pf.data.name)mgrName=pf.data.name;
-    if(pf.data){myFlag=pf.data.name_flag||null;myPf={name:pf.data.name||"",team:pf.data.team||""};if(!myTeam&&pf.data.team)myTeam=pf.data.team;myAv=typeof pf.data.avatar==="string"&&pf.data.avatar.startsWith(cloud.uid+"/")?pf.data.avatar:null}
+    if(pf.data){myFlag=pf.data.name_flag||null;myPf={name:pf.data.name||"",team:pf.data.team||""};if(!myTeam&&pf.data.team)myTeam=pf.data.team;if(!myTeam&&session.user.user_metadata&&session.user.user_metadata.team)myTeam=String(session.user.user_metadata.team).slice(0,30);myAv=typeof pf.data.avatar==="string"&&pf.data.avatar.startsWith(cloud.uid+"/")?pf.data.avatar:null}
     try{await mergeLineups()}catch(e){throw new Error("lineups")}
     if(isLive())liveSync();
     (mb.data||[]).forEach(r=>{if(!myLeagues.includes(r.code))myLeagues.push(r.code)});
@@ -4150,6 +4164,7 @@ async function onSession(session){
     else{const ok=await joinLeague(c,"");if(ok||/No league has that code|look right/.test(leagueMsg))clearPending()}tab="leagues"}
   render();
   if(myFlag){renameSheet();return}
+  if(!myTeam.trim()){teamSheet();return}
   if(AUTH_BACK.ok&&!welcomed){welcomed=true;if(AUTH_BACK.type==="recovery")pwSheet();else welcomeSheet("ok")}
 }
 async function initCloud(){
@@ -4234,11 +4249,14 @@ async function doAuth(kind){
   if(!email||!pw){authMsg="Fyll i din e-post och ett lösenord.";render();return}
   if(kind==="up"&&pw.length<8){authMsg="Lösenordet måste vara minst 8 tecken.";render();return}
   if(kind==="up"&&!authAgree){authMsg="Kryssa i att du är minst 13 år och godkänner villkoren.";render();return}
+  if(kind==="up"&&!authName.trim()){authMsg="Välj ett managernamn.";render();return}
+  if(kind==="up"&&!authTeam.trim()){authMsg="Välj ett lagnamn. Det syns i ligorna.";render();return}
+  if(kind==="up"&&(!nameOk(authName.trim())||!nameOk(authTeam.trim()))){authMsg="Det namnet är inte tillåtet. Välj ett annat.";render();return}
   authBusy=true;render();
   try{
     if(kind==="up"){
-      const r=await cloud.sb.auth.signUp({email,password:pw,options:{data:{name:(authName||mgrName||"").trim().slice(0,24)},emailRedirectTo:location.origin+location.pathname}});
-      if(r.error)authMsg=r.error.message;else if(!r.data.session)authMsg="Kolla din e-post och klicka på bekräftelselänken, logga sedan in.";else{authPw="";if(authName)mgrName=authName.trim().slice(0,24)}
+      const r=await cloud.sb.auth.signUp({email,password:pw,options:{data:{name:(authName||mgrName||"").trim().slice(0,24),team:authTeam.trim().slice(0,30)},emailRedirectTo:location.origin+location.pathname}});
+      if(r.error)authMsg=r.error.message;else if(!r.data.session)authMsg="Kolla din e-post och klicka på bekräftelselänken, logga sedan in.";else{authPw="";if(authName)mgrName=authName.trim().slice(0,24);if(authTeam.trim())myTeam=authTeam.trim().slice(0,30)}
     }else{
       const r=await cloud.sb.auth.signInWithPassword({email,password:pw});
       if(r.error)authMsg=r.error.message==="Invalid login credentials"?"Fel e-post eller lösenord.":r.error.message;else authPw="";
@@ -4259,7 +4277,7 @@ async function joinLeague(code,name){
   if(!name){try{const lg=await cloud.sb.from("leagues").select("name").eq("code",code).maybeSingle();if(lg.data&&lg.data.name)myLgn[code]=String(lg.data.name).slice(0,24)}catch(e){}}
   myLeagues.push(code);if(name){myLgn[code]=name;myOwn[code]=true}watchLeague(code);save();pushCloud();leagueMsg="Du är med i "+lgName(code)+".";return true;
 }
-document.addEventListener("input",e=>{const t=e.target;if(t.id==="authAgree")authAgree=t.checked;if(t.id==="authEmail")authEmail=t.value;if(t.id==="authPw")authPw=t.value;if(t.id==="authName")authName=t.value});
+document.addEventListener("input",e=>{const t=e.target;if(t.id==="authAgree")authAgree=t.checked;if(t.id==="authEmail")authEmail=t.value;if(t.id==="authPw")authPw=t.value;if(t.id==="authName")authName=t.value;if(t.id==="authTeam")authTeam=t.value});
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&["authEmail","authPw","authName"].includes(e.target.id))doAuth(authMode);if(e.key==="Enter"&&["pwNew","pwNew2"].includes(e.target.id))savePw()});
 document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;
   if(t.id==="authIn"||t.id==="authUp")doAuth(t.id==="authUp"?"up":"in");
