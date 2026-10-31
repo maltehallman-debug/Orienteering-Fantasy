@@ -1515,6 +1515,20 @@ body{letter-spacing:0}
 .terrain{background:#fff}.terrain svg{opacity:.5}
 /* the numbers strip sits still: no entrance, no counting up */
 .enter .facts>div,.enter .facts>div::before{animation:none!important}
+/* page changes: the new page comes in as a few blocks, from the side you went towards, in about 0.4 s. Only transform
+   and opacity (no blur, no 3D), and the cards inside the blocks do not animate on their own. The first load keeps its
+   longer entrance. */
+@media (prefers-reduced-motion:no-preference){
+  body.enter.navx #view>*{animation:navIn .42s cubic-bezier(.23,1,.32,1) both!important;animation-delay:0s!important}
+  body.enter.navx #view>*:nth-child(2){animation-delay:.04s!important}
+  body.enter.navx #view>*:nth-child(3){animation-delay:.08s!important}
+  body.enter.navx #view>*:nth-child(n+4){animation-delay:.12s!important}
+  body.enter.navx #view .rc,body.enter.navx #view .grid2>.card,body.enter.navx #view .hl,body.enter.navx #view .kv>div,body.enter.navx #view .sqc,body.enter.navx #view h2::after,body.enter.navx .pg-k,body.enter.navx .sbars i{animation-name:none!important}
+  body.enter.navx #view>*{animation-name:navIn!important}
+  body.enter.navx #hero{animation:navIn .42s cubic-bezier(.23,1,.32,1) both}
+  #hero.still *,#hero.still *::before,#hero.still *::after{animation:none!important}
+  @keyframes navIn{from{opacity:0;transform:translate3d(var(--dx,0px),var(--dy,12px),0)}}
+}
 h1,h2,.intro h1,.modal h2,.next-main b,.teamhead b,.welcome h2{font-family:var(--display);font-weight:700;letter-spacing:-.01em}
 h2::after,.pg-k+h2::after{display:none!important}
 .eyebrow,.next-k,.facts span,th,.stats span,.kv span,.hl>span:first-child{font-family:var(--font);font-weight:600;letter-spacing:.08em;color:var(--text-2)}
@@ -3483,15 +3497,15 @@ function countUp(){
 /* page changes follow the tab order: the page you leave slides away from where you are going and out of focus
    (240ms, ease-out), then the new one is built and its parts come in from that side.
    Plain animations on the content (not the View Transitions API, which hides the new page until it is complete). */
-let leaving=false,leaveAnim=null;
+let leaving=false,leaveAnim=null,navNext=false;
 function nav(apply){
   if(RM||!Element.prototype.animate){apply();animNext=true;render();toTop();return}
   if(leaving){apply();animNext=true;return}
   const ORD=["team","rounds","leagues","rules","profile"],from=ORD.indexOf(tab);
-  apply();animNext=true;leaving=true;renderTabs();
-  const dir=Math.sign(ORD.indexOf(tab)-from)||0;document.body.style.setProperty("--dx",dir*44+"px");document.body.style.setProperty("--dy",dir?"0px":"26px");
+  apply();animNext=true;navNext=true;leaving=true;renderTabs();
+  const dir=Math.sign(ORD.indexOf(tab)-from)||0;document.body.style.setProperty("--dx",dir*28+"px");document.body.style.setProperty("--dy",dir?"0px":"12px");
   const c=document.querySelector("body>.container");
-  leaveAnim=c.animate([{opacity:1,transform:"none",filter:"blur(0px)"},{opacity:0,transform:`translate3d(${-dir*32}px,${dir?0:-14}px,0)`,filter:"blur(5px)"}],{duration:240,easing:"cubic-bezier(.23,1,.32,1)",fill:"forwards"});
+  leaveAnim=c.animate([{opacity:1,transform:"none"},{opacity:0,transform:`translate3d(${-dir*20}px,${dir?0:-8}px,0)`}],{duration:180,easing:"cubic-bezier(.23,1,.32,1)",fill:"forwards"});
   const done=()=>{if(!leaving)return;leaving=false;try{window.scrollTo(0,0)}catch(e){}render();leaveAnim.cancel();leaveAnim=null};
   leaveAnim.onfinish=done;setTimeout(done,700); /* never get stuck if the animation is interrupted */
 }
@@ -3526,9 +3540,12 @@ function render(){
   flipCapture();
   const now=performance.now();
   const opening=animNext&&!RM;
-  if(opening){const hold=Math.max(0,reelEnd-now);enterUntil=now+2600+hold;clearTimeout(enterTimer);enterTimer=setTimeout(()=>{document.body.classList.remove("enter");document.body.style.removeProperty("--dx");document.body.style.removeProperty("--dy")},2650+hold)}
+  const viaNav=opening&&navNext;navNext=false;document.body.classList.toggle("navx",viaNav);
+  if(opening){const hold=viaNav?0:Math.max(0,reelEnd-now),len=viaNav?650:2600;enterUntil=now+len+hold;clearTimeout(enterTimer);enterTimer=setTimeout(()=>{document.body.classList.remove("enter","navx");document.body.style.removeProperty("--dx");document.body.style.removeProperty("--dy")},len+50+hold)}
   freshPaint=opening||lastTab!==tab;animNext=false;document.body.classList.toggle("enter",now<enterUntil);
   renderHero();renderTicker();renderCourse();renderTabs();renderFacts();
+  /* after a page change the intro is simply there (it slides in with the page); it plays its own entrance on the first load */
+  if(opening)$("#hero").classList.toggle("still",viaNav);
   if(tab==="season")tab="profile";
   const html=tab==="team"?teamView():tab==="rounds"?roundsView():tab==="leagues"?leaguesView():tab==="profile"?profileView():rulesView();
   /* on the same tab, patch the page in place: the cards stay painted (and their photos loaded) instead of being rebuilt,
