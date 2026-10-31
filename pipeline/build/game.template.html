@@ -1493,6 +1493,10 @@ html.glass .btn:not(.on):not(.go):not(.light):not(.quiet),html.glass .boost:not(
   html:is(.glass,.gbar) .tabbar .ind.lift{scale:1.22 1.14;background:rgba(255,255,255,.55);
     box-shadow:inset 0 1px 1px rgba(255,255,255,1),inset 0 -1px 1px rgba(255,255,255,.6),inset 0 0 0 .5px rgba(255,255,255,.9),0 12px 28px -8px rgba(0,0,0,.28)}
   html:is(.glass,.gbar) .tabbar button:active svg{transform:scale(.9)}
+  /* icons only, as a compact iOS tab bar; the names stay for screen readers */
+  html:is(.glass,.gbar) .tabbar button span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  html:is(.glass,.gbar) .tabbar button{padding:12px 2px}
+  html:is(.glass,.gbar) .tabbar svg{width:26px;height:26px}
   /* shrunk while scrolling down: only the current tab, as a round bubble at the left */
   html:is(.glass,.gbar) .tabbar.mini{right:calc(100% - 16px - 62px);padding:5px}
   html:is(.glass,.gbar) .tabbar button{white-space:nowrap;min-width:0}
