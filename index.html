@@ -1539,6 +1539,11 @@ h2::after,.pg-k+h2::after{display:none!important}
 .pg-k{color:#000!important}
 /* header: a black utility bar, then white with the logo and plain navigation */
 .nav{background:#fff!important;box-shadow:0 1px 0 #ededed!important;border:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+/* the menu row (logo, tabs, account) stays at the top while you scroll; the yellow and black strip above it scrolls away.
+   The page clips sideways with overflow-x:clip: "hidden" made the body a scroll box of its own, and nothing could stick. */
+body{overflow-x:clip}
+.nav{top:calc(-1 * var(--tbh,28px))}
+.topbar{height:var(--tbh,28px)}.topbar .container{min-height:var(--tbh,28px)}
 .topbar{background:#000;color:#fff;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase}
 .topbar .container{display:flex;align-items:stretch;justify-content:space-between;min-height:28px}
 .topbar .sect{display:flex;align-items:center;background:var(--gul);color:#000;font-weight:700;padding:0 18px}
