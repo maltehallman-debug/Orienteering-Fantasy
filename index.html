@@ -1472,6 +1472,37 @@ html.glass .btn:not(.on):not(.go):not(.light):not(.quiet),html.glass .boost:not(
   .tabbar button.hov{color:var(--accent)}
   .tabbar.dragging button{transition:color .12s}
 }
+/* Liquid Glass, as Apple's own tab bar in iOS 26: a floating capsule of frosted glass with a bright rim, dark labels,
+   the current tab sitting in a soft grey glass bubble with its icon filled and tinted. Scrolling down shrinks the bar
+   to a small bubble with just the current tab; scrolling up, or a tap on it, opens it again. */
+@media (max-width:760px){
+  html:is(.glass,.gbar) .tabbar{left:16px;right:16px;bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:5px;border-radius:999px;
+    background:rgba(250,250,252,.58);-webkit-backdrop-filter:blur(22px) saturate(185%);backdrop-filter:blur(22px) saturate(185%);
+    box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px .5px rgba(255,255,255,.45),inset 0 0 0 .5px rgba(255,255,255,.7),
+      0 0 0 .5px rgba(0,0,0,.07),0 10px 32px -8px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.06);
+    transition:right .5s cubic-bezier(.32,.72,0,1),padding .5s cubic-bezier(.32,.72,0,1)}
+  html:is(.glass,.gbar) .tabbar::before{background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 45%),
+    radial-gradient(120% 90% at 50% 120%,rgba(255,255,255,.35),transparent 60%)}
+  html:is(.glass,.gbar) .tabbar button{gap:1px;padding:7px 2px 5px;border-radius:999px;color:#1c1c1e;font:600 10.5px/1.1 var(--font);letter-spacing:.01em;
+    transition:color .2s,opacity .25s,flex-grow .5s cubic-bezier(.32,.72,0,1),padding .5s cubic-bezier(.32,.72,0,1)}
+  html:is(.glass,.gbar) .tabbar button[aria-selected="true"]{color:var(--navy)!important;font-weight:700}
+  html:is(.glass,.gbar) .tabbar svg{width:25px;height:25px;stroke-width:1.8}
+  html:is(.glass,.gbar) .tabbar button[aria-selected="true"] svg{fill:currentColor;fill-opacity:.2;stroke-width:2.1}
+  html:is(.glass,.gbar) .tabbar .ind{top:5px;height:calc(100% - 10px);width:72px;border-radius:999px;background:rgba(0,0,0,.065);
+    box-shadow:inset 0 .5px 0 rgba(255,255,255,.7),inset 0 0 0 .5px rgba(0,0,0,.04)}
+  html:is(.glass,.gbar) .tabbar .ind.lift{scale:1.22 1.14;background:rgba(255,255,255,.55);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,1),inset 0 -1px 1px rgba(255,255,255,.6),inset 0 0 0 .5px rgba(255,255,255,.9),0 12px 28px -8px rgba(0,0,0,.28)}
+  html:is(.glass,.gbar) .tabbar button:active svg{transform:scale(.9)}
+  /* shrunk while scrolling down: only the current tab, as a round bubble at the left */
+  html:is(.glass,.gbar) .tabbar.mini{right:calc(100% - 16px - 62px);padding:5px}
+  html:is(.glass,.gbar) .tabbar button{white-space:nowrap;min-width:0}
+  html:is(.glass,.gbar) .tabbar.mini{grid-template-columns:1fr!important}
+  html:is(.glass,.gbar) .tabbar.mini button:not([aria-selected="true"]){display:none}
+  html:is(.glass,.gbar) .tabbar.mini button[aria-selected="true"]{padding:12px 0}
+  html:is(.glass,.gbar) .tabbar.mini button span{display:none}
+  html:is(.glass,.gbar) .tabbar.mini .ind{display:none}
+}
+@media (max-width:760px) and (prefers-reduced-motion:reduce){html:is(.glass,.gbar) .tabbar,html:is(.glass,.gbar) .tabbar button{transition:none}}
 
 /* privacy: deleting an account asks once more, in red */
 .delbox{margin-top:12px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--warn) 9%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 35%,transparent)}
@@ -2497,6 +2528,12 @@ addEventListener("resize",()=>placeInd(),{passive:true});
   /* the click the browser sends after a drag is not a tap */
   bar.addEventListener("click",e=>{if(e.isTrusted&&Date.now()<skipUntil){e.stopPropagation();e.preventDefault()}},true)})();
 try{document.fonts.ready.then(()=>placeInd())}catch(e){}
+(()=>{const bar=document.getElementById("tabbar");if(!bar)return;let last=scrollY,acc=0;
+  const set=m=>{if(bar.classList.contains("mini")===m)return;bar.classList.toggle("mini",m);if(!m)setTimeout(placeInd,520)};
+  addEventListener("scroll",()=>{const y=scrollY,dy=y-last;last=y;if(Math.sign(dy)!==Math.sign(acc))acc=0;acc+=dy;
+    if(y<80||acc<-24)set(false);else if(acc>36)set(true)},{passive:true});
+  bar.addEventListener("click",e=>{if(bar.classList.contains("mini")){e.preventDefault();e.stopPropagation();set(false)}},true);
+  window.tabbarOpen=()=>set(false)})();
 function renderTabs(){
   const t=[["team","Lag"],["rounds","Omgångar"],["leagues","Ligor"],["rules","Regler"],["profile","Profil"]],I={team:'<path d="M4 20c0-3.3 3.6-5 8-5s8 1.7 8 5"/><circle cx="12" cy="8" r="4"/>',rounds:'<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>',leagues:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 6h3v1a3 3 0 0 1-3 3M7 6H4v1a3 3 0 0 0 3 3"/>',rules:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',profile:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5c1.2-2 3.2-3 5.5-3s4.3 1 5.5 3"/>'};
   const html=t.map(([k,l])=>`<button aria-current="${tab===k?"page":"false"}" aria-selected="${tab===k}" data-tab="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg><span>${l}</span></button>`).join("");
