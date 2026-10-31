@@ -1477,26 +1477,26 @@ html.glass .btn:not(.on):not(.go):not(.light):not(.quiet),html.glass .boost:not(
    to a small bubble with just the current tab; scrolling up, or a tap on it, opens it again. */
 @media (max-width:760px){
   html:is(.glass,.gbar) .tabbar{left:16px;right:16px;bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:5px;border-radius:999px;
-    background:rgba(255,255,255,.18);-webkit-backdrop-filter:blur(14px) saturate(210%) brightness(1.08);backdrop-filter:blur(14px) saturate(210%) brightness(1.08);
+    background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(6px) saturate(240%) brightness(1.02);backdrop-filter:blur(6px) saturate(240%) brightness(1.02);
     box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px .5px rgba(255,255,255,.45),inset 0 0 0 .5px rgba(255,255,255,.7),
       0 0 0 .5px rgba(0,0,0,.07),0 10px 32px -8px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.06);
     transition:right .5s cubic-bezier(.32,.72,0,1),padding .5s cubic-bezier(.32,.72,0,1)}
-  html:is(.glass,.gbar) .tabbar::before{background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0) 38%,rgba(255,255,255,0) 70%,rgba(255,255,255,.22)),
-    radial-gradient(120% 90% at 50% 120%,rgba(255,255,255,.35),transparent 60%)}
+  html:is(.glass,.gbar) .tabbar::before{background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0) 30%,rgba(255,255,255,0) 78%,rgba(255,255,255,.12))}
   html:is(.glass,.gbar) .tabbar button{gap:1px;padding:7px 2px 5px;border-radius:999px;color:#1c1c1e;font:600 10.5px/1.1 var(--font);letter-spacing:.01em;
     transition:color .2s,opacity .25s,flex-grow .5s cubic-bezier(.32,.72,0,1),padding .5s cubic-bezier(.32,.72,0,1)}
   html:is(.glass,.gbar) .tabbar button[aria-selected="true"]{color:var(--navy)!important;font-weight:700}
   html:is(.glass,.gbar) .tabbar svg{width:25px;height:25px;stroke-width:1.8}
   html:is(.glass,.gbar) .tabbar button[aria-selected="true"] svg{fill:none;stroke-width:2.1}
-  html:is(.glass,.gbar) .tabbar .ind{top:5px;height:calc(100% - 10px);width:72px;border-radius:999px;background:rgba(255,255,255,.32);
+  html:is(.glass,.gbar) .tabbar .ind{top:5px;height:calc(100% - 10px);width:72px;border-radius:999px;background:rgba(255,255,255,.22);
     box-shadow:inset 0 1px .5px rgba(255,255,255,.9),inset 0 0 0 .5px rgba(255,255,255,.6),0 2px 8px -4px rgba(0,0,0,.18)}
   html:is(.glass,.gbar) .tabbar .ind.lift{scale:1.22 1.14;background:rgba(255,255,255,.55);
     box-shadow:inset 0 1px 1px rgba(255,255,255,1),inset 0 -1px 1px rgba(255,255,255,.6),inset 0 0 0 .5px rgba(255,255,255,.9),0 12px 28px -8px rgba(0,0,0,.28)}
   html:is(.glass,.gbar) .tabbar button:active svg{transform:scale(.9)}
   /* icons only, as a compact iOS tab bar; the names stay for screen readers */
   html:is(.glass,.gbar) .tabbar button span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-  html:is(.glass,.gbar) .tabbar button{padding:12px 2px}
-  html:is(.glass,.gbar) .tabbar svg{width:26px;height:26px}
+  html:is(.glass,.gbar) .tabbar button{padding:9px 2px}
+  html:is(.glass,.gbar) .tabbar svg{width:31px;height:31px;stroke-width:1.7}
+  html:is(.glass,.gbar) .tabbar button[aria-selected="true"] svg{stroke-width:2}
   /* shrunk while scrolling down: only the current tab, as a round bubble at the left */
   html:is(.glass,.gbar) .tabbar.mini{right:calc(100% - 16px - 62px);padding:5px}
   html:is(.glass,.gbar) .tabbar button{white-space:nowrap;min-width:0}
