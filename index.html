@@ -1605,8 +1605,8 @@ nav.tabs .ind{background:var(--gul)!important}
 /* the countdown to the launch: just the time, small, in the black top bar */
 .launchbar[hidden],.hclock[hidden]{display:none!important}
 .hclock{text-transform:none;display:inline-flex;align-items:center;gap:7px;font:700 12px/1 var(--font);letter-spacing:.04em;font-variant-numeric:tabular-nums;color:var(--gul)}
-.hclock::before{content:"";width:6px;height:6px;border-radius:50%;background:#e5484d;animation:lglPulse 1.6s ease-in-out infinite}
-@media (prefers-reduced-motion:reduce){.hclock::before{animation:none}}
+.hclock svg{width:12px;height:12px;flex:none;margin-top:-1px}
+
 .logo{gap:10px}.logo .mark{flex:none;border-radius:9px}
 .logo b{font-family:var(--font);font-weight:800;font-size:18px;letter-spacing:-.01em;color:#000;text-transform:none}
 .logo b .w1{font-weight:500}.logo b .w2{font-weight:800}.logo b span{color:#000!important}
@@ -1922,7 +1922,7 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 </head>
 <body>
 <div class="terrain" aria-hidden="true"><div class="par" id="par"><svg id="terrain" preserveAspectRatio="xMidYMid slice"></svg></div></div>
-<header class="nav"><div class="topbar"><div class="container"><span class="sect">Fantasy Orientering</span><span class="tb-r"><span class="tb-season">Säsong 2026/27 · D/H 16–21</span><span class="hclock" id="hclock" role="timer" aria-live="off" title="Tid kvar till den officiella launchen" hidden></span></span></div></div><div class="container nav-inner">
+<header class="nav"><div class="topbar"><div class="container"><span class="sect">Fantasy Orientering</span><span class="tb-r"><span class="tb-season">Säsong 2026/27 · D/H 16–21</span><span class="hclock" id="hclock" role="timer" aria-live="off" title="Tid kvar tills lagen låses" hidden></span></span></div></div><div class="container nav-inner">
   <button class="logo" type="button" data-tab="team" aria-label="Fantasy Orientering, beta, till ditt lag">
     <svg class="mark" width="44" height="35" viewBox="2.6 2.6 29.6 23.5" aria-hidden="true"><g transform="translate(-.4 -.9) scale(.0322)"><path d="M540 120l18 37 41 6-30 29 7 41-36-19-36 19 7-41-30-29 41-6z" fill="#fff"/><g transform="translate(540 240)"><path d="M-210 0H210C210 220 120 350 0 370C-120 350-210 220-210 0Z" fill="#ffe74d"/><path d="M-205 50C-320 50-330 190-205 235M205 50C320 50 330 190 205 235" fill="none" stroke="#ffe74d" stroke-width="40" stroke-linecap="round"/><rect x="-30" y="360" width="60" height="110" fill="#ffe74d"/><path d="M-140 580H140L112 470H-112Z" fill="#ffe74d"/><circle cx="0" cy="145" r="88" fill="none" stroke="#003c68" stroke-width="34"/></g><path d="M150 610L120 690H230ZM930 610L960 690H850Z" fill="#c9d3dc"/><path d="M95 560H230V700H95L140 630ZM985 560H850V700H985L940 630Z" fill="#e8edf2"/><rect x="190" y="530" width="700" height="150" rx="8" fill="#fff"/><text x="540" y="652" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="112" letter-spacing="6" fill="#003c68" text-anchor="middle">FANTASY</text></g></svg>
     <b><span class="w1">Fantasy</span> <span class="w2">Orientering</span></b><i class="beta" title="Spelet är under utveckling">Beta</i></button>
@@ -2703,14 +2703,17 @@ const CONTROLLER="Fantasy Orientering drivs av Malte Hallman som privatperson, o
 const launchDates=()=>{const ds=(D.launch&&D.launch.dates)||[];if(!ds.length)return "";const a=ds[0],b=ds[ds.length-1],[,ma]=a.split("-"),[,mb]=b.split("-");
   return a===b?dshort(a):ma===mb?(+a.split("-")[2])+"–"+dshort(b):dshort(a)+" – "+dshort(b)};
 function launchTick(){
-  /* the time left to the launch round's lock, as a small clock in the top bar (124d 06:21:43) */
+  /* the time left until the squads lock for the next round that is played, as a small clock with a lock in the top
+     bar (6d 02:37:37); the hours only when there is less than a day left */
   const el=document.getElementById("hclock");if(!el)return;
-  const lr=D.rounds.find(r=>r.launch),ms=lr?lockAt(D.rounds.indexOf(lr))-Date.now():0;
+  const now=Date.now();let ms=0;
+  for(let i=0;i<D.rounds.length;i++){const rd=D.rounds[i];if(rd.skip||rd.wait)continue;const at=lockAt(i);if(at>now){ms=at-now;break}}
   if(ms<=0){el.hidden=true;return}
-  const d=Math.floor(ms/864e5),p=n=>String(n).padStart(2,"0"),txt=`${d}d ${p(Math.floor(ms/36e5)%24)}:${p(Math.floor(ms/6e4)%60)}:${p(Math.floor(ms/1e3)%60)}`;
-  if(el.textContent!==txt)el.textContent=txt;
-  el.setAttribute("aria-label",`${d} dagar och ${Math.floor(ms/36e5)%24} timmar till officiell launch`);
-  el.hidden=false;
+  const d=Math.floor(ms/864e5),p=n=>String(n).padStart(2,"0"),hms=`${p(Math.floor(ms/36e5)%24)}:${p(Math.floor(ms/6e4)%60)}:${p(Math.floor(ms/1e3)%60)}`,txt=d?`${d}d ${hms}`:hms;
+  if(!el.firstChild)el.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg><span></span>';
+  const s=el.querySelector("span");if(s.textContent!==txt)s.textContent=txt;
+  el.setAttribute("aria-label",`${d} dagar och ${Math.floor(ms/36e5)%24} timmar tills lagen låses`);
+  el.title="Tid kvar tills lagen låses";el.hidden=false;
 }
 setInterval(()=>{if(!document.hidden)launchTick()},1000);
 /* a round's name: the O-Event week is the beta test round */
