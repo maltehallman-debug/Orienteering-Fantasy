@@ -1761,6 +1761,10 @@ a.ncard{text-decoration:none}
 #modal .sheet[data-key="rename"] input.name:focus{box-shadow:inset 0 0 0 2px #fff,0 0 0 4px rgba(255,255,255,.18)!important}
 #modal .sheet[data-key="rename"] #rnSave{background:#fff!important;color:#991b1b!important}
 .wkd{border-radius:22px!important;padding:14px 18px!important}
+/* the notes above the days (a pause, a skipped week) have the same shape as the day boxes, so the text stays inside */
+.skipnote{border-radius:22px!important;padding:14px 18px!important}
+/* phones: last and next week side by side on the first row, as on a computer; the week's name on its own row */
+@media (max-width:560px){.rnav>b{order:3;flex-basis:100%;text-align:center}.rnav>.btn:last-of-type{margin-left:auto}}
 .wmarrow{width:38px;height:38px;min-width:38px;padding:0!important;display:grid;place-items:center;font:700 22px/1 var(--font)!important;letter-spacing:0!important}
 .wmarrow:disabled{opacity:.35}
 /* the league table: one rounded row per team, placing (week's placing), team and manager, week, total */
@@ -3371,7 +3375,7 @@ function profile(i){
 function photoSection(i){
   if(PHOTOS_OFF)return "";
   const id=D.runners[i].id,mine=myPhotos.filter(x=>RI.get(x.runner_id)===i);
-  const list=mine.map(x=>`<div class="mine"><span>Ditt foto <span class="st ${x.status}">${x.status==="approved"?"shown":x.status==="pending"?"väntar på godkännande":"inte godkänt"}</span></span><button class="btn quiet" data-phdel="${esc(x.id)}">${x.status==="approved"?"Ta bort det":"Withdraw"}</button></div>`).join("");
+  const list=mine.map(x=>`<div class="mine"><span>Ditt foto <span class="st ${x.status}">${x.status==="approved"?"visas":x.status==="pending"?"väntar på godkännande":"inte godkänt"}</span></span><button class="btn quiet" data-phdel="${esc(x.id)}">${x.status==="approved"?"Ta bort det":"Dra tillbaka"}</button></div>`).join("");
   if(!dbOk)return `<div class="phbox"><h3>Är det här du?</h3><p class="note" style="margin:0">Logga in för att lägga till ett eget foto${youthCls(i)?", eller så kan en förälder eller vårdnadshavare göra det åt dig":""}. Det syns på ditt kort när det har godkänts.</p><div class="row"><button class="btn" id="phSignIn">Logga in för att lägga till ett foto</button></div></div>`;
   if(!phForm||phForm.i!==i)return `<div class="phbox"><h3>Är det här du?</h3>${list}<p class="note" style="margin:0">Lägg till ett eget foto${youthCls(i)?". För löpare i D/H 16 och 18 måste en förälder eller vårdnadshavare skicka det":""}. Det syns på kortet när det har godkänts.</p><div class="row"><button class="btn on" data-phopen="${i}">Lägg till ett foto</button></div></div>`;
   const f=phForm,youth=/16$/.test(D.runners[i].k),rel=[];
