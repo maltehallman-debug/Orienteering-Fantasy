@@ -2230,12 +2230,15 @@ let pubTimer=null;
 function autoSave(){
   if(!isLive()||done()||hasStarted(R())||!plan.squad.length)return;
   const sq=ordered(plan),p={squad:sq,captain:plan.captain,chip:plan.chip||null};
-  if(E.planErrors(state,p).length)return;
+  if(E.planErrors(state,p,sameAsSaved(sq)?{budget:false}:undefined).length)return;
   const cur=picks[R()];
   if(cur&&cur.squad.join()===sq.join()&&cur.captain===p.captain&&(cur.chip||null)===p.chip)return;
   picks[R()]=p;lock={round:R(),squad:sq.slice(),captain:p.captain,vice:null,chip:p.chip};
   const r=R();clearTimeout(pubTimer);pubTimer=setTimeout(()=>publishPick(r),600);
 }
+/* the same ten runners as the squad already saved for this round (in any order): prices that rose since never stop
+   you keeping them, or changing the boost or the chip */
+const sameAsSaved=sq=>{const p=picks[R()];return !!p&&p.squad.length===sq.length&&[...p.squad].sort().join()===[...sq].sort().join()};
 const isSaved=()=>{const p=picks[R()];if(!p||!plan.squad.length)return false;const sq=ordered(plan);return p.squad.join()===sq.join()&&p.captain===plan.captain&&(p.chip||null)===(plan.chip||null)};
 if(state.squad.length&&!plan.squad.length)startRound();
 fixLeaders();if(lock)lock.vice=null;
@@ -2606,7 +2609,7 @@ function teamView(){
   if(done())return `<div class="card"><h2 style="margin-top:0">Säsongen är slut</h2><p>Du slutade på <b>${fp(state.total)}</b> poäng.</p><button class="btn on" data-tab="profile">Se din säsong</button></div>`;
   const r=R(),rd=D.rounds[r],locked=!isLive()&&lock&&lock.round===r,frozen=locked&&hasStarted(r);
   const show=locked?Object.assign({a:lock.squad.slice(0,AS)},lock):plan;
-  const errs=plan.squad.length?E.planErrors(state,{squad:ordered(plan),captain:plan.captain,chip:plan.chip}):["Välj "+D.squad+" löpare för att börja"];
+  const errs=plan.squad.length?E.planErrors(state,{squad:ordered(plan),captain:plan.captain,chip:plan.chip},sameAsSaved(ordered(plan))?{budget:false}:undefined):["Välj "+D.squad+" löpare för att börja"];
   const t=E.transfersFor(state,plan.squad),pen=plan.chip==="wc"||rd.skip?0:(!state.squad.length?0:Math.max(0,t.n-D.freeTransfers)*D.penalty);
   const A=(show.a||[]).filter(i=>show.squad.includes(i)),B=show.squad.filter(i=>!A.includes(i));
   const slot=(k,team)=>{const can=swapSel!==null&&(team==="A"?!plan.a.includes(swapSel):plan.a.includes(swapSel));return `<div class="rc slot sqc-slot" style="--i:${k}"><div><b>${k+1}</b>${team==="A"?"A":"B"}-lagsplats${can?`<button class="swapto" data-moveto="${team}">Flytta ${esc(nameOf(swapSel).split(" ")[0])} hit</button>`:""}</div></div>`};
@@ -2635,7 +2638,7 @@ function teamView(){
    <div><span class="eyebrow">Chips · ett användande var</span><div style="margin-top:10px">${chipsHtml}</div></div>
    ${errs.length&&!locked?`<ul class="errs">${errs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
    ${isLive()?(saved?`<div class="savest" id="savest"><i>✓</i><span>Sparad för ${rdThe(rd)}<small>Låses automatiskt ${lockText(r)}</small></span></div>`
-       :`<div class="savest warn" id="savest"><i>!</i><span>${plan.squad.length?"Inte sparad än":"Ingen trupp än"}<small>${picks[r]||state.squad.length?"Din senaste kompletta trupp spelar tills dess":"Sparas när alla "+D.squad+" är valda"}</small></span></div>`)
+       :`<div class="savest warn" id="savest"><i>!</i><span>${plan.squad.length?"Inte sparad än":"Ingen trupp än"}<small>${errs.length&&plan.squad.length===D.squad?esc(errs[0])+(picks[r]||state.squad.length?". Din senast sparade trupp gäller tills du rättat det":""):picks[r]||state.squad.length?"Din senast sparade trupp gäller tills dess":"Sparas när alla "+D.squad+" är valda"}</small></span></div>`)
      :`<button class="btn go" id="play" ${errs.length||hasStarted(r)&&!fin?"disabled":""}>Spela ${rdThe(rd)}</button>`}
    ${isLive()&&syncMsg?`<p class="note" style="margin:0;color:var(--warn)">${esc(syncMsg)}</p>`:""}
    ${fin&&state.squad.length&&!errs.length?`<button class="btn quiet" id="auto">${confirmAuto?"Bekräfta: spela alla färdiga omgångar":"Spela färdiga omgångar automatiskt med den här truppen"}</button>`:""}
