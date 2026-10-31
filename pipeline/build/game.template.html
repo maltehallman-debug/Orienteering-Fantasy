@@ -1544,6 +1544,18 @@ h2::after,.pg-k+h2::after{display:none!important}
 body{overflow-x:clip}
 .nav{top:calc(-1 * var(--tbh,28px))}
 .topbar{height:var(--tbh,28px)}.topbar .container{min-height:var(--tbh,28px)}
+/* test: the menu row that follows you down in the site's navy */
+.nav{background:#003c68!important;box-shadow:0 8px 24px -14px rgba(0,30,60,.55)!important}
+.nav .topbar{background:#000}
+.nav .logo,.nav .logo b,.nav .logo b span,.nav .logo .w1,.nav .logo .w2{color:#fff!important}
+.nav .logo b span{color:var(--gul)}
+nav.tabs button{color:rgba(255,255,255,.72)!important}
+nav.tabs button[aria-selected="true"]{color:#fff!important}
+nav.tabs button[aria-selected="true"]::after{background:var(--gul)!important}
+@media (hover:hover) and (pointer:fine){nav.tabs button:hover{color:#fff!important}}
+nav.tabs .ind{background:var(--gul)!important}
+.nav .logo .mark{box-shadow:0 0 0 1.5px rgba(255,255,255,.35)}
+#mgr:not(.out){background:rgba(255,255,255,.12)!important;color:#fff!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)!important}
 .topbar{background:#000;color:#fff;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase}
 .topbar .container{display:flex;align-items:stretch;justify-content:space-between;min-height:28px}
 .topbar .sect{display:flex;align-items:center;background:var(--gul);color:#000;font-weight:700;padding:0 18px}
