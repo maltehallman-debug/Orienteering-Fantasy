@@ -1857,6 +1857,21 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 .next.omhero::after,.nimg::after,.pimg::after{content:"Karta © Attunda OK";display:block!important;position:absolute;left:auto;top:auto;right:10px;bottom:8px;width:auto;height:auto;background:rgba(255,255,255,.78)!important;color:#333;font:600 9.5px/1 var(--font);letter-spacing:.02em;padding:4px 7px;border-radius:999px;pointer-events:none;z-index:2;animation:none!important}
 .nimg,.pimg{position:relative}
 .next.omhero::after{z-index:3;writing-mode:vertical-rl;transform:rotate(180deg);right:6px;bottom:24px;padding:6px 3px!important}
+/* phones: the same card as before, only smaller: less padding, a smaller countdown pill and title */
+@media (max-width:640px){
+  .next.omhero,.next.omhero[style]{padding:12px 14px 14px!important;border-radius:20px!important;gap:8px!important}
+  .next.omhero .next-side{padding:6px 12px;gap:5px}
+  .next.omhero .next-side .eyebrow{font-size:9px}
+  .next.omhero .next-side .num{font-size:14px}
+  .next.omhero .next-side .sub{font-size:11px}
+  .next.omhero .next-main{gap:3px}
+  .next.omhero .next-k{font-size:10px}
+  .next.omhero .next-main b{font-size:21px}
+  .next.omhero .wklink{font-size:13px;margin-top:2px}
+  /* room for the label under the course's controls */
+  .course{margin-bottom:12px}
+}
+}
 /* stat boxes hold two-line labels: rounded corners, not pills, so the text stays inside */
 .stats>div,.kv>div,.hl{border-radius:22px!important}
 .stats span{display:block;line-height:1.3!important;letter-spacing:.05em!important}
