@@ -1761,6 +1761,10 @@ a.ncard{text-decoration:none}
 #modal .sheet[data-key="rename"] input.name:focus{box-shadow:inset 0 0 0 2px #fff,0 0 0 4px rgba(255,255,255,.18)!important}
 #modal .sheet[data-key="rename"] #rnSave{background:#fff!important;color:#991b1b!important}
 .wkd{border-radius:22px!important;padding:14px 18px!important}
+/* the notes above the days (a pause, a skipped week) have the same shape as the day boxes, so the text stays inside */
+.skipnote{border-radius:22px!important;padding:14px 18px!important}
+/* phones: last and next week side by side on the first row, as on a computer; the week's name on its own row */
+@media (max-width:560px){.rnav>b{order:3;flex-basis:100%;text-align:center}.rnav>.btn:last-of-type{margin-left:auto}}
 .wmarrow{width:38px;height:38px;min-width:38px;padding:0!important;display:grid;place-items:center;font:700 22px/1 var(--font)!important;letter-spacing:0!important}
 .wmarrow:disabled{opacity:.35}
 /* the league table: one rounded row per team, placing (week's placing), team and manager, week, total */
