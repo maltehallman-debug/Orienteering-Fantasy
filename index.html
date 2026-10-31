@@ -3375,7 +3375,7 @@ function profile(i){
 function photoSection(i){
   if(PHOTOS_OFF)return "";
   const id=D.runners[i].id,mine=myPhotos.filter(x=>RI.get(x.runner_id)===i);
-  const list=mine.map(x=>`<div class="mine"><span>Ditt foto <span class="st ${x.status}">${x.status==="approved"?"shown":x.status==="pending"?"väntar på godkännande":"inte godkänt"}</span></span><button class="btn quiet" data-phdel="${esc(x.id)}">${x.status==="approved"?"Ta bort det":"Withdraw"}</button></div>`).join("");
+  const list=mine.map(x=>`<div class="mine"><span>Ditt foto <span class="st ${x.status}">${x.status==="approved"?"visas":x.status==="pending"?"väntar på godkännande":"inte godkänt"}</span></span><button class="btn quiet" data-phdel="${esc(x.id)}">${x.status==="approved"?"Ta bort det":"Dra tillbaka"}</button></div>`).join("");
   if(!dbOk)return `<div class="phbox"><h3>Är det här du?</h3><p class="note" style="margin:0">Logga in för att lägga till ett eget foto${youthCls(i)?", eller så kan en förälder eller vårdnadshavare göra det åt dig":""}. Det syns på ditt kort när det har godkänts.</p><div class="row"><button class="btn" id="phSignIn">Logga in för att lägga till ett foto</button></div></div>`;
   if(!phForm||phForm.i!==i)return `<div class="phbox"><h3>Är det här du?</h3>${list}<p class="note" style="margin:0">Lägg till ett eget foto${youthCls(i)?". För löpare i D/H 16 och 18 måste en förälder eller vårdnadshavare skicka det":""}. Det syns på kortet när det har godkänts.</p><div class="row"><button class="btn on" data-phopen="${i}">Lägg till ett foto</button></div></div>`;
   const f=phForm,youth=/16$/.test(D.runners[i].k),rel=[];
