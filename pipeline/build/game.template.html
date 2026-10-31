@@ -768,7 +768,11 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 .phprev img,.phprev .ph0{width:104px;height:104px;border-radius:50%;object-fit:cover;background:var(--surface-3)}
 .phbox label{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:var(--text-2);cursor:pointer}
 .phbox input[type=radio],.phbox input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px;margin-top:2px;flex:none}
-.phbox input[type=file]{font:inherit;font-size:15px;color:var(--text-2);max-width:100%}
+.phbox input[type=file]{font:inherit;font-size:16px;color:var(--text-2);width:100%;max-width:100%;min-width:0}
+/* the photo form never gets wider than the sheet (iPhone draws the file picker wider than its box), and the sheets
+   only ever scroll up and down */
+.phbox,.phprev>div{min-width:0}.phprev>div{flex:1 1 180px}
+.modal .sheet{overflow-x:hidden}
 .mine{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--text-2)}
 .review{display:grid;gap:8px}
 .review .it{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:12px;border-radius:var(--r-sm);background:var(--surface-2)}
