@@ -2887,11 +2887,17 @@ async function makeShareImage(src){
     if(avIm){c.save();c.clip();const s=Math.max(2*r/avIm.width,2*r/avIm.height);c.drawImage(avIm,x-avIm.width*s/2,y-avIm.height*s/2,avIm.width*s,avIm.height*s);c.restore()}
     else{c.fillStyle=acc;c.fill();c.fillStyle="#fff";c.font=`800 ${Math.round(r*.95)}px ${dfont}`;c.textAlign="center";c.textBaseline="middle";c.fillText(((b.mgr||b.me||"M").trim()[0]||"M").toUpperCase(),x,y+r*.06);c.textBaseline="alphabetic"}
     c.lineWidth=6;c.strokeStyle="#fff";c.stroke();c.restore()};
+  const mk=document.querySelector(".logo .mark");let logoIm=null;
+  if(mk){const cl=mk.cloneNode(true);cl.setAttribute("xmlns","http://www.w3.org/2000/svg");cl.setAttribute("width","176");cl.setAttribute("height","140");logoIm=await loadImg("data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(cl)))}
+  const LW=logoIm?76:0,LG=logoIm?20:0;
+  /* the trophy on a navy tile, so its white star and ribbon show on the light board */
+  const tile=(x,y)=>{if(!logoIm)return;c.save();roundRect(c,x,y,LW,LW,20);c.fillStyle="#003c68";c.fill();c.restore();const iw=LW*.86,ih=iw*140/176;c.drawImage(logoIm,x+(LW-iw)/2,y+(LW-ih)/2,iw,ih)};
   const fit=(s,max,f0,fmin,weight,fam)=>{let f=f0;c.font=`${weight} ${f}px ${fam}`;while(c.measureText(s).width>max&&f>fmin){f-=2;c.font=`${weight} ${f}px ${fam}`}while(c.measureText(s).width>max&&s.length>3)s=s.slice(0,-2)+"…";return s};
   const sub=[b.mgr,rdName(b.rd),b.when.replace(/^Slutade söndag/,"slutade").replace(/^Slutar söndag/,"slutar").replace(/^Låses/,"låses")].filter(Boolean).join(" · ")+(b.x&&b.x.chip?" · "+CHIPINFO[b.x.chip][0]:"");
   c.textBaseline="alphabetic";
-  if(L==="C"){c.textAlign="center";c.font=`800 40px ${dfont}`;const fw=c.measureText("Fantasy ").width,tw=c.measureText("Fantasy Orientering").width;c.textAlign="left";c.fillStyle=text;c.fillText("Fantasy",W/2-tw/2,128);c.fillStyle=acc;c.fillText("Orientering",W/2-tw/2+fw,128)}
-  else{c.textAlign="left";c.fillStyle=text;c.font=`800 46px ${dfont}`;c.fillText("Fantasy",92,136);const ow=c.measureText("Fantasy ").width;c.fillStyle=acc;c.fillText("Orientering",92+ow,136)}
+  if(L==="C"){c.font=`800 40px ${dfont}`;const fw=c.measureText("Fantasy ").width,tw=c.measureText("Fantasy Orientering").width,x0=W/2-(tw+LW+LG)/2;
+    tile(x0,128-52);c.textAlign="left";c.fillStyle=text;c.fillText("Fantasy",x0+LW+LG,128);c.fillStyle=acc;c.fillText("Orientering",x0+LW+LG+fw,128)}
+  else{tile(84,136-56);c.textAlign="left";c.fillStyle=text;c.font=`800 46px ${dfont}`;const tx=84+LW+LG;c.fillText("Fantasy",tx,136);const ow=c.measureText("Fantasy ").width;c.fillStyle=acc;c.fillText("Orientering",tx+ow,136)}
   if(L==="A")avatarAt(W-92-50,118,50);
   if(L==="C")avatarAt(W-92-44,112,44);
   /* gauge and numbers */
@@ -2914,7 +2920,7 @@ async function makeShareImage(src){
   const gap=14,cw=Math.floor((PW-60-2*gap)/3),ch=Math.round(cw/.72),y0=800,x0=(W-(3*cw+2*gap))/2,col=k=>x0+k*(cw+gap);
   const pos=[[col(0),y0],[col(2),y0],[col(1),y0+(ch+gap)/2],[col(0),y0+ch+gap],[col(2),y0+ch+gap]];
   for(let k=0;k<b.cards.length;k++)await drawFifa(c,b.cards[k],pos[k][0],pos[k][1],cw,ch,'"Barlow Condensed",sans-serif');
-  c.textAlign="center";c.fillStyle=t3;c.font=`500 26px ${font}`;c.fillText(location.host?location.host+location.pathname.replace(/index\.html$/,""):"Fantasy Orientering",W/2,H-70);
+  c.textAlign="center";c.fillStyle=t3;c.font=`500 26px ${font}`;c.fillText("fantasyorientering.se",W/2,H-70);
   return await new Promise((res,rej)=>cv.toBlob(bl=>bl?res(bl):rej(new Error("picture")),"image/png"));
 }
 /* the share picture, of your own team or (src) a league-mate's, drawn the same way */
