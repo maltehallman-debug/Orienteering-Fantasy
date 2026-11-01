@@ -2864,12 +2864,13 @@ async function terrainImg(w,h){
     const st=document.createElementNS("http://www.w3.org/2000/svg","style");st.textContent=`path{fill:none;stroke:${css("--contour")};stroke-width:1.6}path.ix{stroke-width:3}`;cl.insertBefore(st,cl.firstChild);
     return await loadImg("data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(cl)))}catch(e){return null}
 }
-/* the share picture (1080x1760): the board as it looks on screen, its header, round, team switch and the cards in the
+/* the share picture (1080 wide, as tall as it needs): the board as it looks on screen, its header, round, team switch and the cards in the
    same three staggered columns, on the same contour map */
 async function makeShareImage(src){
   const b=boardData(src);if(!b||!b.cards.length)throw new Error("inget lag");
   try{await Promise.all(["800 40px","700 40px","600 40px","500 40px"].map(f=>document.fonts.load(f+' "Barlow Condensed"')));await document.fonts.ready}catch(e){}
-  const W=1080,H=1760,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
+  /* as tall as the board needs: the cards right under the team switch, the address under them */
+  const W=1080,CW=Math.round(W*.253),CH=Math.round(CW/.72),H=600+2*CH+18+130,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
   const font=getComputedStyle(document.body).fontFamily||"sans-serif",dfont=css("--display")||font,acc=css("--accent"),bg=css("--bg"),text=css("--text"),t2=css("--text-2"),t3=css("--text-3"),line=css("--line-2");
   c.fillStyle=bg;c.fillRect(0,0,W,H);
   /* soft colour light, then the map, as behind the glass on the page */
@@ -2907,7 +2908,8 @@ async function makeShareImage(src){
     c.textAlign="left";c.fillStyle=on?"#fff":t2;c.font=`700 28px ${font}`;c.fillText(tt,cx-(tw+mw)/2,sy0+40);c.font=`600 20px ${font}`;c.globalAlpha=on?.85:.7;c.fillText(m,cx-(tw+mw)/2+tw,sy0+40);c.globalAlpha=1});
   /* the cards: three columns, the middle one sits half a card lower (cards 0 and 3 left, 2 middle, 1 and 4 right) */
   /* the cards sit centred between the team switch and the address at the bottom */
-  const gap=14,cw=Math.floor((PW-28-2*gap)/3),ch=Math.round(cw/.72),y0=Math.round(566+((H-120)-566-(2*ch+gap)-10)/2),x0=(W-(3*cw+2*gap))/2,col=k=>x0+k*(cw+gap);
+  /* the same proportions as the board on screen: each card a quarter of the width, the same gaps and side margins */
+  const gap=18,cw=CW,ch=CH,y0=600,x0=(W-(3*cw+2*gap))/2,col=k=>x0+k*(cw+gap);
   const pos=[[col(0),y0],[col(2),y0],[col(1),y0+(ch+gap)/2],[col(0),y0+ch+gap],[col(2),y0+ch+gap]];
   for(let k=0;k<b.cards.length;k++)await drawFifa(c,b.cards[k],pos[k][0],pos[k][1],cw,ch,'"Barlow Condensed",sans-serif');
   c.textAlign="center";c.fillStyle=t3;c.font=`500 26px ${font}`;c.fillText("fantasyorientering.se",W/2,H-70);
