@@ -2870,7 +2870,7 @@ async function makeShareImage(src){
   const b=boardData(src);if(!b||!b.cards.length)throw new Error("inget lag");
   try{await Promise.all(["800 40px","700 40px","600 40px","500 40px"].map(f=>document.fonts.load(f+' "Barlow Condensed"')));await document.fonts.ready}catch(e){}
   /* as tall as the board needs: the cards right under the team switch, the address under them */
-  const W=1080,CW=Math.round(W*.253),CH=Math.round(CW/.72),H=600+2*CH+18+130,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
+  const W=1080,CW=Math.round(W*.253),CH=Math.round(CW/.72),H=690+2*CH+18+130,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
   const font=getComputedStyle(document.body).fontFamily||"sans-serif",dfont=css("--display")||font,acc=css("--accent"),bg=css("--bg"),text=css("--text"),t2=css("--text-2"),t3=css("--text-3"),line=css("--line-2");
   c.fillStyle=bg;c.fillRect(0,0,W,H);
   /* soft colour light, then the map, as behind the glass on the page */
@@ -2881,35 +2881,26 @@ async function makeShareImage(src){
   c.save();c.shadowColor="rgba(15,23,42,.22)";c.shadowBlur=60;c.shadowOffsetY=24;roundRect(c,PX,PY,PW,PH,56);c.fillStyle="rgba(255,255,255,.72)";c.fill();c.restore();
   {const g=c.createLinearGradient(0,PY,0,PY+PH);g.addColorStop(0,"rgba(255,255,255,.55)");g.addColorStop(.3,"rgba(255,255,255,0)");c.save();roundRect(c,PX,PY,PW,PH,56);c.clip();c.fillStyle=g;c.fillRect(PX,PY,PW,PH);c.restore()}
   c.save();roundRect(c,PX+1,PY+1,PW-2,PH-2,55);c.lineWidth=2;c.strokeStyle="rgba(255,255,255,.95)";c.stroke();c.restore();
-  /* header, kept compact so the cards get the room: the logo and the game's name centred, the score and numbers, the
-     team's name with the round on a small line under it, and the team switch */
+  /* header: the logo and the game's name centred; the score in the middle with swaps and players on its left and
+     the total and the best on its right; the team's name and the manager under it, in the sizes the round had */
   const mk=document.querySelector(".logo .mark");let logoIm=null;
   if(mk){const cl=mk.cloneNode(true);cl.setAttribute("xmlns","http://www.w3.org/2000/svg");cl.setAttribute("width","176");cl.setAttribute("height","140");logoIm=await loadImg("data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(cl)))}
-  const LW=logoIm?56:0,LG=logoIm?14:0;
-  const fit=(s,max,f0,fmin,weight,fam)=>{let f=f0;c.font=`${weight} ${f}px ${fam}`;while(c.measureText(s).width>max&&f>fmin){f-=2;c.font=`${weight} ${f}px ${fam}`}while(c.measureText(s).width>max&&s.length>3)s=s.slice(0,-2)+"…";return s};
-  const sub=[b.mgr,rdName(b.rd),b.when.replace(/^Slutade söndag/,"slutade").replace(/^Slutar söndag/,"slutar").replace(/^Låses/,"låses")].filter(Boolean).join(" · ")+(b.x&&b.x.chip?" · "+CHIPINFO[b.x.chip][0]:"");
   c.textBaseline="alphabetic";
-  {c.font=`800 32px ${dfont}`;const fw=c.measureText("Fantasy ").width,tw=c.measureText("Fantasy Orientering").width,x0=W/2-(tw+LW+LG)/2,ty=112;
-    if(logoIm){c.save();roundRect(c,x0,ty-40,LW,LW,15);c.fillStyle="#003c68";c.fill();c.restore();const iw=LW*.86,ih=iw*140/176;c.drawImage(logoIm,x0+(LW-iw)/2,ty-40+(LW-ih)/2,iw,ih)}
-    c.textAlign="left";c.fillStyle=text;c.fillText("Fantasy",x0+LW+LG,ty);c.fillStyle=acc;c.fillText("Orientering",x0+LW+LG+fw,ty)}
+  {const LW=logoIm?66:0,LG=logoIm?18:0;c.font=`800 46px ${dfont}`;const fw=c.measureText("Fantasy ").width,tw=c.measureText("Fantasy Orientering").width,x0=W/2-(tw+LW+LG)/2;
+    if(logoIm){c.save();roundRect(c,x0,136-50,LW,LW,18);c.fillStyle="#003c68";c.fill();c.restore();const iw=LW*.86,ih=iw*140/176;c.drawImage(logoIm,x0+(LW-iw)/2,136-50+(LW-ih)/2,iw,ih)}
+    c.textAlign="left";c.fillStyle=text;c.fillText("Fantasy",x0+LW+LG,136);c.fillStyle=acc;c.fillText("Orientering",x0+LW+LG+fw,136)}
   /* gauge and numbers */
-  const gx=250,gy=262,gr=96;c.lineCap="round";c.lineWidth=18;c.strokeStyle=line;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*2.25);c.stroke();
+  const gx=W/2,gy=350,gr=140;c.lineCap="round";c.lineWidth=26;c.strokeStyle=line;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*2.25);c.stroke();
   if(b.frac>0){c.strokeStyle=acc;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*(.75+1.5*b.frac));c.stroke()}
-  const sc=fp(b.score);c.textAlign="center";c.fillStyle=acc;c.font=`800 ${sc.length>3?82:104}px ${dfont}`;c.fillText(sc,gx,gy+32);c.fillStyle=t2;c.font=`500 20px ${font}`;c.fillText(b.x?(isFinal(b.r)?"poäng":"hittills"):"inte spelad",gx,gy+58);
-  const S=[["BYTEN",String(b.tr)],["TOTALT",fp(b.total)],["SPELARE",b.players?String(b.players):"–"],["HÖGSTA",b.best!==null?fp(b.best):"–"]];
-  S.forEach(([l,v],k)=>{const sx=500+(k%2)*230,sy=208+Math.floor(k/2)*104;c.textAlign="left";c.fillStyle=t3;c.font=`600 18px ${font}`;c.fillText(l,sx,sy);c.fillStyle=text;c.font=`800 50px ${dfont}`;c.fillText(v,sx,sy+50)});
-  /* the team's name and the round */
-  c.textAlign="center";c.fillStyle=text;const nm=fit(b.me,PW-120,48,30,"800",dfont);c.fillText(nm,W/2,446);c.fillStyle=t2;const s2=fit(sub,PW-120,22,16,"500",font);c.fillText(s2,W/2,480);
-  /* the team switch, as on the board */
-  const sw=PW-160,sx0=(W-sw)/2,sy0=506,sh=60;roundRect(c,sx0,sy0,sw,sh,30);c.fillStyle="rgba(255,255,255,.7)";c.fill();c.lineWidth=2;c.strokeStyle="rgba(15,23,42,.08)";c.stroke();
-  const onB=b.team==="B",hx=sx0+(onB?sw/2:0)+4;
-  c.save();c.shadowColor=acc;c.shadowBlur=18;c.shadowOffsetY=6;roundRect(c,hx,sy0+4,sw/2-8,sh-8,26);c.fillStyle=acc;c.fill();c.restore();
-  [["A-lag","×2",0],["B-lag","×1",1]].forEach(([tt,m,k])=>{const on=(k===1)===onB,cx=sx0+sw/4+k*sw/2;c.font=`700 28px ${font}`;const tw=c.measureText(tt+" ").width;c.font=`600 20px ${font}`;const mw=c.measureText(m).width;
-    c.textAlign="left";c.fillStyle=on?"#fff":t2;c.font=`700 28px ${font}`;c.fillText(tt,cx-(tw+mw)/2,sy0+40);c.font=`600 20px ${font}`;c.globalAlpha=on?.85:.7;c.fillText(m,cx-(tw+mw)/2+tw,sy0+40);c.globalAlpha=1});
+  const sc=fp(b.score);c.textAlign="center";c.fillStyle=acc;c.font=`800 ${sc.length>3?120:156}px ${dfont}`;c.fillText(sc,gx,gy+46);c.fillStyle=t2;c.font=`500 27px ${font}`;c.fillText(b.x?(isFinal(b.r)?"poäng":"hittills"):"inte spelad",gx,gy+80);
+  const S=[["BYTEN",String(b.tr),0,0],["SPELARE",b.players?String(b.players):"–",0,1],["TOTALT",fp(b.total),1,0],["HÖGSTA",b.best!==null?fp(b.best):"–",1,1]];
+  S.forEach(([l,v,side,row])=>{const sx=side?W-100:100,sy=262+row*150;c.textAlign=side?"right":"left";c.fillStyle=t3;c.font=`600 24px ${font}`;c.fillText(l,sx,sy);c.fillStyle=text;c.font=`800 72px ${dfont}`;c.fillText(v,sx,sy+72)});
+  /* the team's name and the manager, where the round and its date were */
+  {c.textAlign="center";c.fillStyle=text;let nm=b.me,f=60;c.font=`800 ${f}px ${dfont}`;while(c.measureText(nm).width>PW-120&&f>36){f-=2;c.font=`800 ${f}px ${dfont}`}c.fillText(nm,W/2,598);
+    if(b.mgr){c.fillStyle=t2;c.font=`500 32px ${font}`;c.fillText(b.mgr,W/2,644)}}
   /* the cards: three columns, the middle one sits half a card lower (cards 0 and 3 left, 2 middle, 1 and 4 right) */
-  /* the cards sit centred between the team switch and the address at the bottom */
   /* the same proportions as the board on screen: each card a quarter of the width, the same gaps and side margins */
-  const gap=18,cw=CW,ch=CH,y0=600,x0=(W-(3*cw+2*gap))/2,col=k=>x0+k*(cw+gap);
+  const gap=18,cw=CW,ch=CH,y0=690,x0=(W-(3*cw+2*gap))/2,col=k=>x0+k*(cw+gap);
   const pos=[[col(0),y0],[col(2),y0],[col(1),y0+(ch+gap)/2],[col(0),y0+ch+gap],[col(2),y0+ch+gap]];
   for(let k=0;k<b.cards.length;k++)await drawFifa(c,b.cards[k],pos[k][0],pos[k][1],cw,ch,'"Barlow Condensed",sans-serif');
   c.textAlign="center";c.fillStyle=t3;c.font=`500 26px ${font}`;c.fillText("fantasyorientering.se",W/2,H-70);
