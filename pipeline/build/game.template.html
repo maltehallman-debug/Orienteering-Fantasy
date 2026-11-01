@@ -1593,6 +1593,23 @@ body{overflow-x:clip}
 .logo .ocw{display:inline-flex;justify-content:center;width:.9em;vertical-align:-.07em;margin-right:.01em}
 .logo .oc{display:block;width:.88em;height:.84em;overflow:visible}
 .logo .ocr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+/* the needle spins, settles with a little wobble, rests, and spins again */
+.logo .ocn{transform-box:view-box;transform-origin:50% 50%}
+@media (prefers-reduced-motion:no-preference){.logo .ocn{animation:ocSpin 7s cubic-bezier(.45,.05,.3,1) infinite}}
+@keyframes ocSpin{
+  0%{transform:rotate(0deg)}
+  18%{transform:rotate(400deg)}
+  22%{transform:rotate(345deg)}
+  26%{transform:rotate(372deg)}
+  30%{transform:rotate(355deg)}
+  34%,55%{transform:rotate(362deg)}
+  58%{transform:rotate(356deg)}
+  61%,64%{transform:rotate(360deg)}
+  80%{transform:rotate(-30deg)}
+  84%{transform:rotate(16deg)}
+  88%{transform:rotate(-7deg)}
+  92%,100%{transform:rotate(0deg)}
+}
 .nav .logo b span{color:var(--gul)}
 nav.tabs button{color:rgba(255,255,255,.72)!important}
 nav.tabs button[aria-selected="true"]{color:#fff!important}
@@ -1930,7 +1947,7 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 <header class="nav"><div class="topbar"><div class="container"><span class="sect">Fantasy Orientering</span><span class="tb-r"><span class="tb-season">Säsong 2026/27 · D/H 16–21</span><span class="hclock" id="hclock" role="timer" aria-live="off" title="Tid kvar tills lagen låses" hidden></span></span></div></div><div class="container nav-inner">
   <button class="logo" type="button" data-tab="team" aria-label="Fantasy Orientering, beta, till ditt lag">
     <svg class="mark" width="44" height="35" viewBox="2.6 2.6 29.6 23.5" aria-hidden="true"><g transform="translate(-.4 -.9) scale(.0322)"><path d="M540 120l18 37 41 6-30 29 7 41-36-19-36 19 7-41-30-29 41-6z" fill="#fff"/><g transform="translate(540 240)"><path d="M-210 0H210C210 220 120 350 0 370C-120 350-210 220-210 0Z" fill="#ffe74d"/><path d="M-205 50C-320 50-330 190-205 235M205 50C320 50 330 190 205 235" fill="none" stroke="#ffe74d" stroke-width="40" stroke-linecap="round"/><rect x="-30" y="360" width="60" height="110" fill="#ffe74d"/><path d="M-140 580H140L112 470H-112Z" fill="#ffe74d"/><circle cx="0" cy="145" r="88" fill="none" stroke="#003c68" stroke-width="34"/></g><path d="M150 610L120 690H230ZM930 610L960 690H850Z" fill="#c9d3dc"/><path d="M95 560H230V700H95L140 630ZM985 560H850V700H985L940 630Z" fill="#e8edf2"/><rect x="190" y="530" width="700" height="150" rx="8" fill="#fff"/><text x="540" y="652" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="112" letter-spacing="6" fill="#003c68" text-anchor="middle">FANTASY</text></g></svg>
-    <b><span class="w1">Fantasy</span> <span class="w2"><span class="ocw" aria-hidden="true"><svg class="oc" viewBox="0 0 88 84"><ellipse cx="44.0" cy="42.0" rx="39.2" ry="37.2" fill="none" stroke="currentColor" stroke-width="9.6"/><g transform="rotate(35 44.0 42.0)"><path d="M44.0 14.6L52.2 42.0L44.0 42.0Z" fill="#e5484d"/><path d="M44.0 14.6L35.8 42.0L44.0 42.0Z" fill="#e5484d" opacity=".75"/><path d="M44.0 69.4L52.2 42.0L44.0 42.0Z" fill="#fff"/><path d="M44.0 69.4L35.8 42.0L44.0 42.0Z" fill="#fff" opacity=".75"/></g></svg></span><span class="ocr">O</span>rientering</span></b><i class="beta" title="Spelet är under utveckling">Beta</i></button>
+    <b><span class="w1">Fantasy</span> <span class="w2"><span class="ocw" aria-hidden="true"><svg class="oc" viewBox="0 0 88 84"><ellipse cx="44.0" cy="42.0" rx="39.2" ry="37.2" fill="none" stroke="currentColor" stroke-width="9.6"/><g class="ocn"><g transform="rotate(35 44.0 42.0)"><path d="M44.0 14.6L52.2 42.0L44.0 42.0Z" fill="#e5484d"/><path d="M44.0 14.6L35.8 42.0L44.0 42.0Z" fill="#e5484d" opacity=".75"/><path d="M44.0 69.4L52.2 42.0L44.0 42.0Z" fill="#fff"/><path d="M44.0 69.4L35.8 42.0L44.0 42.0Z" fill="#fff" opacity=".75"/></g></g></svg></span><span class="ocr">O</span>rientering</span></b><i class="beta" title="Spelet är under utveckling">Beta</i></button>
   <nav class="tabs" id="tabs" aria-label="Sektioner"></nav>
   <div class="hdr-r"><button id="mgr" type="button"></button></div>
 </div></header>
