@@ -454,10 +454,12 @@ main#view{padding-top:20px}
 .av .silh .sb{fill:#fff6c2;opacity:0;transform-origin:50% 30%;transform:scaleY(.6);transition:opacity .45s ease,transform .45s cubic-bezier(.22,1,.36,1)}
 .av .silh .sl{fill:#c9d1d9;transition:fill .25s ease}
 @media (hover:hover) and (pointer:fine){
-  .av.sil:hover,.sqc:hover .av.sil,.lc:hover .av.sil,#mrows tr:hover .av.sil,.rc:hover .av.sil{background:#2b3a4a!important}
-  .av.sil:hover .silh .sb,.sqc:hover .av.sil .sb,.lc:hover .av.sil .sb,#mrows tr:hover .av.sil .sb,.rc:hover .av.sil .sb{opacity:.6;transform:none;transition-delay:.12s}
-  .av.sil:hover .silh .sl,.sqc:hover .av.sil .sl,.lc:hover .av.sil .sl,#mrows tr:hover .av.sil .sl,.rc:hover .av.sil .sl{fill:#fff6c2;transition-delay:.1s}
+  /* the cards only: the runner list scrolls past under the pointer, so its rows stay still */
+  .sqc:hover .av.sil,.lc:hover .av.sil,.rc:hover .av.sil{background:#2b3a4a!important}
+  .sqc:hover .av.sil .sb,.lc:hover .av.sil .sb,.rc:hover .av.sil .sb{opacity:.6;transform:none;transition-delay:.12s}
+  .sqc:hover .av.sil .sl,.lc:hover .av.sil .sl,.rc:hover .av.sil .sl{fill:#fff6c2;transition-delay:.1s}
 }
+
 @media (prefers-reduced-motion:reduce){.av.sil,.av .silh .sb,.av .silh .sl{transition:none}}
 .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .35s ease}.av img.ok{opacity:1}
 
