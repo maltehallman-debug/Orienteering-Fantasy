@@ -2524,7 +2524,7 @@ function courseSvg(){
   let c="";
   for(let k=1;k<=n;k++){
     const ri=w0+k-1,[x,y]=P[k],entry=state.log.find(l=>l.round===ri),played=!!entry,now=!done()&&ri===state.round,taken=ri<cur;
-    const rdi=D.rounds[ri],no=rdNo(rdi),lab=played?Math.round(entry.total/10)+" p":(lock&&lock.round===ri?"Låst":"");
+    const rdi=D.rounds[ri],no=rdNo(rdi),lab=played?Math.round(entry.total/10)+" p":(lock&&lock.round===ri?(Date.now()>=lockAt(ri)?"Låst":"Sparad"):"");   /* "Låst" only once the deadline has passed */
     const sub=dshort(rdi.start),skip=!played&&!now&&rdi.skip;
     c+=`<g class="ctl ${played?"done":""} ${taken?"taken":""} ${now?"now":""} ${skip?"skip":""}" data-ctrl="${ri}" role="button" tabindex="0" aria-label="${rdName(D.rounds[ri])}, veckan ${sub}${played?", "+lab.replace(" p"," poäng"):taken?", passerad":""}">
       <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${cr}"/>
