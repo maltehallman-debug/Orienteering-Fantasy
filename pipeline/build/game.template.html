@@ -2880,44 +2880,34 @@ async function makeShareImage(src){
   c.save();c.shadowColor="rgba(15,23,42,.22)";c.shadowBlur=60;c.shadowOffsetY=24;roundRect(c,PX,PY,PW,PH,56);c.fillStyle="rgba(255,255,255,.72)";c.fill();c.restore();
   {const g=c.createLinearGradient(0,PY,0,PY+PH);g.addColorStop(0,"rgba(255,255,255,.55)");g.addColorStop(.3,"rgba(255,255,255,0)");c.save();roundRect(c,PX,PY,PW,PH,56);c.clip();c.fillStyle=g;c.fillRect(PX,PY,PW,PH);c.restore()}
   c.save();roundRect(c,PX+1,PY+1,PW-2,PH-2,55);c.lineWidth=2;c.strokeStyle="rgba(255,255,255,.95)";c.stroke();c.restore();
-  /* header: the game's name; the team's name big under the numbers, with the manager's picture; the round small under it.
-     SHARE_LAYOUT picks one of three layouts while they are being compared */
-  const L=window.SHARE_LAYOUT||"A",avIm=b.av?await loadImg(avPublic(b.av)):null;
-  const avatarAt=(x,y,r)=>{c.save();c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.closePath();
-    if(avIm){c.save();c.clip();const s=Math.max(2*r/avIm.width,2*r/avIm.height);c.drawImage(avIm,x-avIm.width*s/2,y-avIm.height*s/2,avIm.width*s,avIm.height*s);c.restore()}
-    else{c.fillStyle=acc;c.fill();c.fillStyle="#fff";c.font=`800 ${Math.round(r*.95)}px ${dfont}`;c.textAlign="center";c.textBaseline="middle";c.fillText(((b.mgr||b.me||"M").trim()[0]||"M").toUpperCase(),x,y+r*.06);c.textBaseline="alphabetic"}
-    c.lineWidth=6;c.strokeStyle="#fff";c.stroke();c.restore()};
+  /* header, kept compact so the cards get the room: the logo and the game's name centred, the score and numbers, the
+     team's name with the round on a small line under it, and the team switch */
   const mk=document.querySelector(".logo .mark");let logoIm=null;
   if(mk){const cl=mk.cloneNode(true);cl.setAttribute("xmlns","http://www.w3.org/2000/svg");cl.setAttribute("width","176");cl.setAttribute("height","140");logoIm=await loadImg("data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(cl)))}
-  const LW=logoIm?76:0,LG=logoIm?20:0;
-  /* the trophy on a navy tile, so its white star and ribbon show on the light board */
-  const tile=(x,y)=>{if(!logoIm)return;c.save();roundRect(c,x,y,LW,LW,20);c.fillStyle="#003c68";c.fill();c.restore();const iw=LW*.86,ih=iw*140/176;c.drawImage(logoIm,x+(LW-iw)/2,y+(LW-ih)/2,iw,ih)};
+  const LW=logoIm?56:0,LG=logoIm?14:0;
   const fit=(s,max,f0,fmin,weight,fam)=>{let f=f0;c.font=`${weight} ${f}px ${fam}`;while(c.measureText(s).width>max&&f>fmin){f-=2;c.font=`${weight} ${f}px ${fam}`}while(c.measureText(s).width>max&&s.length>3)s=s.slice(0,-2)+"…";return s};
   const sub=[b.mgr,rdName(b.rd),b.when.replace(/^Slutade söndag/,"slutade").replace(/^Slutar söndag/,"slutar").replace(/^Låses/,"låses")].filter(Boolean).join(" · ")+(b.x&&b.x.chip?" · "+CHIPINFO[b.x.chip][0]:"");
   c.textBaseline="alphabetic";
-  if(L==="C"){c.font=`800 40px ${dfont}`;const fw=c.measureText("Fantasy ").width,tw=c.measureText("Fantasy Orientering").width,x0=W/2-(tw+LW+LG)/2;
-    tile(x0,128-52);c.textAlign="left";c.fillStyle=text;c.fillText("Fantasy",x0+LW+LG,128);c.fillStyle=acc;c.fillText("Orientering",x0+LW+LG+fw,128)}
-  else{tile(84,136-56);c.textAlign="left";c.fillStyle=text;c.font=`800 46px ${dfont}`;const tx=84+LW+LG;c.fillText("Fantasy",tx,136);const ow=c.measureText("Fantasy ").width;c.fillStyle=acc;c.fillText("Orientering",tx+ow,136)}
-  if(L==="A")avatarAt(W-92-50,118,50);
-  if(L==="C")avatarAt(W-92-44,112,44);
+  {c.font=`800 32px ${dfont}`;const fw=c.measureText("Fantasy ").width,tw=c.measureText("Fantasy Orientering").width,x0=W/2-(tw+LW+LG)/2,ty=112;
+    if(logoIm){c.save();roundRect(c,x0,ty-40,LW,LW,15);c.fillStyle="#003c68";c.fill();c.restore();const iw=LW*.86,ih=iw*140/176;c.drawImage(logoIm,x0+(LW-iw)/2,ty-40+(LW-ih)/2,iw,ih)}
+    c.textAlign="left";c.fillStyle=text;c.fillText("Fantasy",x0+LW+LG,ty);c.fillStyle=acc;c.fillText("Orientering",x0+LW+LG+fw,ty)}
   /* gauge and numbers */
-  const gx=262,gy=350,gr=140;c.lineCap="round";c.lineWidth=26;c.strokeStyle=line;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*2.25);c.stroke();
+  const gx=250,gy=262,gr=96;c.lineCap="round";c.lineWidth=18;c.strokeStyle=line;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*2.25);c.stroke();
   if(b.frac>0){c.strokeStyle=acc;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*(.75+1.5*b.frac));c.stroke()}
-  const sc=fp(b.score);c.textAlign="center";c.fillStyle=acc;c.font=`800 ${sc.length>3?120:156}px ${dfont}`;c.fillText(sc,gx,gy+46);c.fillStyle=t2;c.font=`500 27px ${font}`;c.fillText(b.x?(isFinal(b.r)?"poäng":"hittills"):"inte spelad",gx,gy+80);
+  const sc=fp(b.score);c.textAlign="center";c.fillStyle=acc;c.font=`800 ${sc.length>3?82:104}px ${dfont}`;c.fillText(sc,gx,gy+32);c.fillStyle=t2;c.font=`500 20px ${font}`;c.fillText(b.x?(isFinal(b.r)?"poäng":"hittills"):"inte spelad",gx,gy+58);
   const S=[["BYTEN",String(b.tr)],["TOTALT",fp(b.total)],["SPELARE",b.players?String(b.players):"–"],["HÖGSTA",b.best!==null?fp(b.best):"–"]];
-  S.forEach(([l,v],k)=>{const sx=540+(k%2)*240,sy=262+Math.floor(k/2)*150;c.textAlign="left";c.fillStyle=t3;c.font=`600 24px ${font}`;c.fillText(l,sx,sy);c.fillStyle=text;c.font=`800 72px ${dfont}`;c.fillText(v,sx,sy+72)});
-  /* the team's name, big, and the round on a small line under it */
-  if(L==="B"){const r=52,ax=92+r,ay=590;avatarAt(ax,ay,r);c.textAlign="left";c.fillStyle=text;const nm=fit(b.me,W-92-(ax+r+28),64,34,"800",dfont);c.fillText(nm,ax+r+28,ay+6);
-    c.fillStyle=t2;const s2=fit(sub,W-92-(ax+r+28),28,20,"500",font);c.fillText(s2,ax+r+28,ay+46)}
-  else{c.textAlign="center";c.fillStyle=text;const nm=fit(b.me,PW-120,72,36,"800",dfont);c.fillText(nm,W/2,600);c.fillStyle=t2;const s2=fit(sub,PW-120,30,20,"500",font);c.fillText(s2,W/2,644)}
+  S.forEach(([l,v],k)=>{const sx=500+(k%2)*230,sy=208+Math.floor(k/2)*104;c.textAlign="left";c.fillStyle=t3;c.font=`600 18px ${font}`;c.fillText(l,sx,sy);c.fillStyle=text;c.font=`800 50px ${dfont}`;c.fillText(v,sx,sy+50)});
+  /* the team's name and the round */
+  c.textAlign="center";c.fillStyle=text;const nm=fit(b.me,PW-120,48,30,"800",dfont);c.fillText(nm,W/2,446);c.fillStyle=t2;const s2=fit(sub,PW-120,22,16,"500",font);c.fillText(s2,W/2,480);
   /* the team switch, as on the board */
-  const sw=PW-120,sx0=(W-sw)/2,sy0=680,sh=84;roundRect(c,sx0,sy0,sw,sh,42);c.fillStyle="rgba(255,255,255,.7)";c.fill();c.lineWidth=2;c.strokeStyle="rgba(15,23,42,.08)";c.stroke();
-  const onB=b.team==="B",hx=sx0+(onB?sw/2:0)+5;
-  c.save();c.shadowColor=acc;c.shadowBlur=24;c.shadowOffsetY=8;roundRect(c,hx,sy0+5,sw/2-10,sh-10,37);const pg=c.createLinearGradient(0,sy0,0,sy0+sh);pg.addColorStop(0,css("--accent-2")||acc);pg.addColorStop(1,acc);c.fillStyle=acc;c.fill();c.restore();
-  [["A-lag","×2",0],["B-lag","×1",1]].forEach(([t,m,k])=>{const on=(k===1)===onB,cx=sx0+sw/4+k*sw/2;c.font=`700 38px ${font}`;const tw=c.measureText(t+" ").width;c.font=`600 28px ${font}`;const mw=c.measureText(m).width;
-    c.textAlign="left";c.fillStyle=on?"#fff":t2;c.font=`700 38px ${font}`;c.fillText(t,cx-(tw+mw)/2,sy0+56);c.font=`600 28px ${font}`;c.globalAlpha=on?.85:.7;c.fillText(m,cx-(tw+mw)/2+tw,sy0+56);c.globalAlpha=1});
+  const sw=PW-160,sx0=(W-sw)/2,sy0=506,sh=60;roundRect(c,sx0,sy0,sw,sh,30);c.fillStyle="rgba(255,255,255,.7)";c.fill();c.lineWidth=2;c.strokeStyle="rgba(15,23,42,.08)";c.stroke();
+  const onB=b.team==="B",hx=sx0+(onB?sw/2:0)+4;
+  c.save();c.shadowColor=acc;c.shadowBlur=18;c.shadowOffsetY=6;roundRect(c,hx,sy0+4,sw/2-8,sh-8,26);c.fillStyle=acc;c.fill();c.restore();
+  [["A-lag","×2",0],["B-lag","×1",1]].forEach(([tt,m,k])=>{const on=(k===1)===onB,cx=sx0+sw/4+k*sw/2;c.font=`700 28px ${font}`;const tw=c.measureText(tt+" ").width;c.font=`600 20px ${font}`;const mw=c.measureText(m).width;
+    c.textAlign="left";c.fillStyle=on?"#fff":t2;c.font=`700 28px ${font}`;c.fillText(tt,cx-(tw+mw)/2,sy0+40);c.font=`600 20px ${font}`;c.globalAlpha=on?.85:.7;c.fillText(m,cx-(tw+mw)/2+tw,sy0+40);c.globalAlpha=1});
   /* the cards: three columns, the middle one sits half a card lower (cards 0 and 3 left, 2 middle, 1 and 4 right) */
-  const gap=14,cw=Math.floor((PW-60-2*gap)/3),ch=Math.round(cw/.72),y0=800,x0=(W-(3*cw+2*gap))/2,col=k=>x0+k*(cw+gap);
+  /* the cards sit centred between the team switch and the address at the bottom */
+  const gap=14,cw=Math.floor((PW-28-2*gap)/3),ch=Math.round(cw/.72),y0=Math.round(566+((H-120)-566-(2*ch+gap)-10)/2),x0=(W-(3*cw+2*gap))/2,col=k=>x0+k*(cw+gap);
   const pos=[[col(0),y0],[col(2),y0],[col(1),y0+(ch+gap)/2],[col(0),y0+ch+gap],[col(2),y0+ch+gap]];
   for(let k=0;k<b.cards.length;k++)await drawFifa(c,b.cards[k],pos[k][0],pos[k][1],cw,ch,'"Barlow Condensed",sans-serif');
   c.textAlign="center";c.fillStyle=t3;c.font=`500 26px ${font}`;c.fillText("fantasyorientering.se",W/2,H-70);
