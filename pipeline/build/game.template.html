@@ -2889,15 +2889,16 @@ async function makeShareImage(src){
   {const LW=logoIm?66:0,LG=logoIm?18:0;c.font=`800 46px ${dfont}`;const fw=c.measureText("Fantasy ").width,tw=c.measureText("Fantasy Orientering").width,x0=W/2-(tw+LW+LG)/2;
     if(logoIm){c.save();roundRect(c,x0,136-50,LW,LW,18);c.fillStyle="#003c68";c.fill();c.restore();const iw=LW*.86,ih=iw*140/176;c.drawImage(logoIm,x0+(LW-iw)/2,136-50+(LW-ih)/2,iw,ih)}
     c.textAlign="left";c.fillStyle=text;c.fillText("Fantasy",x0+LW+LG,136);c.fillStyle=acc;c.fillText("Orientering",x0+LW+LG+fw,136)}
-  /* gauge and numbers */
-  const gx=W/2,gy=350,gr=140;c.lineCap="round";c.lineWidth=16;   /* as thin as the ring on the page */c.strokeStyle=line;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*2.25);c.stroke();
-  if(b.frac>0){c.strokeStyle=acc;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*(.75+1.5*b.frac));c.stroke()}
-  const sc=fp(b.score);c.textAlign="center";c.fillStyle=acc;let sf=110;c.font=`800 ${sf}px ${dfont}`;while(c.measureText(sc).width>2*gr-70&&sf>60){sf-=4;c.font=`800 ${sf}px ${dfont}`}   /* the score stays inside the ring */
-  c.fillText(sc,gx,gy+sf*.36);c.fillStyle=t2;c.font=`500 27px ${font}`;c.fillText(b.x?(isFinal(b.r)?"poäng":"hittills"):"inte spelad",gx,gy+80);
+  /* gauge and score: the board's own ring and number, scaled up (ring 150 px wide on the page, here 350) */
+  const gx=W/2,gy=350,gr=140,k=350/150;c.lineCap="round";c.lineWidth=9/200*350;c.strokeStyle=line;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*2.25);c.stroke();
+  if(b.frac>0){c.save();c.shadowColor=css("--accent-line");c.shadowBlur=6*k;c.strokeStyle=acc;c.beginPath();c.arc(gx,gy,gr,Math.PI*.75,Math.PI*(.75+1.5*b.frac));c.stroke();c.restore()}
+  const sc=fp(b.score);c.textAlign="center";c.fillStyle=acc;c.font=`800 ${Math.round(60*k)}px "Barlow Condensed",${font}`;try{c.letterSpacing=(-.01*60*k).toFixed(1)+"px"}catch(e){}
+  c.fillText(sc,gx,gy+Math.round(60*k*.3));try{c.letterSpacing="0px"}catch(e){}
+  c.fillStyle=t2;c.font=`500 ${Math.round(11*k)}px ${font}`;c.fillText(b.x?(isFinal(b.r)?"poäng":"hittills"):"inte spelad",gx,gy+Math.round(60*k*.3+11*k*1.5));
   const S=[["BYTEN",String(b.tr),0,0],["SPELARE",b.players?String(b.players):"–",0,1],["TOTALT",fp(b.total),1,0],["HÖGSTA",b.best!==null?fp(b.best):"–",1,1]];
   S.forEach(([l,v,side,row])=>{const sx=side?W-100:100,sy=262+row*150;c.textAlign=side?"right":"left";c.fillStyle=t3;c.font=`600 24px ${font}`;c.fillText(l,sx,sy);c.fillStyle=text;c.font=`800 72px ${dfont}`;c.fillText(v,sx,sy+72)});
   /* the team's name and the manager, where the round and its date were */
-  {c.textAlign="center";c.fillStyle=text;let nm=b.me,f=60;c.font=`800 ${f}px ${dfont}`;while(c.measureText(nm).width>PW-120&&f>36){f-=2;c.font=`800 ${f}px ${dfont}`}c.fillText(nm,W/2,598);
+  {c.textAlign="center";c.fillStyle=text;let nm=b.me,f=46;c.font=`800 ${f}px ${dfont}`;while(c.measureText(nm).width>PW-120&&f>30){f-=2;c.font=`800 ${f}px ${dfont}`}c.fillText(nm,W/2,598);
     if(b.mgr){c.fillStyle=t2;c.font=`500 32px ${font}`;c.fillText(b.mgr,W/2,644)}}
   /* the cards: three columns, the middle one sits half a card lower (cards 0 and 3 left, 2 middle, 1 and 4 right) */
   /* the same proportions as the board on screen: each card a quarter of the width, the same gaps and side margins */
