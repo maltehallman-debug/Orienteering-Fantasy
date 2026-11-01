@@ -47,8 +47,11 @@ REAL = re.compile(r"^([DH])(15|16|18|20|21)(E|ELIT|ELITE)?$")
 PART = re.compile(r"^\s*([DH])\s*(15|16|18|20|21)\s*-?\s*(E|ELIT|ELITE)?\s*-\s*([1-9])\s*$", re.I)
 # H15/D15 runners are in the game's youngest category, 16 (their races keep the real class in the label)
 def cat(age): return "16" if age == "15" else age
+# championship finals split by level: "D21A" is the A-final, "D21B" the B-final (SM). Scored as one race with the
+# B-final placed after everyone who finished the A-final, as at the championship itself.
+FINAL = re.compile(r"^([DH])(15|16|18|20|21)(E|ELIT|ELITE)?([ABC])$")
 def age_of(n):
-    m = REAL.match(norm(n)) or PART.match(n)
+    m = REAL.match(norm(n)) or PART.match(n) or FINAL.match(norm(n))
     return cat(m.group(2)) if m else None
 OTHER_SPORT = re.compile(r"mtbo|mtb-o|ol-skytte|skidorient|\bskid-?o\b|\bvtt\b|trail-?o\b|precision", re.I)
 TRAINING = re.compile(r"\bkm\b|klubbmästerskap|klubbmatch|träning|^test\b|\btest \d|fasttest|testløb|ungdomsserie|u-serie|u-ringen|totalresultat", re.I)
@@ -66,6 +69,7 @@ def real_comp(c):
 events = []
 seen_ek = set()
 parts = collections.defaultdict(dict)   # (competition, D/H, age, elite) -> {part number: result file}
+finals = collections.defaultdict(dict)  # (competition, D/H, age, elite) -> {"A"/"B"/"C": result file}
 for p in glob.glob(f"{S}/data/results/*.json"):
     j = json.load(open(p))
     cid = j["id"]; cn = norm(j.get("className", "H16"))
@@ -73,6 +77,10 @@ for p in glob.glob(f"{S}/data/results/*.json"):
     pm = PART.match(j.get("className", ""))
     if pm and real_comp(comps[cid]) and dt.date.fromisoformat(comps[cid]["date"]) < TODAY:
         parts[(cid, pm.group(1).upper(), pm.group(2), (pm.group(3) or "").upper())][int(pm.group(4))] = j
+        continue
+    fm = FINAL.match(cn)
+    if fm and real_comp(comps[cid]) and dt.date.fromisoformat(comps[cid]["date"]) < TODAY:
+        finals[(cid, fm.group(1), fm.group(2), "E" if fm.group(3) else "")][fm.group(4)] = j
         continue
     m = REAL.match(cn)
     if not m or not real_comp(comps[cid]): continue
@@ -89,6 +97,31 @@ for p in glob.glob(f"{S}/data/results/*.json"):
     # the label keeps the real class (H21 and H21E are different races in the same competition)
     events.append({"id": ek, "cid": cid, "eo": EVMETA.get(str(cid), {}).get("eid", 0), "name": f'{clean_name(c["name"])} ({cn})', "date": c["date"], "d": d, "tier": tier_of(c),
                    "g": g, "cls": g + age, "rows": rows, "fin": fin})
+for (cid, g, age, el), F in finals.items():
+    if "A" not in F: continue
+    c = comps[cid]; rows = []; slow = 0
+    if re.search(r"\bkval", c["name"], re.I):   # qualification heats named A/B/C: each heat is a race of its own
+        for lv in sorted(F):
+            rs = [r for r in F[lv]["rows"] if r["name"] and r["name"].strip().lower() != "vacant"]; fin = [r for r in rs if finished(r)]
+            if len(fin) < MIN_FIN: continue
+            cls = g + age + el
+            events.append({"id": f"{cid}:{cls}-{lv}", "cid": cid, "eo": EVMETA.get(str(cid), {}).get("eid", 0), "name": f'{clean_name(c["name"])} ({cls}-{lv})', "date": c["date"],
+                           "d": dt.date.fromisoformat(c["date"]), "tier": tier_of(c), "g": g, "cls": g + cat(age), "rows": rs, "fin": fin})
+        continue
+    for lv in sorted(F):
+        rs = [dict(r) for r in F[lv]["rows"] if r["name"] and r["name"].strip().lower() != "vacant"]
+        fin_t = [int(r["result"]) for r in rs if finished(r)]
+        off = (slow - min(fin_t) + 1000) if fin_t and slow and min(fin_t) <= slow else 0   # B-final starts after the A-final's last
+        for r in rs:
+            if finished(r): r["result"] = str(int(r["result"]) + off)
+        rows += rs
+        if fin_t: slow = max(slow, max(fin_t) + off)
+    fin = [r for r in rows if finished(r)]
+    if len(fin) < MIN_FIN: continue
+    cls = g + age + el
+    events.append({"id": f"{cid}:{cls}:final", "cid": cid, "eo": EVMETA.get(str(cid), {}).get("eid", 0), "name": f'{clean_name(c["name"])} ({cls})', "date": c["date"],
+                   "d": dt.date.fromisoformat(c["date"]), "tier": tier_of(c), "g": g, "cls": g + cat(age), "rows": rows, "fin": fin})
+print("championship finals", sum(1 for e in events if e["id"].endswith(":final")))
 # ---- split classes ----
 # A relay lists each leg as its own class. The same numbered team names ("OK Linné 1") come back on every leg with a
 # different runner each time, and the last leg holds the team's final place and total time. Heats and stages are
