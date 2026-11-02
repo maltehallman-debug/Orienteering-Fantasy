@@ -3352,7 +3352,7 @@ function profileView(){
   const live=isLive();
   return `<div class="pfhead">${mgrDot(me,1)}<div><h2>${esc(myTeam||me.name)}</h2><div class="sub">${myTeam?esc(me.name)+" · ":""}${esc(cloud.email)}</div></div></div>
   ${myBadges.length?`<div class="bdg-head"><button class="btn" id="medalsOpen">${medal(myBadges.find(b=>b.featured)||myBadges[0]).replace('class="md','class="md btn-md')}Medaljer</button></div>`:""}
-  ${badgeRow(myBadges,adminOn()?cloud.uid:null,true)}${badgeAdmin(cloud.uid)}
+  ${badgeAdmin(cloud.uid)}
   ${cloud.admin?`<label class="admsw"><input type="checkbox" role="switch" id="admSw" ${showAdmin?"checked":""}><span class="trk" aria-hidden="true"></span><span><b>Adminverktyg</b><span class="sub">${showAdmin?"Visas":"Dolda"}</span></span></label>`:""}
   ${inviteCard()}${adminGameCard()}${igCard()}${reviewCard()}
   <div class="kv"><div><span>Poäng</span><b>${fp(state.total)}</b></div><div><span>Omgångar</span><b>${L.length}</b></div><div><span>Bästa omgång</span><b>${best?fp(best.total):"–"}</b></div><div><span>Chips</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length}</b></div></div>
