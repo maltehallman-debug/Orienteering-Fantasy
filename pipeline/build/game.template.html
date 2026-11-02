@@ -655,7 +655,7 @@ tr.wkhead td{background:var(--surface-2);padding-top:9px;padding-bottom:9px}
 h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 .legend{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:-6px 0 10px;font-size:12.5px;color:var(--text-2)}
 .legend .idle{margin:0 0 0 8px;cursor:default}.legend .idle:first-child{margin-left:0}
-@media (prefers-reduced-motion:no-preference){.idle.r{animation:idlePulse 2.4s ease-in-out infinite}@keyframes idlePulse{0%,100%{box-shadow:0 0 0 2px var(--surface),0 0 0 2px rgba(220,38,38,.5)}50%{box-shadow:0 0 0 2px var(--surface),0 0 0 6px rgba(220,38,38,0)}}}
+/* (the red mark used to pulse its shadow; that repainted the page every frame, so it stays still) */
 /* phones: the runner list keeps runner, price, form, per week and the button (the tier shows as the coloured edge);
    a runner's race list keeps race, place and points. No table scrolls sideways. */
 @media (max-width:640px){
@@ -1000,12 +1000,13 @@ tbody tr.tr-bronze td:first-child{box-shadow:inset 4px 0 0 #ea580c,inset 14px 0 
    height and time on each row */
 tbody tr[class*="tr-"] td:first-child{position:relative}
 tbody tr.tr-gold{--glim:#f59e0b}tbody tr.tr-silver{--glim:#64748b}tbody tr.tr-bronze{--glim:#ea580c}
-tbody tr[class*="tr-"] td:first-child::after{content:"";position:absolute;left:-4px;top:28%;width:14px;height:14px;pointer-events:none;opacity:0;
+tbody tr[class*="tr-"] td:first-child .glm{position:absolute;left:-4px;top:28%;width:14px;height:14px;pointer-events:none;opacity:0;will-change:transform,opacity;
   background:radial-gradient(circle,#fff 0 22%,var(--glim) 60%);clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%)}
-tbody tr:nth-child(3n+1) td:first-child::after{top:62%;animation-delay:-1.4s!important}
-tbody tr:nth-child(3n+2) td:first-child::after{top:40%;animation-delay:-2.6s!important}
-tbody tr:nth-child(4n) td:first-child::after{top:72%;animation-delay:-.6s!important}
-@media (prefers-reduced-motion:no-preference){tbody tr[class*="tr-"] td:first-child::after{animation:glimmer 3.6s ease-in-out infinite}}
+tbody tr:nth-child(3n+1) td:first-child .glm{top:62%;animation-delay:-1.4s!important}
+tbody tr:nth-child(3n+2) td:first-child .glm{top:40%;animation-delay:-2.6s!important}
+tbody tr:nth-child(4n) td:first-child .glm{top:72%;animation-delay:-.6s!important}
+tbody tr:not([class*="tr-"]) .glm{display:none}
+@media (prefers-reduced-motion:no-preference){tbody tr[class*="tr-"] td:first-child .glm{animation:glimmer 3.6s ease-in-out infinite}}
 @keyframes glimmer{0%,70%,100%{opacity:0;transform:translateX(2px) scale(.3) rotate(0)}80%{opacity:1;transform:translateX(2px) scale(1) rotate(45deg)}90%{opacity:0;transform:translateX(2px) scale(.4) rotate(90deg)}}
 /* tier cards: the whole card is the metal. --t1 text accent, --t2 edge, --t3 tint, --tg glow, --tbg the plate, --tring the moving light on the edge */
 @property --ang{syntax:"<angle>";inherits:false;initial-value:0deg}
@@ -2401,7 +2402,7 @@ const LIVE=D.liveStart;
 let state=E.newState(LIVE), plan={squad:[],captain:null,vice:null,chip:null};
 let showAdmin=(()=>{try{return localStorage.getItem("of-admin")==="1"}catch(e){return false}})();
 const adminOn=()=>cloud.admin&&showAdmin;
-let lock=null,tab="home",viewRound=0,sortKey="total",sortDir=-1,q="",clubF="",clsF="",afford=false,entF=false,shown=40,confirmAuto=false,confirmReset=false,confirmMode=false,mgrName="",myTeam="",myAv=null,avBusy=false,avMsg="",dbOk=false,drawn=false,localTs=0,cloudTimer=null,cloudMsg="",leagueRows={},leagueUnsubs={},leagueMsg="",newLeague="",joinCode="";
+let lock=null,tab="home",viewRound=0,sortKey="total",sortDir=-1,q="",clubF="",clsF="",afford=false,entF=false,shown=12,confirmAuto=false,confirmReset=false,confirmMode=false,mgrName="",myTeam="",myAv=null,avBusy=false,avMsg="",dbOk=false,drawn=false,localTs=0,cloudTimer=null,cloudMsg="",leagueRows={},leagueUnsubs={},leagueMsg="",newLeague="",joinCode="";
 let cloud={sb:null,uid:null,email:"",canWrite:false,ready:false};
 let myLeagues=[],myLgn={},myOwn={};
 const PJ="orienteering-fantasy-join";
@@ -2691,7 +2692,7 @@ function marketBody(rows){mRows=rows;
   return (rows.slice(0,shown).map(rowHtml).join("")||`<tr><td colspan="10" class="note">Inga löpare matchar. Rensa sökningen eller ett filter.</td></tr>`);
 }
 function rowHtml(x){const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
-   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
+   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><i class="glm" aria-hidden="true"></i><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
    <td>${inS?`<button class="btn" data-sell="${x.i}">Sälj</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Köp</button>`}</td></tr>`}
 /* the runner list grows as you scroll: a marker under it loads the next runners before you reach the end, and each
    new runner rises in on its own. A button stays as a fallback where the browser cannot watch the marker. */
@@ -3977,12 +3978,13 @@ function nav(apply){
   if(leaving){apply();animNext=true;return}
   const ORD=["home","team","rounds","leagues","profile","rules"],from=ORD.indexOf(tab);
   apply();animNext=true;navNext=true;leaving=true;renderTabs();
-  const dir=Math.sign(ORD.indexOf(tab)-from)||0;document.body.style.setProperty("--dx",dir*56+"px");document.body.style.setProperty("--dy",dir?"10px":"28px");
+  /* the direction is set on the page only once the old page has left: setting it now would restyle the whole old page */
+  const dir=Math.sign(ORD.indexOf(tab)-from)||0;
   /* only what changes leaves: the header and the launch countdown are the same on every page and stay still */
   const parts=["#hero","#facts","#course","#view"].map(s=>$(s)).filter(el=>el&&el.firstChild);
   const anims=parts.map(el=>el.animate([{opacity:1,transform:"none"},{opacity:0,transform:`translate3d(${-dir*36}px,${dir?0:-14}px,0) scale(.985)`}],{duration:240,easing:"cubic-bezier(.4,0,.2,1)",fill:"forwards"}));
   leaveAnim=anims[0]||null;
-  const done=()=>{if(!leaving)return;leaving=false;try{window.scrollTo(0,0)}catch(e){}render();anims.forEach(a=>a.cancel());leaveAnim=null};
+  const done=()=>{if(!leaving)return;leaving=false;try{window.scrollTo(0,0)}catch(e){}$("#view").innerHTML="";document.body.style.setProperty("--dx",dir*56+"px");document.body.style.setProperty("--dy",dir?"10px":"28px");render();anims.forEach(a=>a.cancel());leaveAnim=null};
   if(leaveAnim)leaveAnim.onfinish=done;else done();setTimeout(done,700); /* never get stuck if the animation is interrupted */
 }
 /* the parts above the page (intro, numbers, course, account button) are redrawn on every render, and many renders come
@@ -4150,7 +4152,7 @@ document.addEventListener("keydown",ev=>{
   if((ev.key==="Enter"||ev.key===" ")&&ev.target.matches&&ev.target.matches("[data-ctrl]")){ev.preventDefault();ev.target.dispatchEvent(new MouseEvent("click",{bubbles:true}))}
 });
 document.addEventListener("input",ev=>{const t=ev.target;
-  if(t.id==="q"){if(ev.isComposing)return;qRaw=t.value;shown=40;refreshMarket()}
+  if(t.id==="q"){if(ev.isComposing)return;qRaw=t.value;shown=12;refreshMarket()}
   if(t.id==="mgrName"){mgrName=t.value.slice(0,24);nameNote();save()}
   if(t.id==="teamName"){myTeam=t.value.slice(0,30);nameNote();save()}
   if(t.id==="rmRunner")rmF.runner=t.value.slice(0,120);
@@ -4162,19 +4164,19 @@ document.addEventListener("input",ev=>{const t=ev.target;
   if(t.id==="rmContact")rmF.contact=t.value.slice(0,200);
   if(t.id==="newLeague")newLeague=t.value;
   if(t.id==="joinCode")joinCode=t.value;});
-document.addEventListener("compositionend",ev=>{if(ev.target.id==="q"){qRaw=ev.target.value;shown=40;refreshMarket()}});
+document.addEventListener("compositionend",ev=>{if(ev.target.id==="q"){qRaw=ev.target.value;shown=12;refreshMarket()}});
 document.addEventListener("change",ev=>{const t=ev.target;
-  if(t.id==="tierF"){tierF=t.value;shown=40;render()}
+  if(t.id==="tierF"){tierF=t.value;shown=12;render()}
   if(t.id==="avFile"){const fl=t.files&&t.files[0];t.value="";if(fl)setAvatar(fl)}
   if(phForm&&t.id==="phFile"){const fl=t.files&&t.files[0];phMsg="";cropPhoto(fl).then(r=>{phForm.blob=r.blob;phForm.url=r.url;profile(phForm.i)},e=>{phMsg=e.message;profile(phForm.i)})}
   if(phForm&&t.name==="phRel"){phForm.rel=t.value;profile(phForm.i)}
   if(phForm&&t.id==="phConsent"){phForm.consent=t.checked;profile(phForm.i)}
-  if(t.id==="clubF"){clubF=t.value;shown=40;render()}
-  if(t.id==="clsF"){clsF=t.value;shown=40;render()}
+  if(t.id==="clubF"){clubF=t.value;shown=12;render()}
+  if(t.id==="clsF"){clsF=t.value;shown=12;render()}
   if(t.id==="afford"){afford=t.checked;render()}
   if(t.id==="admListSw"){admLists=!t.checked;try{localStorage.setItem("of-admlists",admLists?"1":"0")}catch(e){}render();return}
   if(t.id==="admSw"){showAdmin=t.checked;try{localStorage.setItem("of-admin",showAdmin?"1":"0")}catch(e){}renderTabs();render()}
-  if(t.id==="entF"){entF=t.checked;shown=40;render()}});
+  if(t.id==="entF"){entF=t.checked;shown=12;render()}});
 
 
 /* what the email link brought back: a session (confirmed) or an error such as an expired link */
