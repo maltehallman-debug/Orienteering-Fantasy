@@ -2891,7 +2891,6 @@ function homeView(){
   const st=leagueRows.GLOBAL&&leagueRows.GLOBAL.length?standings("GLOBAL"):null,top=st?st.rows.slice().sort((a,b)=>a.rank-b.rank).slice(0,5):[];
   const greet=dbOk&&mgrName?`Hej ${esc(mgrName.split(" ")[0])}!`:"Hem";
   return `<p class="eyebrow pg-k">Fantasy Orientering · Säsong 2026/27</p><h2 style="margin-top:0">${greet}</h2>
-  ${done()?"":`<div class="hm-week">${hero(r)}</div>`}
   ${done()?"":raceCards(r)}
   <div class="grid2 hm-grid">
    <div class="card"><span class="eyebrow">${last>=0?esc(rdName(D.rounds[last])):"Veckans poäng"}</span><h3 style="margin:2px 0 12px">Veckans högsta poäng</h3>${topList(wk,"Inga resultat än den här veckan.")}</div>
