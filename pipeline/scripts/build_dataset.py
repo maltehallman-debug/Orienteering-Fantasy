@@ -430,7 +430,7 @@ if NO_EVENTOR:
             if d >= _from: AHEAD.append({"name": ev["name"], "date": d, "cid": None, "eo": int(eid), "snapbig": ev.get("big")})
     for m in _j("manual_events.json", []):
         if m["date"] >= _from: AHEAD.append({"name": m["name"], "date": m["date"], "cid": None, "eo": 0})
-    # the public race calendar (scripts/calendar.py): championships count as big, the rest are judged like any race
+    # the public race calendar (scripts/race_calendar.py): championships count as big, the rest are judged like any race
     for m in _j("calendar_events.json", []):
         if m["date"] >= _from: AHEAD.append({"name": m["name"], "date": m["date"], "cid": None, "eo": int(m["eo"]), "snapbig": m.get("level") == 1})
     _seen = []
