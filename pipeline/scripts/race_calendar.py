@@ -26,7 +26,7 @@ else:
             "classifications": ["Championship", "National", "Regional", "International"], "includeMyEntries": False}
     req = urllib.request.Request("https://backend.eventor.se/api/calendar/search", data=json.dumps(body).encode(), method="POST",
                                  headers={"Content-Type": "application/json", "Accept": "application/json",
-                                          "User-Agent": "FantasyOrientering/1.0 (+https://fantasyorientering.se; weekly race calendar)"})
+                                          "User-Agent": "Mozilla/5.0"})
     try:
         with urllib.request.urlopen(req, timeout=60) as r: data = json.loads(r.read())
         if isinstance(data, list):

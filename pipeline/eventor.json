@@ -1,5 +1,6 @@
 {
   "enabled": false,
   "calendar": true,
-  "note": "Eventor's API is paused: SOFT has said it is only meant for club activities and competitions. While false the nightly job sends no requests to Eventor and works from the copies it already has (pipeline/data/eventor, kept in the GitHub Actions cache). To turn it back on: set enabled to true here and EV_LINKS to true in pipeline/build/game.template.html. The public race calendar on eventor.se (no personal data, one request a week) is read by scripts/race_calendar.py while \"calendar\" is true."
+  "note": "Eventor's API is paused: SOFT has said it is only meant for club activities and competitions. While false the nightly job sends no requests to Eventor and works from the copies it already has (pipeline/data/eventor, kept in the GitHub Actions cache). To turn it back on: set enabled to true here and EV_LINKS to true in pipeline/build/game.template.html. The public race calendar on eventor.se (no personal data, one request a week) is read by scripts/race_calendar.py while \"calendar\" is true. Entries for the coming big races are read from the same public site by scripts/race_entries.py while \"entries\" is true: one request per race, at most every other day, only this game week and the next.",
+  "entries": true
 }
