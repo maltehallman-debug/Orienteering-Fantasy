@@ -2019,6 +2019,22 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
   .next.wkc .wklink.long{order:3;flex-basis:100%;margin:0;white-space:normal;text-align:left}
   .seas{padding:0 4px;margin-bottom:18px}
 }
+
+/* tablets (iPad portrait 744–900px): keep the desktop layout instead of falling back to the phone one.
+   Two columns with a narrower side panel, and a header that fits the logo, all five tabs and the login button. */
+@media (min-width:700px) and (max-width:900px){
+  .two{grid-template-columns:minmax(0,1fr) 268px!important;gap:16px!important}
+  .side{position:sticky!important;top:calc(env(safe-area-inset-top,0px) + 72px)!important;padding:14px!important}
+  .side .chips,.side .chipgrid{gap:6px}
+  nav.tabs button{padding:9px 8px;font-size:14px}
+  nav.tabs button[aria-selected="true"]::after{left:8px;right:8px}
+  .nav .beta{display:none!important}
+  .squad.ab{gap:10px 8px}
+}
+@media (min-width:700px) and (max-width:820px){
+  .nav .logo b{font-size:19px}
+  .nav .tb-season{display:none}
+}
 </style>
 </head>
 <body>
