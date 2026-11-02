@@ -2079,6 +2079,20 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 .mp.on{box-shadow:inset 0 0 0 2.5px var(--navy,#003c68)}
 .mp.on .ck{background:var(--navy,#003c68) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23ffe74d' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;box-shadow:none}
 .mp:active{transform:scale(.99)}
+
+/* Hem */
+.hm-grid{margin-top:4px}
+.hm-week{margin-top:14px}.hm-week .next.wkc{margin-top:0!important}
+.hm-top{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.hm-top li{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}.hm-top li:last-child{border:0}
+.hm-n{width:18px;font:800 15px var(--font);color:var(--text-3);text-align:center;flex:none}
+.hm-who{flex:1;min-width:0;display:grid}.hm-who .who{text-align:left;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hm-who .sub{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hm-p{font:800 22px/1 "Barlow Condensed",var(--font);white-space:nowrap}.hm-p small{font-size:13px;margin-left:1px;opacity:.6}
+.hm-lg,.hm-news{margin-top:16px}
+.hm-lg .lgl-r{grid-template-columns:40px minmax(0,1fr) auto!important}
+.hm-ni{display:flex;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}.hm-ni:last-child{border:0}
+.hm-d{flex:none;width:56px;font:700 12px/1.4 var(--font);text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);padding-top:2px}
+.hm-ni b{display:block;font:700 15px/1.3 var(--font)}.hm-ni p{margin:3px 0 0;font-size:14px;line-height:1.45;color:var(--text-2)}
 </style>
 </head>
 <body>
@@ -2105,7 +2119,7 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 </div></div>
 <div class="terrain" aria-hidden="true"><div class="par" id="par"><svg id="terrain" preserveAspectRatio="xMidYMid slice"></svg></div></div>
 <header class="nav"><div class="topbar"><div class="container"><span class="sect">Fantasy Orientering</span><span class="tb-r"><span class="tb-season">Säsong 2026/27 · D/H 16–21</span><span class="hclock" id="hclock" role="timer" aria-live="off" title="Tid kvar tills lagen låses" hidden></span></span></div></div><div class="container nav-inner">
-  <button class="logo" type="button" data-tab="team" aria-label="Fantasy Orientering, beta, till ditt lag">
+  <button class="logo" type="button" data-tab="home" aria-label="Fantasy Orientering, beta, till startsidan">
     <svg class="mark" width="44" height="35" viewBox="2.6 2.6 29.6 23.5" aria-hidden="true"><g transform="translate(-.4 -.9) scale(.0322)"><path d="M540 120l18 37 41 6-30 29 7 41-36-19-36 19 7-41-30-29 41-6z" fill="#fff"/><g transform="translate(540 240)"><path d="M-210 0H210C210 220 120 350 0 370C-120 350-210 220-210 0Z" fill="#ffe74d"/><path d="M-205 50C-320 50-330 190-205 235M205 50C320 50 330 190 205 235" fill="none" stroke="#ffe74d" stroke-width="40" stroke-linecap="round"/><rect x="-30" y="360" width="60" height="110" fill="#ffe74d"/><path d="M-140 580H140L112 470H-112Z" fill="#ffe74d"/><circle cx="0" cy="145" r="88" fill="none" stroke="#003c68" stroke-width="34"/></g><path d="M150 610L120 690H230ZM930 610L960 690H850Z" fill="#c9d3dc"/><path d="M95 560H230V700H95L140 630ZM985 560H850V700H985L940 630Z" fill="#e8edf2"/><rect x="190" y="530" width="700" height="150" rx="8" fill="#fff"/><text x="540" y="652" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="112" letter-spacing="6" fill="#003c68" text-anchor="middle">FANTASY</text></g></svg>
     <b><span class="w1">Fantasy</span> <span class="w2"><span class="ocw" aria-hidden="true"><svg class="oc" viewBox="0 0 88 84"><ellipse cx="44.0" cy="42.0" rx="39.2" ry="37.2" fill="none" stroke="currentColor" stroke-width="9.6"/><g class="ocn"><g transform="rotate(35 44.0 42.0)"><path d="M44.0 14.6L52.2 42.0L44.0 42.0Z" fill="#e5484d"/><path d="M44.0 14.6L35.8 42.0L44.0 42.0Z" fill="#e5484d" opacity=".75"/><path d="M44.0 69.4L52.2 42.0L44.0 42.0Z" fill="#fff"/><path d="M44.0 69.4L35.8 42.0L44.0 42.0Z" fill="#fff" opacity=".75"/></g></g></svg></span><span class="ocr">O</span>rientering</span></b><i class="beta" title="Spelet är under utveckling">Beta</i></button>
   <nav class="tabs" id="tabs" aria-label="Sektioner"></nav>
@@ -2120,7 +2134,7 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 <div class="course" id="course"></div>
 <main id="view"></main>
 <nav class="bigpills" aria-label="Genvägar"><button type="button" data-tab="rules">Regler <i>↗</i></button><button type="button" data-tab="leagues">Ligor <i>↗</i></button><a href="https://eventor.orientering.se" target="_blank" rel="noopener">Eventor <i>↗</i></a></nav>
-<p class="fanline">Fantasy Orientering är ett fristående, ideellt fanprojekt och har ingen koppling till Svenska Orienteringsförbundet. Resultaten kommer från Eventor och liveresultat.orientering.se. Kartbilderna: © Attunda OK.<br><button type="button" class="linkish" data-info="terms">Villkor</button> · <button type="button" class="linkish" data-info="privacy">Integritet</button> · <button type="button" class="linkish" data-info="contact">Kontakt och anmälan</button></p>
+<p class="fanline">Fantasy Orientering är ett fristående, ideellt fanprojekt och har ingen koppling till Svenska Orienteringsförbundet. Resultaten kommer från Eventor och liveresultat.orientering.se. Kartbilderna: © Attunda OK.<br><button type="button" class="linkish" data-tab="rules">Regler</button> · <button type="button" class="linkish" data-info="terms">Villkor</button> · <button type="button" class="linkish" data-info="privacy">Integritet</button> · <button type="button" class="linkish" data-info="contact">Kontakt och anmälan</button></p>
 </div>
 <nav class="tabbar" id="tabbar" aria-label="Sektioner"></nav>
 <div id="modal"></div>
@@ -2370,7 +2384,7 @@ const LIVE=D.liveStart;
 let state=E.newState(LIVE), plan={squad:[],captain:null,vice:null,chip:null};
 let showAdmin=(()=>{try{return localStorage.getItem("of-admin")==="1"}catch(e){return false}})();
 const adminOn=()=>cloud.admin&&showAdmin;
-let lock=null,tab="team",viewRound=0,sortKey="total",sortDir=-1,q="",clubF="",clsF="",afford=false,entF=false,shown=40,confirmAuto=false,confirmReset=false,confirmMode=false,mgrName="",myTeam="",myAv=null,avBusy=false,avMsg="",dbOk=false,drawn=false,localTs=0,cloudTimer=null,cloudMsg="",leagueRows={},leagueUnsubs={},leagueMsg="",newLeague="",joinCode="";
+let lock=null,tab="home",viewRound=0,sortKey="total",sortDir=-1,q="",clubF="",clsF="",afford=false,entF=false,shown=40,confirmAuto=false,confirmReset=false,confirmMode=false,mgrName="",myTeam="",myAv=null,avBusy=false,avMsg="",dbOk=false,drawn=false,localTs=0,cloudTimer=null,cloudMsg="",leagueRows={},leagueUnsubs={},leagueMsg="",newLeague="",joinCode="";
 let cloud={sb:null,uid:null,email:"",canWrite:false,ready:false};
 let myLeagues=[],myLgn={},myOwn={};
 const PJ="orienteering-fantasy-join";
@@ -2570,7 +2584,7 @@ try{document.fonts.ready.then(()=>placeInd())}catch(e){}
   bar.addEventListener("click",e=>{if(bar.classList.contains("tb-mini")){e.preventDefault();e.stopPropagation();set(false)}},true);
   window.tabbarOpen=()=>set(false)})();
 function renderTabs(){
-  const t=[["team","Lag"],["rounds","Poäng"],["leagues","Ligor"],["rules","Regler"],["profile","Profil"]],I={team:'<path d="M4 20c0-3.3 3.6-5 8-5s8 1.7 8 5"/><circle cx="12" cy="8" r="4"/>',rounds:'<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>',leagues:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 6h3v1a3 3 0 0 1-3 3M7 6H4v1a3 3 0 0 0 3 3"/>',rules:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',profile:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5c1.2-2 3.2-3 5.5-3s4.3 1 5.5 3"/>'};
+  const t=[["home","Hem"],["team","Lag"],["rounds","Poäng"],["leagues","Ligor"],["profile","Profil"]],I={home:'<path d="M4 11.5 12 5l8 6.5"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/>',team:'<path d="M4 20c0-3.3 3.6-5 8-5s8 1.7 8 5"/><circle cx="12" cy="8" r="4"/>',rounds:'<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>',leagues:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 6h3v1a3 3 0 0 1-3 3M7 6H4v1a3 3 0 0 0 3 3"/>',rules:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',profile:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5c1.2-2 3.2-3 5.5-3s4.3 1 5.5 3"/>'};
   const html=t.map(([k,l])=>`<button aria-current="${tab===k?"page":"false"}" aria-selected="${tab===k}" data-tab="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg><span>${l}</span></button>`).join("");
   ["#tabs","#tabbar"].forEach(sel=>{const el=$(sel);if(!el.querySelector("[data-tab]"))el.innerHTML=html+'<i class="ind" aria-hidden="true"></i>';
     el.querySelectorAll("[data-tab]").forEach(b=>{const on=b.dataset.tab===tab;b.setAttribute("aria-selected",on);b.setAttribute("aria-current",on?"page":"false")})});
@@ -2860,6 +2874,33 @@ function seasonDashes(){
     h+=`<button class="${e||ri<cur?"d1":""} ${now?"now":""} ${rd.skip&&!e?"skip":""}" ${e?`data-ctrl="${ri}"`:`data-week="${ri}"`} title="${esc(lab)}" aria-label="${esc(lab)}"></button>`}
   return `<div class="seas" role="group" aria-label="Säsongen vecka för vecka">${h}</div>`;
 }
+/* ---- Hem: the start page ---- */
+/* news on the start page, newest first. Add a line here to post something new. */
+const NEWS=[
+  ["2026-11-02","Medaljer på profilen","Alla betatestare har fått kompassmedaljen. Välj under Profil → Medaljer om den ska synas bredvid ditt namn i ligorna."],
+  ["2026-11-02","Bjud in en kompis","Spelet är i sluten beta. Vill du att någon ska vara med? Hör av dig så skickar vi en inbjudningskod."],
+  ["2026-11-01","SM-finalerna räknas","A- och B-finaler från SM räknas nu som ett lopp, med B-finalen placerad efter A-finalen."]];
+/* the latest game week with any results */
+function lastScoredRound(){for(let r=E.R-1;r>=0;r--){let any=false;for(let i=0;i<E.N&&!any;i++)if(E.starts[r][i])any=true;if(any)return r}return -1}
+function seasonTop(k){const last=lastScoredRound();if(last<LIVE)return [];const tot=new Float64Array(E.N);for(let r=LIVE;r<=last;r++)for(let i=0;i<E.N;i++)tot[i]+=E.pts[r][i];
+  const a=[];for(let i=0;i<E.N;i++)if(tot[i]>0)a.push([i,tot[i]]);return a.sort((x,y)=>y[1]-x[1]).slice(0,k)}
+function topList(L,empty){return L.length?`<ol class="hm-top">${L.map(([i,p],k)=>`<li><span class="hm-n">${k+1}</span>${avatar(i,"sm")}<span class="hm-who"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button><span class="sub">${esc(clubOf(i))} · ${esc(D.runners[i].k||"")}</span></span><b class="hm-p">${fp(p)}<small>p</small></b></li>`).join("")}</ol>`:`<p class="note" style="margin:0">${empty}</p>`}
+function homeView(){
+  const r=R(),last=lastScoredRound(),wk=last>=0?E.roundBest(last,5):[],yr=seasonTop(5);
+  if(cloud.uid&&!leagueRows.GLOBAL&&!homeView.asked){homeView.asked=true;fetchGlobal().then(()=>{if(tab==="home")render()})}
+  const st=leagueRows.GLOBAL&&leagueRows.GLOBAL.length?standings("GLOBAL"):null,top=st?st.rows.slice().sort((a,b)=>a.rank-b.rank).slice(0,5):[];
+  const greet=dbOk&&mgrName?`Hej ${esc(mgrName.split(" ")[0])}!`:"Hem";
+  return `<p class="eyebrow pg-k">Fantasy Orientering · Säsong 2026/27</p><h2 style="margin-top:0">${greet}</h2>
+  ${done()?"":`<div class="hm-week">${hero(r)}</div>`}
+  ${done()?"":raceCards(r)}
+  <div class="grid2 hm-grid">
+   <div class="card"><span class="eyebrow">${last>=0?esc(rdName(D.rounds[last])):"Veckans poäng"}</span><h3 style="margin:2px 0 12px">Veckans högsta poäng</h3>${topList(wk,"Inga resultat än den här veckan.")}</div>
+   <div class="card"><span class="eyebrow">Säsongen 2026/27</span><h3 style="margin:2px 0 12px">Årets högsta poäng</h3>${topList(yr,"Säsongens första poäng kommer efter första spelveckan.")}</div>
+  </div>
+  <div class="card hm-lg"><div class="ev" style="border:0;padding:0 0 10px;align-items:center"><div><span class="eyebrow">Topp 5</span><h3 style="margin:2px 0 0">Årets manager</h3></div><button class="btn" data-lgopen="GLOBAL">Hela tabellen →</button></div>
+   ${top.length?`<div class="lgl" role="table" aria-label="Årets manager, topp 5">${top.map((m,k)=>`<div class="lgl-r ${m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="GLOBAL|${esc(m.id)}" tabindex="0"><span class="pl" role="cell">${m.rank}</span><span class="tm" role="cell">${mgrDot(m)}<span><b class="nmb"><span class="nmt">${esc(m.name)}</span>${featTag(m.id)}</b>${m.team&&m.mgr!==m.name?`<span class="sub">${esc(m.mgr)}${m.id===cloud.uid?" · du":""}</span>`:m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span><span class="n" role="cell"><b>${fp(m.t)}p</b></span></div>`).join("")}</div>`:`<p class="note" style="margin:0">Tabellen fylls på när den första omgången är spelad.</p>`}</div>
+  <div class="card hm-news"><span class="eyebrow">Nytt i spelet</span><h3 style="margin:2px 0 6px">Nyheter</h3>${NEWS.slice(0,5).map(([d,t,x])=>`<div class="hm-ni"><span class="hm-d">${dshort(d)}</span><div><b>${esc(t)}</b><p>${esc(x)}</p></div></div>`).join("")}</div>`;
+}
 function hero(r){
   const rd=D.rounds[r],ms=lockAt(r)-Date.now(),d=Math.ceil(ms/864e5),u=comps(r),first=u[0];
   const title=first?esc(first.n.replace(/:.*/,"").replace(/,.*/,"")):"Week of "+dshort(rd.start);
@@ -2887,7 +2928,7 @@ function teamView(){
   const chipsHtml=`<div class="chipset"><div class="coins">${E.CHIPS.map(c=>{const used=state.chips[c],on=plan.chip===c,off=locked||used||rd.skip||(c==="wc"&&!state.squad.length);
       return `<button class="coin c-${c} ${on?"on":""} ${used?"used":""}" data-chip="${on?"":c}" aria-pressed="${on}" ${off?"disabled":""} title="${esc(CHIPINFO[c][0]+": "+CHIPINFO[c][1])}"><span class="disc">${chipSvg(c)}</span><b>${used?"Använt":CHIPSHORT[c]}</b><small>${CHIPFX[c]}</small></button>`}).join("")}</div>
     <div class="chipdesc ${plan.chip?"c-"+plan.chip:""}">${plan.chip?`<span><b>${esc(CHIPINFO[plan.chip][0])}</b> – ${esc(CHIPINFO[plan.chip][1])}.</span>${locked?"":`<button class="btn quiet" data-chip="">Ta bort</button>`}`:`<span>${rd.skip?"Inga chips en vecka som hoppas över.":locked?"Inget chip den här omgången.":"Inget chip den här omgången. Tryck på ett för att spela det."}</span>`}</div></div>`;
-  return `${hero(r)}${raceCards(r)}${liveNow()}<div class="two"><div class="panel squad-panel">
+  return `${hero(r)}${liveNow()}<div class="two"><div class="panel squad-panel">
    <p class="eyebrow pg-k">01 · Bygg ditt lag</p><h2 style="margin-top:0">Din trupp</h2>
    <p class="lead">${lead}</p>
    <div class="squadwrap">
@@ -3908,7 +3949,7 @@ let leaving=false,leaveAnim=null,navNext=false;
 function nav(apply){
   if(RM||!Element.prototype.animate){apply();animNext=true;render();toTop();return}
   if(leaving){apply();animNext=true;return}
-  const ORD=["team","rounds","leagues","rules","profile"],from=ORD.indexOf(tab);
+  const ORD=["home","team","rounds","leagues","profile","rules"],from=ORD.indexOf(tab);
   apply();animNext=true;navNext=true;leaving=true;renderTabs();
   const dir=Math.sign(ORD.indexOf(tab)-from)||0;document.body.style.setProperty("--dx",dir*56+"px");document.body.style.setProperty("--dy",dir?"10px":"28px");
   /* only what changes leaves: the header and the launch countdown are the same on every page and stay still */
@@ -3956,7 +3997,7 @@ function render(){
   /* after a page change the intro is simply there (it slides in with the page); it plays its own entrance on the first load */
   if(opening)$("#hero").classList.toggle("still",viaNav);
   if(tab==="season")tab="profile";
-  const html=tab==="team"?teamView():tab==="rounds"?roundsView():tab==="leagues"?leaguesView():tab==="profile"?profileView():rulesView();
+  const html=tab==="home"?homeView():tab==="team"?teamView():tab==="rounds"?roundsView():tab==="leagues"?leaguesView():tab==="profile"?profileView():rulesView();
   /* on the same tab, patch the page in place: the cards stay painted (and their photos loaded) instead of being rebuilt,
      which phones showed as the cards blinking out for a moment after a tap */
   const v=$("#view");if(tab===lastTab&&!opening&&v.firstChild){const t=document.createElement("div");t.innerHTML=html;morphKids(v,t)}else v.innerHTML=html;lastTab=tab;
@@ -4392,7 +4433,7 @@ setTimeout(()=>{if(!cloud.sb&&document.documentElement.classList.contains("gated
 /* the new-password sheet, opened by the link in the reset email (which also signs the player in) */
 let pwOpen=false,pwMsg="",pwBusy=false;
 /* tips from managers: a bug, an idea or anything else; only admins read them */
-const TABS_SV={team:"Lag",rounds:"Poäng",leagues:"Ligor",rules:"Regler",profile:"Profil",market:"Köp/sälj"};
+const TABS_SV={home:"Hem",team:"Lag",rounds:"Poäng",leagues:"Ligor",rules:"Regler",profile:"Profil",market:"Köp/sälj"};
 let fbKind="bug",fbBusy=false,fbMsg="",fbList=[];
 const FBK={bug:["🐞","Bugg","Vad hände, och vad hade du väntat dig? Var i spelet var du?"],idea:["💡","Idé","Vad skulle göra spelet bättre?"],other:["💬","Annat","Skriv vad du vill."]};
 function fbSheet(){const t=($("#fbText")||{}).value;
