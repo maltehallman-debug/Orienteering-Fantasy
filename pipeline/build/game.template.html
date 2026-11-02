@@ -2062,12 +2062,23 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 @media (prefers-reduced-motion:no-preference){.bdg svg.md{transition:transform .25s var(--ease-out)}@media (hover:hover) and (pointer:fine){.bdg:hover svg.md{transform:rotate(-8deg) scale(1.06)}}}
 
 .bdg svg.md-c{width:46px;height:54px;margin:-4px 0}
-.bdg-show{display:inline-block;margin-top:6px;border:0;border-radius:999px;padding:4px 10px;font:700 11.5px/1.2 var(--font);background:#eef2f6;color:var(--navy,#003c68);cursor:pointer}
-.bdg.feat .bdg-show{background:var(--navy,#003c68);color:#fff}
-.nmb{display:inline-flex!important;align-items:flex-start;max-width:100%;min-width:0}.nmt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.fbdg{flex:none;display:inline-block;position:relative;top:-8px;margin-left:4px;line-height:0}
+.nmb{display:inline-flex!important;align-items:center;max-width:100%;min-width:0}.nmt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.fbdg{flex:none;display:inline-block;margin-left:6px;line-height:0;position:relative;top:3px}
 .fbdg svg.tk-mini{width:17px;height:20px;display:block;filter:drop-shadow(0 1px 1px rgba(0,30,60,.25))}
 .fbdg svg.md-mini{width:15px;height:15px}
+
+.bdg-on{display:inline-block;margin-top:6px;border-radius:999px;padding:3px 9px;font:700 11px/1.2 var(--font);background:var(--navy,#003c68);color:#fff}
+.bdg-head{margin:0 0 10px}.bdg-head .btn{display:inline-flex;align-items:center;gap:8px}
+.btn svg.btn-md{width:20px;height:22px;margin:-4px 0}
+.mpick{display:grid;gap:10px;margin-top:16px}
+.mp{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:#fff;border:0;border-radius:18px;padding:12px 16px;box-shadow:inset 0 0 0 1.5px var(--line);cursor:pointer;font:inherit;color:inherit;transition:box-shadow .15s ease}
+.mp svg.md{flex:none;width:46px;height:54px}.mp b{display:block;font:700 15px/1.2 var(--font)}.mp .sub{display:block;font-size:12.5px;margin-top:2px}
+.mp>span:nth-child(2){flex:1;min-width:0}
+.mp .nomd{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#eef2f6;color:var(--text-3);font:800 20px var(--font)}
+.mp .ck{flex:none;width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--line-2,#cbd5e1)}
+.mp.on{box-shadow:inset 0 0 0 2.5px var(--navy,#003c68)}
+.mp.on .ck{background:var(--navy,#003c68) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23ffe74d' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;box-shadow:none}
+.mp:active{transform:scale(.99)}
 </style>
 </head>
 <body>
@@ -3104,6 +3115,7 @@ function profileView(){
   const L=state.log,best=L.slice().sort((a,b)=>b.total-a.total)[0];
   const live=isLive();
   return `<div class="pfhead">${mgrDot(me,1)}<div><h2>${esc(myTeam||me.name)}</h2><div class="sub">${myTeam?esc(me.name)+" · ":""}${esc(cloud.email)}</div></div></div>
+  ${myBadges.length?`<div class="bdg-head"><button class="btn" id="medalsOpen">${medal(myBadges.find(b=>b.featured)||myBadges[0]).replace('class="md','class="md btn-md')}Medaljer</button></div>`:""}
   ${badgeRow(myBadges,adminOn()?cloud.uid:null,true)}${badgeAdmin(cloud.uid)}
   ${cloud.admin?`<label class="admsw"><input type="checkbox" role="switch" id="admSw" ${showAdmin?"checked":""}><span class="trk" aria-hidden="true"></span><span><b>Adminverktyg</b><span class="sub">${showAdmin?"Visas":"Dolda"}</span></span></label>`:""}
   ${inviteCard()}${adminGameCard()}${igCard()}${reviewCard()}
@@ -3316,8 +3328,13 @@ const featTag=id=>{const b=featB[id];return b?`<span class="fbdg" title="${esc(b
 async function loadFeatured(ids){if(!cloud.sb||!ids.length)return;
   for(let k=0;k<ids.length;k+=200){const q=await cloud.sb.from("user_badges").select("user_id,badge_id,badges(name,icon,tier)").eq("featured",true).in("user_id",ids.slice(k,k+200));if(q.error)return;
     ids.slice(k,k+200).forEach(id=>{delete featB[id]});(q.data||[]).forEach(x=>{if(x.badges)featB[x.user_id]={id:x.badge_id,...x.badges}})}}
+function medalSheet(){const cur=(myBadges.find(b=>b.featured)||{}).id||"";
+  showSheet("medals","Medaljer",`<div class="hd"><div><span class="eyebrow">Din profil</span><h2 style="margin:4px 0 0">Medaljer</h2><div class="sub">Välj vilken medalj som syns bredvid ditt namn i ligorna.</div></div><button class="btn" data-close="1">Klar</button></div>
+   <div class="mpick" role="radiogroup" aria-label="Medalj i ligorna">${myBadges.map(b=>`<button class="mp ${cur===b.id?"on":""}" role="radio" aria-checked="${cur===b.id}" data-bdgfeat="${esc(b.id)}">${medal(b)}<span><b>${esc(b.name)}</b>${b.description?`<span class="sub">${esc(b.description)}</span>`:""}</span><i class="ck" aria-hidden="true"></i></button>`).join("")}
+    <button class="mp none ${cur?"":"on"}" role="radio" aria-checked="${!cur}" data-bdgfeat=""><span class="nomd" aria-hidden="true">–</span><span><b>Ingen medalj</b><span class="sub">Visa bara ditt lagnamn.</span></span><i class="ck" aria-hidden="true"></i></button></div>`)}
+document.addEventListener("click",e=>{if(e.target.closest("#medalsOpen"))medalSheet()});
 async function featureBadge(bid){const r=await cloud.sb.rpc("set_featured_badge",{p_badge:bid});if(r.error)return;
-  myBadges.forEach(b=>{b.featured=b.id===bid});const b=myBadges.find(x=>x.id===bid);if(b)featB[cloud.uid]=b;else delete featB[cloud.uid];render()}
+  myBadges.forEach(b=>{b.featured=b.id===bid});const b=myBadges.find(x=>x.id===bid);if(b)featB[cloud.uid]=b;else delete featB[cloud.uid];if(document.querySelector('#modal .sheet[data-key="medals"]'))medalSheet();render()}
 function medal(b){if(b.icon==="beta")return compassMedal(false);const t=BDG_TIER[b.tier]||BDG_TIER.navy,id="bg"+Math.random().toString(36).slice(2,8),ic=(BDG_ICON[b.icon]||BDG_ICON.star)(t[2]);
   return `<svg class="md" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${t[0]}"/><stop offset="1" stop-color="${t[1]}"/></linearGradient></defs>
    <path d="M20 44 14 60l8-3 4 7 6-16zM44 44l6 16-8-3-4 7-6-16z" fill="${t[1]}" opacity=".85"/><circle cx="32" cy="32" r="22" fill="url(#${id})"/><circle cx="32" cy="32" r="18" fill="none" stroke="${t[2]}" stroke-opacity=".35" stroke-width="1.5"/>${ic}</svg>`}
@@ -3327,7 +3344,7 @@ async function loadBadges(uid){if(!cloud.sb||!uid)return [];let r=await cloud.sb
   const L=(r.data||[]).filter(x=>x.badges).map(x=>({id:x.badge_id,at:x.awarded_at,featured:!!x.featured,...x.badges})).sort((a,b)=>(a.sort||0)-(b.sort||0));userBadges[uid]=L;if(uid===cloud.uid){myBadges=L;const f=L.find(b=>b.featured);if(f)featB[uid]=f;else delete featB[uid]}return L}
 async function loadBadgeDefs(){if(!cloud.sb)return;const r=await cloud.sb.from("badges").select("id,name,description,icon,tier,sort").order("sort");if(!r.error)badgeDefs=r.data||[]}
 function badgeRow(L,uid,own){if(!L||!L.length)return "";const adm=adminOn()&&uid;
-  return `<div class="bdg-row" role="list" aria-label="Badges">${L.map(b=>`<div class="bdg ${own&&b.featured?"feat":""}" role="listitem" title="${esc(b.description||"")}">${medal(b)}<span><b>${esc(b.name)}</b>${b.description?`<span class="sub">${esc(b.description)}</span>`:""}${own?`<button class="bdg-show" data-bdgfeat="${b.featured?"":esc(b.id)}" aria-pressed="${!!b.featured}">${b.featured?"✓ Visas i ligorna":"Visa i ligorna"}</button>`:""}</span>${adm?`<button class="x" data-bdgdel="${esc(uid)}|${esc(b.id)}" aria-label="Ta bort ${esc(b.name)}">×</button>`:""}</div>`).join("")}</div>`}
+  return `<div class="bdg-row" role="list" aria-label="Badges">${L.map(b=>`<div class="bdg ${own&&b.featured?"feat":""}" role="listitem" title="${esc(b.description||"")}">${medal(b)}<span><b>${esc(b.name)}</b>${b.description?`<span class="sub">${esc(b.description)}</span>`:""}${own&&b.featured?`<span class="bdg-on">Visas i ligorna</span>`:""}</span>${adm?`<button class="x" data-bdgdel="${esc(uid)}|${esc(b.id)}" aria-label="Ta bort ${esc(b.name)}">×</button>`:""}</div>`).join("")}</div>`}
 function badgeAdmin(uid){if(!adminOn()||!badgeDefs.length)return "";const have=new Set((userBadges[uid]||[]).map(b=>b.id)),opts=badgeDefs.filter(b=>!have.has(b.id));if(!opts.length)return "";
   return `<div class="bdg-adm"><span class="host">Admin</span><select id="bdgPick" aria-label="Badge att ge">${opts.map(b=>`<option value="${esc(b.id)}" ${bdgPick===b.id?"selected":""}>${esc(b.name)}</option>`).join("")}</select><button class="btn" data-bdgadd="${esc(uid)}">Ge badge</button></div>`}
 document.addEventListener("change",e=>{if(e.target.id==="bdgPick")bdgPick=e.target.value});
