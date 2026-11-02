@@ -2060,6 +2060,14 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 .bdg-card .bdg-row{margin:0}
 .bdg-adm{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
 @media (prefers-reduced-motion:no-preference){.bdg svg.md{transition:transform .25s var(--ease-out)}@media (hover:hover) and (pointer:fine){.bdg:hover svg.md{transform:rotate(-8deg) scale(1.06)}}}
+
+.bdg svg.md-t{width:72px;height:45px;margin:0 -4px 0 2px}
+.bdg-show{display:inline-block;margin-top:6px;border:0;border-radius:999px;padding:4px 10px;font:700 11.5px/1.2 var(--font);background:#eef2f6;color:var(--navy,#003c68);cursor:pointer}
+.bdg.feat .bdg-show{background:var(--navy,#003c68);color:#fff}
+.nmb{display:inline-flex!important;align-items:flex-start;max-width:100%;min-width:0}.nmt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.fbdg{flex:none;display:inline-block;position:relative;top:-6px;margin-left:5px;line-height:0}
+.fbdg svg.tk-mini{width:31px;height:15px;display:block;filter:drop-shadow(0 1px 1px rgba(0,30,60,.25))}
+.fbdg svg.md-mini{width:15px;height:15px}
 </style>
 </head>
 <body>
@@ -3096,7 +3104,7 @@ function profileView(){
   const L=state.log,best=L.slice().sort((a,b)=>b.total-a.total)[0];
   const live=isLive();
   return `<div class="pfhead">${mgrDot(me,1)}<div><h2>${esc(myTeam||me.name)}</h2><div class="sub">${myTeam?esc(me.name)+" · ":""}${esc(cloud.email)}</div></div></div>
-  ${badgeRow(myBadges,adminOn()?cloud.uid:null)}${badgeAdmin(cloud.uid)}
+  ${badgeRow(myBadges,adminOn()?cloud.uid:null,true)}${badgeAdmin(cloud.uid)}
   ${cloud.admin?`<label class="admsw"><input type="checkbox" role="switch" id="admSw" ${showAdmin?"checked":""}><span class="trk" aria-hidden="true"></span><span><b>Adminverktyg</b><span class="sub">${showAdmin?"Visas":"Dolda"}</span></span></label>`:""}
   ${inviteCard()}${adminGameCard()}${igCard()}${reviewCard()}
   <div class="kv"><div><span>Poäng</span><b>${fp(state.total)}</b></div><div><span>Omgångar</span><b>${L.length}</b></div><div><span>Bästa omgång</span><b>${best?fp(best.total):"–"}</b></div><div><span>Chips</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length}</b></div></div>
@@ -3228,7 +3236,7 @@ function leagueTable(code){
    <div class="lgl-h" role="row"><span role="columnheader"><span class="lgl-long">Placering</span><span class="lgl-short" aria-hidden="true">Plac.</span></span><span role="columnheader">Lag</span><span role="columnheader">Vecka${live?' <i class="lgl-live" title="Live"></i>':""}</span><span role="columnheader">Total</span></div>
    ${rows.map((m,k)=>`${code==="GLOBAL"&&k===20?'<div class="lgl-gap" aria-hidden="true">⋯</div>':""}<div class="lgl-r ${m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="${esc(code)}|${esc(m.id)}" tabindex="0">
      <span class="pl" role="cell">${m.rank}<small>(${wrank[m.id]||"–"})</small></span>
-     <span class="tm" role="cell">${mgrDot(m)}<span><b>${esc(m.name)}</b>${m.team&&m.mgr!==m.name?`<span class="sub">${esc(m.mgr)}${m.id===cloud.uid?" · du":""}</span>`:m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span>
+     <span class="tm" role="cell">${mgrDot(m)}<span><b class="nmb"><span class="nmt">${esc(m.name)}</span>${featTag(m.id)}</b>${m.team&&m.mgr!==m.name?`<span class="sub">${esc(m.mgr)}${m.id===cloud.uid?" · du":""}</span>`:m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span>
      <span class="n" role="cell">${ptsOf(m,cur)!==null?fp(ptsOf(m,cur))+"p":"–"}</span><span class="n" role="cell"><b>${fp(m.t)}p</b></span></div>`).join("")}
   </div>`;
 }
@@ -3293,18 +3301,37 @@ const BDG_ICON={
   bolt:c=>`<path d="M34 18 23 34h8l-2 12 11-16h-8z" fill="${c}"/>`,
   flag:c=>`<rect x="22" y="22" width="20" height="20" fill="#fff" stroke="${c}" stroke-width="2"/><path d="M22 22h20L22 42z" fill="#f47b20"/>`,
   compass:c=>`<circle cx="32" cy="32" r="12" fill="none" stroke="${c}" stroke-width="3"/><path d="m36.5 27.5-3 6-6 3 3-6z" fill="${c}"/>`};
-function medal(b){const t=BDG_TIER[b.tier]||BDG_TIER.navy,id="bg"+Math.random().toString(36).slice(2,8),ic=(BDG_ICON[b.icon]||BDG_ICON.star)(t[2]);
+/* the beta badge is a torn ticket: "BETA · SLUTEN · 2026" with a β stub. mini = the small one next to a name */
+function ticket(mini){const g="tk"+Math.random().toString(36).slice(2,7);
+  return mini?`<svg class="tk-mini" viewBox="-30 -14 60 28" aria-hidden="true"><defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff07a"/><stop offset="1" stop-color="#f5c400"/></linearGradient></defs>
+    <path d="M-28-12h56v7a5 5 0 0 0 0 10v7h-56v-7a5 5 0 0 0 0-10z" fill="url(#${g})" stroke="#003c68" stroke-width="1.6"/><line x1="10" y1="-10" x2="10" y2="10" stroke="#003c68" stroke-width="1.4" stroke-dasharray="2.4 2.2"/>
+    <text x="-9" y="5.2" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="13.5" fill="#003c68">BETA</text><text x="18" y="5" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="12" fill="#003c68">β</text></svg>`
+  :`<svg class="md md-t" viewBox="-48 -30 96 60" aria-hidden="true"><defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff07a"/><stop offset="1" stop-color="#f5c400"/></linearGradient></defs><g transform="rotate(-8)">
+    <path d="M-44-22h88v12a6 6 0 0 0 0 20v12h-88v-12a6 6 0 0 0 0-20z" fill="url(#${g})" stroke="#003c68" stroke-width="2"/><line x1="18" y1="-20" x2="18" y2="20" stroke="#003c68" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <text x="-13" y="3" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="20" fill="#003c68">BETA</text><text x="-13" y="14" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="700" font-size="6.5" letter-spacing="1.4" fill="#003c68">SLUTEN · 2026</text>
+    <text x="31" y="7" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="20" fill="#003c68">β</text></g></svg>`}
+function badgeMini(b){if(b.icon==="beta")return ticket(true);const t=BDG_TIER[b.tier]||BDG_TIER.navy;return `<svg class="tk-mini md-mini" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="${t[1]}"/>${(BDG_ICON[b.icon]||BDG_ICON.star)(t[2])}</svg>`}
+const featB={};
+const featTag=id=>{const b=featB[id];return b?`<span class="fbdg" title="${esc(b.name)}">${badgeMini(b)}</span>`:""};
+async function loadFeatured(ids){if(!cloud.sb||!ids.length)return;
+  for(let k=0;k<ids.length;k+=200){const q=await cloud.sb.from("user_badges").select("user_id,badge_id,badges(name,icon,tier)").eq("featured",true).in("user_id",ids.slice(k,k+200));if(q.error)return;
+    ids.slice(k,k+200).forEach(id=>{delete featB[id]});(q.data||[]).forEach(x=>{if(x.badges)featB[x.user_id]={id:x.badge_id,...x.badges}})}}
+async function featureBadge(bid){const r=await cloud.sb.rpc("set_featured_badge",{p_badge:bid});if(r.error)return;
+  myBadges.forEach(b=>{b.featured=b.id===bid});const b=myBadges.find(x=>x.id===bid);if(b)featB[cloud.uid]=b;else delete featB[cloud.uid];render()}
+function medal(b){if(b.icon==="beta")return ticket(false);const t=BDG_TIER[b.tier]||BDG_TIER.navy,id="bg"+Math.random().toString(36).slice(2,8),ic=(BDG_ICON[b.icon]||BDG_ICON.star)(t[2]);
   return `<svg class="md" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${t[0]}"/><stop offset="1" stop-color="${t[1]}"/></linearGradient></defs>
    <path d="M20 44 14 60l8-3 4 7 6-16zM44 44l6 16-8-3-4 7-6-16z" fill="${t[1]}" opacity=".85"/><circle cx="32" cy="32" r="22" fill="url(#${id})"/><circle cx="32" cy="32" r="18" fill="none" stroke="${t[2]}" stroke-opacity=".35" stroke-width="1.5"/>${ic}</svg>`}
 let badgeDefs=[],myBadges=[],userBadges={},bdgPick="";
-async function loadBadges(uid){if(!cloud.sb||!uid)return [];const r=await cloud.sb.from("user_badges").select("badge_id,awarded_at,badges(name,description,icon,tier,sort)").eq("user_id",uid);
-  const L=(r.data||[]).filter(x=>x.badges).map(x=>({id:x.badge_id,at:x.awarded_at,...x.badges})).sort((a,b)=>(a.sort||0)-(b.sort||0));userBadges[uid]=L;if(uid===cloud.uid)myBadges=L;return L}
+async function loadBadges(uid){if(!cloud.sb||!uid)return [];let r=await cloud.sb.from("user_badges").select("badge_id,awarded_at,featured,badges(name,description,icon,tier,sort)").eq("user_id",uid);
+  if(r.error)r=await cloud.sb.from("user_badges").select("badge_id,awarded_at,badges(name,description,icon,tier,sort)").eq("user_id",uid);
+  const L=(r.data||[]).filter(x=>x.badges).map(x=>({id:x.badge_id,at:x.awarded_at,featured:!!x.featured,...x.badges})).sort((a,b)=>(a.sort||0)-(b.sort||0));userBadges[uid]=L;if(uid===cloud.uid){myBadges=L;const f=L.find(b=>b.featured);if(f)featB[uid]=f;else delete featB[uid]}return L}
 async function loadBadgeDefs(){if(!cloud.sb)return;const r=await cloud.sb.from("badges").select("id,name,description,icon,tier,sort").order("sort");if(!r.error)badgeDefs=r.data||[]}
-function badgeRow(L,uid){if(!L||!L.length)return "";const adm=adminOn()&&uid;
-  return `<div class="bdg-row" role="list" aria-label="Badges">${L.map(b=>`<div class="bdg" role="listitem" title="${esc(b.description||"")}">${medal(b)}<span><b>${esc(b.name)}</b>${b.description?`<span class="sub">${esc(b.description)}</span>`:""}</span>${adm?`<button class="x" data-bdgdel="${esc(uid)}|${esc(b.id)}" aria-label="Ta bort ${esc(b.name)}">×</button>`:""}</div>`).join("")}</div>`}
+function badgeRow(L,uid,own){if(!L||!L.length)return "";const adm=adminOn()&&uid;
+  return `<div class="bdg-row" role="list" aria-label="Badges">${L.map(b=>`<div class="bdg ${own&&b.featured?"feat":""}" role="listitem" title="${esc(b.description||"")}">${medal(b)}<span><b>${esc(b.name)}</b>${b.description?`<span class="sub">${esc(b.description)}</span>`:""}${own?`<button class="bdg-show" data-bdgfeat="${b.featured?"":esc(b.id)}" aria-pressed="${!!b.featured}">${b.featured?"✓ Visas i ligorna":"Visa i ligorna"}</button>`:""}</span>${adm?`<button class="x" data-bdgdel="${esc(uid)}|${esc(b.id)}" aria-label="Ta bort ${esc(b.name)}">×</button>`:""}</div>`).join("")}</div>`}
 function badgeAdmin(uid){if(!adminOn()||!badgeDefs.length)return "";const have=new Set((userBadges[uid]||[]).map(b=>b.id)),opts=badgeDefs.filter(b=>!have.has(b.id));if(!opts.length)return "";
   return `<div class="bdg-adm"><span class="host">Admin</span><select id="bdgPick" aria-label="Badge att ge">${opts.map(b=>`<option value="${esc(b.id)}" ${bdgPick===b.id?"selected":""}>${esc(b.name)}</option>`).join("")}</select><button class="btn" data-bdgadd="${esc(uid)}">Ge badge</button></div>`}
 document.addEventListener("change",e=>{if(e.target.id==="bdgPick")bdgPick=e.target.value});
+document.addEventListener("click",e=>{const f=e.target.closest("[data-bdgfeat]");if(f){e.stopPropagation();featureBadge(f.dataset.bdgfeat||null)}});
 document.addEventListener("click",async e=>{const a=e.target.closest("[data-bdgadd],[data-bdgdel]");if(!a)return;
   let uid,bid;if(a.dataset.bdgadd){uid=a.dataset.bdgadd;bid=(document.getElementById("bdgPick")||{}).value;if(!bid)return;await cloud.sb.from("user_badges").insert({user_id:uid,badge_id:bid})}
   else{[uid,bid]=a.dataset.bdgdel.split("|");await cloud.sb.from("user_badges").delete().eq("user_id",uid).eq("badge_id",bid)}
@@ -3348,7 +3375,7 @@ function weekCard(){
     ${all.length?`<div class="lgl" role="table" aria-label="Veckans manager"><div class="lgl-h" role="row"><span role="columnheader"><span class="lgl-long">Placering</span><span class="lgl-short" aria-hidden="true">Plac.</span></span><span role="columnheader">Lag</span><span role="columnheader">Vecka${live?' <i class="lgl-live" title="Live"></i>':""}</span><span role="columnheader">Total</span></div>
     ${rows.map((x,k)=>`${k===20?'<div class="lgl-gap" aria-hidden="true">⋯</div>':""}<div class="lgl-r ${x.m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="GLOBAL|${esc(x.m.id)}" tabindex="0">
       <span class="pl" role="cell">${x.rank}</span>
-      <span class="tm" role="cell">${mgrDot(x.m)}<span><b>${esc(x.m.name)}</b>${x.m.team&&x.m.mgr!==x.m.name?`<span class="sub">${esc(x.m.mgr)}${x.m.id===cloud.uid?" · du":""}</span>`:x.m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span>
+      <span class="tm" role="cell">${mgrDot(x.m)}<span><b class="nmb"><span class="nmt">${esc(x.m.name)}</span>${featTag(x.m.id)}</b>${x.m.team&&x.m.mgr!==x.m.name?`<span class="sub">${esc(x.m.mgr)}${x.m.id===cloud.uid?" · du":""}</span>`:x.m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span>
       <span class="n" role="cell"><b>${fp(x.p)}p</b></span><span class="n" role="cell">${fp(st.rows.find(y=>y.id===x.m.id).t)}p</span></div>`).join("")}
     </div>`:`<p class="note" style="margin:6px 0 0">Ingen hade en trupp den här omgången.</p>`}</div>`;
 }
@@ -4196,6 +4223,7 @@ const sqUsers=()=>{const u=new Set();for(let r=LIVE;r<openRound()&&r<E.R;r++){co
 /* names, team names and pictures: fetched only for the people on screen, kept for ten minutes */
 const pfCache=new Map();
 async function profilesFor(ids){
+  loadFeatured(ids).then(()=>{if(tab==="leagues")render()}).catch(()=>{});
   const sb=cloud.sb,now=Date.now(),need=ids.filter(id=>id!==cloud.uid&&(!pfCache.has(id)||now-pfCache.get(id).t>6e5));
   for(let k=0;k<need.length;k+=200){const q=await sb.from("profiles").select("id,name,team,avatar,name_flag").in("id",need.slice(k,k+200));if(q.error)return false;(q.data||[]).forEach(p=>{const f=p.name_flag;pfCache.set(p.id,{t:now,name:f==="name"||f==="both"?"Manager":p.name,team:f==="team"||f==="both"?null:p.team,avatar:p.avatar})})}
   return true;
