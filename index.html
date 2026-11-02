@@ -2087,6 +2087,10 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
   .hm-img::after{background:linear-gradient(90deg,var(--bg) 0%,rgba(255,255,255,.93) 30%,rgba(255,255,255,.55) 48%,rgba(255,255,255,0) 66%),linear-gradient(180deg,rgba(255,255,255,0) 70%,var(--bg) 100%)}
   .hm-txt{margin-top:0;padding-top:40px;padding-bottom:56px}}
 
+
+/* Hem: the grey boxes look like the rest of the game's boxes, square with the navy corner triangle */
+#view .hm-grid>.card,#view .hm-lg,#view .hm-news{border-radius:0!important;position:relative;overflow:hidden}
+#view .hm-grid>.card::before,#view .hm-lg::before,#view .hm-news::before{content:""!important;position:absolute;right:0;top:0;left:auto;bottom:auto;width:34px;height:34px;background:linear-gradient(225deg,var(--navy) 50%,transparent 50%)!important;pointer-events:none;opacity:1!important;transform:none!important;z-index:1}
 </style>
 </head>
 <body>
