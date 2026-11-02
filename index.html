@@ -182,7 +182,7 @@ html,body{color-scheme:only light}
    the real check is the session from Supabase (onSession), which opens or closes the gate */
 try{var _sk=Object.keys(localStorage).some(function(k){return /^sb-.*-auth-token$/.test(k)});if(!_sk&&!/access_token|type=recovery/.test(location.href))document.documentElement.classList.add("gated")}catch(e){document.documentElement.classList.add("gated")}</script>
 <style>
-html.gated body>*:not(#gate){display:none!important}html.gated::after{display:none!important}html.gated{overflow:hidden}
+html.gated body>*:not(#gate):not(#modal){display:none!important}html.gated #modal .modal{z-index:1001}html.gated::after{display:none!important}html.gated{overflow:hidden}
 #gate{display:none}
 html.gated #gate{display:grid;position:fixed;inset:0;z-index:1000;place-items:center;overflow:auto;background:#003c68;color:#fff;font-family:Montserrat,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:24px max(20px,env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
 #gate .g-in{width:100%;max-width:400px;display:grid;gap:14px}
@@ -197,6 +197,8 @@ html.gated #gate{display:grid;position:fixed;inset:0;z-index:1000;place-items:ce
 #gate button.g-go:disabled{opacity:.6}
 #gate .g-link{background:none;border:0;color:#fff;text-decoration:underline;text-underline-offset:3px;font:600 14px Montserrat,sans-serif;cursor:pointer;justify-self:start;padding:4px 0}
 #gate .g-msg{min-height:20px;font:600 14px/1.4 Montserrat,sans-serif;color:#ffe74d}
+#gate .g-agree{display:flex;gap:10px;align-items:flex-start;font:500 14px/1.4 Montserrat,sans-serif;color:#cfe0ee;text-transform:none;letter-spacing:0}#gate .g-agree input{width:20px;height:20px;flex:none;margin-top:1px;padding:0}#gate .g-agree button{background:none;border:0;padding:0;color:#fff;text-decoration:underline;font:inherit;cursor:pointer}
+#gate .g-up{display:none}#gate.up .g-up{display:grid;gap:10px}#gate.up .g-in-only{display:none}
 #gate .g-foot{margin-top:18px;font:500 12px/1.4 Montserrat,sans-serif;color:#9fb7cc}
 </style>
 <script>/* the opening plays on a blue screen: show the blue from the first paint so the page never flashes before it */
@@ -2054,13 +2056,20 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
  <svg class="g-logo" viewBox="2.6 2.6 29.6 23.5" aria-hidden="true"><g transform="translate(-.4 -.9) scale(.0322)"><path d="M540 120l18 37 41 6-30 29 7 41-36-19-36 19 7-41-30-29 41-6z" fill="#fff"/><g transform="translate(540 240)"><path d="M-210 0H210C210 220 120 350 0 370C-120 350-210 220-210 0Z" fill="#ffe74d"/><path d="M-205 50C-320 50-330 190-205 235M205 50C320 50 330 190 205 235" fill="none" stroke="#ffe74d" stroke-width="40" stroke-linecap="round"/><rect x="-30" y="360" width="60" height="110" fill="#ffe74d"/><path d="M-140 580H140L112 470H-112Z" fill="#ffe74d"/><circle cx="0" cy="145" r="88" fill="none" stroke="#003c68" stroke-width="34"/></g><path d="M150 610L120 690H230ZM930 610L960 690H850Z" fill="#c9d3dc"/><path d="M95 560H230V700H95L140 630ZM985 560H850V700H985L940 630Z" fill="#e8edf2"/><rect x="190" y="530" width="700" height="150" rx="8" fill="#fff"/><text x="540" y="652" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="112" letter-spacing="6" fill="#003c68" text-anchor="middle">FANTASY</text></g></svg>
  <span class="g-k">Sluten beta</span>
  <h1 id="gateT">Fantasy Orientering</h1>
- <p>Spelet är just nu bara öppet för betatestare. Logga in med ditt konto för att fortsätta.</p>
+ <p id="gLead">Spelet är just nu bara öppet för betatestare. Logga in med ditt konto för att fortsätta.</p>
  <form id="gateForm" autocomplete="on" novalidate>
+  <div class="g-up">
+   <label for="gCode">Inbjudningskod</label><input id="gCode" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD-1234" maxlength="9">
+   <label for="gName">Managernamn</label><input id="gName" maxlength="24" autocomplete="nickname" autocapitalize="words">
+   <label for="gTeam">Lagnamn</label><input id="gTeam" maxlength="30" autocapitalize="words">
+  </div>
   <label for="gEmail">E-post</label><input id="gEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="none" required>
   <label for="gPw" id="gPwL">Lösenord</label><input id="gPw" type="password" autocomplete="current-password" required>
+  <label class="g-agree g-up"><span style="display:flex;gap:10px"><input type="checkbox" id="gAgree"><span>Jag är minst 13 år och godkänner <button type="button" data-info="terms">villkoren</button>.</span></span></label>
   <button class="g-go" id="gGo" type="submit">Logga in</button>
  </form>
- <button class="g-link" id="gForgot" type="button">Glömt lösenordet?</button>
+ <button class="g-link g-in-only" id="gForgot" type="button">Glömt lösenordet?</button>
+ <button class="g-link" id="gInvite" type="button">Har du en inbjudningskod? Skapa konto</button>
  <div class="g-msg" id="gMsg" role="status" aria-live="polite"></div>
  <p class="g-foot">Fristående ideellt projekt · ingen koppling till Svensk Orientering (SOFT)</p>
 </div></div>
@@ -3246,7 +3255,7 @@ function profileView(){
   const live=isLive();
   return `<div class="pfhead">${mgrDot(me,1)}<div><h2>${esc(myTeam||me.name)}</h2><div class="sub">${myTeam?esc(me.name)+" · ":""}${esc(cloud.email)}</div></div></div>
   ${cloud.admin?`<label class="admsw"><input type="checkbox" role="switch" id="admSw" ${showAdmin?"checked":""}><span class="trk" aria-hidden="true"></span><span><b>Adminverktyg</b><span class="sub">${showAdmin?"Visas":"Dolda"}</span></span></label>`:""}
-  ${adminGameCard()}${igCard()}${reviewCard()}
+  ${inviteCard()}${adminGameCard()}${igCard()}${reviewCard()}
   <div class="kv"><div><span>Poäng</span><b>${fp(state.total)}</b></div><div><span>Omgångar</span><b>${L.length}</b></div><div><span>Bästa omgång</span><b>${best?fp(best.total):"–"}</b></div><div><span>Chips</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length}</b></div></div>
   ${L.length?seasonBars():""}
   <div class="grid2" style="margin-top:12px">
@@ -3742,6 +3751,28 @@ async function setOvr(kind,ref,label,on){
 }
 /* the long lists of game weeks and races are folded away unless asked for (remembered on this device) */
 let admLists=(()=>{try{return localStorage.getItem("of-admlists")==="1"}catch(e){return false}})();
+/* admin: invite codes for the closed beta. A code lets someone create an account; it can be used a set number of times */
+let invites=[],invMsg="",invBusy=false,invUses=1,invNote="",invLoaded=false;
+async function loadInvites(){if(!cloud.admin||!cloud.sb)return;const r=await cloud.sb.from("invite_codes").select("code,max_uses,uses,note,created_at,revoked").order("created_at",{ascending:false}).limit(30);if(!r.error){invites=r.data||[];invLoaded=true;if(tab==="profile")render()}}
+function inviteCard(){
+  if(!adminOn())return "";if(!invLoaded)setTimeout(loadInvites,0);
+  const link=c=>location.origin+location.pathname+"?invite="+c;
+  return `<div class="card admin"><h3>Admin · inbjudningskoder</h3>
+   <p class="note" style="margin:0 0 12px">Under den slutna betan kan man bara skapa konto med en kod. Dela koden eller länken.</p>
+   <div class="row" style="flex-wrap:wrap;gap:8px;align-items:center"><select id="invUses" aria-label="Antal användningar">${[1,5,10,25,100].map(n=>`<option value="${n}" ${invUses===n?"selected":""}>${n===1?"1 person":n+" personer"}</option>`).join("")}</select>
+    <input class="name" id="invNote" maxlength="60" placeholder="Vem är den till? (valfritt)" value="${esc(invNote)}" style="flex:1;min-width:160px">
+    <button class="btn on" id="invNew" ${invBusy?"disabled":""}>${invBusy?"Skapar…":"Skapa kod"}</button></div>
+   ${invMsg?`<p class="note" style="margin:10px 0 0">${esc(invMsg)}</p>`:""}
+   <div style="margin-top:12px">${invites.length?invites.map(x=>`<div class="adm-row"><div><b style="font-family:var(--font);letter-spacing:.06em">${esc(x.code)}</b> <span class="sub">${x.revoked?"återkallad":x.uses+" av "+x.max_uses+" använda"}${x.note?" · "+esc(x.note):""} · ${dshort(String(x.created_at).slice(0,10))}</span></div>
+     ${x.revoked||x.uses>=x.max_uses?"":`<div class="row" style="gap:6px"><button class="btn" data-invcopy="${esc(x.code)}">${copied===x.code?"Kopierad":"Kopiera länk"}</button><button class="btn quiet" data-invrevoke="${esc(x.code)}">Återkalla</button></div>`}</div>`).join(""):`<p class="note" style="margin:0">Inga koder än.</p>`}</div></div>`;
+}
+document.addEventListener("change",e=>{if(e.target.id==="invUses")invUses=+e.target.value});
+document.addEventListener("input",e=>{if(e.target.id==="invNote")invNote=e.target.value});
+document.addEventListener("click",async e=>{const t=e.target.closest("#invNew,[data-invcopy],[data-invrevoke]");if(!t)return;
+  if(t.id==="invNew"){invBusy=true;invMsg="";render();const r=await cloud.sb.rpc("create_invite",{p_uses:invUses,p_note:invNote.trim()||null});invBusy=false;
+    if(r.error){invMsg="Kunde inte skapa koden. Försök igen."}else{invMsg="Ny kod: "+r.data;invNote="";await loadInvites()}render();return}
+  if(t.dataset.invcopy){const c=t.dataset.invcopy,l=location.origin+location.pathname+"?invite="+c;try{await navigator.clipboard.writeText(l)}catch(err){invMsg="Kopiera länken: "+l}copied=c;render();setTimeout(()=>{if(copied===c){copied="";render()}},1800);return}
+  if(t.dataset.invrevoke){const r=await cloud.sb.from("invite_codes").update({revoked:true}).eq("code",t.dataset.invrevoke);invMsg=r.error?"Kunde inte återkalla koden.":"Koden är återkallad.";await loadInvites();render()}});
 function adminGameCard(){
   if(!adminOn())return "";
   const live=D.rounds.map((rd,r)=>({rd,r})).filter(x=>x.r>=LIVE);
@@ -4401,8 +4432,36 @@ let gateForgot=false;
 function gateMsg(t){const m=document.getElementById("gMsg");if(m)m.textContent=t}
 document.getElementById("gForgot").addEventListener("click",()=>{gateForgot=!gateForgot;document.getElementById("gPw").style.display=gateForgot?"none":"";document.getElementById("gPwL").style.display=gateForgot?"none":"";
   document.getElementById("gGo").textContent=gateForgot?"Skicka länk":"Logga in";document.getElementById("gForgot").textContent=gateForgot?"Tillbaka till inloggningen":"Glömt lösenordet?";gateMsg("")});
+/* invite mode: a code from an admin lets a new player create an account during the closed beta */
+let gateUp=false;
+function setGateUp(on){gateUp=on;gateForgot=false;const g=document.getElementById("gate");g.classList.toggle("up",on);
+  ["gPw","gPwL"].forEach(id=>document.getElementById(id).style.display="");document.getElementById("gForgot").textContent="Glömt lösenordet?";
+  document.getElementById("gGo").textContent=on?"Skapa konto":"Logga in";document.getElementById("gInvite").textContent=on?"Har du redan ett konto? Logga in":"Har du en inbjudningskod? Skapa konto";
+  document.getElementById("gPw").autocomplete=on?"new-password":"current-password";document.getElementById("gPwL").textContent=on?"Lösenord (minst 8 tecken)":"Lösenord";
+  document.getElementById("gLead").textContent=on?"Skapa ditt konto med inbjudningskoden du har fått.":"Spelet är just nu bara öppet för betatestare. Logga in med ditt konto för att fortsätta.";gateMsg("")}
+document.getElementById("gInvite").addEventListener("click",()=>setGateUp(!gateUp));
+{const m=/[?&]invite=([A-Za-z0-9-]{4,12})/.exec(location.search);if(m){document.getElementById("gCode").value=m[1].toUpperCase();setGateUp(true)}}
+const normCode=c=>{c=c.toUpperCase().replace(/[^A-Z0-9]/g,"");return c.length===8?c.slice(0,4)+"-"+c.slice(4):c};
+async function gateSignUp(email,pw,b){
+  const code=normCode(document.getElementById("gCode").value),name=document.getElementById("gName").value.trim(),team=document.getElementById("gTeam").value.trim();
+  if(!/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code)){gateMsg("Skriv inbjudningskoden, till exempel ABCD-1234.");return}
+  if(!name){gateMsg("Välj ett managernamn.");return}
+  if(!team){gateMsg("Välj ett lagnamn. Det syns i ligorna.");return}
+  if(!nameOk(name)||!nameOk(team)){gateMsg("Det namnet är inte tillåtet. Välj ett annat.");return}
+  if(pw.length<8){gateMsg("Lösenordet behöver minst 8 tecken.");return}
+  if(!document.getElementById("gAgree").checked){gateMsg("Bekräfta att du är minst 13 år och godkänner villkoren.");return}
+  const ok=await cloud.sb.rpc("check_invite",{p_code:code});
+  if(ok.error||ok.data!==true){gateMsg("Koden finns inte eller är redan använd.");return}
+  const r=await cloud.sb.auth.signUp({email,password:pw,options:{data:{name:name.slice(0,24),team:team.slice(0,30),invite:code},emailRedirectTo:location.origin+location.pathname}});
+  if(r.error){gateMsg(/closed_beta|Database error/i.test(r.error.message)?"Koden finns inte eller är redan använd.":/already registered|already exists/i.test(r.error.message)?"Det finns redan ett konto med den adressen. Logga in i stället.":"Kunde inte skapa kontot. Försök igen.");return}
+  mgrName=name.slice(0,24);myTeam=team.slice(0,30);
+  if(!r.data.session){gateMsg("Klart! Kolla din e-post och klicka på länken, sedan är du inne.");document.getElementById("gPw").value=""}
+}
 document.getElementById("gateForm").addEventListener("submit",async e=>{e.preventDefault();
   const email=document.getElementById("gEmail").value.trim(),pw=document.getElementById("gPw").value,b=document.getElementById("gGo");
+  if(gateUp){if(!cloud.sb){gateMsg("Inloggningen laddas fortfarande. Försök igen om en stund.");return}
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){gateMsg("Skriv din e-postadress.");return}
+    b.disabled=true;try{await gateSignUp(email,pw,b)}catch(err){gateMsg("Något gick fel. Försök igen.")}b.disabled=false;return}
   if(!cloud.sb){gateMsg("Inloggningen laddas fortfarande. Försök igen om en stund.");return}
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){gateMsg("Skriv din e-postadress.");return}
   b.disabled=true;
