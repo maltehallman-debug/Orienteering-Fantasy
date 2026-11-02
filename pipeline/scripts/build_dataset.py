@@ -210,21 +210,50 @@ ev_i = np.array(ev_i); run_i = np.array(run_i); perf = np.array(perf)
 nR, nE = len(keys_all), len(events)
 cnt = np.bincount(run_i, minlength=nR).astype(float)
 evcnt = np.bincount(ev_i, minlength=nE).astype(float)
-rating = np.zeros(nR); LAMBDA = 2.0
-for it in range(40):
-    fm = np.bincount(ev_i, weights=rating[run_i], minlength=nE) / np.maximum(evcnt, 1)
-    num = np.bincount(run_i, weights=perf + fm[ev_i], minlength=nR)
-    rating = num / (cnt + LAMBDA)
-# D and H never share a start list, so their rating scales are separate: percentiles are taken within each gender
+LAMBDA = 2.0
+# Newer races count more: a race's weight halves every STR_HALF days (default 270), so the rating follows form.
+# Each race is also scored with the ratings as they stood at the end of its own week (only races up to then), so a
+# result is judged by what was known when it was run and later races do not change it.
+STR_HALF = float(os.environ.get("STR_HALF", "270"))
+perf_day = np.array([events[i]["d"].toordinal() for i in ev_i]) if len(ev_i) else np.zeros(0, int)
+evcnt_all = np.bincount(ev_i, minlength=nE).astype(float)
 gmask = {g: np.array([k.endswith("|" + g) for k in keys_all]) for g in "DH"}
-pool_vals = {g: np.sort(rating[(cnt >= 3) & gmask[g]]) for g in "DH"}
-def strength_pct(k):
-    i = kix.get(k)
-    if i is None: return 0.05
-    pv = pool_vals[k[-1]]
-    return float(np.searchsorted(pv, rating[i]) / max(1, len(pv)))
-STR = {k: strength_pct(k) for k in keys_all}
+def solve(cut, rating0, iters):
+    m = perf_day <= cut
+    ei, ri, pf, w = ev_i[m], run_i[m], perf[m], 0.5 ** ((cut - perf_day[m]) / STR_HALF)
+    evc = np.maximum(np.bincount(ei, minlength=nE).astype(float), 1)
+    cw = np.bincount(ri, weights=w, minlength=nR)
+    r = rating0.copy()
+    for _ in range(iters):
+        fm = np.bincount(ei, weights=r[ri], minlength=nE) / evc
+        r = np.bincount(ri, weights=w * (pf + fm[ei]), minlength=nR) / (cw + LAMBDA)
+    return r, np.bincount(ri, minlength=nR)
+def to_pct(r, n):
+    # D and H never share a start list, so their rating scales are separate: percentiles are taken within each gender
+    out = np.full(nR, 0.05)
+    for g in "DH":
+        pv = np.sort(r[(n >= 3) & gmask[g]])
+        if len(pv):
+            sel = gmask[g] & (n > 0); out[sel] = np.searchsorted(pv, r[sel]) / len(pv)
+    return out
+# ratings at the end of every week that has races (warm-started from the week before)
+wk_of = lambda d: d.toordinal() - d.weekday()
+weeks_with_races = sorted({wk_of(e["d"]) for e in events})
+STRW, _r = {}, np.zeros(nR)
+for k_, wk in enumerate(weeks_with_races):
+    _r, _n = solve(wk + 6, _r, 40 if k_ == 0 else 12)
+    STRW[wk] = to_pct(_r, _n)
+print("strength ratings per week", len(STRW), "half-life", STR_HALF, "days")
+# today's ratings: for deciding which coming races are big, and the runners' shown strength
+_r, _n = solve(TODAY.toordinal(), _r, 25)
+_now = to_pct(_r, _n)
+STR = {k: float(_now[kix[k]]) for k in keys_all}
 TOP = {k for k, v in STR.items() if v >= 0.85}
+_cur = {"p": _now}
+def str_now(k):
+    i = kix.get(k)
+    return 0.05 if i is None else float(_cur["p"][i])
+def use_week(e): _cur["p"] = STRW.get(wk_of(e["d"]), _now)
 def beat_w(s): return 0.1 + 1.9 * s ** 3
 
 # ---- scoring ----
@@ -236,7 +265,7 @@ def score_relay(e):
     for r in e["rows"]:
         t = T.setdefault(r["team"], {"keys": [], "rows": [], "time": int(r["result"]) if _pos(r["result"]) else 0, "ok": r["teamok"]})
         t["keys"].append(rkey(r, e)); t["rows"].append(r)
-    tstr = {n: sum(STR.get(k, 0.05) for k in t["keys"]) / len(t["keys"]) for n, t in T.items()}
+    tstr = {n: sum(str_now(k) for k in t["keys"]) / len(t["keys"]) for n, t in T.items()}
     fin = sorted(((n, t["time"]) for n, t in T.items() if t["ok"]), key=lambda x: x[1])
     win = fin[0][1]; times = [x for _, x in fin]
     top10 = sorted((tstr[n] for n, _ in fin), reverse=True)[:10]
@@ -261,7 +290,7 @@ def score_event(e):
     fin = sorted(e["fin"], key=lambda r: int(r["result"]))
     win = int(fin[0]["result"])
     fk = [(rkey(r, e), int(r["result"])) for r in fin]
-    top10 = sorted((STR.get(k, 0.05) for k, _ in fk), reverse=True)[:10]
+    top10 = sorted((str_now(k) for k, _ in fk), reverse=True)[:10]
     qf = 0.75 + 0.75 * (sum(top10) / len(top10))
     sizef = min(1.0, 0.4 + 0.6 * (len(fin) - 3) / 17)
     times = [x for _, x in fk]
@@ -273,8 +302,8 @@ def score_event(e):
             t = int(r["result"])
             rank = 1 + bisect.bisect_left(times, t)
             beaten_list = [k for k, x in fk if x > t]
-            wsum = sum(beat_w(STR.get(k, 0.05)) for k in beaten_list)
-            topb = sum(1 for k in beaten_list if k in TOP)
+            wsum = sum(beat_w(str_now(k)) for k in beaten_list)
+            topb = sum(1 for k in beaten_list if str_now(k) >= 0.85)
             gap = (t - win) / win
             speed = max(0.0, 18 - 80 * gap) * qf * sizef
             pod = {1: 12, 2: 7, 3: 4}.get(rank, 0) * qf * sizef
@@ -284,7 +313,7 @@ def score_event(e):
             out[key] = {"k": {2: "DNF", 3: "MP", 4: "DSQ"}[r["status"]], "pts": -5.0}
     return out
 for e in events:
-    e["scores"] = score_event(e); e["n"] = len({r["team"] for r in e["fin"]}) if e.get("relay") else len(e["fin"])
+    use_week(e); e["scores"] = score_event(e); e["n"] = len({r["team"] for r in e["fin"]}) if e.get("relay") else len(e["fin"])
 
 # ---- runners ----
 names = collections.defaultdict(collections.Counter)

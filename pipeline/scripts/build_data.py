@@ -31,6 +31,45 @@ out_rounds = [{"n": r["n"], "start": r["start"], "end": r["end"], "ev": [evpos[x
 # prices only change with new results: rounds ahead all have today's prices, so only up to the next round is sent
 _upto = next((i for i, r in enumerate(rounds) if r["start"] > _dt.date.today().isoformat()), len(rounds) - 1) + 1
 prices = [[int(round(p[k] * 10)) for k in pool] for p in D["prices"][:max(1, _upto)]]
+# ---- finished game weeks stay as they were ----
+# Points and prices of a game week are locked once it is over (plus FREEZE_DAYS for late results and corrections):
+# they are taken from the last published site (index.html) instead of being worked out again, so later races and
+# rating updates never change a finished week. Prices are locked from the moment a week starts.
+# NO_FREEZE=1 works everything out afresh, for an admin fix that has to reach old weeks.
+FREEZE_DAYS = int(os.environ.get("FREEZE_DAYS", "3")); _today = _dt.date.today()
+_prev = None
+if os.environ.get("NO_FREEZE") != "1":
+    try:
+        _h = open(f"{S}/../index.html").read(); _i = _h.index("const D=") + 8
+        _prev, _ = json.JSONDecoder().raw_decode(_h.replace("<\\/", "</"), _i)
+    except Exception as _e:
+        print("no published site to lock finished weeks from:", _e)
+if _prev:
+    _pid = [r["id"] for r in _prev["runners"]]
+    _pkey = lambda e: (e["name"], e["date"])
+    _prev_ev = {_pkey(e): k for k, e in enumerate(_prev["events"])}
+    _prev_rd = {r["start"]: r for r in _prev["rounds"]}
+    _fe = _fr = _fp = 0
+    for rn, r in enumerate(out_rounds):
+        pr_ = _prev_rd.get(r["start"])
+        if not pr_: continue
+        if _dt.date.fromisoformat(r["end"]) + _dt.timedelta(days=FREEZE_DAYS) < _today:
+            # exactly the races and points the week had when it was locked
+            evs = []
+            for pk in pr_["ev"]:
+                pe = _prev["events"][pk]; key = _pkey(pe)
+                ei = next((x for x in r["ev"] if _pkey(out_events[x]) == key), None)
+                if ei is None:   # a race since dropped from the data keeps its place in the locked week
+                    ei = len(out_events); out_events.append(dict(pe)); res.append([])
+                else:
+                    out_events[ei] = dict(pe)
+                res[ei] = [[ridx[_pid[x[0]]], *x[1:]] for x in _prev["res"][pk] if _pid[x[0]] in ridx]
+                evs.append(ei); _fe += 1
+            r["ev"] = evs; r["final"] = 1; _fr += 1
+        if rn < len(prices) and r["start"] <= _today.isoformat() and rn < len(_prev.get("prices", [])):
+            old = {_pid[i]: v for i, v in enumerate(_prev["prices"][rn])}
+            prices[rn] = [old.get(k, prices[rn][i]) for i, k in enumerate(pool)]; _fp += 1
+    print("locked from the published site:", _fr, "finished weeks,", _fe, "races,", _fp, "weeks of prices")
 runners = [{"n": D["names"][k], "c": D["clubs"][k], "p": 1, "s": int(round(D["strength"].get(k, 0.05) * 100)), "k": D["cls"][k], "id": k} for k in pool]
 # runner photos: photos.json maps a runner id ("name|H" or "name|D") to a file in data/photos, embedded so the page stays one file
 import base64
