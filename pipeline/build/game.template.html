@@ -22,7 +22,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#ffffff" id="themeColor">
 <meta name="color-scheme" content="only light">
-<meta name="description" content="Fantasy Orientering för D/H 16–21: välj tio löpare, dubbla ditt A-lag och få poäng från de riktiga resultaten i Eventor.">
+<meta name="description" content="Fantasy Orientering för D/H 16–21: välj tio löpare, dubbla ditt A-lag och få poäng från de riktiga resultaten.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Fantasy-OL">
 <title>Fantasy Orientering</title>
@@ -2128,8 +2128,8 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 <div class="facts" id="facts" aria-live="polite"></div>
 <div class="course" id="course"></div>
 <main id="view"></main>
-<nav class="bigpills" aria-label="Genvägar"><button type="button" data-tab="rules">Regler <i>↗</i></button><button type="button" data-tab="leagues">Ligor <i>↗</i></button><a href="https://eventor.orientering.se" target="_blank" rel="noopener">Eventor <i>↗</i></a></nav>
-<p class="fanline">Fantasy Orientering är ett fristående, ideellt fanprojekt och har ingen koppling till Svenska Orienteringsförbundet. Resultaten kommer från Eventor och liveresultat.orientering.se. Kartbilderna: © Attunda OK.<br><button type="button" class="linkish" data-tab="rules">Regler</button> · <button type="button" class="linkish" data-info="terms">Villkor</button> · <button type="button" class="linkish" data-info="privacy">Integritet</button> · <button type="button" class="linkish" data-info="contact">Kontakt och anmälan</button></p>
+<nav class="bigpills" aria-label="Genvägar"><button type="button" data-tab="rules">Regler <i>↗</i></button><button type="button" data-tab="leagues">Ligor <i>↗</i></button></nav>
+<p class="fanline">Fantasy Orientering är ett fristående, ideellt fanprojekt och har ingen koppling till Svenska Orienteringsförbundet. Resultaten kommer från liveresultat.orientering.se. Kartbilderna: © Attunda OK.<br><button type="button" class="linkish" data-tab="rules">Regler</button> · <button type="button" class="linkish" data-info="terms">Villkor</button> · <button type="button" class="linkish" data-info="privacy">Integritet</button> · <button type="button" class="linkish" data-info="contact">Kontakt och anmälan</button></p>
 </div>
 <nav class="tabbar" id="tabbar" aria-label="Sektioner"></nav>
 <div id="modal"></div>
@@ -2138,6 +2138,8 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 <script src="vendor/supabase-2.45.4.min.js"></script>
 <script>
 const D=/*DATA*/null;
+/* Eventor is paused: no links or mentions of it on the site. Set to true (and "enabled" in pipeline/eventor.json) to turn it back on */
+const EV_LINKS=false;
 /*ENGINE*/
 
 const E=makeEngine(D);
@@ -2826,7 +2828,7 @@ function omapParts(seed,W,H){
 function raceCards(r){
   const c=comps(r);if(!c.length)return "";const rd=D.rounds[r];
   return `<section class="news"><div class="news-hd"><h2>Veckans tävlingar</h2><span class="sub">${rdName(rd)} · ${dshort(rd.start)} – ${dshort(rd.end)}</span></div>
-   <div class="news-grid">${c.slice(0,4).map((x,i)=>`${x.eo?`<a class="ncard" href="https://eventor.orientering.se/Events/Show/${x.eo}" target="_blank" rel="noopener" aria-label="${esc(x.n)} i Eventor (öppnas i ny flik)">`:`<button class="ncard" data-week="${r}">`}<span class="nimg" style="background:${CARDIMG[i]?`url(${CARDIMG[i]}) center/cover no-repeat #f7f5ef`:omapVar(x.n,480,250)}"></span>
+   <div class="news-grid">${c.slice(0,4).map((x,i)=>`${x.eo&&EV_LINKS?`<a class="ncard" href="https://eventor.orientering.se/Events/Show/${x.eo}" target="_blank" rel="noopener" aria-label="${esc(x.n)} i Eventor (öppnas i ny flik)">`:`<button class="ncard" data-week="${r}">`}<span class="nimg" style="background:${CARDIMG[i]?`url(${CARDIMG[i]}) center/cover no-repeat #f7f5ef`:omapVar(x.n,480,250)}"></span>
      <span class="nrow"><span>${x.big?"Stor tävling":x.tier>1?"Mästerskap":"Tävling"}</span><span>${dayName(x.date).slice(0,3)} ${dshort(x.date)}</span></span><b>${esc(x.n).replace(/: /,"<br>")}</b>${x.eo?"</a>":"</button>"}`).join("")}</div>
    ${c.length>4?`<div class="news-more"><button class="btn" data-week="${r}">Alla ${c.length} lopp</button></div>`:""}</section>`;
 }
@@ -2841,7 +2843,7 @@ const skipNote=r=>{const rd=D.rounds[r];if(rd&&rd.wait)return `<div class="skipn
 function weekList(r){
   const c=comps(r),by={};c.forEach(x=>{(by[x.date]=by[x.date]||[]).push(x)});
   const rd=D.rounds[r],days=[];for(let t=Date.parse(rd.start+"T12:00:00Z");t<=Date.parse(rd.end+"T12:00:00Z");t+=864e5)days.push(new Date(t).toISOString().slice(0,10));
-  return `${skipNote(r)}<div class="wk">${days.map(d=>`<div class="wkd ${by[d]?"":"empty"}"><div class="wkh"><b>${dayName(d)}</b><span class="sub">${dshort(d)}</span></div>${by[d]?by[d].map(x=>`<div class="wkr">${x.eo?`<a href="https://eventor.orientering.se/Events/Show/${x.eo}" target="_blank" rel="noopener">${esc(x.n)}</a>`:x.lr?`<a href="https://liveresultat.orientering.se/followfull.php?comp=${x.lr}" target="_blank" rel="noopener">${esc(x.n)}</a>`:`<span>${esc(x.n)}</span>`}${x.big?`<span class="tag big">Stor</span>`:""}${x.tier>1?`<span class="tag w">×${x.tier}</span>`:""}${entCount(x)?`<span class="tag ent" title="Löpare i spelet som har anmält sig">${entCount(x)} anmälda</span>`:""}</div>`).join(""):`<div class="sub">Inga lopp</div>`}</div>`).join("")}</div>`;
+  return `${skipNote(r)}<div class="wk">${days.map(d=>`<div class="wkd ${by[d]?"":"empty"}"><div class="wkh"><b>${dayName(d)}</b><span class="sub">${dshort(d)}</span></div>${by[d]?by[d].map(x=>`<div class="wkr">${x.eo&&EV_LINKS?`<a href="https://eventor.orientering.se/Events/Show/${x.eo}" target="_blank" rel="noopener">${esc(x.n)}</a>`:x.lr?`<a href="https://liveresultat.orientering.se/followfull.php?comp=${x.lr}" target="_blank" rel="noopener">${esc(x.n)}</a>`:`<span>${esc(x.n)}</span>`}${x.big?`<span class="tag big">Stor</span>`:""}${x.tier>1?`<span class="tag w">×${x.tier}</span>`:""}${entCount(x)?`<span class="tag ent" title="Löpare i spelet som har anmält sig">${entCount(x)} anmälda</span>`:""}</div>`).join(""):`<div class="sub">Inga lopp</div>`}</div>`).join("")}</div>`;
 }
 let weekR=null;
 function weekSheet(r){
@@ -3495,7 +3497,7 @@ function infoSheet(k){
   <li><b>Låsning:</b> din trupp sparas av sig själv och låses kvällen före veckans första stora tävling, kl 20:00. Är den inte komplett spelar din senaste kompletta trupp. Säsongen pågår ${dshort(D.rounds[LIVE].start)} till ${dshort(D.rounds[E.R-1].end)}.</li>
   <li><b>Ligor:</b> andra managers ser ditt lag och dina poäng när en omgång har startat, aldrig innan.</li></ul></div>`,
     data:()=>hd("Om datan","Data")+`<div class="info"><ul class="rules"><li>Kartbilderna är utsnitt ur en orienteringskarta som ägs av Attunda OK (© Attunda OK). Banorna på dem är påhittade och ritas bara som dekoration.</li><li>D/H 16–21-resultat från ${D.events.length} lopp mellan ${dshort(D.events[0].date)} och ${dshort(D.events[D.events.length-1].date)}, varje klass med minst 3 i mål. Bara riktiga tävlingar räknas: riktiga H/D 16-, 18-, 20- och 21-klasser (vanliga eller elit), minst två av åldersgrupperna i loppet (en för mästerskap), och inga klubbmästerskap, träningstävlingar, ungdomsserier, MTBO eller OL-skytte. Stafetter räknas på lagets resultat; patrull och sammanlagt räknas inte.</li>
-  <li>Officiella resultat kommer från Eventor, Svensk Orienterings system, och bara för svenska lopp. Resultat som inte finns i Eventor än kommer från liveresultat.orientering.se och byts mot de officiella när de publiceras. Anmälningarna för de kommande veckorna kommer också från Eventor: en grön ✓ visar en löpare som är anmäld till ett lopp den här veckan.</li>
+  <li>Resultaten kommer från liveresultat.orientering.se, där arrangörerna publicerar sina resultat, och bara för svenska lopp. En grön ✓ visar en löpare som är anmäld till ett lopp den här veckan.</li>
   <li>Datan gäller till och med ${dshort(D.asof)}. Priserna för varje omgång bygger bara på lopp före den. Sidan uppdateras med nya lopp varje dag.</li><li>Lopp som pågår, eller som inte finns på liveresultat än (som O-Event 6–8 november), visas i schemat och räknas när en klass har 3 eller fler i mål.</li>
   <li>Priset kommer från löparens placering i sin klass (H16, D21 och så vidare) efter ett viktat snitt av tidigare poäng, där senare lopp väger tyngre. I varje klass kostar den bästa löparen 22k och resten av fältet går ner till 2,5k. Stora klasser har fler dyra platser: i H21 kostar ungefär 60 löpare 10k eller mer, i en mindre klass som D20 ungefär 25. Löpare utan historik kostar 2,5k.</li>
   <li>Spelet har ${D.runners.filter(x=>x.p).length} löpare med minst 3 starter.</li></ul></div>`};
@@ -3503,7 +3505,7 @@ function infoSheet(k){
   const lk=(k,t)=>`<button class="linkish" data-info="${k}">${t}</button>`;
   body.terms=()=>hd("Användarvillkor","Villkor")+`<div class="info legal">
   <p class="note">Gäller från ${LEGAL_DATE}. Genom att skapa ett konto godkänner du villkoren.</p>
-  <h3>1. Om tjänsten</h3><p>Fantasy Orientering är ett gratis, ideellt fanprojekt som drivs av Malte Hallman som privatperson. Det har ingen koppling till Svenska Orienteringsförbundet (Svensk Orientering), Eventor, liveresultat.orientering.se eller någon klubb eller arrangör, och är inte godkänt av dem. Namn och varumärken som nämns tillhör sina ägare. Orienteringskartan i spelets bilder ägs av Attunda OK, som har upphovsrätten till den.</p>
+  <h3>1. Om tjänsten</h3><p>Fantasy Orientering är ett gratis, ideellt fanprojekt som drivs av Malte Hallman som privatperson. Det har ingen koppling till Svenska Orienteringsförbundet (Svensk Orientering), liveresultat.orientering.se eller någon klubb eller arrangör, och är inte godkänt av dem. Namn och varumärken som nämns tillhör sina ägare. Orienteringskartan i spelets bilder ägs av Attunda OK, som har upphovsrätten till den.</p>
   <h3>2. Inga pengar, inga priser</h3><p>Spelet är gratis. Det finns inga insatser, inga avgifter och inga vinster i pengar eller annat värde, och spelet är inte ett spel om pengar. Om deltagarna i en privat liga själva bestämmer om något pris sker det helt utanför tjänsten och på deras eget ansvar.</p>
   <h3>3. Ditt konto</h3><p>Du måste vara minst 13 år för att skapa ett konto. Ett konto per person. Håll ditt lösenord för dig själv. Du kan radera ditt konto när som helst på Profilsidan.</p>
   <h3>4. Uppförande</h3><p>Managernamn, lagnamn, ligors namn och bilder får inte vara kränkande, hotfulla, diskriminerande, sexuella eller olagliga, får inte utge sig för att vara någon annan och får inte innehålla reklam. Ladda bara upp bilder som du har rätt att använda. Foton av någon under 18 år kräver tillstånd från en vårdnadshavare. Försök inte störa tjänsten eller komma åt andras konton.</p>
@@ -3516,7 +3518,7 @@ function infoSheet(k){
   body.privacy=()=>hd("Integritetspolicy","Integritet")+`<div class="info legal">
   <p class="note">Gäller från ${LEGAL_DATE}.</p>
   <h3>Personuppgiftsansvarig</h3><p>${CONTROLLER} Frågor och begäranden skickas via ${lk("contact","kontaktformuläret")}.</p>
-  <h3>Löpare i spelet</h3><p><b>Vilka uppgifter:</b> namn, klubb, klass, resultat och anmälningar i D/H 16–21 från offentliga resultatlistor i Eventor och liveresultat.orientering.se. Inga födelsedatum, adresser eller kontaktuppgifter. Löpare under 15 år är inte med.</p>
+  <h3>Löpare i spelet</h3><p><b>Vilka uppgifter:</b> namn, klubb, klass, resultat och anmälningar i D/H 16–21 från offentliga resultat- och anmälningslistor. Inga födelsedatum, adresser eller kontaktuppgifter. Löpare under 15 år är inte med.</p>
   <p><b>Varför och på vilken grund:</b> för att spelet ska kunna räkna poäng på riktiga lopp. Grunden är berättigat intresse (GDPR artikel 6.1 f). Uppgifterna är redan offentliga idrottsresultat, urvalet är litet och varje löpare kan invända och tas bort. <b>Du kan invända när som helst</b> via ${lk("contact","kontaktformuläret")}, inget konto behövs. Då tar vi bort löparen ur spelet, och uppgiften används inte igen.</p>
   <p><b>Foton på löpare</b> visas bara om löparen själv, eller en vårdnadshavare för den som är under 18, har skickat in dem (samtycke, artikel 6.1 a). Samtycket kan återkallas när som helst, och då tas fotot bort.</p>
   <h3>Ditt konto</h3><p><b>Vilka uppgifter:</b> e-postadress, lösenord (som bara sparas krypterat), managernamn, lagnamn, bild, trupper, poäng och ligor. Andra spelare ser ditt managernamn, lagnamn, bild, trupper och poäng, aldrig din e-post.</p>
@@ -3558,7 +3560,7 @@ function profile(i){
    <div class="hd"><div style="display:flex;gap:16px;align-items:center;min-width:0">${avatar(i,"lg")}<div style="min-width:0"><h2>${esc(nameOf(i))}${idleTag(i)}</h2><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}${idle(i)?" · "+(idle(i)===2?"inget lopp på 10 veckor":"sprang inte förra veckan"):""}</div></div></div><button class="btn" data-close="1">Stäng</button></div>
    <div class="stats"><div><b>${D.runners[i].p?fm(E.price(i,pr())):"–"}</b><span>Pris · ${TIERS[tierOf(i)][1]}</span></div><div><b>${s.starts}</b><span>Starter</span></div><div><b>${fp(s.total)}</b><span>Poäng</span></div><div><b>${fp(s.weeks?s.perWeek:0)}</b><span>Per vecka, senaste 5</span></div>${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Klassbetyg</span></div>`:""}</div>
    ${(()=>{if(!Object.keys(ENT).length)return "";const r=R(),w=r<E.R?entOf(i,r):[],rd=D.rounds[r];return `<div class="entbox ${w.length?"on":""}"><span class="entered" aria-hidden="true">${w.length?"✓":"–"}</span><div><b>${w.length?"Anmäld den här spelveckan":"Inte anmäld den här spelveckan"}</b><span class="sub">${w.length?w.map(u=>esc(compName(u.name))+" ("+dayName(u.date).slice(0,3)+" "+dshort(u.date)+")").join(", "):rd?rdName(rd)+", "+dshort(rd.start)+" – "+dshort(rd.end):""}</span></div></div>`})()}
-   ${(()=>{const e=(ENT[i]||[]).map(k=>D.upcoming[k]).filter(Boolean);return e.length?`<p class="note entline"><span class="entered" aria-hidden="true">✓</span> Anmäld: ${e.map(u=>`${u.eo?`<a href="https://eventor.orientering.se/Events/Show/${u.eo}" target="_blank" rel="noopener">${esc(compName(u.name))}</a>`:esc(compName(u.name))} (${dshort(u.date)})`).join(", ")}</p>`:""})()}
+   ${(()=>{const e=(ENT[i]||[]).map(k=>D.upcoming[k]).filter(Boolean);return e.length?`<p class="note entline"><span class="entered" aria-hidden="true">✓</span> Anmäld: ${e.map(u=>`${u.eo&&EV_LINKS?`<a href="https://eventor.orientering.se/Events/Show/${u.eo}" target="_blank" rel="noopener">${esc(compName(u.name))}</a>`:esc(compName(u.name))} (${dshort(u.date)})`).join(", ")}</p>`:""})()}
    ${hist}
    <div class="tbl rtab" style="margin-top:12px"><table><thead><tr><th>Lopp</th><th>Plats</th><th>Efter</th><th>Tid</th><th>Poäng</th></tr></thead><tbody>
    ${groups.map(g=>{const tot=g.list.reduce((a,h)=>a+h.pts,0);return `<tr class="wkhead"><td colspan="2"><b>${g.q<0?"Före omgång 1":rdName(D.rounds[g.q])}</b> <span class="sub">${g.q<0?"inte en del av en spelvecka":dshort(D.rounds[g.q].start)+" – "+dshort(D.rounds[g.q].end)+", "+g.list.length+" lopp"}</span></td><td></td><td></td><td class="${tot<0?"neg":"pos"}"><b>${sg(tot)}</b></td></tr>`+g.list.map(h=>{const e=D.events[h.ev];return `<tr><td>${esc(e.name)}<div class="sub">${dshort(e.date)}${e.tier>1?", x"+e.tier:""}</div></td><td>${h.kind?["","DNF","MP","DSQ"][h.kind]:h.rank+" av "+e.n}</td><td>${h.kind?"–":(h.gap/100).toFixed(1)+"%"}</td><td>${h.kind?"–":tm(h.t)}</td><td class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</td></tr>`}).join("")}).join("")||`<tr><td colspan="5" class="note">Inga resultat än.</td></tr>`}
@@ -3742,16 +3744,16 @@ function adminGameCard(){
   const added=ovr.filter(o=>o.kind==="race_add"),removed=ovr.filter(o=>o.kind==="race_remove");
   const race=u=>{const off=hasOvr("race_remove",u.eo);return `<div class="adm-row"><div><b>${esc(compName(u.name))}</b> <span class="sub">${dshort(u.date)}${u.big?" · stor":""}</span></div><button class="btn ${off?"on":""}" data-rcset="${off?"keep":"drop"}" data-rcref="${u.eo}" data-rclabel="${esc(compName(u.name))}">${off?"Borttagen · ångra":"Ta bort"}</button></div>`};
   return `<div class="card admin"><h3>Admin · tävlingar och spelveckor</h3>
-   ${D.noEventor?`<p class="note" style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:rgba(255,149,64,.16)"><b>Utan Eventor.</b> Senaste datauppdateringen saknade Eventor. Tävlingar kommer från liveresultat, en sparad kopia av Eventors tävlingslista och handinlagda lopp. Vilka tävlingar som är stora uppskattas (mästerskap och kända stora tävlingar), och "anmäld" kommer bara från startlistor på liveresultat. Kontrollera spelveckorna och tvinga på eller av vid behov.</p>`:""}
+   ${D.noEventor&&EV_LINKS?`<p class="note" style="margin:0 0 12px;padding:10px 14px;border-radius:14px;background:rgba(255,149,64,.16)"><b>Utan Eventor.</b> Senaste datauppdateringen saknade Eventor. Tävlingar kommer från liveresultat, en sparad kopia av Eventors tävlingslista och handinlagda lopp. Vilka tävlingar som är stora uppskattas (mästerskap och kända stora tävlingar), och "anmäld" kommer bara från startlistor på liveresultat. Kontrollera spelveckorna och tvinga på eller av vid behov.</p>`:""}
    <p class="note" style="margin:0 0 12px">Ändringar sparas direkt. De når sidan vid nästa datauppdatering: varje natt, eller tryck på Uppdatera nu. En tvingad vecka bortser från regeln om stora tävlingar.</p>
    <div class="row apply"><button class="btn on" id="applyNow" ${applyBusy?"disabled":""}>Uppdatera nu</button><span class="note">${esc(applyMsg||"Bygger om sidan med dina ändringar, ungefär 5 till 8 minuter.")}</span></div>
    <label class="admsw" style="margin:4px 0 10px"><input type="checkbox" role="switch" id="admListSw" ${admLists?"":"checked"}><span class="trk" aria-hidden="true"></span><span><b>Dölj spelveckor och tävlingar</b><span class="sub">${admLists?"Visas":"Dolda"} · ${live.length} veckor, ${soon.length} tävlingar</span></span></label>
    ${admLists?`   <h4>Spelveckor</h4><div class="adm-list">${live.map(wk).join("")}</div>
-   <h4>Kommande tävlingar</h4><div class="adm-list">${soon.map(race).join("")||'<p class="note">Inga lopp från Eventor än.</p>'}</div>
+   <h4>Kommande tävlingar</h4><div class="adm-list">${soon.map(race).join("")||'<p class="note">Inga kommande lopp än.</p>'}</div>
    ${removed.filter(o=>!soon.some(u=>String(u.eo)===String(o.ref))).length?`<h4>Borttagna</h4><div class="adm-list">${removed.filter(o=>!soon.some(u=>String(u.eo)===String(o.ref))).map(o=>`<div class="adm-row"><div><b>${esc(o.label||o.ref)}</b> <span class="sub">Eventor ${esc(o.ref)}</span></div><button class="btn" data-rcset="keep" data-rcref="${esc(o.ref)}">Ångra</button></div>`).join("")}</div>`:""}`:""}
    <h4>Lägg till en tävling</h4>
-   <div class="row"><input class="name" id="ovrAdd" placeholder="Eventor-länk eller tävlings-id" value="${esc(ovrAdd)}" inputmode="url" autocomplete="off"><button class="btn on" id="ovrAddBtn" ${ovrBusy?"disabled":""}>Lägg till</button></div>
-   ${added.length?`<div class="adm-list">${added.map(o=>`<div class="adm-row"><div><b>${esc(o.label||"Eventor "+o.ref)}</b> <span class="sub">Tillagd · räknas som stor</span></div><button class="btn" data-rcadd="${esc(o.ref)}">Ta bort</button></div>`).join("")}</div>`:""}
+   <div class="row"><input class="name" id="ovrAdd" placeholder="Tävlingslänk eller tävlings-id" value="${esc(ovrAdd)}" inputmode="url" autocomplete="off"><button class="btn on" id="ovrAddBtn" ${ovrBusy?"disabled":""}>Lägg till</button></div>
+   ${added.length?`<div class="adm-list">${added.map(o=>`<div class="adm-row"><div><b>${esc(o.label||"Tävling "+o.ref)}</b> <span class="sub">Tillagd · räknas som stor</span></div><button class="btn" data-rcadd="${esc(o.ref)}">Ta bort</button></div>`).join("")}</div>`:""}
    ${ovrMsg?`<p class="note" style="margin:10px 0 0">${esc(ovrMsg)}</p>`:""}</div>${adminModCard()}`;
 }
 /* admin: requests to leave a runner out, hidden runners, and managers' names */
@@ -3929,7 +3931,7 @@ function renderHero(){
   const show=tab==="team"&&!dbOk&&!state.squad.length&&!plan.squad.length&&isLive();
   const w=(t,i0)=>t.split(" ").map((x,k)=>`<span class="w" style="--i:${i0+k}">${esc(x)}</span>`).join(" ");
   setHTML($("#hero"),show?`<div class="intro"><div><span class="eyebrow">Fantasy Orientering · D/H 16–21</span><h1 style="margin-top:14px">${w("Välj tio.",0)}<br>${w("Dubbla ditt A-lag.",2)}<br><em>${w("Slå alla.",6)}</em></h1>
-   <p>Officiella resultat från Eventor, varje vecka till oktober 2027.</p>
+   <p>Riktiga resultat, varje vecka till oktober 2027.</p>
    <div class="row"><button class="btn go" style="width:auto" data-jump="market">Välj din trupp</button><button class="btn" data-tab="profile">Skapa ett konto</button></div></div>${introCourse()}</div>`:"");
 }
 
@@ -4052,7 +4054,7 @@ document.addEventListener("click",ev=>{
   if(t.id==="delAcc"){delAsk=true;delMsg="";render();return}
   if(t.id==="delNo"){delAsk=false;render();return}
   if(t.id==="delYes"){deleteAccount();return}
-  if(t.id==="ovrAddBtn"){const v=($("#ovrAdd")||{}).value||"";const m=v.match(/(?:eventId=|Show\/|^\s*)(\d{3,7})/i);if(!m){ovrMsg="Klistra in en Eventor-länk eller tävlingens nummer.";render();return}ovrAdd="";setOvr("race_add",m[1],"Eventor "+m[1],true);return}
+  if(t.id==="ovrAddBtn"){const v=($("#ovrAdd")||{}).value||"";const m=v.match(/(?:eventId=|Show\/|^\s*)(\d{3,7})/i);if(!m){ovrMsg="Klistra in en tävlingslänk eller tävlingens nummer.";render();return}ovrAdd="";setOvr("race_add",m[1],"Eventor "+m[1],true);return}
   if(d.tab){const nt=d.tab;if(nt!==tab)buzz("tap");if(d.focus)setTimeout(()=>{const f=document.getElementById(d.focus);if(f)f.focus()},700);if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
   if(d.add!==undefined){const i=+d.add;buzz(canAddReason(i)?"warn":"ok");if(!canAddReason(i)){plan.squad.push(i);if(!Array.isArray(plan.a))plan.a=[];if(plan.a.length<AS)plan.a.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
   if(d.sell!==undefined){const i=+d.sell;buzz("tap");plan.squad=plan.squad.filter(j=>j!==i);plan.a=(plan.a||[]).filter(j=>j!==i);if(swapSel===i)swapSel=null;fixLeaders();save();render();return}

@@ -17,10 +17,17 @@ import os, sys, json, re, time, glob, shutil, collections, datetime as dt, urlli
 import xml.etree.ElementTree as ET
 S = sys.argv[1]
 KEY = os.environ.get("EVENTOR_API_KEY", "").strip()
-if not KEY:
-    print("eventor: no key, skipped"); sys.exit(0)
+# the switch: pipeline/eventor.json {"enabled": false} pauses every request to Eventor. The script still runs on the
+# copies already kept in data/eventor, so the game keeps the race list, big weeks and entries it has.
+try: ENABLED = bool(json.load(open(f"{S}/eventor.json")).get("enabled"))
+except Exception: ENABLED = False
 BASE = "https://eventor.orientering.se/api/"
 C = f"{S}/data/eventor"; os.makedirs(f"{C}/classes", exist_ok=True)
+if not KEY and not os.listdir(C) and not ENABLED:
+    print("eventor: no key and no saved copies, skipped"); sys.exit(0)
+if not ENABLED: print("eventor: PAUSED (pipeline/eventor.json) - no requests, saved copies only")
+elif not KEY:
+    print("eventor: no key, skipped"); sys.exit(0)
 TODAY = dt.date.today(); RECENT = 10; AHEAD = 21
 DAY = 20 * 3600   # "once a day": a cached answer younger than this is used as it is
 # the race list reaches two months ahead: big competitions are judged on entries, which only exist close to the race
@@ -45,6 +52,7 @@ def text(e, *names):
     return (e.text or "").strip() if e is not None and e.text else ""
 calls = collections.Counter()
 def get(p, **q):
+    if not ENABLED: calls["paused"] += 1; return None   # paused: nothing is sent, callers fall back to saved copies
     url = BASE + p + ("?" + urllib.parse.urlencode(q) if q else "")
     req = urllib.request.Request(url, headers={"ApiKey": KEY, "Accept": "application/xml"})
     for attempt in range(3):
