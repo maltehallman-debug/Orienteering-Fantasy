@@ -432,7 +432,7 @@ if NO_EVENTOR:
         if m["date"] >= _from: AHEAD.append({"name": m["name"], "date": m["date"], "cid": None, "eo": 0})
     # the public race calendar (scripts/race_calendar.py): championships count as big, the rest are judged like any race
     for m in _j("calendar_events.json", []):
-        if m["date"] >= _from: AHEAD.append({"name": m["name"], "date": m["date"], "cid": None, "eo": int(m["eo"]), "snapbig": m.get("level") == 1})
+        if m["date"] >= _from: AHEAD.append({"name": m["name"], "date": m["date"], "cid": None, "eo": int(m["eo"]), "snapbig": m.get("level") == 1, "cal": 1})
     _seen = []
     for a in AHEAD:
         b, why = guess_big(a["name"], a.get("cid"), a.get("snapbig"))
@@ -440,7 +440,7 @@ if NO_EVENTOR:
         # the same race from two sources (liveresultat, the calendar, a hand-entered race) is one race
         m = next((x for x in _seen if x["date"] == a["date"] and (race_series(x["name"]) == race_series(a["name"]) or same_race(x["name"], a["name"]))), None)
         if m:
-            m["big"] = m["big"] or b; m["cid"] = m["cid"] or a["cid"]; m["eo"] = m["eo"] or a["eo"]
+            m["big"] = m["big"] or b; m["cid"] = m["cid"] or a["cid"]; m["eo"] = m["eo"] or a["eo"]; m["cal"] = m.get("cal") or a.get("cal")
             if a["eo"] and not m.get("cid"): m["name"] = a["name"]   # the calendar's spelling
         else: _seen.append(a)
     AHEAD = sorted(_seen, key=lambda a: (a["date"], a["name"]))
@@ -640,6 +640,11 @@ if NO_EVENTOR:
                 and not TRAINING.search(a["name"]) and not OTHER_SPORT.search(a["name"]):
             upcoming.append({"id": 0, "eo": a.get("eo") or 0, "name": clean_name(a["name"]), "date": a["date"], "big": 1 if a["big"] else 0}); _have.add((a["date"], race_series(a["name"])))
     upcoming.sort(key=lambda x: (x["date"], x["name"]))
+    # as with Eventor: the list shows big races and the calendar's races (championship, national, regional), not
+    # every local night cup and veterans' race
+    if any(a.get("cal") for a in AHEAD):
+        _cal = [a for a in AHEAD if a.get("cal")]
+        upcoming = [u for u in upcoming if u.get("big") or any(a["date"] == u["date"] and (a["eo"] == u.get("eo") or same_race(a["name"], u["name"])) for a in _cal)]
 print("upcoming races", len(upcoming), "(without Eventor)" if NO_EVENTOR else "")
 # entries (Eventor): which pool runners have entered which upcoming race, matched like results (name, club, sex)
 entered = collections.defaultdict(list)
