@@ -2049,6 +2049,17 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
   .squad.ab .rc .sw,.squad.ab .rc .rm{width:22px;height:22px}
   .squad.ab .rc.sqc-slot b{width:28px;height:28px;font-size:16px}
 }
+
+/* badges: medals unlocked by managers, shown on their profile */
+.bdg-row{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}
+.bdg{display:flex;align-items:center;gap:10px;background:#fff;border-radius:999px;padding:5px 16px 5px 5px;box-shadow:inset 0 0 0 1px var(--line);position:relative;max-width:100%}
+.bdg svg.md{flex:none;width:44px;height:44px;display:block}
+.bdg b{display:block;font:700 14px/1.15 var(--font);color:var(--text)}
+.bdg .sub{display:block;font-size:12px;line-height:1.3}
+.bdg .x{margin-left:4px;border:0;background:none;color:var(--text-3);font-size:18px;line-height:1;cursor:pointer;padding:2px 4px}
+.bdg-card .bdg-row{margin:0}
+.bdg-adm{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+@media (prefers-reduced-motion:no-preference){.bdg svg.md{transition:transform .25s var(--ease-out)}@media (hover:hover) and (pointer:fine){.bdg:hover svg.md{transform:rotate(-8deg) scale(1.06)}}}
 </style>
 </head>
 <body>
@@ -3254,6 +3265,7 @@ function profileView(){
   const L=state.log,best=L.slice().sort((a,b)=>b.total-a.total)[0];
   const live=isLive();
   return `<div class="pfhead">${mgrDot(me,1)}<div><h2>${esc(myTeam||me.name)}</h2><div class="sub">${myTeam?esc(me.name)+" · ":""}${esc(cloud.email)}</div></div></div>
+  ${badgeRow(myBadges,adminOn()?cloud.uid:null)}${badgeAdmin(cloud.uid)}
   ${cloud.admin?`<label class="admsw"><input type="checkbox" role="switch" id="admSw" ${showAdmin?"checked":""}><span class="trk" aria-hidden="true"></span><span><b>Adminverktyg</b><span class="sub">${showAdmin?"Visas":"Dolda"}</span></span></label>`:""}
   ${inviteCard()}${adminGameCard()}${igCard()}${reviewCard()}
   <div class="kv"><div><span>Poäng</span><b>${fp(state.total)}</b></div><div><span>Omgångar</span><b>${L.length}</b></div><div><span>Bästa omgång</span><b>${best?fp(best.total):"–"}</b></div><div><span>Chips</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length}</b></div></div>
@@ -3441,6 +3453,31 @@ function teamCard(code,m,r,k){
 /* a league-mate's team, shown the way your own is under Omgångar: the board with the score, the week's lineup and the
    arrows through the rounds; below it who came in and went out, and how they did against you */
 let mgrOpen=null;
+/* ---- badges ---- */
+const BDG_TIER={navy:["#0a5a96","#003c68","#ffe74d"],gold:["#fbe08a","#d4a21e","#5a2a06"],silver:["#f1f5f9","#9eadc2","#1d2a3d"],bronze:["#f6b27a","#c4460c","#3f1308"]};
+const BDG_ICON={
+  beta:c=>`<text x="32" y="41.5" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="25" fill="${c}">β</text>`,
+  trophy:c=>`<path d="M23 20h18v6c0 6-4 10-9 10s-9-4-9-10z M23 23h-4c0 5 2 7 5 7 M41 23h4c0 5-2 7-5 7 M32 36v6 M26 45h12" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`,
+  star:c=>`<path d="m32 19 3.9 8.3 9.1 1.1-6.7 6.2 1.8 9-8.1-4.6-8.1 4.6 1.8-9-6.7-6.2 9.1-1.1z" fill="${c}"/>`,
+  bolt:c=>`<path d="M34 18 23 34h8l-2 12 11-16h-8z" fill="${c}"/>`,
+  flag:c=>`<rect x="22" y="22" width="20" height="20" fill="#fff" stroke="${c}" stroke-width="2"/><path d="M22 22h20L22 42z" fill="#f47b20"/>`,
+  compass:c=>`<circle cx="32" cy="32" r="12" fill="none" stroke="${c}" stroke-width="3"/><path d="m36.5 27.5-3 6-6 3 3-6z" fill="${c}"/>`};
+function medal(b){const t=BDG_TIER[b.tier]||BDG_TIER.navy,id="bg"+Math.random().toString(36).slice(2,8),ic=(BDG_ICON[b.icon]||BDG_ICON.star)(t[2]);
+  return `<svg class="md" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${t[0]}"/><stop offset="1" stop-color="${t[1]}"/></linearGradient></defs>
+   <path d="M20 44 14 60l8-3 4 7 6-16zM44 44l6 16-8-3-4 7-6-16z" fill="${t[1]}" opacity=".85"/><circle cx="32" cy="32" r="22" fill="url(#${id})"/><circle cx="32" cy="32" r="18" fill="none" stroke="${t[2]}" stroke-opacity=".35" stroke-width="1.5"/>${ic}</svg>`}
+let badgeDefs=[],myBadges=[],userBadges={},bdgPick="";
+async function loadBadges(uid){if(!cloud.sb||!uid)return [];const r=await cloud.sb.from("user_badges").select("badge_id,awarded_at,badges(name,description,icon,tier,sort)").eq("user_id",uid);
+  const L=(r.data||[]).filter(x=>x.badges).map(x=>({id:x.badge_id,at:x.awarded_at,...x.badges})).sort((a,b)=>(a.sort||0)-(b.sort||0));userBadges[uid]=L;if(uid===cloud.uid)myBadges=L;return L}
+async function loadBadgeDefs(){if(!cloud.sb)return;const r=await cloud.sb.from("badges").select("id,name,description,icon,tier,sort").order("sort");if(!r.error)badgeDefs=r.data||[]}
+function badgeRow(L,uid){if(!L||!L.length)return "";const adm=adminOn()&&uid;
+  return `<div class="bdg-row" role="list" aria-label="Badges">${L.map(b=>`<div class="bdg" role="listitem" title="${esc(b.description||"")}">${medal(b)}<span><b>${esc(b.name)}</b>${b.description?`<span class="sub">${esc(b.description)}</span>`:""}</span>${adm?`<button class="x" data-bdgdel="${esc(uid)}|${esc(b.id)}" aria-label="Ta bort ${esc(b.name)}">×</button>`:""}</div>`).join("")}</div>`}
+function badgeAdmin(uid){if(!adminOn()||!badgeDefs.length)return "";const have=new Set((userBadges[uid]||[]).map(b=>b.id)),opts=badgeDefs.filter(b=>!have.has(b.id));if(!opts.length)return "";
+  return `<div class="bdg-adm"><span class="host">Admin</span><select id="bdgPick" aria-label="Badge att ge">${opts.map(b=>`<option value="${esc(b.id)}" ${bdgPick===b.id?"selected":""}>${esc(b.name)}</option>`).join("")}</select><button class="btn" data-bdgadd="${esc(uid)}">Ge badge</button></div>`}
+document.addEventListener("change",e=>{if(e.target.id==="bdgPick")bdgPick=e.target.value});
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-bdgadd],[data-bdgdel]");if(!a)return;
+  let uid,bid;if(a.dataset.bdgadd){uid=a.dataset.bdgadd;bid=(document.getElementById("bdgPick")||{}).value;if(!bid)return;await cloud.sb.from("user_badges").insert({user_id:uid,badge_id:bid})}
+  else{[uid,bid]=a.dataset.bdgdel.split("|");await cloud.sb.from("user_badges").delete().eq("user_id",uid).eq("badge_id",bid)}
+  await loadBadges(uid);if(mgrOpen&&mgrOpen.id===uid)managerSheet(mgrOpen.code,mgrOpen.id,mgrOpen.view);else render()});
 function managerSheet(code,id,view){
   const m=(leagueRows[code]||[]).find(x=>x.id===id);if(!m)return;
   mgrOpen={code,id,view:view==null||isNaN(view)?null:view};
@@ -3451,8 +3488,10 @@ function managerSheet(code,id,view){
      const sum=l=>l.reduce((s2,i)=>s2+E.pts[r][i],0);
      return `<div class="card" style="margin-top:14px"><h3>Du mot ${esc(m.name)}</h3><p class="note" style="margin:0 0 6px">${both.length} löpare i båda lagen. Deras egna val gav ${sg(sum(only))}, dina ${sg(sum(mine))}. ${fp(me.by[r].total)} mot ${fp(x.total)} i ${rdThe(D.rounds[r])}.</p>
       <div class="sub">Bara de: ${only.map(i=>esc(nameOf(i))).join(", ")||"inga"}</div><div class="sub">Bara du: ${mine.map(i=>esc(nameOf(i))).join(", ")||"inga"}</div></div>`})():""}`;
+  if(!(id in userBadges)&&code!=="DEMO"){userBadges[id]=[];loadBadges(id).then(L=>{if(L.length&&mgrOpen&&mgrOpen.id===id)managerSheet(mgrOpen.code,id,mgrOpen.view)})}
   const nx=openRound();
   showSheet("mgr|"+code+"|"+id,m.name,`
+   ${badgeRow(userBadges[id],id)}${badgeAdmin(id)}
    <div class="mgr-top"><span>${row?`<b>Plats ${row.rank}</b> av ${st.rows.length} · ${fp(m.total)} poäng totalt`:`${fp(m.total)} poäng totalt`}${id===cloud.uid?" · ditt lag":""}</span><button class="btn" data-close="1">Stäng</button></div>
    ${b?weekBoard(src):`<p class="note">${esc(m.name)} har ingen trupp i en omgång som har startat än.</p>`}
    ${extra}
@@ -4378,7 +4417,7 @@ async function onSession(session){
   if(session&&session.user&&cloud.ready&&cloud.uid===session.user.id){render();return} /* token refresh: same account, already loaded */
   Object.keys(leagueUnsubs).forEach(c=>{try{leagueUnsubs[c]()}catch(e){}delete leagueUnsubs[c]});
   document.documentElement.classList.toggle("gated",!(session&&session.user));if(session&&session.user)document.documentElement.classList.remove("reel-pre");
-  if(!session||!session.user){cloud.uid=null;cloud.email="";cloud.canWrite=false;cloud.ready=false;cloud.admin=false;dbOk=false;myPhotos=[];pendingPhotos=[];phForm=null;loadPhotos();render();return}
+  if(!session||!session.user){myBadges=[];userBadges={};cloud.uid=null;cloud.email="";cloud.canWrite=false;cloud.ready=false;cloud.admin=false;dbOk=false;myPhotos=[];pendingPhotos=[];phForm=null;loadPhotos();render();return}
   cloud.ready=false;
   const mine=localUid===session.user.id;
   if(localUid&&!mine)resetLocal(); /* this device's game belongs to another account */
@@ -4407,6 +4446,7 @@ async function onSession(session){
   if(!loaded){cloudMsg="Kunde inte ladda ditt konto. Ladda om sidan och försök igen. Inget skrevs över.";render();return}
   cloud.ready=true;settle();pushCloud();myLeagues.forEach(watchLeague);watchLeague("GLOBAL");
   try{const a=await cloud.sb.rpc("is_admin");cloud.admin=a.data===true}catch(e){cloud.admin=false}
+  loadBadges(cloud.uid).then(()=>{if(tab==="profile")render()}).catch(()=>{});if(cloud.admin)loadBadgeDefs().catch(()=>{});
   loadPhotos();loadOvr();
   if(pendingJoin){const c=pendingJoin;if(myLeagues.includes(c)){clearPending();leagueMsg="Du är redan med i "+lgName(c)+"."}
     else{const ok=await joinLeague(c,"");if(ok||/No league has that code|look right/.test(leagueMsg))clearPending()}tab="leagues"}
