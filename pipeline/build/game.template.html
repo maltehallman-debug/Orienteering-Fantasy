@@ -21,6 +21,7 @@
 <script defer src="/_vercel/insights/script.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#ffffff" id="themeColor">
+<meta name="color-scheme" content="only light">
 <meta name="description" content="Fantasy Orientering för D/H 16–21: välj tio löpare, dubbla ditt A-lag och få poäng från de riktiga resultaten i Eventor.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Fantasy-OL">
@@ -175,6 +176,7 @@
   src: url(fonts/Montserrat-latin-e56e84.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+html,body{color-scheme:only light}
 </style>
 <script>/* the opening plays on a blue screen: show the blue from the first paint so the page never flashes before it */
 try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&!/access_token|error=|join=/.test(location.href))document.documentElement.classList.add("reel-pre")}catch(e){}</script>
@@ -206,7 +208,7 @@ try{document.documentElement.classList.add("gbar");if(/[?&]glass=1/.test(locatio
   --shadow-lift:inset 0 1px 0 rgba(255,255,255,.95),0 2px 3px rgba(15,23,42,.07),0 10px 18px -6px rgba(15,23,42,.14),0 30px 50px -18px rgba(15,23,42,.3);
   --surface-grad:linear-gradient(180deg,#ffffff 0%,#fbfcfd 60%,#f6f8fb 100%);
   --cs1:rgba(15,23,42,.28);--cs2:rgba(15,23,42,.22);
-  --contour-op:.35; color-scheme:light;
+  --contour-op:.35; color-scheme:only light;
 }
 /* DARK: the same, with the lights off */
 [data-theme="dark"]{
@@ -2062,7 +2064,7 @@ const youthCls=i=>/^[DH](16|18)$/.test(D.runners[i].k);
 const THEMES=[["light","Ljust","#ffffff",["#f5f7fa","#cbd5e1","#059669","#0d9488"]],["dark","Mörkt","#0b1120",["#0b1120","#334155","#34d399","#2dd4bf"]]];
 const curTheme=()=>document.documentElement.dataset.theme||"light";
 function setTheme(name,from){
-  const t=THEMES.find(x=>x[0]===name)||THEMES[0];
+  const t=THEMES[0];
   const apply=()=>{document.documentElement.dataset.theme=t[0];const m=document.getElementById("themeColor");if(m)m.content=t[2];try{localStorage.setItem("of-theme",t[0])}catch(e){}if(tab==="profile")render()};
   if(RM||!document.startViewTransition||!from){apply();return}
   const b=from.getBoundingClientRect(),x=b.left+b.width/2,y=b.top+b.height/2,r=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y));
