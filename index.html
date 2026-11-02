@@ -2395,9 +2395,8 @@ drawTerrain();
 /* opening titles: on every page load (a reload too), never when arriving from an email or invite link, never with
    reduced motion. A tap, scroll or key press sends them off early. */
 let reelEnd=0;
-/* the opening: a compass on the terrain, the needle swings once to north, the name, then the trophy of the logo
-   forms around the compass, which becomes the O in the cup, and the whole logo flies up into the header while the
-   blue closes in around it. 1.9 s; any tap or key skips it */
+/* the opening: a compass on the terrain, the needle swings once to north, the name, then the compass flies straight
+   into the compass O of "Orientering" in the header while the blue closes in around it. 1.9 s; any tap or key skips it */
 (function reel(){
   const unc=()=>document.documentElement.classList.remove("reel-pre");
   if(RM||/access_token|error=|join=/.test(location.href)){unc();return}
@@ -2431,36 +2430,37 @@ let reelEnd=0;
     const vb=(m.getAttribute("viewBox")||"0 0 34 34").split(/\s+/).map(Number),sc=Math.min(r.width/vb[2],r.height/vb[3]),
       ox=r.left+(r.width-vb[2]*sc)/2,oy=r.top+(r.height-vb[3]*sc)/2;
     return {x:ox+(17-vb[0])*sc,y:oy+(17-vb[1])*sc,w:34*sc}};
+  /* where the compass O in "Orientering" in the header is: its centre and the ring's radius (ellipse 39.2/37.2 in an 88x84 box) */
+  const oAt=()=>{const o=document.querySelector(".nav .oc");const r=o&&o.getBoundingClientRect();if(!r||!r.width||r.top>H||r.bottom<0)return null;
+    return {x:r.left+r.width*44/88,y:r.top+r.height*42/84,R:r.width*38.2/88,lw:r.width*9.6/88}};
   let t0=0,gone=false,released=false,raf=0;
   const frame=now=>{if(gone)return;if(!t0)t0=now;const t=(now-t0)/1000;
     if(!released&&t*1000>=EX){released=true;document.body.classList.remove("reel-hold")}
-    const L=logoAt(),ex=eio(cl(EX/1000,DUR/1000,t)),m=eio(cl(.8,1.1,t)),ta=eo(cl(.95,1.2,t));
-    // before the flight the compass shrinks to the size where the whole trophy fits the screen, centred
-    const St=Math.min(W*.9,H*.72),Rt=St*K,c2x=W/2,c2y=H/2-(17-OY)/34*St;
-    const ax=CX+(c2x-CX)*m,ay=CY0+(c2y-CY0)*m,aR=R0+(Rt-R0)*m;
-    const tx=L.w?L.x+(OX-17)/34*L.w:CX,ty=L.w?L.y+(OY-17)/34*L.w:CY0,tR=L.w?L.w*K:Rt;
-    const cx=ax+(tx-ax)*ex,cy=ay+(ty-ay)*ex,R=aR+(tR-aR)*ex,k=R/R0,S=R/K;
+    const O=oAt(),ex=eio(cl(EX/1000,DUR/1000,t));
+    /* the compass flies straight into the O: the header's own compass, already drawn the same way */
+    const tx=O?O.x:CX,ty=O?O.y:CY0,tR=O?O.R:R0*.2;
+    const cx=CX+(tx-CX)*ex,cy=CY0+(ty-CY0)*ex,R=R0+(tR-R0)*ex,k=R/R0;
     g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
-    g.save();if(ex>0){g.beginPath();g.arc(cx+(17-OX)/34*S,cy+(17-OY)/34*S,S*.56+Math.hypot(W,H)*(1-ex),0,7);g.clip()}
+    g.save();if(ex>0){g.beginPath();g.arc(cx,cy,R*1.4+Math.hypot(W,H)*(1-ex),0,7);g.clip()}
     g.fillStyle=NAVY;g.fillRect(0,0,W,H);
     if(TP.length){const sc=Math.max(W*1.15/vb[2],H*1.15/vb[3]);g.save();g.translate(CX-vb[2]*sc/2,H/2-vb[3]*sc/2);g.scale(sc,sc);
       g.strokeStyle=`rgba(255,255,255,${.09*eo(cl(0,.35,t))})`;for(const {p,ix} of TP){g.lineWidth=(ix?2:1)*Math.max(1,2.2*U)/sc;g.stroke(p)}g.restore()}
-    // the trophy grows in around the compass, a little from below
-    trophy(cx,cy,S*(.9+.1*ta),ta);
     g.globalAlpha=eo(cl(0,.25,t));
-    // the ring turns from white to the logo's navy as the cup appears behind it
-    const ring=mix("#ffffff",NAVY,ta);g.strokeStyle=ring;g.lineWidth=5*U*k*(1-ta)+ta*.0322*S;g.beginPath();g.arc(cx,cy,R,0,7);g.stroke();
-    g.lineWidth=5*U*k;
+    // the ring: thin on the big compass, as thick as the header's O when it lands
+    g.strokeStyle="#fff";g.lineWidth=5*U*k*(1-ex)+(O?O.lw:5*U*k)*ex;g.beginPath();g.arc(cx,cy,R,0,7);g.stroke();
+    // the tick marks and the centre dot fade on the way, the header's compass has neither
+    g.save();g.globalAlpha*=1-ex;g.lineWidth=5*U*k;
     for(let i=0;i<4;i++){const a=i*Math.PI/2,s=Math.sin(a),c=Math.cos(a);g.beginPath();g.moveTo(cx+s*(R-6*U*k),cy-c*(R-6*U*k));g.lineTo(cx+s*(R-28*U*k),cy-c*(R-28*U*k));g.stroke()}
-    const q=cl(.05,.75,t),ang=-1.2*Math.exp(-q*5)*Math.cos(q*9);
-    g.save();g.translate(cx,cy);g.rotate(ang);g.fillStyle="#ff3b30";g.beginPath();g.moveTo(0,-R*.8);g.lineTo(18*U*k,0);g.lineTo(-18*U*k,0);g.closePath();g.fill();
-    g.fillStyle="#fff";g.beginPath();g.moveTo(0,R*.8);g.lineTo(18*U*k,0);g.lineTo(-18*U*k,0);g.closePath();g.fill();g.restore();
-    g.fillStyle=YEL;g.beginPath();g.arc(cx,cy,10*U*k,0,7);g.fill();
+    g.fillStyle=YEL;g.beginPath();g.arc(cx,cy,10*U*k,0,7);g.fill();g.restore();
+    // the needle swings to north, then turns to the header needle's 35 degrees and its shape as it lands
+    const q=cl(.05,.75,t),ang=-1.2*Math.exp(-q*5)*Math.cos(q*9),fa=ang+(35*Math.PI/180-ang)*ex;
+    const len=R*(.8+(.7-.8)*ex),hw=18*U*k*(1-ex)+R*.209*ex;
+    g.save();g.translate(cx,cy);g.rotate(fa);g.fillStyle="#e5484d";g.beginPath();g.moveTo(0,-len);g.lineTo(hw,0);g.lineTo(-hw,0);g.closePath();g.fill();
+    g.fillStyle="#fff";g.beginPath();g.moveTo(0,len);g.lineTo(hw,0);g.lineTo(-hw,0);g.closePath();g.fill();g.restore();
     const a=eo(cl(.45,.8,t)),b=eo(cl(.75,.92,t)),w=a*(1-b);
     if(w>0){g.globalAlpha=w;const dy=(1-a)*24*U-b*20*U;
       word("FANTASY",CX,CY0+R0+(PORT?120:100)*U+dy,(PORT?130:115)*U,"#fff",5*U);word("ORIENTERING",CX,CY0+R0+(PORT?225:195)*U+dy,(PORT?82:72)*U,YEL,7*U)}
     g.restore();
-    // the last frames: the compass fades as the real logo underneath takes its place
     if(t*1000<DUR){raf=requestAnimationFrame(frame)}else end()};
   const end=()=>{if(gone)return;gone=true;cancelAnimationFrame(raf);off();reelEnd=performance.now();document.body.classList.remove("reel-hold");cv.remove()};
   const skip=()=>{if(gone)return;gone=true;cancelAnimationFrame(raf);off();reelEnd=performance.now();document.body.classList.remove("reel-hold");cv.classList.add("skip");setTimeout(()=>cv.remove(),300)};
