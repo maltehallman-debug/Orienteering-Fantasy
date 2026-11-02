@@ -178,6 +178,27 @@
 }
 html,body{color-scheme:only light}
 </style>
+<script>/* closed beta: only people with an account get in. Gate from the first paint unless this browser holds a saved login;
+   the real check is the session from Supabase (onSession), which opens or closes the gate */
+try{var _sk=Object.keys(localStorage).some(function(k){return /^sb-.*-auth-token$/.test(k)});if(!_sk&&!/access_token|type=recovery/.test(location.href))document.documentElement.classList.add("gated")}catch(e){document.documentElement.classList.add("gated")}</script>
+<style>
+html.gated body>*:not(#gate){display:none!important}html.gated::after{display:none!important}html.gated{overflow:hidden}
+#gate{display:none}
+html.gated #gate{display:grid;position:fixed;inset:0;z-index:1000;place-items:center;overflow:auto;background:#003c68;color:#fff;font-family:Montserrat,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:24px max(20px,env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
+#gate .g-in{width:100%;max-width:400px;display:grid;gap:14px}
+#gate .g-logo{width:120px;height:auto;margin-bottom:6px}
+#gate .g-k{font:800 12px/1 Montserrat,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#ffe74d}
+#gate h1{margin:0;font:900 38px/1.05 Montserrat,sans-serif;letter-spacing:-.02em}
+#gate p{margin:0;color:#cfe0ee;font:500 15px/1.5 Montserrat,sans-serif}
+#gate form{display:grid;gap:10px;margin-top:8px}
+#gate label{font:700 12px/1 Montserrat,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#cfe0ee}
+#gate input{font:600 16px Montserrat,sans-serif;padding:14px 16px;border-radius:14px;border:0;background:#fff;color:#0b1b2b;width:100%;box-sizing:border-box}
+#gate button.g-go{font:800 15px Montserrat,sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:16px;border:0;border-radius:999px;background:#ffe74d;color:#000;cursor:pointer;margin-top:4px}
+#gate button.g-go:disabled{opacity:.6}
+#gate .g-link{background:none;border:0;color:#fff;text-decoration:underline;text-underline-offset:3px;font:600 14px Montserrat,sans-serif;cursor:pointer;justify-self:start;padding:4px 0}
+#gate .g-msg{min-height:20px;font:600 14px/1.4 Montserrat,sans-serif;color:#ffe74d}
+#gate .g-foot{margin-top:18px;font:500 12px/1.4 Montserrat,sans-serif;color:#9fb7cc}
+</style>
 <script>/* the opening plays on a blue screen: show the blue from the first paint so the page never flashes before it */
 try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&!/access_token|error=|join=/.test(location.href))document.documentElement.classList.add("reel-pre")}catch(e){}</script>
 <style>html.reel-pre::after{content:"";position:fixed;inset:0;z-index:99;background:#003c68}</style>
@@ -2001,6 +2022,20 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 </style>
 </head>
 <body>
+<div id="gate" role="dialog" aria-modal="true" aria-labelledby="gateT"><div class="g-in">
+ <svg class="g-logo" viewBox="2.6 2.6 29.6 23.5" aria-hidden="true"><g transform="translate(-.4 -.9) scale(.0322)"><path d="M540 120l18 37 41 6-30 29 7 41-36-19-36 19 7-41-30-29 41-6z" fill="#fff"/><g transform="translate(540 240)"><path d="M-210 0H210C210 220 120 350 0 370C-120 350-210 220-210 0Z" fill="#ffe74d"/><path d="M-205 50C-320 50-330 190-205 235M205 50C320 50 330 190 205 235" fill="none" stroke="#ffe74d" stroke-width="40" stroke-linecap="round"/><rect x="-30" y="360" width="60" height="110" fill="#ffe74d"/><path d="M-140 580H140L112 470H-112Z" fill="#ffe74d"/><circle cx="0" cy="145" r="88" fill="none" stroke="#003c68" stroke-width="34"/></g><path d="M150 610L120 690H230ZM930 610L960 690H850Z" fill="#c9d3dc"/><path d="M95 560H230V700H95L140 630ZM985 560H850V700H985L940 630Z" fill="#e8edf2"/><rect x="190" y="530" width="700" height="150" rx="8" fill="#fff"/><text x="540" y="652" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="112" letter-spacing="6" fill="#003c68" text-anchor="middle">FANTASY</text></g></svg>
+ <span class="g-k">Sluten beta</span>
+ <h1 id="gateT">Fantasy Orientering</h1>
+ <p>Spelet är just nu bara öppet för betatestare. Logga in med ditt konto för att fortsätta.</p>
+ <form id="gateForm" autocomplete="on" novalidate>
+  <label for="gEmail">E-post</label><input id="gEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="none" required>
+  <label for="gPw" id="gPwL">Lösenord</label><input id="gPw" type="password" autocomplete="current-password" required>
+  <button class="g-go" id="gGo" type="submit">Logga in</button>
+ </form>
+ <button class="g-link" id="gForgot" type="button">Glömt lösenordet?</button>
+ <div class="g-msg" id="gMsg" role="status" aria-live="polite"></div>
+ <p class="g-foot">Fristående ideellt projekt · ingen koppling till Svensk Orientering (SOFT)</p>
+</div></div>
 <div class="terrain" aria-hidden="true"><div class="par" id="par"><svg id="terrain" preserveAspectRatio="xMidYMid slice"></svg></div></div>
 <header class="nav"><div class="topbar"><div class="container"><span class="sect">Fantasy Orientering</span><span class="tb-r"><span class="tb-season">Säsong 2026/27 · D/H 16–21</span><span class="hclock" id="hclock" role="timer" aria-live="off" title="Tid kvar tills lagen låses" hidden></span></span></div></div><div class="container nav-inner">
   <button class="logo" type="button" data-tab="team" aria-label="Fantasy Orientering, beta, till ditt lag">
@@ -4114,6 +4149,7 @@ function watchLeague(code){
 async function onSession(session){
   if(session&&session.user&&cloud.ready&&cloud.uid===session.user.id){render();return} /* token refresh: same account, already loaded */
   Object.keys(leagueUnsubs).forEach(c=>{try{leagueUnsubs[c]()}catch(e){}delete leagueUnsubs[c]});
+  document.documentElement.classList.toggle("gated",!(session&&session.user));if(session&&session.user)document.documentElement.classList.remove("reel-pre");
   if(!session||!session.user){cloud.uid=null;cloud.email="";cloud.canWrite=false;cloud.ready=false;cloud.admin=false;dbOk=false;myPhotos=[];pendingPhotos=[];phForm=null;loadPhotos();render();return}
   cloud.ready=false;
   const mine=localUid===session.user.id;
@@ -4163,6 +4199,24 @@ async function initCloud(){
     loadPhotos();
   }catch(e){}
 }
+/* closed-beta gate: sign in only, no new accounts */
+let gateForgot=false;
+function gateMsg(t){const m=document.getElementById("gMsg");if(m)m.textContent=t}
+document.getElementById("gForgot").addEventListener("click",()=>{gateForgot=!gateForgot;document.getElementById("gPw").style.display=gateForgot?"none":"";document.getElementById("gPwL").style.display=gateForgot?"none":"";
+  document.getElementById("gGo").textContent=gateForgot?"Skicka länk":"Logga in";document.getElementById("gForgot").textContent=gateForgot?"Tillbaka till inloggningen":"Glömt lösenordet?";gateMsg("")});
+document.getElementById("gateForm").addEventListener("submit",async e=>{e.preventDefault();
+  const email=document.getElementById("gEmail").value.trim(),pw=document.getElementById("gPw").value,b=document.getElementById("gGo");
+  if(!cloud.sb){gateMsg("Inloggningen laddas fortfarande. Försök igen om en stund.");return}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){gateMsg("Skriv din e-postadress.");return}
+  b.disabled=true;
+  try{
+    if(gateForgot){const r=await cloud.sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});gateMsg(r.error?"Kunde inte skicka länken. Försök igen.":"Om det finns ett konto med den adressen kommer en länk strax.")}
+    else{if(!pw){gateMsg("Skriv ditt lösenord.");b.disabled=false;return}
+      const r=await cloud.sb.auth.signInWithPassword({email,password:pw});
+      if(r.error)gateMsg(r.error.message==="Invalid login credentials"?"Fel e-post eller lösenord.":"Kunde inte logga in. Försök igen.");else{gateMsg("");document.getElementById("gPw").value=""}}
+  }catch(err){gateMsg("Något gick fel. Försök igen.")}
+  b.disabled=false});
+setTimeout(()=>{if(!cloud.sb&&document.documentElement.classList.contains("gated"))gateMsg("Kunde inte ladda inloggningen. Ladda om sidan.")},10000);
 /* the new-password sheet, opened by the link in the reset email (which also signs the player in) */
 let pwOpen=false,pwMsg="",pwBusy=false;
 /* tips from managers: a bug, an idea or anything else; only admins read them */
