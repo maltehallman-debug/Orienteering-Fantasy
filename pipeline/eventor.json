@@ -1,4 +1,5 @@
 {
   "enabled": false,
-  "note": "Eventor's API is paused: SOFT has said it is only meant for club activities and competitions. While false the nightly job sends no requests to Eventor and works from the copies it already has (pipeline/data/eventor, kept in the GitHub Actions cache). To turn it back on: set enabled to true here and EV_LINKS to true in pipeline/build/game.template.html."
+  "calendar": true,
+  "note": "Eventor's API is paused: SOFT has said it is only meant for club activities and competitions. While false the nightly job sends no requests to Eventor and works from the copies it already has (pipeline/data/eventor, kept in the GitHub Actions cache). To turn it back on: set enabled to true here and EV_LINKS to true in pipeline/build/game.template.html. The public race calendar on eventor.se (no personal data, one request a week) is read by scripts/calendar.py while \"calendar\" is true."
 }

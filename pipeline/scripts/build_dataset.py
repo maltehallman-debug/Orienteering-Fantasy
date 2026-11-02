@@ -398,6 +398,12 @@ def race_series(n):
     # one name for the same race year after year: no digits, no stage words, no punctuation
     n = re.sub(r"\d+|\b(dag|etapp|stage|day|del)\b|[^a-zåäöü ]", " ", clean_name(n).lower())
     return " ".join(n.split())
+def same_race(x, y):
+    # the same race under two spellings ("O-Event: Sprint by night, Borås" / "O-event, dag 1 - Sprint by Night"):
+    # most of the words of the shorter name are in the longer one
+    a, b = set(race_series(x).split()), set(race_series(y).split())
+    if not a or not b: return False
+    return len(a & b) >= 0.75 * min(len(a), len(b))
 _cfin = collections.defaultdict(int); _ctop = collections.defaultdict(set)
 for e in events:
     _cfin[e["cid"]] += len(e["fin"]); _ctop[e["cid"]] |= {rkey(r, e) for r in e["fin"]} & TOP
@@ -424,14 +430,20 @@ if NO_EVENTOR:
             if d >= _from: AHEAD.append({"name": ev["name"], "date": d, "cid": None, "eo": int(eid), "snapbig": ev.get("big")})
     for m in _j("manual_events.json", []):
         if m["date"] >= _from: AHEAD.append({"name": m["name"], "date": m["date"], "cid": None, "eo": 0})
-    _seen = {}
+    # the public race calendar (scripts/calendar.py): championships count as big, the rest are judged like any race
+    for m in _j("calendar_events.json", []):
+        if m["date"] >= _from: AHEAD.append({"name": m["name"], "date": m["date"], "cid": None, "eo": int(m["eo"]), "snapbig": m.get("level") == 1})
+    _seen = []
     for a in AHEAD:
-        key = (a["date"], race_series(a["name"]))
         b, why = guess_big(a["name"], a.get("cid"), a.get("snapbig"))
         a["big"], a["why"] = b, why
-        if key in _seen: _seen[key]["big"] = _seen[key]["big"] or b; _seen[key]["cid"] = _seen[key]["cid"] or a["cid"]; _seen[key]["eo"] = _seen[key]["eo"] or a["eo"]
-        else: _seen[key] = a
-    AHEAD = sorted(_seen.values(), key=lambda a: (a["date"], a["name"]))
+        # the same race from two sources (liveresultat, the calendar, a hand-entered race) is one race
+        m = next((x for x in _seen if x["date"] == a["date"] and (race_series(x["name"]) == race_series(a["name"]) or same_race(x["name"], a["name"]))), None)
+        if m:
+            m["big"] = m["big"] or b; m["cid"] = m["cid"] or a["cid"]; m["eo"] = m["eo"] or a["eo"]
+            if a["eo"] and not m.get("cid"): m["name"] = a["name"]   # the calendar's spelling
+        else: _seen.append(a)
+    AHEAD = sorted(_seen, key=lambda a: (a["date"], a["name"]))
     weeks_big = collections.defaultdict(int); weeks_all = collections.defaultdict(int)
     for a in AHEAD:
         k = monday(dt.date.fromisoformat(a["date"])).isoformat(); weeks_all[k] += 1
@@ -618,11 +630,13 @@ if EVUP is not None:
 if NO_EVENTOR:
     _have = {(u["date"], race_series(u["name"])) for u in upcoming}
     for u in upcoming:
-        a = next((a for a in AHEAD if a["date"] == u["date"] and race_series(a["name"]) == race_series(u["name"])), None)
+        a = next((a for a in AHEAD if a["date"] == u["date"] and same_race(a["name"], u["name"]) and (a.get("eo") or a["big"])), None) \
+            or next((a for a in AHEAD if a["date"] == u["date"] and race_series(a["name"]) == race_series(u["name"])), None)
         if a and a["big"]: u["big"] = 1
         if a and a.get("eo"): u["eo"] = a["eo"]
     for a in AHEAD:
         if a["date"] >= TODAY.isoformat() and a["date"] <= "2027-10-31" and (a["date"], race_series(a["name"])) not in _have and not a.get("cid") \
+                and not any(u["date"] == a["date"] and same_race(u["name"], a["name"]) for u in upcoming) \
                 and not TRAINING.search(a["name"]) and not OTHER_SPORT.search(a["name"]):
             upcoming.append({"id": 0, "eo": a.get("eo") or 0, "name": clean_name(a["name"]), "date": a["date"], "big": 1 if a["big"] else 0}); _have.add((a["date"], race_series(a["name"])))
     upcoming.sort(key=lambda x: (x["date"], x["name"]))
