@@ -3043,7 +3043,6 @@ function seasonDashes(){
 /* ---- Hem: the start page ---- */
 /* news on the start page, newest first. Add a line here to post something new. */
 const NEWS=[
-  ["2026-11-02","Vi slutar använda Eventors API","Svensk Orientering har meddelat att Eventors API i dagsläget bara får användas för klubbverksamhet och tävlingar, så vi har slutat använda det. Resultaten kommer som tidigare från liveresultat.orientering.se och kommande tävlingar från den öppna tävlingskalendern, så spelet fungerar som vanligt. Vilka löpare som är anmälda hämtas nu från de öppna anmälningslistorna på eventor.se."],
   ["2026-11-02","Betan är igång","Den slutna betan har börjat. Välj tio löpare, dubbla ditt A-lag och se hur de står sig när helgens resultat kommer in.","img/hem-kontroll"],
   ["2026-11-02","Medaljer på profilen","Alla betatestare har fått kompassmedaljen. Välj under Profil → Medaljer om den ska synas bredvid ditt namn i ligorna."],
   ["2026-11-02","Bjud in en kompis","Spelet är i sluten beta. Vill du att någon ska vara med? Hör av dig så skickar vi en inbjudningskod."],
@@ -3920,7 +3919,7 @@ function adminGameCard(){
    <label class="admsw" style="margin:4px 0 10px"><input type="checkbox" role="switch" id="admListSw" ${admLists?"":"checked"}><span class="trk" aria-hidden="true"></span><span><b>Dölj spelveckor och tävlingar</b><span class="sub">${admLists?"Visas":"Dolda"} · ${live.length} veckor, ${soon.length} tävlingar</span></span></label>
    ${admLists?`   <h4>Spelveckor</h4><div class="adm-list">${live.map(wk).join("")}</div>
    <h4>Kommande tävlingar</h4><div class="adm-list">${soon.map(race).join("")||'<p class="note">Inga kommande lopp än.</p>'}</div>
-   ${removed.filter(o=>!soon.some(u=>String(u.eo)===String(o.ref))).length?`<h4>Borttagna</h4><div class="adm-list">${removed.filter(o=>!soon.some(u=>String(u.eo)===String(o.ref))).map(o=>`<div class="adm-row"><div><b>${esc(o.label||o.ref)}</b> <span class="sub">Eventor ${esc(o.ref)}</span></div><button class="btn" data-rcset="keep" data-rcref="${esc(o.ref)}">Ångra</button></div>`).join("")}</div>`:""}`:""}
+   ${removed.filter(o=>!soon.some(u=>String(u.eo)===String(o.ref))).length?`<h4>Borttagna</h4><div class="adm-list">${removed.filter(o=>!soon.some(u=>String(u.eo)===String(o.ref))).map(o=>`<div class="adm-row"><div><b>${esc(o.label||o.ref)}</b> <span class="sub">Nr ${esc(o.ref)}</span></div><button class="btn" data-rcset="keep" data-rcref="${esc(o.ref)}">Ångra</button></div>`).join("")}</div>`:""}`:""}
    <h4>Lägg till en tävling</h4>
    <div class="row"><input class="name" id="ovrAdd" placeholder="Tävlingslänk eller tävlings-id" value="${esc(ovrAdd)}" inputmode="url" autocomplete="off"><button class="btn on" id="ovrAddBtn" ${ovrBusy?"disabled":""}>Lägg till</button></div>
    ${added.length?`<div class="adm-list">${added.map(o=>`<div class="adm-row"><div><b>${esc(o.label||"Tävling "+o.ref)}</b> <span class="sub">Tillagd · räknas som stor</span></div><button class="btn" data-rcadd="${esc(o.ref)}">Ta bort</button></div>`).join("")}</div>`:""}
@@ -4224,7 +4223,7 @@ document.addEventListener("click",ev=>{
   if(t.id==="delAcc"){delAsk=true;delMsg="";render();return}
   if(t.id==="delNo"){delAsk=false;render();return}
   if(t.id==="delYes"){deleteAccount();return}
-  if(t.id==="ovrAddBtn"){const v=($("#ovrAdd")||{}).value||"";const m=v.match(/(?:eventId=|Show\/|^\s*)(\d{3,7})/i);if(!m){ovrMsg="Klistra in en tävlingslänk eller tävlingens nummer.";render();return}ovrAdd="";setOvr("race_add",m[1],"Eventor "+m[1],true);return}
+  if(t.id==="ovrAddBtn"){const v=($("#ovrAdd")||{}).value||"";const m=v.match(/(?:eventId=|Show\/|^\s*)(\d{3,7})/i);if(!m){ovrMsg="Klistra in en tävlingslänk eller tävlingens nummer.";render();return}ovrAdd="";setOvr("race_add",m[1],"Tävling "+m[1],true);return}
   if(d.tab){const nt=d.tab;if(nt!==tab)buzz("tap");if(d.focus)setTimeout(()=>{const f=document.getElementById(d.focus);if(f)f.focus()},700);if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
   if(d.add!==undefined){const i=+d.add;buzz(canAddReason(i)?"warn":"ok");if(!canAddReason(i)){plan.squad.push(i);if(!Array.isArray(plan.a))plan.a=[];if(plan.a.length<AS)plan.a.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
   if(d.sell!==undefined){const i=+d.sell;buzz("tap");plan.squad=plan.squad.filter(j=>j!==i);plan.a=(plan.a||[]).filter(j=>j!==i);if(swapSel===i)swapSel=null;fixLeaders();save();render();return}
