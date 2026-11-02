@@ -1578,9 +1578,6 @@ body{letter-spacing:0}
    and opacity (no blur, no 3D), and the cards inside the blocks do not animate on their own. The first load keeps its
    longer entrance. */
 @media (prefers-reduced-motion:no-preference){
-  body.enter.navx #view,body.enter.navx #hero,body.enter.navx #facts,body.enter.navx #course,body.enter.navx .bigpills,body.enter.navx .fanline{animation:navIn .34s cubic-bezier(.23,1,.32,1) both!important;animation-delay:0s!important}
-  body.enter.navx #view *,body.enter.navx #view>*{animation-delay:0s!important}
-  body.enter.navx #view>*,body.enter.navx #view .rc,body.enter.navx #view .grid2>.card,body.enter.navx #view .hl,body.enter.navx #view .kv>div,body.enter.navx #view .sqc,body.enter.navx #view .lc,body.enter.navx #view tr{animation:none!important}
   body.enter.navx #view h2::after,body.enter.navx .pg-k,body.enter.navx .sbars i{animation-name:none!important}
   #hero.still *,#hero.still *::before,#hero.still *::after{animation:none!important}
   /* shown at once, the intro course is already drawn (its legs are otherwise drawn by their animation) */
@@ -3943,7 +3940,7 @@ const shown0={};
 function countUp(){
   document.querySelectorAll("[data-count]").forEach(el=>{
     const to=+el.dataset.count,key=el.dataset.key,suf=el.dataset.suf||"",from=shown0[key];shown0[key]=to;
-    if(RM||from===undefined&&!document.body.classList.contains("enter")||from===to)return;
+    if(RM||document.body.classList.contains("navx")||from===undefined&&!document.body.classList.contains("enter")||from===to)return;
     const a=from===undefined?0:from,t0=performance.now(),dur=1600;
     const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,4);if(!el.isConnected)return;el.textContent=(a+(to-a)*e).toFixed(suf==="k"?1:0)+suf;if(k<1)requestAnimationFrame(step)};
     el.textContent=a.toFixed(suf==="k"?1:0)+suf;requestAnimationFrame(step);
@@ -3953,10 +3950,15 @@ function countUp(){
    (240ms, ease-out), then the new one is built and its parts come in from that side.
    Plain animations on the content (not the View Transitions API, which hides the new page until it is complete). */
 let leaving=false,leaveAnim=null,navNext=false;
+/* after a page change the new page is shown as it is: every entrance animation and transition on it jumps to its end */
+const PAGE_SEL="#view,#hero,#facts,#course,.bigpills,.fanline";
+function settlePage(){try{document.getAnimations().forEach(a=>{const t=a.effect&&a.effect.target;if(!t||!t.closest||!t.closest(PAGE_SEL))return;
+  const it=a.effect.getTiming().iterations;if(it===Infinity)return;try{a.finish()}catch(e){}})}catch(e){}}
 function nav(apply){
   /* the old page stays on screen while the new one is built (no fade-out, so never a blank screen), then the new one
      is swapped in and fades up as one block */
   apply();animNext=true;navNext=!RM;try{window.scrollTo(0,0)}catch(e){}render();
+  settlePage();requestAnimationFrame(()=>{settlePage();requestAnimationFrame(settlePage)});setTimeout(settlePage,120);
 }
 /* the parts above the page (intro, numbers, course, account button) are redrawn on every render, and many renders come
    in the first seconds (the login, photos, leagues answering). Writing them only when they changed, and then patching
