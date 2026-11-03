@@ -196,7 +196,8 @@ for nk, cs in _real.items():
 for nk in list(_real): _real[nk] = {_canon.get((nk, c), c) for c in _real[nk]}
 for nk in list(_realcls): _realcls[nk] = [(_canon.get((nk, c), c), k, d) for c, k, d in _realcls[nk]]
 # A district result (GM, DM teams and the like) with several runners of that name in real clubs: it goes to the one who
-# runs the same class, the nearest in time (within a year); if that is not one runner, it stays apart.
+# runs the same class, the nearest in time (within a year); failing that, to the one whose club is in that district;
+# if neither settles it, it stays apart.
 def _by_class(nk, cls, d):
     if not cls or d is None: return None
     near = collections.Counter()
@@ -205,6 +206,19 @@ def _by_class(nk, cls, d):
     if not near: return None
     top = near.most_common(2)
     return top[0][0] if len(top) == 1 or top[0][1] >= 3 * top[1][1] else None
+# Which district each club belongs to, learnt from district results that could be placed: a club whose runners run for
+# "Skånes OF" is a Skåne club. When the class does not settle it, the runner's club in that district is the one.
+_clubdist = collections.Counter()
+for e in events:
+    for r in e["rows"]:
+        dc = nclub(r["club"])
+        if not dc or not NONCLUB.search(dc): continue
+        nk = (r["name"].strip().lower(), e["g"]); real = _real.get(nk, ())
+        m = next(iter(real)) if len(real) == 1 else (_by_class(nk, rawcls(e), e.get("d")) if real else None)
+        if m: _clubdist[(dc, m)] += 1
+def _by_district(nk, dc):
+    c = [x for x in _real.get(nk, ()) if _clubdist[(dc, x)] >= 2]
+    return c[0] if len(c) == 1 else None
 _dist_moved = collections.Counter(); _dist_alias = {}
 def rkey(r, e):
     n, c, g = r["name"].strip().lower(), nclub(r["club"]), e["g"]
@@ -213,7 +227,7 @@ def rkey(r, e):
         real = _real.get((n, g), ())
         if len(real) == 1: c = next(iter(real))
         elif real:
-            m = _by_class((n, g), rawcls(e), e.get("d"))
+            m = _by_class((n, g), rawcls(e), e.get("d")) or (_by_district((n, g), c) if c else None)
             if m: _dist_moved[c] += 1; _dist_alias[f"{n}|{c}|{g}"] = f"{n}|{m}|{g}"; c = m
     return f"{n}|{c}|{g}"
 
