@@ -219,7 +219,7 @@ for e in events:
 def _by_district(nk, dc):
     c = [x for x in _real.get(nk, ()) if _clubdist[(dc, x)] >= 2]
     return c[0] if len(c) == 1 else None
-_dist_moved = collections.Counter(); _dist_alias = {}
+_dist_moved = collections.Counter(); _dist_alias = {}; _dist_keys = set()
 def rkey(r, e):
     n, c, g = r["name"].strip().lower(), nclub(r["club"]), e["g"]
     c = _canon.get(((n, g), c), c)
@@ -228,7 +228,7 @@ def rkey(r, e):
         if len(real) == 1: c = next(iter(real))
         elif real:
             m = _by_class((n, g), rawcls(e), e.get("d")) or (_by_district((n, g), c) if c else None)
-            if m: _dist_moved[c] += 1; _dist_alias[f"{n}|{c}|{g}"] = f"{n}|{m}|{g}"; c = m
+            if m: _dist_moved[c] += 1; _dist_alias.setdefault(f"{n}|{c}|{g}", f"{n}|{m}|{g}"); _dist_keys.add(f"{n}|{m}|{g}"); c = m
     return f"{n}|{c}|{g}"
 
 # ---- strength ratings (field-adjusted log-time model), vectorised ----
@@ -724,7 +724,7 @@ json.dump({"entered": entered, "upcoming": upcoming, "events": [{k: v for k, v i
            "rounds": rounds, "pool": pool, "noEventor": NO_EVENTOR,
            "names": {k: names[k].most_common(1)[0][0] for k in pool},
            "clubs": {k: pick_club(clubs[k]) for k in pool},
-           "cls": CLS, "alias": ALIAS,
+           "cls": CLS, "alias": ALIAS, "distMerged": sorted(k for k in _dist_keys if k in set(pool)),
            "starts": {k: starts[k] for k in pool}, "strength": {k: round(STR.get(k, 0.05), 3) for k in pool},
            "prices": price_by_round}, open(f"{S}/data/dataset_full.json", "w"), ensure_ascii=False)
 pset = set(pool)
