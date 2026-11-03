@@ -172,10 +172,14 @@ print("counted event-classes", len(events))
 def nclub(c): return re.sub(r"\s+", " ", (c or "").strip()).lower()
 NONCLUB = re.compile(r"^$|\bof$|orienteringsförbund|förbund$")
 _real = collections.defaultdict(set)
+def rawcls(e):   # the class as raced ("H15"), before 15 and 16 are counted as one
+    m = re.match(r"[DH]\d+", str(e.get("id", "")).split(":", 1)[-1]); return m.group() if m else e.get("cls")
+_realcls = collections.defaultdict(list)   # (name, sex) -> [(club, class, date)]: which class each club's runner ran, and when
 for e in events:
     for r in e["rows"]:
         c = nclub(r["club"])
-        if started(r) and not NONCLUB.search(c): _real[(r["name"].strip().lower(), e["g"])].add(c)
+        if started(r) and not NONCLUB.search(c):
+            _real[(r["name"].strip().lower(), e["g"])].add(c); _realcls[(r["name"].strip().lower(), e["g"])].append((c, rawcls(e), e["d"]))
 # spellings of one club ("1900 Orientering" and "Aarhus 1900 Orientering"): a name that sits whole inside the other is the same club
 # A joint relay team ("IFK Lidingö SOK / Täby OK") is never a runner's club: it maps to the part the runner also
 # races for on their own, and a club name never maps into a joint name.
@@ -190,10 +194,27 @@ for nk, cs in _real.items():
         longer = [o for o in cs if o != c and len(c) >= 6 and not JOINT.search(o) and re.search(r"(^|\s)" + re.escape(c) + r"($|\s)", o)]
         if len(longer) == 1: _canon[(nk, c)] = longer[0]
 for nk in list(_real): _real[nk] = {_canon.get((nk, c), c) for c in _real[nk]}
+for nk in list(_realcls): _realcls[nk] = [(_canon.get((nk, c), c), k, d) for c, k, d in _realcls[nk]]
+# A district result (GM, DM teams and the like) with several runners of that name in real clubs: it goes to the one who
+# runs the same class, the nearest in time (within a year); if that is not one runner, it stays apart.
+def _by_class(nk, cls, d):
+    if not cls or d is None: return None
+    near = collections.Counter()
+    for c, k, dd in _realcls.get(nk, ()):
+        if k == cls and abs((dd - d).days) <= 366: near[c] += 1
+    if not near: return None
+    top = near.most_common(2)
+    return top[0][0] if len(top) == 1 or top[0][1] >= 3 * top[1][1] else None
+_dist_moved = collections.Counter(); _dist_alias = {}
 def rkey(r, e):
     n, c, g = r["name"].strip().lower(), nclub(r["club"]), e["g"]
     c = _canon.get(((n, g), c), c)
-    if NONCLUB.search(c) and len(_real.get((n, g), ())) == 1: c = next(iter(_real[(n, g)]))
+    if NONCLUB.search(c):
+        real = _real.get((n, g), ())
+        if len(real) == 1: c = next(iter(real))
+        elif real:
+            m = _by_class((n, g), rawcls(e), e.get("d"))
+            if m: _dist_moved[c] += 1; _dist_alias[f"{n}|{c}|{g}"] = f"{n}|{m}|{g}"; c = m
     return f"{n}|{c}|{g}"
 
 # ---- strength ratings (field-adjusted log-time model), vectorised ----
@@ -575,8 +596,12 @@ for (n, g), cs in _real.items():
             for part in JOINT.split(c):
                 k = f"{n}|{part.strip()}|{g}"
                 if k in pool: ALIAS.setdefault(f"{n}|{c}|{g}", k); break
+# a squad that picked the district copy of a runner keeps that runner: the old key points to the runner it now belongs to
+for a, k in _dist_alias.items():
+    if k in pool: ALIAS.setdefault(a, k)
 ALIAS = {a: k for a, k in ALIAS.items() if a not in pool}
 print("old keys kept as aliases", len(ALIAS))
+print("district results placed on a runner by class", sum(_dist_moved.values()), _dist_moved.most_common(6))
 _moved = [(names[k].most_common(1)[0][0], clsc[k].most_common(1)[0][0], CLS[k]) for k in pool if CLS[k] != clsc[k].most_common(1)[0][0]]
 print("runners in a younger class than their most common one", len(_moved), _moved[:12], "seen in youth classes", len(_young))
 W0, DECAY = 2.0, 0.9
