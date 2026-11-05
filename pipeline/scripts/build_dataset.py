@@ -523,8 +523,14 @@ for a in AHEAD:
     if a["big"]: first_big[k] = min(first_big.get(k, a["date"]), a["date"])
 first_big[LAUNCH_WEEK] = min(first_big.get(LAUNCH_WEEK, LAUNCH["dates"][0]), LAUNCH["dates"][0])
 lk_path = f"{S}/data/eventor/locks_final.json"; locks_final = _j("eventor/locks_final.json", {})
+# an admin can move a week's deadline by hand: pipeline/lock_overrides.json {"<Monday>": "<ISO time>"} wins over everything
+try: LOCK_OVR = json.load(open(f"{S}/lock_overrides.json"))
+except Exception: LOCK_OVR = {}
 def lock_of(wk, ids):
     k = wk.isoformat()
+    if k in LOCK_OVR:
+        if dt.datetime.fromisoformat(LOCK_OVR[k]) <= NOW: locks_final[k] = LOCK_OVR[k]
+        return LOCK_OVR[k]
     if k in locks_final: return locks_final[k]
     first = first_big.get(k) or first_any.get(k) or min((e["d"].isoformat() for e in events if e["id"] in ids), default=None)
     if not first: return None
@@ -536,7 +542,9 @@ wk = SEASON_START; i = 0
 while wk <= LAST_ROUND_START:
     ids = [e["id"] for e in events if monday(e["d"]) == wk]
     lock = lock_of(wk, ids) if wk >= LIVE_START else None
-    if lock: ids = [x for x in ids if next(e for e in events if e["id"] == x)["d"] > dt.date.fromisoformat(lock[:10])]
+    if lock:   # races on days after the lock count (a lock at midnight counts that day's races)
+        lday = (dt.datetime.fromisoformat(lock) - dt.timedelta(minutes=1)).date()
+        ids = [x for x in ids if next(e for e in events if e["id"] == x)["d"] > lday]
     end = wk + dt.timedelta(days=6)
     w = EVWEEKS.get(wk.isoformat()) if EVWEEKS is not None else None
     big = w["big"] if w else None; decided = bool(w and w["final"])
