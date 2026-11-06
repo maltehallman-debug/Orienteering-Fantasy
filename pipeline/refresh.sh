@@ -6,7 +6,11 @@ set -euo pipefail
 S="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$S")"
 mkdir -p "$S/data/results" "$S/build"
-curl -fsS --retry 3 -m 120 "https://liveresultat.orientering.se/api.php?method=getcompetitions" -o "$S/data/comps.json"
+if [ "${LIVE:-}" = "1" ]; then CT=(--retry 1 -m 40); else CT=(--retry 3 -m 120); fi
+if curl -fsS "${CT[@]}" "https://liveresultat.orientering.se/api.php?method=getcompetitions" -o "$S/data/comps.new.json"; then
+  mv "$S/data/comps.new.json" "$S/data/comps.json"
+elif [ -s "$S/data/comps.json" ]; then echo "competition list not reached, saved copy used"
+else exit 1; fi
 python3 "$S/scripts/parse_comps.py" "$S"
 python3 "$S/scripts/classes.py" "$S"
 python3 "$S/scripts/fetch_results.py" "$S"

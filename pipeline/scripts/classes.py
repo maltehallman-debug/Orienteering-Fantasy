@@ -27,7 +27,7 @@ out = {str(c["id"]): old[str(c["id"])] for c in allsel if c not in sel and str(c
 t=time.time()
 with cf.ThreadPoolExecutor(12) as ex:
     for cid, cl in ex.map(get, sel):
-        out[cid] = cl
+        out[cid] = cl if cl is not None else old.get(str(cid))   # not reached: keep the saved list
 print("secs", round(time.time()-t))
 json.dump(out, open(f"{S}/data/classes.json", "w"), ensure_ascii=False)
 print("failed", sum(1 for v in out.values() if v is None), "empty", sum(1 for v in out.values() if v == []))

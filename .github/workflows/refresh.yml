@@ -42,6 +42,13 @@ jobs:
           path: pipeline/data/classes.json
           key: classes-${{ github.run_id }}
           restore-keys: classes-
+      # the competition list from the last run, used when liveresultat does not answer
+      - name: Restore competition list cache
+        uses: actions/cache@v4
+        with:
+          path: pipeline/data/comps.json
+          key: comps-${{ github.run_id }}
+          restore-keys: comps-
       # Eventor's cache is kept apart, so the liveresultat cache above stays the same and is never thrown away
       - name: Restore Eventor cache
         uses: actions/cache@v4
