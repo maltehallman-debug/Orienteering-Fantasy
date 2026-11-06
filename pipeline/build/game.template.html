@@ -1704,7 +1704,6 @@ td,th{border-color:#ededed!important}
 .next.skip::before{background:#ff9540!important}
 /* the season course and other accents in navy and yellow */
 .course svg .c,.course svg circle{stroke:var(--navy)}
-.livedot{background:var(--gul);color:#000}
 /* the runner list and filters */
 .filters input[type=search],.filters select,input.name{border-radius:999px!important;background:#fff!important;box-shadow:inset 0 0 0 1px #000!important;font-family:var(--font)}
 /* the lists get their own arrow, set in from the rounded edge (the browser's own sat out on the curve) */
@@ -1848,17 +1847,17 @@ a.ncard{text-decoration:none}
 .wmarrow:disabled{opacity:.35}
 /* the league table: one rounded row per team, placing (week's placing), team and manager, week, total */
 .lgl{display:grid;gap:8px}
-.lgl-h,.lgl-r{display:grid;grid-template-columns:76px minmax(0,1fr) 64px 70px;align-items:center;gap:10px}
+.lgl-h,.lgl-r{display:grid;grid-template-columns:52px minmax(0,1fr) 64px 70px;align-items:center;gap:8px}
 .lgl-h{padding:2px 16px 4px;font:700 11px/1 var(--font);letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
 .lgl-h span:nth-child(n+3),.lgl-r .n{text-align:right}
-.lgl-live{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e5484d;margin-left:4px;vertical-align:1px;animation:lglPulse 1.6s ease-in-out infinite}
-@keyframes lglPulse{50%{opacity:.35}}
+.lgl-live{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--bad);margin-left:4px;vertical-align:1px}
+@media (prefers-reduced-motion:no-preference){.lgl-live{animation:blink 1.3s ease-in-out infinite}}
 .lgl-r{background:var(--surface-2);border-radius:16px;padding:12px 16px;cursor:pointer;box-shadow:inset 0 0 0 1px var(--line);transition:background-color .15s ease,transform .12s ease}
 @media (hover:hover) and (pointer:fine){.lgl-r:hover{background:color-mix(in srgb,var(--surface-2) 88%,#003c68)}}
 .lgl-r:active{transform:scale(.99)}
 .lgl-r.in{background:color-mix(in srgb,var(--surface-2) 82%,#2f6fa8);box-shadow:inset 0 0 0 1.5px #003c68}
 .lgl-r .pl{font:600 17px/1 var(--font);font-variant-numeric:tabular-nums;white-space:nowrap}
-.lgl-r .pl small{font-weight:500;font-size:14px;color:var(--text-2);margin-left:2px}
+.lgl-r .pl small{font-weight:500;font-size:14px;color:var(--text-2);margin-left:1px}
 .lgl-r .tm{display:flex;gap:12px;align-items:center;min-width:0}
 .lgl-r .tm>span{min-width:0}
 .lgl-r .tm b{display:block;font:700 16px/1.2 var(--font);overflow-wrap:break-word}
@@ -1867,10 +1866,10 @@ a.ncard{text-decoration:none}
 .lgl-r .n b{font-weight:800}
 .lgl-gap{text-align:center;color:var(--text-3);line-height:1}
 @media (max-width:560px){
-  .lgl-h,.lgl-r{grid-template-columns:48px minmax(0,1fr) 46px 52px;gap:8px}
+  .lgl-h,.lgl-r{grid-template-columns:38px minmax(0,1fr) 46px 52px;gap:6px}
   .lgl-h{padding:2px 12px 4px;font-size:9.5px;letter-spacing:.06em}
   .lgl-r{padding:11px 12px;border-radius:14px}
-  .lgl-r .pl{font-size:15px}.lgl-r .pl small{font-size:12px}
+  .lgl-r .pl{font-size:15px}.lgl-r .pl small{font-size:11px;display:block;margin:3px 0 0}
   .lgl-r .tm{gap:8px}.lgl-r .tm .mdot{width:28px;height:28px;font-size:12px;flex:none}
   .lgl-r .tm b{font-size:14.5px}.lgl-r .tm .sub{font-size:12px}
   .lgl-r .n{font-size:14px}
@@ -1879,8 +1878,8 @@ a.ncard{text-decoration:none}
 .lgl-h>span{white-space:nowrap;position:relative}
 @media (max-width:560px){.lgl-h .lgl-live{position:absolute;right:-8px;top:-4px;margin:0;width:6px;height:6px}}
 @media (max-width:560px){.lgl-long{display:none}.lgl-short{display:inline}}
-@media (max-width:430px){.lgl-h,.lgl-r{grid-template-columns:42px minmax(0,1fr) 44px 50px;gap:7px}.lgl-r{padding:10px 11px}.lgl-r .tm{gap:7px}.lgl-r .tm .mdot{width:26px;height:26px;font-size:11px}.lgl-r .tm b{font-size:12.5px}.lgl-r .tm .sub{font-size:11px}.lgl-r .n{font-size:13px}.lgl-r .pl{font-size:14px}.lgl-r .pl small{font-size:11px}}
-@media (max-width:380px){.lgl-h,.lgl-r{grid-template-columns:36px minmax(0,1fr) 40px 46px;gap:6px}.lgl-r{padding:10px 9px}.lgl-r .tm .mdot{width:22px;height:22px;font-size:10px}.lgl-r .tm b{font-size:11.5px}.lgl-r .n{font-size:12px}.lgl-r .pl{font-size:13px}}
+@media (max-width:430px){.lgl-h,.lgl-r{grid-template-columns:34px minmax(0,1fr) 44px 50px;gap:5px}.lgl-r{padding:10px 11px}.lgl-r .tm{gap:7px}.lgl-r .tm .mdot{width:26px;height:26px;font-size:11px}.lgl-r .tm b{font-size:12.5px}.lgl-r .tm .sub{font-size:11px}.lgl-r .n{font-size:13px}.lgl-r .pl{font-size:14px}.lgl-r .pl small{font-size:11px}}
+@media (max-width:380px){.lgl-h,.lgl-r{grid-template-columns:30px minmax(0,1fr) 40px 46px;gap:4px}.lgl-r{padding:10px 9px}.lgl-r .tm .mdot{width:22px;height:22px;font-size:10px}.lgl-r .tm b{font-size:11.5px}.lgl-r .n{font-size:12px}.lgl-r .pl{font-size:13px}}
 .btn.danger{background:#d6261c!important;color:#fff!important;border-color:#d6261c!important}
 .legal h3{margin:18px 0 6px;font-size:16px}.legal p{margin:0 0 10px;line-height:1.55;max-width:68ch}
 .agree{display:flex;gap:10px;align-items:flex-start;margin:4px 0 14px;font-size:14px;line-height:1.45}.agree input{width:20px;height:20px;margin-top:1px;flex:none}
@@ -2861,7 +2860,7 @@ function raceTags(r){
 function liveNow(){
   if(!isLive())return "";const L=state.log[state.log.length-1];
   if(!L||isFinal(L.round))return "";
-  return `<div class="livestrip"><div><span class="livedot">Live</span> <span class="note">${rdName(D.rounds[L.round])}${L.carried?", förra omgångens trupp spelar":""}</span><div style="margin-top:6px"><b>${fp(L.total)}</b> <span class="note">poäng hittills</span></div></div><button class="btn" data-tab="rounds">Dina löpare</button></div>`;
+  return `<div class="livestrip"><div><span class="note">${rdName(D.rounds[L.round])}${L.carried?", förra omgångens trupp spelar":""}</span> <span class="livedot">Live</span><div style="margin-top:6px"><b>${fp(L.total)}</b> <span class="note">poäng hittills</span></div></div><button class="btn" data-tab="rounds">Dina löpare</button></div>`;
 }
 /* the season as a row of short dashes under the week card: weeks run are navy, this week yellow, the rest grey */
 function seasonDashes(){
@@ -3278,9 +3277,10 @@ function standings(code){
   rows.sort((a,b)=>a.rank-b.rank||a.name.localeCompare(b.name,"sv"));
   return {rows,rs,cur,prev};
 }
-function leagueTable(code){
+function leagueTable(code,top){
   const st=standings(code),{cur,prev}=st;let rows=st.rows;
-  if(code==="GLOBAL"){
+  if(top)rows=rows.slice(0,top);
+  else if(code==="GLOBAL"){
     if(!leagueRows.GLOBAL)return `<p class="note">Laddar topplistan…</p>`;
     if(cur===undefined||!rows.length)return `<p class="note" style="margin:6px 0 0">Alla som spelar är med. Tabellen fylls när ${rdThe(D.rounds[LIVE])} låses ${lockText(LIVE)}.</p>`;
     const me=rows.find(m=>m.id===cloud.uid);rows=rows.slice(0,20);if(me&&!rows.includes(me))rows=rows.concat([me]);
@@ -3424,7 +3424,7 @@ function inviteBanner(){
 }
 /* Veckans manager: everyone's points in one round, the top 20 (and you, if you are further down). Arrows step
    back through the rounds that have been played. */
-let wmR=null;
+let wmR=null,wmAll=false;
 function weekCard(){
   const st=standings("GLOBAL"),rs=st.rs;
   /* before any round has been played the card is still there, saying when it fills */
@@ -3433,19 +3433,19 @@ function weekCard(){
   const r=wmR,i=rs.indexOf(r),live=!isFinal(r);
   const all=st.rows.filter(m=>ptsOf(m,r)!==null).map(m=>({m,p:ptsOf(m,r)})).sort((a,b)=>b.p-a.p||a.m.name.localeCompare(b.m.name,"sv"));
   all.forEach((x,k)=>{x.rank=k>0&&all[k-1].p===x.p?all[k-1].rank:k+1});
-  let rows=all.slice(0,20);const me=all.find(x=>x.m.id===cloud.uid);if(me&&!rows.includes(me))rows=rows.concat([me]);
-  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0;align-items:center"><div><span class="eyebrow">Topp 20 i omgången</span><h3 style="margin:2px 0 0">Veckans manager</h3>${me?`<div class="sub">Du är #${me.rank} av ${all.length} i ${rdThe(D.rounds[r])}</div>`:""}</div>
+  const me=all.find(x=>x.m.id===cloud.uid);let rows=all.slice(0,wmAll?20:5);if(wmAll&&me&&!rows.includes(me))rows=rows.concat([me]);
+  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0;align-items:center"><div><span class="eyebrow">Topp ${wmAll?20:5} i omgången</span><h3 style="margin:2px 0 0">Veckans manager</h3>${me?`<div class="sub">Du är #${me.rank} av ${all.length} i ${rdThe(D.rounds[r])}</div>`:""}</div>
     <div class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn wmarrow" data-weekr="${i>0?rs[i-1]:""}" ${i>0?"":"disabled"} aria-label="Föregående omgång">‹</button><b style="white-space:nowrap">${esc(rdName(D.rounds[r]))}${live?' <span class="livedot">Live</span>':""}</b><button class="btn wmarrow" data-weekr="${i<rs.length-1?rs[i+1]:""}" ${i<rs.length-1?"":"disabled"} aria-label="Nästa omgång">›</button></div></div>
     ${all.length?`<div class="lgl" role="table" aria-label="Veckans manager"><div class="lgl-h" role="row"><span role="columnheader"><span class="lgl-long">Placering</span><span class="lgl-short" aria-hidden="true">Plac.</span></span><span role="columnheader">Lag</span><span role="columnheader">Vecka${live?' <i class="lgl-live" title="Live"></i>':""}</span><span role="columnheader">Total</span></div>
     ${rows.map((x,k)=>`${k===20?'<div class="lgl-gap" aria-hidden="true">⋯</div>':""}<div class="lgl-r ${x.m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="GLOBAL|${esc(x.m.id)}" tabindex="0">
       <span class="pl" role="cell">${x.rank}</span>
       <span class="tm" role="cell">${mgrDot(x.m)}<span><b class="nmb"><span class="nmt">${esc(x.m.name)}</span>${featTag(x.m.id)}</b>${x.m.team&&x.m.mgr!==x.m.name?`<span class="sub">${esc(x.m.mgr)}${x.m.id===cloud.uid?" · du":""}</span>`:x.m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span>
       <span class="n" role="cell"><b>${fp(x.p)}p</b></span><span class="n" role="cell">${fp(st.rows.find(y=>y.id===x.m.id).t)}p</span></div>`).join("")}
-    </div>`:`<p class="note" style="margin:6px 0 0">Ingen hade en trupp den här omgången.</p>`}</div>`;
+    </div>${all.length>5?`<div class="lg-actions" style="margin-top:10px"><button class="btn" data-wmall="1">${wmAll?"Visa topp 5":"Visa topp 20"}</button></div>`:""}`:`<p class="note" style="margin:6px 0 0">Ingen hade en trupp den här omgången.</p>`}</div>`;
 }
 function globalCard(){
   const rows=leagueRows.GLOBAL||[],st=standings("GLOBAL"),me=st.rows.find(m=>m.id===cloud.uid);
-  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><span class="eyebrow">Topp 20 totalt</span><h3 style="margin:2px 0 0">Årets manager</h3>${me&&st.cur!==undefined?`<div class="sub">Du är #${me.rank} av ${rows.length}</div>`:""}</div>${st.cur!==undefined&&rows.length?`<button class="btn on" data-lgopen="GLOBAL">Öppna topplistan</button>`:""}</div>${leagueTable("GLOBAL")}</div>`;
+  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><span class="eyebrow">Topp 5 totalt</span><h3 style="margin:2px 0 0">Årets manager</h3>${me&&st.cur!==undefined?`<div class="sub">Du är #${me.rank} av ${rows.length}</div>`:""}</div>${st.cur!==undefined&&rows.length?`<button class="btn on" data-lgopen="GLOBAL">Öppna topplistan</button>`:""}</div>${leagueRows.GLOBAL&&st.cur!==undefined&&rows.length?leagueTable("GLOBAL",5):leagueTable("GLOBAL")}</div>`;
 }
 function leaguesView(){
   if(dbOk&&lgOpen&&(myLeagues.includes(lgOpen)||lgOpen==="GLOBAL"||lgOpen==="DEMO"&&adminOn()&&leagueRows.DEMO))return leagueDetail(lgOpen);
@@ -3459,7 +3459,7 @@ function leaguesView(){
   ${adminOn()?`<div class="card admin" style="margin-top:12px"><div class="ev" style="border:0;padding:0;align-items:center"><div><span class="eyebrow">Admin</span><h3 style="margin:2px 0 0">Demoliga</h3><div class="sub">Så ser en liga ut mitt i en spelvecka, med påhittade managers och riktiga resultat.</div></div><button class="btn on" data-demo="1">Visa demoliga</button></div></div>`:""}
   ${isLive()?weekCard()+globalCard():""}
   ${myLeagues.length?myLeagues.map(c=>`<div class="card" style="margin-top:12px"><div class="lg-card-head"><h3>${esc(lgName(c))}</h3>${myOwn[c]?`<span class="host">Du är värd</span>`:""}</div>
-    <div class="lg-actions"><button class="btn on" data-lgopen="${esc(c)}">Öppna ligan</button><button class="btn" data-sharesheet="${esc(c)}">Dela</button><button class="btn quiet" data-leave="${esc(c)}">Lämna</button></div>${leagueTable(c)}</div>`).join(""):`<div class="card" style="margin-top:12px"><h3>Inga ligor än</h3><p class="note" style="margin:0">Starta en ovan och skicka inbjudningslänken till dina kompisar.</p></div>`}`;
+    <div class="lg-actions"><button class="btn on" data-lgopen="${esc(c)}">Öppna ligan</button><button class="btn" data-sharesheet="${esc(c)}">Dela</button><button class="btn quiet" data-leave="${esc(c)}">Lämna</button></div>${leagueTable(c,5)}</div>`).join(""):`<div class="card" style="margin-top:12px"><h3>Inga ligor än</h3><p class="note" style="margin:0">Starta en ovan och skicka inbjudningslänken till dina kompisar.</p></div>`}`;
 }
 function rulesView(){
   return `<p class="eyebrow pg-k">04 · Spelets regler</p><h2 style="margin-top:0">Så funkar det</h2>
@@ -3956,6 +3956,9 @@ let leaving=false,leaveAnim=null,navNext=false;
 const PAGE_SEL="#view,#hero,#facts,#course,.bigpills,.fanline";
 function settlePage(){try{document.getAnimations().forEach(a=>{const t=a.effect&&a.effect.target;if(!t||!t.closest||!t.closest(PAGE_SEL))return;
   const it=a.effect.getTiming().iterations;if(it===Infinity)return;try{a.finish()}catch(e){}})}catch(e){}}
+let blinkQ=0;
+function syncBlink(){try{document.getAnimations().forEach(a=>{if(a.animationName==="blink"&&a.startTime!==0)a.startTime=0})}catch(e){}}
+try{new MutationObserver(()=>{if(!blinkQ){blinkQ=1;requestAnimationFrame(()=>{blinkQ=0;syncBlink()})}}).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
 function nav(apply){
   /* the old page stays on screen while the new one is built (no fade-out, so never a blank screen), then the new one
      is swapped in and fades up as one block */
@@ -4537,6 +4540,7 @@ document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)r
   if(t.id==="authIn"||t.id==="authUp")doAuth(t.id==="authUp"?"up":"in");
   if(t.id==="authSwap"){authMode=authMode==="in"?"up":"in";authMsg="";authOk=false;render()}
   if(t.dataset.weekr!==undefined&&t.dataset.weekr!==""){wmR=+t.dataset.weekr;render();return}
+  if(t.dataset.wmall){wmAll=!wmAll;render();return}
   if(t.id==="authForgot"){authMode="forgot";authMsg="";authOk=false;render();setTimeout(()=>{const x=$("#authEmail");x&&x.focus()},30)}
   if(t.id==="authBack"){authMode="in";authMsg="";authOk=false;render()}
   if(t.id==="authReset")sendReset();
