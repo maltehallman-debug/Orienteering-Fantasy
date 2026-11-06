@@ -4265,7 +4265,7 @@ let sqStore=(()=>{try{const o=JSON.parse(localStorage.getItem(SQK)||"{}");return
 let sqMem={}; /* rounds fetched within an hour of their lock: used, but fetched again later in case of clock skew */
 const sqSave=()=>{try{localStorage.setItem(SQK,JSON.stringify(sqStore))}catch(e){/* storage full: the copy in memory still works */}};
 try{Object.keys(localStorage).forEach(k=>{if(k.startsWith("of-squads-")&&k!==SQK)localStorage.removeItem(k)})}catch(e){}
-const sqGet=r=>sqStore[r]||sqMem[r];
+const sqGet=r=>(sqStore[r]&&sqStore[r].lk===String(D.rounds[r].lock)?sqStore[r]:null)||sqMem[r];
 const lockedAt=lockAt;
 /* leagues and the board ask at the same time when the page opens: they share one download */
 let sqBusy=null;
@@ -4273,11 +4273,12 @@ const ensureRounds=()=>sqBusy||(sqBusy=loadRounds().finally(()=>{sqBusy=null}));
 async function loadRounds(){
   const sb=cloud.sb,last=openRound()-1;if(!sb)return false;sqMem={};
   for(let r=LIVE;r<=last&&r<E.R;r++){
-    if(sqStore[r])continue;
+    /* a stored round is kept only while its deadline is the one it was stored under (a moved deadline lets later squads in) */
+    if(sqStore[r]&&sqStore[r].lk===String(D.rounds[r].lock))continue;
     let all=[];for(let at=0;;at+=1000){const q=await sb.from("squads").select("user_id,squad,captain,chip").eq("round",r).order("user_id").range(at,at+999);if(q.error)return false;all=all.concat(q.data||[]);if(!q.data||q.data.length<1000)break}
     const ids=[],ix=new Map(),k=id=>{if(!ix.has(id)){ix.set(id,ids.length);ids.push(id)}return ix.get(id)},rows={};
     all.forEach(x=>{if(Array.isArray(x.squad))rows[x.user_id]=[x.squad.map(k),k(x.captain),x.chip||0]});
-    const ent={ids,rows};
+    const ent={ids,rows,lk:String(D.rounds[r].lock)};
     if(Date.now()-lockedAt(r)>36e5){sqStore[r]=ent;sqSave()}else sqMem[r]=ent;
   }
   return true;
