@@ -3,6 +3,9 @@ name: Refresh data
 on:
   schedule:
     - cron: "17 4 * * *"
+    # live runs during the O-Event weekend: Friday 17-24 and Saturday-Sunday 08-19 Swedish time, every 15 minutes
+    - cron: "*/15 16-22 6 11 *"
+    - cron: "*/15 7-17 7,8 11 *"
   workflow_dispatch:
 
 permissions:
@@ -49,6 +52,8 @@ jobs:
           EVENTOR_API_KEY: ${{ secrets.EVENTOR_API_KEY }}
           # sends the rounds' lock times to the database; kept in Supabase's Vault as round_sync_key and copied here
           ROUND_SYNC_KEY: ${{ secrets.ROUND_SYNC_KEY }}
+          # the quarter-hourly runs only ask liveresultat for today's races
+          LIVE: ${{ github.event_name == 'schedule' && github.event.schedule != '17 4 * * *' && '1' || '' }}
         run: bash pipeline/refresh.sh
       - name: Commit if changed
         run: |
@@ -56,7 +61,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898699+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Daily data refresh $(date -u +%F)"
+          git commit -m "${{ github.event_name == 'schedule' && github.event.schedule != '17 4 * * *' && 'Live' || 'Daily' }} data refresh $(date -u +%F)"
           git pull --rebase -X theirs origin "$GITHUB_REF_NAME"
           git push
       # Vercel builds on every push, but may skip commits made by the GitHub bot; its deploy hook makes sure the new

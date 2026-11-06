@@ -16,7 +16,9 @@ TODAY = dt.date.today()
 def age(p): return time.time() - os.path.getmtime(p) if os.path.exists(p) else 1e12
 
 raw = None
-if not CFG.get("calendar", False):
+if os.environ.get("LIVE") == "1":
+    print("calendar: live run, saved copy used")
+elif not CFG.get("calendar", False):
     print("calendar: off (pipeline/eventor.json)")
 elif age(RAW) < 6 * 86400:
     print("calendar: this week's copy reused")

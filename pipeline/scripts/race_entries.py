@@ -35,7 +35,7 @@ want = sorted({c["eo"] for c in cal if TODAY.isoformat() <= c["date"] <= horizon
 print("entries: races asked for" if not pause else "entries: winter pause, nothing asked", want if not pause else "")
 
 calls = 0
-for eid in ([] if pause else want):
+for eid in ([] if pause or os.environ.get("LIVE") == "1" else want):
     p = f"{C}/{eid}.json"
     if age(p) < 2 * 86400 - 3600: continue
     req = urllib.request.Request(f"https://backend.eventor.se/api/events/{eid}/entry-list",

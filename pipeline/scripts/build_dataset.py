@@ -75,11 +75,11 @@ for p in glob.glob(f"{S}/data/results/*.json"):
     cid = j["id"]; cn = norm(j.get("className", "H16"))
     if cid in EXCLUDE or cid not in comps: continue
     pm = PART.match(j.get("className", ""))
-    if pm and real_comp(comps[cid]) and dt.date.fromisoformat(comps[cid]["date"]) < TODAY:
+    if pm and real_comp(comps[cid]) and dt.date.fromisoformat(comps[cid]["date"]) <= TODAY:
         parts[(cid, pm.group(1).upper(), pm.group(2), (pm.group(3) or "").upper())][int(pm.group(4))] = j
         continue
     fm = FINAL.match(cn)
-    if fm and real_comp(comps[cid]) and dt.date.fromisoformat(comps[cid]["date"]) < TODAY:
+    if fm and real_comp(comps[cid]) and dt.date.fromisoformat(comps[cid]["date"]) <= TODAY:
         finals[(cid, fm.group(1), fm.group(2), "E" if fm.group(3) else "")][fm.group(4)] = j
         continue
     m = REAL.match(cn)
@@ -92,7 +92,7 @@ for p in glob.glob(f"{S}/data/results/*.json"):
     fin = [r for r in rows if finished(r)]
     if len(fin) < MIN_FIN: continue
     d = dt.date.fromisoformat(c["date"])
-    if d >= TODAY: continue
+    if d > TODAY: continue   # today's races count as their results come in (live), tomorrow's not yet
     g, age = m.group(1), cat(m.group(2))
     # the label keeps the real class (H21 and H21E are different races in the same competition)
     events.append({"id": ek, "cid": cid, "eo": EVMETA.get(str(cid), {}).get("eid", 0), "name": f'{clean_name(c["name"])} ({cn})', "date": c["date"], "d": d, "tier": tier_of(c),

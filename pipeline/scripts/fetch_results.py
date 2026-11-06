@@ -11,6 +11,7 @@ YOUNG = re.compile(r"^[DH](10|11|12|13|14)$")
 jobs = []
 TODAY = dt.date.today().isoformat()
 FRESH = (dt.date.today() - dt.timedelta(days=3)).isoformat()   # results this recent may still change, so refetch them
+if os.environ.get("LIVE") == "1": FRESH = TODAY   # live run: only today's races are asked for again
 for cid, names in classes.items():
     if comps.get(int(cid), {}).get("date", "9999") > TODAY: continue
     for n in names or []:
