@@ -49,7 +49,7 @@ if _prev:
     _pkey = lambda e: (e["name"], e["date"])
     _prev_ev = {_pkey(e): k for k, e in enumerate(_prev["events"])}
     _prev_rd = {r["start"]: r for r in _prev["rounds"]}
-    _fe = _fr = _fp = _fd = 0; _merged = set(D.get("distMerged", []))
+    _fe = _fr = _fp = _fd = _fx = 0; _merged = set(D.get("distMerged", [])); _gone = set(D.get("removedLr", []))
     for rn, r in enumerate(out_rounds):
         pr_ = _prev_rd.get(r["start"])
         if not pr_: continue
@@ -58,6 +58,7 @@ if _prev:
             evs = []
             for pk in pr_["ev"]:
                 pe = _prev["events"][pk]; key = _pkey(pe)
+                if pe.get("lr") in _gone: _fx += 1; continue   # an admin removed the race: it leaves the locked week too
                 ei = next((x for x in r["ev"] if _pkey(out_events[x]) == key), None)
                 if ei is None:   # a race since dropped from the data keeps its place in the locked week
                     ei = len(out_events); out_events.append(dict(pe)); res.append([])
@@ -74,7 +75,7 @@ if _prev:
         if rn < len(prices) and r["start"] <= _today.isoformat() and rn < len(_prev.get("prices", [])):
             old = {_pid[i]: v for i, v in enumerate(_prev["prices"][rn])}
             prices[rn] = [old.get(k, prices[rn][i]) for i, k in enumerate(pool)]; _fp += 1
-    print("locked from the published site:", _fr, "finished weeks,", _fe, "races,", _fp, "weeks of prices;", _fd, "district results added")
+    print("locked from the published site:", _fr, "finished weeks,", _fe, "races,", _fp, "weeks of prices;", _fd, "district results added;", _fx, "removed races dropped")
 runners = [{"n": D["names"][k], "c": D["clubs"][k], "p": 1, "s": int(round(D["strength"].get(k, 0.05) * 100)), "k": D["cls"][k], "id": k} for k in pool]
 # runner photos: photos.json maps a runner id ("name|H" or "name|D") to a file in data/photos, embedded so the page stays one file
 import base64

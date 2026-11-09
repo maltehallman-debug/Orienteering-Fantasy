@@ -13,11 +13,13 @@ def _j(name, default):
 EVMETA = _j("eventor_meta.json", {})
 EXCLUDE |= set(_j("eventor_replaces.json", []))
 # races an admin removed: an Eventor event id (all its races) or "lr:<liveresultat id>"
+REMOVED_LR = set()
 for o in _j("game_overrides.json", []):
     if o["kind"] == "race_remove":
         ref = str(o["ref"])
-        if ref.startswith("lr:") and ref[3:].isdigit(): EXCLUDE.add(int(ref[3:]))
-        elif ref.isdigit(): EXCLUDE |= {int(c) for c, m in EVMETA.items() if str(m.get("eid")) == ref}
+        if ref.startswith("lr:") and ref[3:].isdigit(): REMOVED_LR.add(int(ref[3:]))
+        elif ref.isdigit(): REMOVED_LR |= {int(c) for c, m in EVMETA.items() if str(m.get("eid")) == ref}
+EXCLUDE |= REMOVED_LR
 print("eventor races", len(EVMETA), "liveresultat copies replaced", len(EXCLUDE) - 7)
 SEASON_START = dt.date(2026, 5, 4)
 TODAY = dt.date.today()
@@ -729,7 +731,7 @@ for cid, rows in STARTLISTS.items():
 print("entries from liveresultat start lists", _sl_n)
 print("pool runners with entries", len(entered), "entries not matched to a pool runner", len(_miss), _miss[:15])
 json.dump({"entered": entered, "upcoming": upcoming, "events": [{k: v for k, v in e.items() if k not in ("rows", "fin", "d")} for e in events],
-           "rounds": rounds, "pool": pool, "noEventor": NO_EVENTOR,
+           "rounds": rounds, "pool": pool, "noEventor": NO_EVENTOR, "removedLr": sorted(REMOVED_LR),
            "names": {k: names[k].most_common(1)[0][0] for k in pool},
            "clubs": {k: pick_club(clubs[k]) for k in pool},
            "cls": CLS, "alias": ALIAS, "distMerged": sorted(k for k in _dist_keys if k in set(pool)),
