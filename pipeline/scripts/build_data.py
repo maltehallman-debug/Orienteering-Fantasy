@@ -76,6 +76,29 @@ if _prev:
             old = {_pid[i]: v for i, v in enumerate(_prev["prices"][rn])}
             prices[rn] = [old.get(k, prices[rn][i]) for i, k in enumerate(pool)]; _fp += 1
     print("locked from the published site:", _fr, "finished weeks,", _fe, "races,", _fp, "weeks of prices;", _fd, "district results added;", _fx, "removed races dropped")
+# ---- how a price may move from one round to the next ----
+# A runner who has not raced since the last round keeps that round's price (others' results never push it down), and
+# a price rises at most PRICE_UP (1.0k) a round, except from the lowest price (2.5k: new or unrated), which is set
+# freely. Falls follow the form. Weeks whose prices are locked keep them; the rule works from them onwards.
+PRICE_UP, PRICE_MIN = 10, 25   # tenths of a thousand
+_locked_p = set()
+if _prev:
+    _locked_p = {rn for rn, r in enumerate(out_rounds) if rn < len(prices) and r["start"] <= _today.isoformat() and rn < len(_prev.get("prices", []))}
+import bisect as _bs
+_rd = D.get("raceDates", {})
+def _raced(k, a, b): ds = _rd.get(k, []); return _bs.bisect_left(ds, b) > _bs.bisect_left(ds, a)
+_pk = _pu = 0
+for rn in range(1, len(prices)):
+    if rn in _locked_p: continue
+    a, b = D["rounds"][rn - 1]["start"], D["rounds"][rn]["start"]
+    for i, k in enumerate(pool):
+        prev, raw = prices[rn - 1][i], prices[rn][i]
+        if prev <= PRICE_MIN: continue
+        if not _raced(k, a, b):
+            if raw != prev: _pk += 1
+            prices[rn][i] = prev
+        elif raw > prev + PRICE_UP: prices[rn][i] = prev + PRICE_UP; _pu += 1
+print("price rules: kept (no race since last round)", _pk, "rises capped at 1.0k", _pu)
 runners = [{"n": D["names"][k], "c": D["clubs"][k], "p": 1, "s": int(round(D["strength"].get(k, 0.05) * 100)), "k": D["cls"][k], "id": k} for k in pool]
 # runner photos: photos.json maps a runner id ("name|H" or "name|D") to a file in data/photos, embedded so the page stays one file
 import base64

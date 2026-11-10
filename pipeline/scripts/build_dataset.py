@@ -736,7 +736,7 @@ json.dump({"entered": entered, "upcoming": upcoming, "events": [{k: v for k, v i
            "clubs": {k: pick_club(clubs[k]) for k in pool},
            "cls": CLS, "alias": ALIAS, "distMerged": sorted(k for k in _dist_keys if k in set(pool)),
            "starts": {k: starts[k] for k in pool}, "strength": {k: round(STR.get(k, 0.05), 3) for k in pool},
-           "prices": price_by_round}, open(f"{S}/data/dataset_full.json", "w"), ensure_ascii=False)
+           "prices": price_by_round, "raceDates": {k: ser_dates[k] for k in pool}}, open(f"{S}/data/dataset_full.json", "w"), ensure_ascii=False)
 pset = set(pool)
 tot = collections.Counter()
 for r in rounds:
