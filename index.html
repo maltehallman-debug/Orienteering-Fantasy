@@ -184,7 +184,7 @@ html,body{color-scheme:only light}
 .card.rival{cursor:pointer;margin-bottom:16px}
 .livecard{margin-bottom:16px}
 .recap{margin-bottom:16px}
-.pushcard{margin:16px 0}.rc-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 12px}.rc-top>div{display:flex;align-items:baseline;gap:10px}.rc-big{font-size:48px;font-weight:900;line-height:1}
+.rc-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 12px}.rc-top>div{display:flex;align-items:baseline;gap:10px}.rc-big{font-size:48px;font-weight:900;line-height:1}
 .rc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.rc-grid>div{display:grid;gap:2px;padding:12px;border-radius:14px;background:rgba(0,60,104,.06);min-width:0}.rc-grid b{overflow-wrap:anywhere;line-height:1.2}.rc-grid .pos,.rc-grid .neg{font-weight:800}
 @media (max-width:560px){.rc-grid{grid-template-columns:1fr 1fr}}.lc-tot{font-size:30px;font-weight:900}.lc-tot small{font-size:14px;color:var(--text-2)}
 .lv-r{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,2fr) auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.lv-r:last-child{border:0}.lv-who{min-width:0}.lv-who .who{font-weight:700}.lv-who small{display:block;font-size:12px;color:var(--text-2)}
@@ -2823,20 +2823,31 @@ function squadCard(i,k,show,locked,team){
    <div class="sqc-ctl"><button class="boost ${on?"on":""}" data-boost="${i}" ${locked?"disabled":""} aria-pressed="${on}" aria-label="${on?esc(nameOf(i))+" är boostad":"Boosta "+esc(nameOf(i))}" title="${on?"Boostad "+m+"x":"Boosta"}">${BOLT}<span>Boost</span></button>${locked?"":`<button class="sw" data-swap="${i}" title="Byt mellan A och B" aria-label="Flytta ${esc(nameOf(i))} till det andra laget">${SWAP}</button><button class="rm" data-sell="${i}" title="Ta bort ur truppen" aria-label="Ta bort ${esc(nameOf(i))}">&times;</button>`}</div>
    ${other?`<button class="swapto" data-swapwith="${i}">Byt med ${esc(nameOf(swapSel).split(" ")[0])}</button>`:""}</div>`;
 }
-/* auto-pick: fills the empty places with the best runners the money allows. Recent form decides (points per game week
-   over the last five weeks they raced, the last three a little more), runners entered this week get a lift. Picks you
-   made stay, the budget is spread so the last place can still be filled, and the club limit holds. */
-function autoScore(i,r){const s=E.stats(i,r);let v=s.perWeek*.6+s.form*.4;if(entOf(i,R()).length)v*=1.3;return v}
+/* auto-pick: fills the empty places with a whole team that uses the budget. Each runner is valued on recent form (points
+   per game week over the last five weeks they raced, the last three a little more), the price (it follows the class
+   rating, so it is the best guess for runners with few races) and a lift for runners entered this week. The money is
+   spread over the places left, then the cheapest new picks are swapped up while the budget allows. Picks you made
+   stay, and the club limit holds. */
+function autoScore(i,r){const s=E.stats(i,r);let v=s.perWeek*.6+s.form*.4+E.price(i,r)*.35;if(entOf(i,R()).length)v*=1.3;return v}
 function autoFill(){
   const r=pr(),need=D.squad-plan.squad.length;if(need<=0)return 0;
   const pool=[];for(let i=0;i<E.N;i++){if(!D.runners[i].p||plan.squad.includes(i))continue;pool.push({i,p:E.price(i,r),v:autoScore(i,r)})}
   pool.sort((a,b)=>b.v-a.v||a.p-b.p);
+  const mine=new Set(plan.squad),bank=()=>E.bankAfter(state,plan.squad),okClub=(i,sq)=>sq.filter(j=>clubOf(j)===clubOf(i)).length<D.clubMax;
   const cheapest=pool.map(x=>x.p).sort((a,b)=>a-b);let added=0;
-  for(let k=0;k<need;k++){const left=need-k-1,bank=E.bankAfter(state,plan.squad),reserve=cheapest.slice(0,left).reduce((a,x)=>a+x,0);
-    const c=pool.find(x=>!plan.squad.includes(x.i)&&x.p<=bank-reserve&&clubCount(plan.squad,x.i)<D.clubMax);if(!c)break;
+  /* 1: spread the money: each place aims at its share of what is left */
+  for(let k=0;k<need;k++){const left=need-k-1,b=bank(),reserve=cheapest.slice(0,left).reduce((a,x)=>a+x,0),cap=b-reserve,share=b/(left+1);
+    const fits=x=>!plan.squad.includes(x.i)&&x.p<=cap&&okClub(x.i,plan.squad);
+    const c=pool.find(x=>fits(x)&&x.p>=share*.6&&x.p<=share*1.4)||pool.find(fits);if(!c)break;
     plan.squad.push(c.i);const ci=cheapest.indexOf(c.p);if(ci>=0)cheapest.splice(ci,1);added++}
+  /* 2: spend what is left: swap a new pick for a better runner the money now allows, best gain first */
+  const V=new Map(pool.map(x=>[x.i,x]));
+  for(let n=0;n<60;n++){let best=null;const b=bank();
+    for(const i of plan.squad){if(mine.has(i))continue;const pi=E.price(i,r),vi=autoScore(i,r),rest=plan.squad.filter(j=>j!==i);
+      for(const x of pool){if(x.v<=vi)break;if(plan.squad.includes(x.i)||x.p>pi+b||!okClub(x.i,rest))continue;const g=x.v-vi;if(!best||g>best.g)best={i,x,g};break}}
+    if(!best)break;plan.squad[plan.squad.indexOf(best.i)]=best.x.i}
   /* the best of the new runners fill the free A places; the boost goes to the best runner if none is chosen */
-  if(!Array.isArray(plan.a))plan.a=[];const byV=plan.squad.slice().sort((a,b)=>autoScore(b,r)-autoScore(a,r));
+  if(!Array.isArray(plan.a))plan.a=[];plan.a=plan.a.filter(i=>plan.squad.includes(i));const byV=plan.squad.slice().sort((a,b)=>autoScore(b,r)-autoScore(a,r));
   for(const i of byV){if(plan.a.length>=AS)break;if(!plan.a.includes(i))plan.a.push(i)}
   if(!plan.squad.includes(plan.captain))plan.captain=byV[0];
   fixLeaders();return added;
@@ -3099,7 +3110,7 @@ function homeView(){
     :`Ditt lag är fullt men inte sparat än. Det låses ${esc(lockText(r))}.`;
   return `<section class="hm-hero" aria-labelledby="hmT"><picture class="hm-img"><source media="(min-width:700px)" srcset="img/hem-kontroll-2000.jpg"><img src="img/hem-kontroll-1100.jpg" alt="" decoding="async" fetchpriority="high"></picture>
    <div class="hm-txt"><span class="hm-k">${done()?"Säsong 2026/27":esc(rdName(rd))+" · "+esc(dshort(rd.start))+" – "+esc(dshort(rd.end))}</span><h2 id="hmT">${first?"Hej "+esc(first)+"!":"Välkommen!"}</h2><p class="hm-lead">${status}</p>
-    <div class="hm-cta"><button class="btn on" data-tab="team">${n<D.squad?"Välj din trupp":"Till ditt lag"}</button><button class="btn" data-tab="rounds">Dina poäng</button>${dbOk&&pushState==="off"&&!done()?`<button class="btn" data-push="on" ${pushBusy?"disabled":""}>Påminn mig före deadline</button>`:""}</div></div></section>
+    <div class="hm-cta"><button class="btn on" data-tab="team">${n<D.squad?"Välj din trupp":"Till ditt lag"}</button><button class="btn" data-tab="rounds">Dina poäng</button></div></div></section>
   ${liveCard()}${recapCard()}${rivalCard()}
   ${done()?"":raceCards(r)}
   <div class="grid2 hm-grid">
@@ -3362,45 +3373,6 @@ function authCard(){
    <div class="row" style="margin-top:6px"><button class="btn light" id="${authMode==="up"?"authUp":"authIn"}" ${authBusy?"disabled":""}>${authBusy?"Ett ögonblick…":authMode==="up"?"Skapa konto":"Logga in"}</button><button class="btn quiet" id="authSwap">${authMode==="up"?"Jag har redan ett konto":"Ny här? Skapa ett konto"}</button></div>
    ${authMsg?`<p class="note" style="margin:12px 0 0;color:${authOk?"var(--good)":"var(--warn)"}">${esc(authMsg)}</p>`:""}</div>`;
 }
-/* deadline reminders by web push: a service worker (sw.js) shows them; the subscription is kept in push_subs and the
-   reminders come from the push-reminders function. On an iPhone or iPad push only works once the site is added to
-   the home screen. */
-let pushState="unsupported",pushMsg="",pushBusy=false;
-const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
-const standalone=()=>{try{return matchMedia("(display-mode: standalone)").matches||navigator.standalone===true}catch(e){return false}};
-async function pushInit(){
-  if(!("serviceWorker" in navigator)||location.protocol!=="https:"&&location.hostname!=="localhost"){pushState="unsupported";return}
-  try{await navigator.serviceWorker.register("sw.js")}catch(e){}
-  if(!("PushManager" in window)||!("Notification" in window)){pushState=isIOS&&!standalone()?"ios":"unsupported";return}
-  if(Notification.permission==="denied"){pushState="denied";return}
-  try{const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();pushState=sub?"on":"off"}catch(e){pushState="off"}
-}
-const b64uBytes=s=>{const p="=".repeat((4-s.length%4)%4),b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(b,c=>c.charCodeAt(0))};
-async function pushOn(){
-  if(pushBusy||!cloud.sb||!cloud.uid)return;pushBusy=true;pushMsg="";render();
-  try{
-    const perm=await Notification.requestPermission();if(perm!=="granted"){pushState=perm==="denied"?"denied":"off";throw new Error("perm")}
-    const k=await cloud.sb.rpc("push_public_key");if(!k.data)throw new Error("key");
-    const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
-    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uBytes(k.data)});
-    const j=sub.toJSON(),q=await cloud.sb.from("push_subs").upsert({endpoint:j.endpoint,user_id:cloud.uid,p256dh:j.keys.p256dh,auth:j.keys.auth});if(q.error)throw new Error("save");
-    pushState="on";pushMsg="Påminnelser är på. En testnotis är på väg.";
-    cloud.sb.functions.invoke("push-reminders",{body:{test:true}}).catch(()=>{});
-  }catch(e){if(e.message!=="perm")pushMsg="Det gick inte att slå på påminnelser. Försök igen.";else if(pushState==="denied")pushMsg="Notiser är blockerade för sajten. Tillåt dem i webbläsarens inställningar."}
-  pushBusy=false;render();
-}
-async function pushOff(){
-  if(pushBusy)return;pushBusy=true;render();
-  try{const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub){if(cloud.sb)await cloud.sb.from("push_subs").delete().eq("endpoint",sub.endpoint);await sub.unsubscribe()}pushState="off";pushMsg="Påminnelser är av."}catch(e){pushMsg="Det gick inte att stänga av. Försök igen."}
-  pushBusy=false;render();
-}
-function pushCard(){
-  const txt={on:"Du får en notis dagen innan laget låses om du inte har valt det, och en sista i de tre sista timmarna.",off:"Få en notis dagen innan laget låses om du inte har valt det.",
-    ios:"På iPhone och iPad fungerar notiser när sajten är tillagd på hemskärmen: tryck på Dela och sedan Lägg till på hemskärmen. Öppna den därifrån och slå på påminnelser.",
-    denied:"Notiser är blockerade för sajten. Tillåt dem i webbläsarens inställningar för att få påminnelser.",unsupported:"Den här webbläsaren kan inte ta emot notiser."}[pushState];
-  const btn=pushState==="on"?`<button class="btn" data-push="off" ${pushBusy?"disabled":""}>Stäng av påminnelser</button>`:pushState==="off"?`<button class="btn on" data-push="on" ${pushBusy?"disabled":""}>${pushBusy?"Slår på…":"Påminn mig före deadline"}</button>`:"";
-  return `<div class="card pushcard"><h3 style="margin-top:0">Påminnelser</h3><p class="note" style="margin:0 0 12px">${txt}</p>${btn}${pushMsg?`<p class="note" style="margin:10px 0 0">${esc(pushMsg)}</p>`:""}</div>`;
-}
 function profileView(){
   if(!dbOk)return `<p class="eyebrow pg-k">05 · Ditt konto</p><h2 style="margin-top:0">Profil</h2>${inviteBanner()}<div class="grid2">${authCard()}
    <div class="card"><h3>Varför ett konto</h3><ol class="steps"><li>Din trupp sparas och fungerar på alla enheter.</li><li>Starta en liga eller gå med i en med en kod.</li><li>Se dina kompisars lag och poäng varje omgång.</li><li>Lägg till ett eget foto på ditt löparkort.</li></ol></div></div>
@@ -3413,7 +3385,6 @@ function profileView(){
   ${badgeAdmin(cloud.uid)}
   ${cloud.admin?`<label class="admsw"><input type="checkbox" role="switch" id="admSw" ${showAdmin?"checked":""}><span class="trk" aria-hidden="true"></span><span><b>Adminverktyg</b><span class="sub">${showAdmin?"Visas":"Dolda"}</span></span></label>`:""}
   ${inviteCard()}${adminGameCard()}${igCard()}${reviewCard()}
-  ${pushCard()}
   <div class="kv"><div><span>Poäng</span><b>${fp(state.total)}</b></div><div><span>Omgångar</span><b>${L.length}</b></div><div><span>Bästa omgång</span><b>${best?fp(best.total):"–"}</b></div><div><span>Chips</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length}</b></div></div>
   ${L.length?seasonBars():""}
   <div class="grid2" style="margin-top:12px">
@@ -4365,7 +4336,6 @@ document.addEventListener("click",ev=>{
   if(t.id==="delYes"){deleteAccount();return}
   if(t.id==="ovrAddBtn"){const v=($("#ovrAdd")||{}).value||"";const m=v.match(/(?:eventId=|Show\/|^\s*)(\d{3,7})/i);if(!m){ovrMsg="Klistra in en tävlingslänk eller tävlingens nummer.";render();return}ovrAdd="";setOvr("race_add",m[1],"Tävling "+m[1],true);return}
   if(d.tab){const nt=d.tab;if(nt!==tab)buzz("tap");if(d.focus)setTimeout(()=>{const f=document.getElementById(d.focus);if(f)f.focus()},700);if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
-  if(d.push){d.push==="on"?pushOn():pushOff();return}
   if(d.recapshare){const k=state.log.findIndex(l=>l.round===+d.recapshare);if(k>=0){viewRound=k;shareBoard()}return}
   if(d.rival!==undefined){try{d.rival?localStorage.setItem(RIVK,d.rival):localStorage.removeItem(RIVK)}catch(err){}if(mgrOpen)managerSheet(mgrOpen.code,mgrOpen.id,mgrOpen.view);render();return}
   if(d.autofill){const n=autoFill();buzz(n?"ok":"warn");if(n)save();render();return}
@@ -4872,7 +4842,9 @@ document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)r
   if(t.id==="authOut"){cloud.ready=false;resetLocal();sqStore={};sqMem={};pfCache.clear();try{localStorage.removeItem(SQK)}catch(e){}localUid=null;try{localStorage.removeItem(KEY)}catch(e){}tab="profile";cloud.sb.auth.signOut().then(()=>{leagueRows={};render()})}
 });
 
-render();launchTick();initCloud();pushInit().then(()=>{if(pushState!=="unsupported")render()});
+render();launchTick();initCloud();
+/* the deadline reminders are gone: drop the service worker they used */
+try{if("serviceWorker" in navigator)navigator.serviceWorker.getRegistrations().then(l=>l.forEach(x=>x.unregister())).catch(()=>{})}catch(e){}
 if(AUTH_BACK.err){welcomed=true;welcomeSheet("err")}
 </script>
 </body>
