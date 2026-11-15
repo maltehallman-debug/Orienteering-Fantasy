@@ -19,3 +19,14 @@ except urllib.error.HTTPError as e:
     print("round locks: refused", e.code)
 except Exception as e:
     print("round locks: failed", type(e).__name__)
+# which live rounds are skipped weeks: the deadline reminders leave those out
+skips = [{"round": i, "skip": bool(r.get("skip"))} for i, r in enumerate(D["rounds"]) if i >= D["liveStart"]]
+try:
+    rq = urllib.request.Request(SB_URL + "/rest/v1/rpc/sync_round_skips", data=json.dumps({"k": KEY, "skips": skips}).encode(),
+                                headers={"apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "application/json"}, method="POST")
+    n = json.loads(urllib.request.urlopen(rq, timeout=30).read())
+    print("skipped weeks: sent", len(skips), "changed", n)
+except urllib.error.HTTPError as e:
+    print("skipped weeks: refused", e.code)
+except Exception as e:
+    print("skipped weeks: failed", type(e).__name__)

@@ -177,6 +177,20 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 html,body{color-scheme:only light}
+.h2h-hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.h2h-hd h3{margin:0}
+.h2h-score{display:flex;align-items:center;justify-content:center;gap:14px;margin:12px 0 4px}.h2h-score>div{display:grid;justify-items:center;gap:2px;min-width:0;flex:1;opacity:.6}.h2h-score>div.win{opacity:1}.h2h-score span{font-size:13px;font-weight:700;color:var(--text-2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.h2h-score b{font-size:44px;font-weight:900;line-height:1}.h2h-score.sm b{font-size:34px}.h2h-score i{font-style:normal;font-size:28px;font-weight:800;color:var(--text-2)}
+.h2h-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}.h2h-cols>div{min-width:0}.h2h-sep{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2);margin:8px 0 4px}
+.h2h-r{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}.h2h-r.same{opacity:.55}.h2h-n{min-width:0;font-weight:700;font-size:14px;line-height:1.2;overflow-wrap:anywhere}.h2h-n small{display:block;font-weight:500;font-size:11.5px;color:var(--text-2)}.h2h-b{font-style:normal;font-size:11px;font-weight:800;color:#fff;background:#c4007f;padding:1px 6px;border-radius:999px}
+.card.rival{cursor:pointer;margin-bottom:16px}
+.livecard{margin-bottom:16px}
+.recap{margin-bottom:16px}
+.pushcard{margin:16px 0}.rc-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 12px}.rc-top>div{display:flex;align-items:baseline;gap:10px}.rc-big{font-size:48px;font-weight:900;line-height:1}
+.rc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.rc-grid>div{display:grid;gap:2px;padding:12px;border-radius:14px;background:rgba(0,60,104,.06);min-width:0}.rc-grid b{overflow-wrap:anywhere;line-height:1.2}.rc-grid .pos,.rc-grid .neg{font-weight:800}
+@media (max-width:560px){.rc-grid{grid-template-columns:1fr 1fr}}.lc-tot{font-size:30px;font-weight:900}.lc-tot small{font-size:14px;color:var(--text-2)}
+.lv-r{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,2fr) auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.lv-r:last-child{border:0}.lv-who{min-width:0}.lv-who .who{font-weight:700}.lv-who small{display:block;font-size:12px;color:var(--text-2)}
+.lv-races{display:flex;flex-wrap:wrap;gap:6px;min-width:0}.lv-c{display:inline-flex;flex-direction:column;padding:4px 9px;border-radius:10px;background:rgba(0,60,104,.07);font-size:12px;line-height:1.25}.lv-c b{font-size:12.5px}.lv-c.neg b{color:var(--bad,#d64545)}.lv-c.wait{background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--text-2)}.lv-p{font-size:20px;font-weight:900;min-width:44px;text-align:right}
+@media (max-width:560px){.lv-r{grid-template-columns:minmax(0,1fr) auto}.lv-races{grid-column:1/-1;order:3}}
+.autofill{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px}.autofill .sub{font-size:13px}
 </style>
 <script>/* closed beta: only people with an account get in. Gate from the first paint unless this browser holds a saved login;
    the real check is the session from Supabase (onSession), which opens or closes the gate */
@@ -2640,6 +2654,24 @@ function squadCard(i,k,show,locked,team){
    <div class="sqc-ctl"><button class="boost ${on?"on":""}" data-boost="${i}" ${locked?"disabled":""} aria-pressed="${on}" aria-label="${on?esc(nameOf(i))+" är boostad":"Boosta "+esc(nameOf(i))}" title="${on?"Boostad "+m+"x":"Boosta"}">${BOLT}<span>Boost</span></button>${locked?"":`<button class="sw" data-swap="${i}" title="Byt mellan A och B" aria-label="Flytta ${esc(nameOf(i))} till det andra laget">${SWAP}</button><button class="rm" data-sell="${i}" title="Ta bort ur truppen" aria-label="Ta bort ${esc(nameOf(i))}">&times;</button>`}</div>
    ${other?`<button class="swapto" data-swapwith="${i}">Byt med ${esc(nameOf(swapSel).split(" ")[0])}</button>`:""}</div>`;
 }
+/* auto-pick: fills the empty places with the best runners the money allows. Recent form decides (points per game week
+   over the last five weeks they raced, the last three a little more), runners entered this week get a lift. Picks you
+   made stay, the budget is spread so the last place can still be filled, and the club limit holds. */
+function autoScore(i,r){const s=E.stats(i,r);let v=s.perWeek*.6+s.form*.4;if(entOf(i,R()).length)v*=1.3;return v}
+function autoFill(){
+  const r=pr(),need=D.squad-plan.squad.length;if(need<=0)return 0;
+  const pool=[];for(let i=0;i<E.N;i++){if(!D.runners[i].p||plan.squad.includes(i))continue;pool.push({i,p:E.price(i,r),v:autoScore(i,r)})}
+  pool.sort((a,b)=>b.v-a.v||a.p-b.p);
+  const cheapest=pool.map(x=>x.p).sort((a,b)=>a-b);let added=0;
+  for(let k=0;k<need;k++){const left=need-k-1,bank=E.bankAfter(state,plan.squad),reserve=cheapest.slice(0,left).reduce((a,x)=>a+x,0);
+    const c=pool.find(x=>!plan.squad.includes(x.i)&&x.p<=bank-reserve&&clubCount(plan.squad,x.i)<D.clubMax);if(!c)break;
+    plan.squad.push(c.i);const ci=cheapest.indexOf(c.p);if(ci>=0)cheapest.splice(ci,1);added++}
+  /* the best of the new runners fill the free A places; the boost goes to the best runner if none is chosen */
+  if(!Array.isArray(plan.a))plan.a=[];const byV=plan.squad.slice().sort((a,b)=>autoScore(b,r)-autoScore(a,r));
+  for(const i of byV){if(plan.a.length>=AS)break;if(!plan.a.includes(i))plan.a.push(i)}
+  if(!plan.squad.includes(plan.captain))plan.captain=byV[0];
+  fixLeaders();return added;
+}
 function canAddReason(i){
   if(plan.squad.length>=D.squad)return "Truppen är full";
   if(clubCount(plan.squad,i)>=D.clubMax)return "Max "+D.clubMax+" från en klubb";
@@ -2670,7 +2702,7 @@ function marketBody(rows){mRows=rows;
   return (rows.slice(0,shown).map(rowHtml).join("")||`<tr><td colspan="10" class="note">Inga löpare matchar. Rensa sökningen eller ett filter.</td></tr>`);
 }
 function rowHtml(x){const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
-   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><i class="glm" aria-hidden="true"></i><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
+   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><i class="glm" aria-hidden="true"></i><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}${(()=>{const o=ownPct(x.i);return o?` · ägs av ${o}%`:""})()}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
    <td>${inS?`<button class="btn" data-sell="${x.i}">Sälj</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Köp</button>`}</td></tr>`}
 /* the runner list grows as you scroll: a marker under it loads the next runners before you reach the end, and each
    new runner rises in on its own. A button stays as a fallback where the browser cannot watch the marker. */
@@ -2898,7 +2930,8 @@ function homeView(){
     :`Ditt lag är fullt men inte sparat än. Det låses ${esc(lockText(r))}.`;
   return `<section class="hm-hero" aria-labelledby="hmT"><picture class="hm-img"><source media="(min-width:700px)" srcset="img/hem-kontroll-2000.jpg"><img src="img/hem-kontroll-1100.jpg" alt="" decoding="async" fetchpriority="high"></picture>
    <div class="hm-txt"><span class="hm-k">${done()?"Säsong 2026/27":esc(rdName(rd))+" · "+esc(dshort(rd.start))+" – "+esc(dshort(rd.end))}</span><h2 id="hmT">${first?"Hej "+esc(first)+"!":"Välkommen!"}</h2><p class="hm-lead">${status}</p>
-    <div class="hm-cta"><button class="btn on" data-tab="team">${n<D.squad?"Välj din trupp":"Till ditt lag"}</button><button class="btn" data-tab="rounds">Dina poäng</button></div></div></section>
+    <div class="hm-cta"><button class="btn on" data-tab="team">${n<D.squad?"Välj din trupp":"Till ditt lag"}</button><button class="btn" data-tab="rounds">Dina poäng</button>${dbOk&&pushState==="off"&&!done()?`<button class="btn" data-push="on" ${pushBusy?"disabled":""}>Påminn mig före deadline</button>`:""}</div></div></section>
+  ${liveCard()}${recapCard()}${rivalCard()}
   ${done()?"":raceCards(r)}
   <div class="grid2 hm-grid">
    <div class="card"><span class="eyebrow">${last>=0?esc(rdName(D.rounds[last])):"Veckans poäng"}</span><h3 style="margin:2px 0 12px">Veckans högsta poäng</h3>${topList(wk,"Inga resultat än den här veckan.")}</div>
@@ -2906,6 +2939,10 @@ function homeView(){
   </div>
   <div class="card hm-lg"><div class="ev" style="border:0;padding:0 0 10px;align-items:center"><div><span class="eyebrow">Topp 5</span><h3 style="margin:2px 0 0">Årets manager</h3></div><button class="btn" data-lgopen="GLOBAL">Hela tabellen →</button></div>
    ${top.length?`<div class="lgl" role="table" aria-label="Årets manager, topp 5">${top.map((m,k)=>`<div class="lgl-r ${m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="GLOBAL|${esc(m.id)}" tabindex="0"><span class="pl" role="cell">${m.rank}</span><span class="tm" role="cell">${mgrDot(m)}<span><b class="nmb"><span class="nmt">${esc(m.name)}</span>${featTag(m.id)}</b>${m.team&&m.mgr!==m.name?`<span class="sub">${esc(m.mgr)}${m.id===cloud.uid?" · du":""}</span>`:m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span><span class="n" role="cell"><b>${fp(m.t)}p</b></span></div>`).join("")}</div>`:`<p class="note" style="margin:0">Tabellen fylls på när den första omgången är spelad.</p>`}</div>
+  ${(()=>{const d=ownData();if(!d||d.n<3)return "";const top=(arr,n)=>Array.from(arr,(v,i)=>[i,v]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]||a[0]-b[0]).slice(0,n);
+    const li=L=>`<ol class="hm-top">${L.map(([i,v],k)=>`<li><span class="hm-n">${k+1}</span>${avatar(i,"sm")}<span class="hm-who"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button><span class="sub">${esc(clubOf(i))} · ${esc(D.runners[i].k||"")}</span></span><b class="hm-p">${Math.round(100*v/d.n)}<small>%</small></b></li>`).join("")}</ol>`;
+    return `<div class="grid2 hm-grid"><div class="card"><span class="eyebrow">${esc(rdName(D.rounds[d.r]))} · ${d.n} lag</span><h3 style="margin:2px 0 12px">Mest valda löpare</h3>${li(top(d.own,5))}</div>
+      <div class="card"><span class="eyebrow">${esc(rdName(D.rounds[d.r]))} · ${d.n} lag</span><h3 style="margin:2px 0 12px">Mest boostade</h3>${li(top(d.boost,5))}</div></div>`})()}
   <div class="card hm-news"><span class="eyebrow">Nytt i spelet</span><h3 style="margin:2px 0 6px">Nyheter</h3>${NEWS.slice(0,5).map(([d,t,x])=>`<div class="hm-ni"><span class="hm-d">${dshort(d)}</span><div><b>${esc(t)}</b><p>${esc(x)}</p></div></div>`).join("")}</div>`;
 }
 function hero(r){
@@ -2938,6 +2975,7 @@ function teamView(){
   return `${hero(r)}${liveNow()}<div class="two"><div class="panel squad-panel">
    <p class="eyebrow pg-k">01 · Bygg ditt lag</p><h2 style="margin-top:0">Din trupp</h2>
    <p class="lead">${lead}</p>
+   ${!locked&&plan.squad.length<D.squad?`<div class="autofill"><button class="btn go" data-autofill="1">${plan.squad.length?"Fyll resten automatiskt":"Fyll laget automatiskt"}</button><span class="sub">Väljer löpare i form inom budgeten. Du kan byta efteråt.</span></div>`:""}
    <div class="squadwrap">
    <div class="teamhead"><span><b>A-lag</b><span class="x">×2</span></span><span class="sub">${A.length} av ${AS}</span></div>
    <div class="squad ab">${teamRows(A,AS,"A",0)}</div>
@@ -3155,6 +3193,45 @@ function authCard(){
    <div class="row" style="margin-top:6px"><button class="btn light" id="${authMode==="up"?"authUp":"authIn"}" ${authBusy?"disabled":""}>${authBusy?"Ett ögonblick…":authMode==="up"?"Skapa konto":"Logga in"}</button><button class="btn quiet" id="authSwap">${authMode==="up"?"Jag har redan ett konto":"Ny här? Skapa ett konto"}</button></div>
    ${authMsg?`<p class="note" style="margin:12px 0 0;color:${authOk?"var(--good)":"var(--warn)"}">${esc(authMsg)}</p>`:""}</div>`;
 }
+/* deadline reminders by web push: a service worker (sw.js) shows them; the subscription is kept in push_subs and the
+   reminders come from the push-reminders function. On an iPhone or iPad push only works once the site is added to
+   the home screen. */
+let pushState="unsupported",pushMsg="",pushBusy=false;
+const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const standalone=()=>{try{return matchMedia("(display-mode: standalone)").matches||navigator.standalone===true}catch(e){return false}};
+async function pushInit(){
+  if(!("serviceWorker" in navigator)||location.protocol!=="https:"&&location.hostname!=="localhost"){pushState="unsupported";return}
+  try{await navigator.serviceWorker.register("sw.js")}catch(e){}
+  if(!("PushManager" in window)||!("Notification" in window)){pushState=isIOS&&!standalone()?"ios":"unsupported";return}
+  if(Notification.permission==="denied"){pushState="denied";return}
+  try{const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();pushState=sub?"on":"off"}catch(e){pushState="off"}
+}
+const b64uBytes=s=>{const p="=".repeat((4-s.length%4)%4),b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(b,c=>c.charCodeAt(0))};
+async function pushOn(){
+  if(pushBusy||!cloud.sb||!cloud.uid)return;pushBusy=true;pushMsg="";render();
+  try{
+    const perm=await Notification.requestPermission();if(perm!=="granted"){pushState=perm==="denied"?"denied":"off";throw new Error("perm")}
+    const k=await cloud.sb.rpc("push_public_key");if(!k.data)throw new Error("key");
+    const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uBytes(k.data)});
+    const j=sub.toJSON(),q=await cloud.sb.from("push_subs").upsert({endpoint:j.endpoint,user_id:cloud.uid,p256dh:j.keys.p256dh,auth:j.keys.auth});if(q.error)throw new Error("save");
+    pushState="on";pushMsg="Påminnelser är på. En testnotis är på väg.";
+    cloud.sb.functions.invoke("push-reminders",{body:{test:true}}).catch(()=>{});
+  }catch(e){if(e.message!=="perm")pushMsg="Det gick inte att slå på påminnelser. Försök igen.";else if(pushState==="denied")pushMsg="Notiser är blockerade för sajten. Tillåt dem i webbläsarens inställningar."}
+  pushBusy=false;render();
+}
+async function pushOff(){
+  if(pushBusy)return;pushBusy=true;render();
+  try{const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub){if(cloud.sb)await cloud.sb.from("push_subs").delete().eq("endpoint",sub.endpoint);await sub.unsubscribe()}pushState="off";pushMsg="Påminnelser är av."}catch(e){pushMsg="Det gick inte att stänga av. Försök igen."}
+  pushBusy=false;render();
+}
+function pushCard(){
+  const txt={on:"Du får en notis dagen innan laget låses om du inte har valt det, och en sista i de tre sista timmarna.",off:"Få en notis dagen innan laget låses om du inte har valt det.",
+    ios:"På iPhone och iPad fungerar notiser när sajten är tillagd på hemskärmen: tryck på Dela och sedan Lägg till på hemskärmen. Öppna den därifrån och slå på påminnelser.",
+    denied:"Notiser är blockerade för sajten. Tillåt dem i webbläsarens inställningar för att få påminnelser.",unsupported:"Den här webbläsaren kan inte ta emot notiser."}[pushState];
+  const btn=pushState==="on"?`<button class="btn" data-push="off" ${pushBusy?"disabled":""}>Stäng av påminnelser</button>`:pushState==="off"?`<button class="btn on" data-push="on" ${pushBusy?"disabled":""}>${pushBusy?"Slår på…":"Påminn mig före deadline"}</button>`:"";
+  return `<div class="card pushcard"><h3 style="margin-top:0">Påminnelser</h3><p class="note" style="margin:0 0 12px">${txt}</p>${btn}${pushMsg?`<p class="note" style="margin:10px 0 0">${esc(pushMsg)}</p>`:""}</div>`;
+}
 function profileView(){
   if(!dbOk)return `<p class="eyebrow pg-k">05 · Ditt konto</p><h2 style="margin-top:0">Profil</h2>${inviteBanner()}<div class="grid2">${authCard()}
    <div class="card"><h3>Varför ett konto</h3><ol class="steps"><li>Din trupp sparas och fungerar på alla enheter.</li><li>Starta en liga eller gå med i en med en kod.</li><li>Se dina kompisars lag och poäng varje omgång.</li><li>Lägg till ett eget foto på ditt löparkort.</li></ol></div></div>
@@ -3167,6 +3244,7 @@ function profileView(){
   ${badgeAdmin(cloud.uid)}
   ${cloud.admin?`<label class="admsw"><input type="checkbox" role="switch" id="admSw" ${showAdmin?"checked":""}><span class="trk" aria-hidden="true"></span><span><b>Adminverktyg</b><span class="sub">${showAdmin?"Visas":"Dolda"}</span></span></label>`:""}
   ${inviteCard()}${adminGameCard()}${igCard()}${reviewCard()}
+  ${pushCard()}
   <div class="kv"><div><span>Poäng</span><b>${fp(state.total)}</b></div><div><span>Omgångar</span><b>${L.length}</b></div><div><span>Bästa omgång</span><b>${best?fp(best.total):"–"}</b></div><div><span>Chips</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length}</b></div></div>
   ${L.length?seasonBars():""}
   <div class="grid2" style="margin-top:12px">
@@ -3403,16 +3481,67 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-bdga
   let uid,bid;if(a.dataset.bdgadd){uid=a.dataset.bdgadd;bid=(document.getElementById("bdgPick")||{}).value;if(!bid)return;await cloud.sb.from("user_badges").insert({user_id:uid,badge_id:bid})}
   else{[uid,bid]=a.dataset.bdgdel.split("|");await cloud.sb.from("user_badges").delete().eq("user_id",uid).eq("badge_id",bid)}
   await loadBadges(uid);if(mgrOpen&&mgrOpen.id===uid)managerSheet(mgrOpen.code,mgrOpen.id,mgrOpen.view);else render()});
+/* head to head: your team and theirs side by side for one round, runner by runner with what each scored for the team.
+   Runners in both teams are marked, so what decides it is what you picked differently. */
+const RIVK="of-rival";
+const rivalId=()=>{try{return localStorage.getItem(RIVK)||""}catch(e){return ""}};
+function h2h(me,m,r){
+  /* a week that is skipped scores nothing: compare the last round that counted */
+  while(r>=LIVE&&(D.rounds[r].skip||!me.by[r]||!m.by[r]))r--;if(r<LIVE)return "";
+  const a=me.by[r],b=m.by[r],both=new Set(a.squad.filter(i=>b.squad.includes(i)));
+  const side=(x,cls)=>x.squad.map((i,k)=>{const mu=multOf(i,x.squad,x.chip,x.capLive),ran=E.starts[r][i]>0,p=E.pts[r][i]*mu;
+    return `${k===AS?'<div class="h2h-sep">B-lag</div>':""}<div class="h2h-r ${both.has(i)?"same":""}"><span class="h2h-n">${esc(nameOf(i))}${i===x.captain?' <i class="h2h-b">boost</i>':""}<small>${both.has(i)?"i båda lagen · ":""}×${mu}</small></span><b class="${ran?(p<0?"neg":"pos"):"sub"}">${ran?sg(p):"–"}</b></div>`}).join("");
+  const ta=a.total,tb=b.total,diff=(l,o)=>l.squad.filter(i=>!both.has(i)).reduce((s2,i)=>s2+E.pts[r][i]*multOf(i,l.squad,l.chip,l.capLive),0);
+  const riv=rivalId()===m.id;
+  return `<div class="card h2h" style="margin-top:14px"><div class="h2h-hd"><h3>Du mot ${esc(m.name)}</h3><span class="sub">${esc(rdName(D.rounds[r]))}</span></div>
+   <div class="h2h-score"><div class="${ta>=tb?"win":""}"><span>Du</span><b class="num">${fp(ta)}</b></div><i>–</i><div class="${tb>ta?"win":""}"><span>${esc(m.name)}</span><b class="num">${fp(tb)}</b></div></div>
+   <p class="note" style="margin:6px 0 12px">${both.size} löpare i båda lagen. Dina egna val gav ${sg(diff(a))}, deras ${sg(diff(b))}.</p>
+   <div class="h2h-cols"><div><div class="h2h-sep">A-lag</div>${side(a)}</div><div><div class="h2h-sep">A-lag</div>${side(b)}</div></div>
+   <button class="btn ${riv?"":"on"}" data-rival="${riv?"":esc(m.id)}" style="margin-top:12px">${riv?"Sluta följa som rival":"Följ som rival på Hem"}</button></div>`;
+}
+/* live: during a round, each of your runners with the week's races so far (placing and what it gave the team) and the
+   races they are entered in that have not been run yet */
+const raceShort=n=>{n=compName(n);const k=n.lastIndexOf(" - ");n=k>=0?n.slice(k+3):n;return n.length>24?n.slice(0,23)+"…":n};
+function liveCard(){
+  if(!isLive())return "";let r=-1;for(let q=LIVE;q<E.R;q++)if(hasStarted(q)&&!isFinal(q)&&!D.rounds[q].skip)r=q;if(r<0)return "";
+  const p=picks[r]||(lock&&lock.round===r?lock:null);if(!p||!p.squad||!p.squad.length)return "";
+  const evs=new Set(D.rounds[r].ev),cap=E.starts[r][p.captain]>0?p.captain:null;
+  const rows=p.squad.map((i,k)=>{const mu=multOf(i,p.squad,p.chip,cap),runs=E.hist[i].filter(h=>evs.has(h.ev)),wait=entOf(i,r).filter(u=>u.date>=TODAY&&!runs.some(h=>D.events[h.ev].date===u.date));
+    return {i,k,mu,runs,wait,pts:runs.reduce((a,h)=>a+h.pts,0)*mu}}).sort((a,b)=>b.pts-a.pts||a.k-b.k);
+  const tot=rows.reduce((a,x)=>a+x.pts,0),done=rows.filter(x=>x.runs.length).length;
+  return `<div class="card livecard"><div class="h2h-hd"><span><span class="livedot">Live</span> <b>${esc(rdName(D.rounds[r]))}</b></span><span class="lc-tot num">${fp(tot)}<small> p</small></span></div>
+   <p class="note" style="margin:4px 0 10px">${done} av ${rows.length} löpare har sprungit. Uppdateras när nya resultat kommer in.</p>
+   ${rows.map(x=>`<div class="lv-r"><div class="lv-who"><button class="who" data-prof="${x.i}">${esc(nameOf(x.i))}</button>${x.i===p.captain?' <i class="h2h-b">boost</i>':""}<small>${D.runners[x.i].k} · ×${x.mu}</small></div>
+     <div class="lv-races">${x.runs.map(h=>`<span class="lv-c ${h.pts<0?"neg":""}">${esc(raceShort(D.events[h.ev].name))}<b>${h.rank?h.rank+":a":"ej godkänd"} · ${sg(h.pts*x.mu)}</b></span>`).join("")}${x.wait.map(u=>`<span class="lv-c wait">${dayName(u.date).slice(0,3)} · ${esc(raceShort(u.name))}</span>`).join("")}${!x.runs.length&&!x.wait.length?'<span class="sub">Inga lopp den här veckan än</span>':""}</div>
+     <b class="lv-p num ${x.pts<0?"neg":x.runs.length?"pos":"sub"}">${x.runs.length?sg(x.pts):"–"}</b></div>`).join("")}</div>`;
+}
+/* the week in short, for a week after a round has finished: your points, your best and worst pick, where you placed
+   among everyone that round, and a picture to share */
+function recapCard(){
+  if(!isLive()||!state.log.length)return "";const l=state.log[state.log.length-1],r=l.round,rd=D.rounds[r];
+  if(!isFinal(r)||!rd.end||(Date.parse(TODAY)-Date.parse(rd.end))/864e5>7)return "";
+  const rows=l.squad.map((i,k)=>{const mu=E.teamMult(i,k,l.chip)*(i===l.capLive?(l.chip==="tc"?3:2):1);return {i,ran:E.starts[r][i]>0,p:E.pts[r][i]*mu}});
+  const ran=rows.filter(x=>x.ran).sort((a,b)=>b.p-a.p),best=ran[0],worst=ran.length>1?ran[ran.length-1]:null,idle=rows.filter(x=>!x.ran).length;
+  let rank=null,of=null;const G=leagueRows.GLOBAL;if(G&&G.length){const w=G.filter(m=>m.by[r]).map(m=>({id:m.id,t:m.by[r].total})).sort((a,b)=>b.t-a.t);of=w.length;const k=w.findIndex(x=>x.id===cloud.uid);if(k>=0)rank=w.filter(x=>x.t>w[k].t).length+1}
+  return `<div class="card recap"><span class="eyebrow">Din vecka · ${esc(rdName(rd))}</span>
+   <div class="rc-top"><div><b class="num rc-big">${fp(l.total)}</b><span class="sub">poäng${rank?` · plats ${rank} av ${of}`:""}</span></div><button class="btn on" data-recapshare="${r}">${shareBusy?"Skapar bild…":"Dela din vecka"}</button></div>
+   <div class="rc-grid">${best?`<div><span class="sub">Bästa val</span><b>${esc(nameOf(best.i))}</b><span class="pos">${sg(best.p)}</span></div>`:""}${worst?`<div><span class="sub">Sämsta val</span><b>${esc(nameOf(worst.i))}</b><span class="${worst.p<0?"neg":""}">${sg(worst.p)}</span></div>`:""}<div><span class="sub">Sprang inte</span><b>${idle} av ${rows.length}</b><span class="sub">${l.penalty?"avdrag "+fp(l.penalty):"inget avdrag"}</span></div></div>
+   ${shareMsg?`<p class="note" style="margin:10px 0 0">${esc(shareMsg)}</p>`:""}</div>`;
+}
+function rivalCard(){
+  const id=rivalId();if(!id||!leagueRows.GLOBAL)return "";const G=leagueRows.GLOBAL,me=G.find(x=>x.id===cloud.uid),rv=G.find(x=>x.id===id);if(!me||!rv)return "";
+  const rs=startedRounds().filter(q=>!D.rounds[q].skip&&me.by[q]&&rv.by[q]);if(!rs.length)return "";const r=rs[rs.length-1],a=me.by[r].total,b=rv.by[r].total,live=!isFinal(r);
+  return `<div class="card rival" data-mgr="GLOBAL|${esc(id)}" tabindex="0"><span class="eyebrow">Din rival · ${esc(rdName(D.rounds[r]))}${live?' <span class="livedot">Live</span>':""}</span>
+   <div class="h2h-score sm"><div class="${a>=b?"win":""}"><span>Du</span><b class="num">${fp(a)}</b></div><i>–</i><div class="${b>a?"win":""}"><span>${esc(rv.name)}</span><b class="num">${fp(b)}</b></div></div>
+   <p class="note" style="margin:6px 0 0">Säsongen: ${fp(me.total)} mot ${fp(rv.total)}. Tryck för att jämföra lagen.</p></div>`;
+}
 function managerSheet(code,id,view){
   const m=(leagueRows[code]||[]).find(x=>x.id===id);if(!m)return;
   mgrOpen={code,id,view:view==null||isNaN(view)?null:view};
   const src={m,view:mgrOpen.view,rs:code==="DEMO"?demoRs:null},b=boardData(src),st=standings(code),row=st.rows.find(y=>y.id===id),me=(leagueRows[code]||[]).find(x=>x.id===cloud.uid);
   const x=b&&b.x,r=b&&b.r;
   const extra=!x?"":`${x.in&&x.in.length?`<p class="note" style="margin:14px 0 0"><b style="color:var(--good)">In:</b> ${x.in.map(i=>esc(nameOf(i))).join(", ")} &nbsp; <b style="color:var(--bad)">Ut:</b> ${x.out.map(i=>esc(nameOf(i))).join(", ")}</p>`:""}
-   ${me&&me.id!==id&&me.by[r]?(()=>{const a=new Set(me.by[r].squad),both=x.squad.filter(i=>a.has(i)),only=x.squad.filter(i=>!a.has(i)),mine=me.by[r].squad.filter(i=>!x.squad.includes(i));
-     const sum=l=>l.reduce((s2,i)=>s2+E.pts[r][i],0);
-     return `<div class="card" style="margin-top:14px"><h3>Du mot ${esc(m.name)}</h3><p class="note" style="margin:0 0 6px">${both.length} löpare i båda lagen. Deras egna val gav ${sg(sum(only))}, dina ${sg(sum(mine))}. ${fp(me.by[r].total)} mot ${fp(x.total)} i ${rdThe(D.rounds[r])}.</p>
-      <div class="sub">Bara de: ${only.map(i=>esc(nameOf(i))).join(", ")||"inga"}</div><div class="sub">Bara du: ${mine.map(i=>esc(nameOf(i))).join(", ")||"inga"}</div></div>`})():""}`;
+   ${me&&me.id!==id&&me.by[r]?h2h(me,m,r):""}`;
   if(!(id in userBadges)&&code!=="DEMO"){userBadges[id]=[];loadBadges(id).then(L=>{if(L.length&&mgrOpen&&mgrOpen.id===id)managerSheet(mgrOpen.code,id,mgrOpen.view)})}
   const nx=openRound();
   showSheet("mgr|"+code+"|"+id,m.name,`
@@ -3561,7 +3690,7 @@ function profile(i){
   const groups=[];vis.slice().reverse().forEach(h=>{const q=ev2r.has(h.ev)?ev2r.get(h.ev):-1;let g=groups[groups.length-1];if(!g||g.q!==q){g={q,list:[]};groups.push(g)}g.list.push(h)});
   showSheet("prof|"+i,nameOf(i),`
    <div class="hd"><div style="display:flex;gap:16px;align-items:center;min-width:0">${avatar(i,"lg")}<div style="min-width:0"><h2>${esc(nameOf(i))}${idleTag(i)}</h2><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}${idle(i)?" · "+(idle(i)===2?"inget lopp på 10 veckor":"sprang inte förra veckan"):""}</div></div></div><button class="btn" data-close="1">Stäng</button></div>
-   <div class="stats"><div><b>${D.runners[i].p?fm(E.price(i,pr())):"–"}</b><span>Pris · ${TIERS[tierOf(i)][1]}</span></div><div><b>${s.starts}</b><span>Starter</span></div><div><b>${fp(s.total)}</b><span>Poäng</span></div><div><b>${fp(s.weeks?s.perWeek:0)}</b><span>Per vecka, senaste 5</span></div>${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Klassbetyg</span></div>`:""}</div>
+   <div class="stats"><div><b>${D.runners[i].p?fm(E.price(i,pr())):"–"}</b><span>Pris · ${TIERS[tierOf(i)][1]}</span></div><div><b>${s.starts}</b><span>Starter</span></div><div><b>${fp(s.total)}</b><span>Poäng</span></div><div><b>${fp(s.weeks?s.perWeek:0)}</b><span>Per vecka, senaste 5</span></div>${(()=>{const d=ownData();if(!d||!d.n)return "";return `<div><b>${Math.round(100*d.own[i]/d.n)}%</b><span>Ägs av, ${esc(rdName(D.rounds[d.r]))}</span></div>`})()}${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Klassbetyg</span></div>`:""}</div>
    ${(()=>{if(!Object.keys(ENT).length)return "";const r=R(),w=r<E.R?entOf(i,r):[],rd=D.rounds[r];return `<div class="entbox ${w.length?"on":""}"><span class="entered" aria-hidden="true">${w.length?"✓":"–"}</span><div><b>${w.length?"Anmäld den här spelveckan":"Inte anmäld den här spelveckan"}</b><span class="sub">${w.length?w.map(u=>esc(compName(u.name))+" ("+dayName(u.date).slice(0,3)+" "+dshort(u.date)+")").join(", "):rd?rdName(rd)+", "+dshort(rd.start)+" – "+dshort(rd.end):""}</span></div></div>`})()}
    ${(()=>{const e=(ENT[i]||[]).map(k=>D.upcoming[k]).filter(Boolean);return e.length?`<p class="note entline"><span class="entered" aria-hidden="true">✓</span> Anmäld: ${e.map(u=>`${u.eo&&EV_LINKS?`<a href="https://eventor.orientering.se/Events/Show/${u.eo}" target="_blank" rel="noopener">${esc(compName(u.name))}</a>`:esc(compName(u.name))} (${dshort(u.date)})`).join(", ")}</p>`:""})()}
    ${hist}
@@ -4067,6 +4196,10 @@ document.addEventListener("click",ev=>{
   if(t.id==="delYes"){deleteAccount();return}
   if(t.id==="ovrAddBtn"){const v=($("#ovrAdd")||{}).value||"";const m=v.match(/(?:eventId=|Show\/|^\s*)(\d{3,7})/i);if(!m){ovrMsg="Klistra in en tävlingslänk eller tävlingens nummer.";render();return}ovrAdd="";setOvr("race_add",m[1],"Tävling "+m[1],true);return}
   if(d.tab){const nt=d.tab;if(nt!==tab)buzz("tap");if(d.focus)setTimeout(()=>{const f=document.getElementById(d.focus);if(f)f.focus()},700);if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
+  if(d.push){d.push==="on"?pushOn():pushOff();return}
+  if(d.recapshare){const k=state.log.findIndex(l=>l.round===+d.recapshare);if(k>=0){viewRound=k;shareBoard()}return}
+  if(d.rival!==undefined){try{d.rival?localStorage.setItem(RIVK,d.rival):localStorage.removeItem(RIVK)}catch(err){}if(mgrOpen)managerSheet(mgrOpen.code,mgrOpen.id,mgrOpen.view);render();return}
+  if(d.autofill){const n=autoFill();buzz(n?"ok":"warn");if(n)save();render();return}
   if(d.add!==undefined){const i=+d.add;buzz(canAddReason(i)?"warn":"ok");if(!canAddReason(i)){plan.squad.push(i);if(!Array.isArray(plan.a))plan.a=[];if(plan.a.length<AS)plan.a.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
   if(d.sell!==undefined){const i=+d.sell;buzz("tap");plan.squad=plan.squad.filter(j=>j!==i);plan.a=(plan.a||[]).filter(j=>j!==i);if(swapSel===i)swapSel=null;fixLeaders();save();render();return}
   if(d.swap!==undefined){const i=+d.swap;buzz("tap");swapSel=swapSel===i?null:i;render();return}
@@ -4288,6 +4421,15 @@ async function loadRounds(){
   }
   return true;
 }
+let ownCache={};
+const RIX=(()=>{const m=new Map(D.runners.map((x,i)=>[x.id,i]));Object.entries(D.alias||{}).forEach(([a,i])=>{if(!m.has(a))m.set(a,i)});return m})();
+function ownData(){
+  let r=Math.min(openRound(),E.R)-1;while(r>=LIVE&&!(sqGet(r)&&Object.keys(sqGet(r).rows).length))r--;if(r<LIVE)return null;const e=sqGet(r);if(ownCache.r===r&&ownCache.e===e)return ownCache;
+  const own=new Int32Array(E.N),boost=new Int32Array(E.N);let n=0;const ix=e.ids.map(k=>RIX.has(k)?RIX.get(k):-1);
+  Object.values(e.rows).forEach(([sq,cap])=>{n++;sq.forEach(k=>{const i=ix[k];if(i>=0)own[i]++});const c=ix[cap];if(c>=0)boost[c]++});
+  ownCache={r,e,n,own,boost};return ownCache;
+}
+const ownPct=i=>{const d=ownData();return d&&d.n?Math.round(100*d.own[i]/d.n):null};
 function squadsOf(uid){
   const out={};for(let r=LIVE;r<openRound()&&r<E.R;r++){const e=sqGet(r),x=e&&e.rows[uid];if(x)out[r]={squad:x[0].map(k=>e.ids[k]),captain:e.ids[x[1]],chip:x[2]||null}}
   return out;
@@ -4561,7 +4703,7 @@ document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)r
   if(t.id==="authOut"){cloud.ready=false;resetLocal();sqStore={};sqMem={};pfCache.clear();try{localStorage.removeItem(SQK)}catch(e){}localUid=null;try{localStorage.removeItem(KEY)}catch(e){}tab="profile";cloud.sb.auth.signOut().then(()=>{leagueRows={};render()})}
 });
 
-render();launchTick();initCloud();
+render();launchTick();initCloud();pushInit().then(()=>{if(pushState!=="unsupported")render()});
 if(AUTH_BACK.err){welcomed=true;welcomeSheet("err")}
 </script>
 </body>
