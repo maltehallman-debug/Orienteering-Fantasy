@@ -3021,6 +3021,9 @@ const TODAY=(()=>{try{return new Date().toLocaleDateString("sv-SE",{timeZone:"Eu
 /* the season starts at Sverigepremiären: everyone starts there with the full budget, and the beta round, the practice
    weeks and every result before it stay out of sight (they still set the prices) */
 const LIVE=(()=>{const k=D.rounds.findIndex(x=>x.launch);return k>=0?k:D.liveStart})();
+/* everyone's team was wiped before the season (generation 1): a save from before keeps the name, team name and leagues
+   but not the squad, the picks or the score */
+const SAVE_GEN=1;
 let state=E.newState(LIVE), plan={squad:[],captain:null,vice:null,chip:null};
 let showAdmin=(()=>{try{return localStorage.getItem("of-admin")==="1"}catch(e){return false}})();
 const adminOn=()=>cloud.admin&&showAdmin;
@@ -3045,8 +3048,8 @@ function unpackPicks(o){const out={};Object.keys(o||{}).forEach(r=>{const p=o[r]
   if(sq.length===D.squad&&!sq.includes(null)&&+r>=0&&+r<E.R){const c=ri(p.captain);out[+r]={squad:sq,captain:sq.includes(c)?c:sq[0],chip:E.CHIPS.includes(p.chip)?p.chip:null}}});return out}
 /* a v4 save (six runners) cannot be played under the new rules: keep only the account, name and leagues */
 try{if(!localStorage.getItem(KEY)){const o=JSON.parse(localStorage.getItem("orienteering-fantasy-v4")||"null");if(o){localUid=o.uid||null;mgrName=o.name||"";myLeagues=o.leagues||[];myLgn=o.lgn||{}}}}catch(e){}
-try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.state&&s.state.round<=E.R){localUid=s.uid||null;picks=unpackPicks(s.picks);state=unpackSt(s.state);plan=unpackPl(s.plan);lock=unpackPl(s.lock||null);mgrName=s.name||"";myTeam=s.team||"";localTs=s.ts||0;myLeagues=s.leagues||[];myLgn=s.lgn||{};viewRound=Math.max(0,state.round-1);if(state.start!==LIVE){state=E.newState(LIVE);viewRound=0}}}catch(e){}
-const blob=()=>({ver:5,uid:cloud.uid||localUid,picks:packPicks(),state:packSt(state),plan:packPl(plan),lock:packPl(lock),name:mgrName,team:myTeam,ts:localTs,leagues:myLeagues,lgn:myLgn});
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.gen!==SAVE_GEN){localUid=s.uid||null;mgrName=s.name||"";myTeam=s.team||"";myLeagues=s.leagues||[];myLgn=s.lgn||{}}else if(s&&s.state&&s.state.round<=E.R){localUid=s.uid||null;picks=unpackPicks(s.picks);state=unpackSt(s.state);plan=unpackPl(s.plan);lock=unpackPl(s.lock||null);mgrName=s.name||"";myTeam=s.team||"";localTs=s.ts||0;myLeagues=s.leagues||[];myLgn=s.lgn||{};viewRound=Math.max(0,state.round-1);if(state.start!==LIVE){state=E.newState(LIVE);viewRound=0}}}catch(e){}
+const blob=()=>({ver:5,gen:SAVE_GEN,uid:cloud.uid||localUid,picks:packPicks(),state:packSt(state),plan:packPl(plan),lock:packPl(lock),name:mgrName,team:myTeam,ts:localTs,leagues:myLeagues,lgn:myLgn});
 function resetLocal(){state=E.newState(LIVE);plan={squad:[],a:[],captain:null,vice:null,chip:null};lock=null;picks={};liveRounds=[];syncMsg="";mgrName="";myTeam="";myAv=null;avMsg="";myLeagues=[];myLgn={};myOwn={};leagueRows={};localTs=0;viewRound=0}
 const save=()=>{autoSave();localTs=Date.now();try{localStorage.setItem(KEY,JSON.stringify(blob()))}catch(e){}queueCloud()};
 const R=()=>state.round, done=()=>state.round>=E.R, pr=()=>Math.min(state.round,E.R-1);
@@ -5330,7 +5333,8 @@ async function onSession(session){
     const v=sv.data&&sv.data.state;
     /* the account's save wins over a game played signed out; between two copies of the same account's game, the newer one wins */
     if(v&&v.ver!==5){mgrName=v.name||mgrName;(v.leagues||[]).forEach(c=>{if(!myLeagues.includes(c))myLeagues.push(c)});Object.assign(myLgn,v.lgn||{})}
-    if(v&&v.ver===5&&v.state&&v.state.round<=E.R&&(!mine||(v.ts||0)>localTs)){
+    if(v&&v.ver===5&&v.gen!==SAVE_GEN){mgrName=v.name||mgrName;(v.leagues||[]).forEach(c=>{if(!myLeagues.includes(c))myLeagues.push(c)});Object.assign(myLgn,v.lgn||{})}
+    else if(v&&v.ver===5&&v.state&&v.state.round<=E.R&&(!mine||(v.ts||0)>localTs)){
       state=unpackSt(JSON.parse(JSON.stringify(v.state)));if(state.start!==LIVE)state=E.newState(LIVE);plan=unpackPl(JSON.parse(JSON.stringify(v.plan||packPl(plan))));lock=unpackPl(v.lock||null);mgrName=v.name||mgrName;picks=unpackPicks(v.picks||{});
       myLeagues=v.leagues||[];myLgn=v.lgn||{};localTs=v.ts;viewRound=Math.max(0,state.log.length-1);
       if(state.squad.length&&!plan.squad.length)startRound();fixLeaders();if(lock)lock.vice=null;
