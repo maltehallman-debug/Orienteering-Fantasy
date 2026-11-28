@@ -3702,11 +3702,9 @@ function roundsView(){
   if(!state.log.length)return board||`<div class="card">Inga spelade omgångar än.</div>`;
   let li=Math.min(viewRound,state.log.length-1);while(li>0&&D.rounds[state.log[li].round].skip)li--;const L=state.log[li],rd=L.round;
   if(viewRound>=state.log.length||D.rounds[rd].skip)return board;
-  return `${board}${!isFinal(rd)?`<p class="next-k" style="margin:18px 0 6px">Live · poäng hittills, fler resultat kan komma</p>`:""}${L.carried?`<p class="note" style="margin:0 0 6px">Ingen trupp låstes den här omgången, så truppen från omgången innan spelade.</p>`:""}
-  <p class="note" style="margin:18px 0 12px">${fp(L.base)} från löpare${L.capLive===null?", boostad löpare sprang inte":", "+sg(L.capExtra)+" boost från "+esc(nameOf(L.capLive))+(L.chip==="tc"?" (3x)":" (2x)")}${L.penalty?", -"+fp(L.penalty)+" för "+L.transfers+" byten":""}${L.chip==="wc"?", Vägval spelat":""}</p>
-  <div class="grid2">${L.squad.map((i,k)=>{const m=multOf(i,L.squad,L.chip,L.capLive),raw=E.pts[rd][i],p=raw*m,b=L.captain===i;return `<div class="card" style="--i:${k}${b?";box-shadow:0 0 0 1px var(--accent-line) inset":""}"><div class="ev" style="border:0;padding:0 0 4px;align-items:center"><div style="display:flex;gap:12px;align-items:center;min-width:0">${avatar(i,"sm")}<div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${k<AS?"A-lag":"B-lag"}, ${esc(clubOf(i))}${b?`, <b style="color:var(--accent)">boostad</b>`:""}</span></div></div><span class="pts-big ${p<0?"neg":""}">${sg(p)}${E.starts[rd][i]?` <span class="sub" style="font-size:12px">${sg(raw)} ×${m}</span>`:""}</span></div>${evLines(i,rd)}</div>`}).join("")}</div>
-  <div class="card"><h3>Bästa poängen den här omgången</h3>${E.roundBest(rd,5).map(([i,p],k)=>`<div class="ev"><span>${k+1}. <button class="who" style="font-size:15px" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${esc(clubOf(i))}</span></span><b class="pos">${sg(p)}</b></div>`).join("")||'<div class="sub">Inga räknade lopp den här omgången.</div>'}</div>
-  ${!done()&&li===state.log.length-1?`<p><button class="btn on" data-tab="team" id="next">Planera omgång ${D.rounds[R()].n}</button></p>`:""}`;
+  /* the board shows the week; only a note when the squad from the week before played, and the way to the next week */
+  return `${board}${L.carried?`<p class="note" style="margin:12px 0 0">Förra omgångens trupp spelade.</p>`:""}
+  ${!done()&&li===state.log.length-1?`<p><button class="btn on" data-tab="team" id="next">Planera nästa omgång</button></p>`:""}`;
 }
 
 /* ---------- profile ---------- */
