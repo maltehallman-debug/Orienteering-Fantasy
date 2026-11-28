@@ -3653,7 +3653,8 @@ function privacyCard(){
    ${delMsg?`<p class="note" style="margin:10px 0 0;color:${dbOk?"var(--warn)":"var(--good)"}">${esc(delMsg)}</p>`:""}</div>`;
 }
 function seasonBars(){
-  const L=state.log,mx=Math.max(100,...L.map(l=>l.total));
+  /* weeks without play are not rounds: they are left out of the bars */
+  const L=state.log.filter(l=>!D.rounds[l.round].skip);if(!L.length)return "";const mx=Math.max(100,...L.map(l=>l.total));
   return `<div class="card"><span class="eyebrow">Poäng per omgång</span><div class="sbars">${L.map(l=>`<button data-tab="rounds" data-round="${state.log.indexOf(l)}" title="${rdName(D.rounds[l.round])}: ${fp(l.total)}"><span class="v">${Math.round(l.total/10)}</span><i style="--k:${state.log.indexOf(l)};height:${Math.max(2,Math.round(Math.max(0,l.total)/mx*90))}px"></i><span>${rdNo(D.rounds[l.round])}</span></button>`).join("")}</div></div>`;
 }
 function themeCard(){
