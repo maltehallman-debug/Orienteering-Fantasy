@@ -2680,7 +2680,11 @@ function courseSvg(){
   const narrow=matchMedia("(max-width:640px)").matches;
   const W=narrow?500:1000,H=104,x0=narrow?30:46,x1=W-x0,cr=15;
   /* the course starts two weeks back: those controls are already taken, the current one is next, the rest lie ahead */
-  const cur=done()?E.R:state.round,nn=narrow?5:9,w0=Math.max(0,Math.min(cur-2,E.R-nn)),w1=Math.min(E.R,w0+nn),n=w1-w0;
+  /* weeks without play are left out of the course, as if they did not exist */
+  const cur=done()?E.R:state.round,RS=[];for(let q=0;q<E.R;q++)if(!D.rounds[q].skip||state.log.some(l=>l.round===q&&!D.rounds[q].skip))RS.push(q);
+  const nowR=done()?-1:(D.rounds[state.round]&&D.rounds[state.round].skip?nextPlayed(state.round):state.round);
+  let cp=RS.findIndex(q=>q>=cur);if(cp<0)cp=RS.length;
+  const nn=narrow?5:9,w0=Math.max(0,Math.min(cp-2,RS.length-nn)),w1=Math.min(RS.length,w0+nn),n=w1-w0;
   const step=(x1-x0)/(n+1);
   /* a calm line, a gentle wave, so every label can sit in the same place under its control */
   const P=[];for(let k=0;k<=n+1;k++){P.push([x0+k*step,50+Math.sin(k*.9)*9])}
@@ -2689,12 +2693,12 @@ function courseSvg(){
     const [ax,ay]=P[k],[bx,by]=P[k+1],dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L;
     const r0=k===0?14:cr+2,r1=k===P.length-2?cr+8:cr+2;
     const a=[ax+ux*r0,ay+uy*r0],b=[bx-ux*r1,by-uy*r1];
-    const played=(w0+k)<cur; // leg k arrives at round w0+k: run once that control is taken
+    const played=RS[w0+k]!==undefined&&RS[w0+k]<cur; // leg k arrives at the round after control k: run once that control is taken
     legs+=`<line class="leg ${played?"draw":"todo"}" style="--k:${k};--len:${Math.hypot(b[0]-a[0],b[1]-a[1]).toFixed(0)}" x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"/>`;
   }
   let c="";
   for(let k=1;k<=n;k++){
-    const ri=w0+k-1,[x,y]=P[k],entry=state.log.find(l=>l.round===ri),played=!!entry,now=!done()&&ri===state.round,taken=ri<cur;
+    const ri=RS[w0+k-1],[x,y]=P[k],entry=state.log.find(l=>l.round===ri),played=!!entry,now=ri===nowR,taken=ri<cur;
     const rdi=D.rounds[ri],no=rdNo(rdi),lab=played?Math.round(entry.total/10)+" p":(lock&&lock.round===ri?(Date.now()>=lockAt(ri)?"Låst":"Sparad"):"");   /* "Låst" only once the deadline has passed */
     const sub=dshort(rdi.start),skip=!played&&!now&&rdi.skip;
     c+=`<g class="ctl ${played?"done":""} ${taken?"taken":""} ${now?"now":""} ${skip?"skip":""}" data-ctrl="${ri}" role="button" tabindex="0" aria-label="${rdName(D.rounds[ri])}, veckan ${sub}${played?", "+lab.replace(" p"," poäng"):taken?", passerad":""}">
@@ -3212,10 +3216,12 @@ const surname=n=>{const w=n.trim().split(/\s+/);return w.length>1?w.slice(1).joi
 const shortRace=e=>{const n=compName(e.name).replace(/\((?:[DH]\d\d[^)]*|[^)]*relay)\)/g,"").replace(/^(DM|GM|SM)[, ]+/i,"$1 ").split(/[,:–-]/)[0].trim();return n.length>14?n.slice(0,13)+"…":n};
 /* everything the board shows, worked out once: the page and the share picture are drawn from the same numbers */
 function boardData(src){
-  const own=!src,L=own?state.log:src.m.sim.rounds.filter(x=>(src.rs||startedRounds()).includes(x.round)),weeks=L.map((x,k)=>({k,x,r:x.round}));if(own&&!done())weeks.push({k:L.length,x:null,r:R()});
+  const own=!src,L=own?state.log:src.m.sim.rounds.filter(x=>(src.rs||startedRounds()).includes(x.round)),weeks=L.map((x,k)=>({k,x,r:x.round})).filter(w=>!D.rounds[w.r].skip);
+  if(own&&!done()){const nx=D.rounds[R()].skip?nextPlayed(R()):R();weeks.push({k:L.length,x:null,r:nx>=0?nx:R()})}
   if(!weeks.length)return null;
-  const view=own?viewRound:(src.view===null?weeks.length-1:src.view);
-  const w=weeks[Math.max(0,Math.min(view,weeks.length-1))],x=w.x,r=w.r,rd=D.rounds[r];
+  const view=own?viewRound:(src.view===null?Infinity:src.view);
+  let wi=0;weeks.forEach((v,k)=>{if(v.k<=view)wi=k});
+  const w=weeks[wi],x=w.x,r=w.r,rd=D.rounds[r],prevW=weeks[wi-1],nextW=weeks[wi+1];
   const sq=x?x.squad.slice():(picks[r]&&isLive()?picks[r].squad.slice():ordered(plan));
   const cap=x?x.capLive:(picks[r]&&isLive()?picks[r].captain:plan.captain),chip=x?x.chip:(picks[r]&&isLive()?picks[r].chip:plan.chip);
   const total=x?L.slice(0,w.k+1).reduce((a,l)=>a+l.total,0):state.total;
@@ -3232,7 +3238,7 @@ function boardData(src){
       race:played?(races.length?shortRace(D.events[races[0].ev])+" "+(races[0].kind?["","DNF","MP","DSQ"][races[0].kind]:fp(races[0].pts*m)+"p"):"Inget lopp"):"Inte tävlat än",
       ph,ini:nameOf(i).split(/\s+/).filter(Boolean).map(w=>w[0]).filter((c,k,a)=>k===0||k===a.length-1).join("").toUpperCase(),hue:hsh(D.runners[i].c)%360}});
   const me=own?myTeam||mgrName||"Mitt lag":src.m.name,mgr=own?(myTeam&&mgrName?mgrName:""):(src.m.team&&src.m.mgr!==src.m.name?src.m.mgr:"");
-  return {own,src,w,weeks,x,r,rd,sq,cap,chip,total,tr,players:G.length,best,score,frac:Math.max(0,Math.min(1,score/Math.max(best||0,1000))),when,cards,me,mgr,av:own?myAv:(src.m.av||null),team:lpTeam==="B"?"B":"A"};
+  return {own,src,w,weeks,prevW,nextW,x,r,rd,sq,cap,chip,total,tr,players:G.length,best,score,frac:Math.max(0,Math.min(1,score/Math.max(best||0,1000))),when,cards,me,mgr,av:own?myAv:(src.m.av||null),team:lpTeam==="B"?"B":"A"};
 }
 const kSuf=v=>String(v).replace(/k$/,"<small>k</small>");
 function fifaCard(c,k){
@@ -3244,13 +3250,12 @@ function fifaCard(c,k){
     <span class="lc-st"><span><b>${kSuf(c.price)}</b><i>Pris</i></span><span><b>${c.avg}</b><i>P / v</i></span></span><span class="lc-club">${esc(c.club)}</span></button></span>`;
 }
 function weekBoard(src){
-  const b=boardData(src);if(!b)return "";const {w,weeks,x,r,rd}=b,arr=b.own?"data-round":"data-mround";
+  const b=boardData(src);if(!b)return "";const {w,weeks,prevW,nextW,x,r,rd}=b,arr=b.own?"data-round":"data-mround";
   return `<section class="board" aria-label="${rdName(rd)}">
-   <div class="bd-head"><span class="bd-brand">Fantasy<em>Orientering</em></span><span class="bd-me"><span><b>${esc(b.me)}</b>${b.mgr?`<small>${esc(b.mgr)}</small>`:""}</span>${b.own?(dbOk?mgrDot({id:cloud.uid,name:mgrName||"M",av:myAv}):""):mgrDot(b.src.m)}</span></div>
    <div class="bd-top"><div class="bd-gauge"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="g0" cx="100" cy="100" r="80" pathLength="100"/>${b.frac>0?`<circle class="g1" cx="100" cy="100" r="80" pathLength="100" style="--f:${(b.frac*75).toFixed(2)}"/>`:""}</svg>
     <div class="bd-score"><b class="score" data-count="${b.score/10}" data-key="board${r}">${x?fp(b.score):"–"}</b><span>${x?(isFinal(r)?"poäng":"hittills"):"inte spelad"}</span></div></div>
    <div class="bd-stats"><div><span>Byten</span><b>${b.tr}</b></div><div><span>Totalt</span><b>${fp(b.total)}</b></div><div><span>Spelare</span><b>${b.players||"–"}</b></div><div><span>Högsta</span><b>${b.best!==null?fp(b.best):"–"}</b></div></div></div>
-   <div class="bd-week"><button class="bd-arr" ${arr}="${w.k-1}" ${w.k<=0?"disabled":""} aria-label="Föregående omgång">‹</button><div><b>${rdName(rd)}</b><span>${b.when}${x&&x.chip?" · "+esc(CHIPINFO[x.chip][0]):""}${x&&x.carried?" · förra truppen spelade":""}</span></div><button class="bd-arr" ${arr}="${w.k+1}" ${w.k>=weeks.length-1?"disabled":""} aria-label="Nästa omgång">›</button></div>
+   <div class="bd-week"><button class="bd-arr" ${arr}="${prevW?prevW.k:""}" ${prevW?"":"disabled"} aria-label="Föregående omgång">‹</button><div><b>${rdName(rd)}</b><span>${b.when}${x&&x.chip?" · "+esc(CHIPINFO[x.chip][0]):""}${x&&x.carried?" · förra truppen spelade":""}</span></div><button class="bd-arr" ${arr}="${nextW?nextW.k:""}" ${nextW?"":"disabled"} aria-label="Nästa omgång">›</button></div>
    <div class="bd-tabs"><button data-lteam="A" class="${lpTeam!=="B"?"on":""}">A-lag <small>×2</small></button><button data-lteam="B" class="${lpTeam==="B"?"on":""}">B-lag <small>×1</small></button></div>
    ${b.cards.length?`<div class="lineup">${[[0,3],[2],[1,4]].map(col=>`<div class="lu-col">${col.filter(k=>b.cards[k]).map(k=>fifaCard(b.cards[k],k)).join("")}</div>`).join("")}</div>`:`<p class="bd-empty">${x?"":"Välj alla "+D.squad+" löpare under Lag så syns de här."}</p>`}
   </section>
@@ -3368,8 +3373,8 @@ async function shareBoard(src){
 function roundsView(){
   const board=weekBoard();
   if(!state.log.length)return board||`<div class="card">Inga spelade omgångar än.</div>`;
-  const li=Math.min(viewRound,state.log.length-1),L=state.log[li],rd=L.round;
-  if(viewRound>=state.log.length)return board;
+  let li=Math.min(viewRound,state.log.length-1);while(li>0&&D.rounds[state.log[li].round].skip)li--;const L=state.log[li],rd=L.round;
+  if(viewRound>=state.log.length||D.rounds[rd].skip)return board;
   return `${board}${!isFinal(rd)?`<p class="next-k" style="margin:18px 0 6px">Live · poäng hittills, fler resultat kan komma</p>`:""}${L.carried?`<p class="note" style="margin:0 0 6px">Ingen trupp låstes den här omgången, så truppen från omgången innan spelade.</p>`:""}
   <p class="note" style="margin:18px 0 12px">${fp(L.base)} från löpare${L.capLive===null?", boostad löpare sprang inte":", "+sg(L.capExtra)+" boost från "+esc(nameOf(L.capLive))+(L.chip==="tc"?" (3x)":" (2x)")}${L.penalty?", -"+fp(L.penalty)+" för "+L.transfers+" byten":""}${L.chip==="wc"?", Vägval spelat":""}</p>
   <div class="grid2">${L.squad.map((i,k)=>{const m=multOf(i,L.squad,L.chip,L.capLive),raw=E.pts[rd][i],p=raw*m,b=L.captain===i;return `<div class="card" style="--i:${k}${b?";box-shadow:0 0 0 1px var(--accent-line) inset":""}"><div class="ev" style="border:0;padding:0 0 4px;align-items:center"><div style="display:flex;gap:12px;align-items:center;min-width:0">${avatar(i,"sm")}<div style="min-width:0"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button> <span class="sub">${k<AS?"A-lag":"B-lag"}, ${esc(clubOf(i))}${b?`, <b style="color:var(--accent)">boostad</b>`:""}</span></div></div><span class="pts-big ${p<0?"neg":""}">${sg(p)}${E.starts[rd][i]?` <span class="sub" style="font-size:12px">${sg(raw)} ×${m}</span>`:""}</span></div>${evLines(i,rd)}</div>`}).join("")}</div>
@@ -3724,19 +3729,17 @@ function weekCard(){
   const st=standings("GLOBAL"),rs=st.rs;
   /* before any round has been played the card is still there, saying when it fills */
   if(!leagueRows.GLOBAL||st.cur===undefined)return `<div class="card global" style="margin-top:12px"><span class="eyebrow">Topp 20 i omgången</span><h3 style="margin:2px 0 6px">Veckans manager</h3><p class="note" style="margin:0">${!leagueRows.GLOBAL?"Laddar topplistan…":`De 20 managers som tar flest poäng i omgången. Listan fylls när ${rdThe(D.rounds[LIVE])} låses ${lockText(LIVE)}.`}</p></div>`;
-  if(wmR===null||!rs.includes(wmR))wmR=st.cur;
-  const r=wmR,i=rs.indexOf(r),live=!isFinal(r);
+  const r=st.cur,live=!isFinal(r);
   const all=st.rows.filter(m=>ptsOf(m,r)!==null).map(m=>({m,p:ptsOf(m,r)})).sort((a,b)=>b.p-a.p||a.m.name.localeCompare(b.m.name,"sv"));
   all.forEach((x,k)=>{x.rank=k>0&&all[k-1].p===x.p?all[k-1].rank:k+1});
   const me=all.find(x=>x.m.id===cloud.uid);let rows=all.slice(0,wmAll?20:5);if(wmAll&&me&&!rows.includes(me))rows=rows.concat([me]);
-  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0;align-items:center"><div><span class="eyebrow">Topp ${wmAll?20:5} i omgången</span><h3 style="margin:2px 0 0">Veckans manager</h3></div>
-    <div class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn wmarrow" data-weekr="${i>0?rs[i-1]:""}" ${i>0?"":"disabled"} aria-label="Föregående omgång">‹</button><b style="white-space:nowrap">${esc(rdName(D.rounds[r]))}${live?' <span class="livedot">Live</span>':""}</b><button class="btn wmarrow" data-weekr="${i<rs.length-1?rs[i+1]:""}" ${i<rs.length-1?"":"disabled"} aria-label="Nästa omgång">›</button></div></div>
+  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><span class="eyebrow">Topp ${wmAll?20:5} · ${esc(rdName(D.rounds[r]))}</span><h3 style="margin:2px 0 0">Veckans manager</h3></div>${all.length>5?`<button class="btn more" data-wmall="1">${wmAll?"Topp 5":"Topp 20 →"}</button>`:""}</div>
     ${all.length?`<div class="lgl" role="table" aria-label="Veckans manager" style="--plw:${plW(rows.map(x=>[x.rank]))}px"><div class="lgl-h" role="row"><span role="columnheader"><span aria-label="Placering">#</span></span><span role="columnheader">Lag</span><span role="columnheader">Vecka${live?' <i class="lgl-live" title="Live"></i>':""}</span><span role="columnheader">Total</span></div>
     ${rows.map((x,k)=>`${k===20?'<div class="lgl-gap" aria-hidden="true">⋯</div>':""}<div class="lgl-r ${x.m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="GLOBAL|${esc(x.m.id)}" tabindex="0">
       <span class="pl" role="cell">${x.rank}</span>
       <span class="tm" role="cell">${mgrDot(x.m)}<span><b class="nmb"><span class="nmt">${esc(x.m.name)}</span>${featTag(x.m.id)}</b>${x.m.team&&x.m.mgr!==x.m.name?`<span class="sub">${esc(x.m.mgr)}${x.m.id===cloud.uid?" · du":""}</span>`:x.m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span>
       <span class="n" role="cell"><b>${fp(x.p)}p</b></span><span class="n" role="cell">${fp(st.rows.find(y=>y.id===x.m.id).t)}p</span></div>`).join("")}
-    </div>${all.length>5?`<div class="lg-actions" style="margin-top:10px"><button class="btn more" data-wmall="1">${wmAll?"Visa topp 5":"Visa topp 20 →"}</button></div>`:""}`:`<p class="note" style="margin:6px 0 0">Ingen hade en trupp den här omgången.</p>`}</div>`;
+    </div>`:`<p class="note" style="margin:6px 0 0">Ingen hade en trupp den här omgången.</p>`}</div>`;
 }
 function globalCard(){
   const rows=leagueRows.GLOBAL||[],st=standings("GLOBAL"),me=st.rows.find(m=>m.id===cloud.uid);
