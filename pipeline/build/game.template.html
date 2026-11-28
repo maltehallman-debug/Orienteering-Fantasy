@@ -3345,7 +3345,8 @@ function adminNewsCard(){
 document.addEventListener("input",e=>{const t=e.target;if(t.id==="nwTitle")newsF.title=t.value;else if(t.id==="nwBody")newsF.body=t.value;else if(t.id==="nwDay")newsF.day=t.value});
 document.addEventListener("click",e=>{const t=e.target.closest("#nwSend,[data-newsdel]");if(!t||!adminOn())return;if(t.id==="nwSend")publishNews();else deleteNews(+t.dataset.newsdel)});
 /* the latest game week with any results */
-function lastScoredRound(){for(let r=E.R-1;r>=0;r--){let any=false;for(let i=0;i<E.N&&!any;i++)if(E.starts[r][i])any=true;if(any)return r}return -1}
+/* only rounds of this season: the beta round and the weeks before the premiere do not show */
+function lastScoredRound(){for(let r=E.R-1;r>=LIVE;r--){let any=false;for(let i=0;i<E.N&&!any;i++)if(E.starts[r][i])any=true;if(any)return r}return -1}
 function seasonTop(k){const last=lastScoredRound();if(last<LIVE)return [];const tot=new Float64Array(E.N);for(let r=LIVE;r<=last;r++)for(let i=0;i<E.N;i++)tot[i]+=E.pts[r][i];
   const a=[];for(let i=0;i<E.N;i++)if(tot[i]>0)a.push([i,tot[i]]);return a.sort((x,y)=>y[1]-x[1]).slice(0,k)}
 function topList(L,empty){return L.length?`<ol class="hm-top">${L.map(([i,p],k)=>`<li><span class="hm-n">${k+1}</span>${avatar(i,"sm")}<span class="hm-who"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button><span class="sub">${esc(clubOf(i))} · ${esc(D.runners[i].k||"")}</span></span><b class="hm-p">${fp(p)}<small>p</small></b></li>`).join("")}</ol>`:`<p class="note" style="margin:0">${empty}</p>`}
