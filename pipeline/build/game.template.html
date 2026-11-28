@@ -2402,6 +2402,11 @@ body{font-family:var(--font);font-size:var(--ds-fs-body);color:var(--ds-ink)}
 /* ---------- colour accents ---------- */
 .up,.pos{color:var(--ds-good)!important}.dn,.neg{color:var(--ds-bad)!important}
 .livedot,.livedot::before{color:var(--ds-bad)}
+/* home lists on phones: each card centred on the screen (not pushed to the left), the next one peeking on both sides */
+@media (max-width:699px){
+  .hm-rail{margin-left:calc(50% - 50vw)!important;margin-right:calc(50% - 50vw)!important;padding:0 16px 6px!important;scroll-padding:0 16px;gap:10px!important}
+  .hm-rail>.hm-card{flex:0 0 calc(100vw - 32px)!important;scroll-snap-align:center!important}
+}
 </style>
 </head>
 <body>
