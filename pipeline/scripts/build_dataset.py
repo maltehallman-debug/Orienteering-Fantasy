@@ -611,15 +611,35 @@ _foreign = {k for k in pool if foreign_runner(k)}
 pool = [k for k in pool if k not in _under and k not in HIDE and k not in _foreign]
 print("left out: under 15", len(_under), sorted(names[k].most_common(1)[0][0] for k in _under)[:15], "hidden by an admin", len(HIDE),
       "foreign clubs", len(_foreign), collections.Counter(pick_club(clubs[k]) for k in _foreign).most_common(8))
+# This year's class: juniors move up a class at new year, but only half of a class does (D16 is 15 and 16, so the
+# 16-year-olds become D18 and the 15-year-olds stay) and the results carry no birth years. So the class comes from
+# what the runner does this year: the classes they have raced this year, else the classes they have entered for
+# races this year (Eventor entries), else last year's class until they show up in one.
+_evdate = {u.get("eid"): u.get("date", "") for u in _j("eventor_upcoming.json", []) or []}
+_entcls = collections.defaultdict(collections.Counter)
+_bynm = collections.defaultdict(list)
+for _k in pool: _bynm[(_k.split("|")[0], _k.rsplit("|", 1)[1])].append(_k)
+for _en in _j("eventor_entries.json", []) or []:
+    if not str(_evdate.get(_en.get("eid"), "")).startswith(str(TODAY.year)): continue
+    _c = norm(_en.get("cls", ""))
+    if not re.match(r"^[DH](15|16|17|18|19|20|21)", _c): continue
+    try: _k = rkey({"name": _en["name"], "club": _en.get("club", "")}, {"g": _c[0], "cls": _c, "rawcls": _c})
+    except Exception: _k = None
+    if _k not in clsc:
+        _m = _bynm.get((_en["name"].strip().lower(), _c[0]), [])
+        if len(_m) != 1: continue
+        _k = _m[0]
+    _entcls[_k][_c[0] + {"15": "16", "17": "18", "19": "20"}.get(_c[1:3], _c[1:3])] += 1
 def class_of(k):
     g = k.rsplit("|", 1)[1]
     if youth_bound(k) is not None: return g + "16"
-    cc = clsy[k].get(TODAY.year) or clsc[k]; tot = sum(cc.values())
+    cc = clsy[k].get(TODAY.year) or _entcls.get(k) or clsc[k]; tot = sum(cc.values())
     for a in AGES:
         x = cc.get(g + a, 0)
         if x >= 2 or (x and x * 3 >= tot): return g + a
     return cc.most_common(1)[0][0]
 CLS = {k: class_of(k) for k in pool}
+print("class from this year: raced", sum(1 for k in pool if clsy[k].get(TODAY.year)), "entered only", sum(1 for k in pool if not clsy[k].get(TODAY.year) and _entcls.get(k)), "last year", sum(1 for k in pool if not clsy[k].get(TODAY.year) and not _entcls.get(k)))
 # saved squads name runners by key; keys made from a joint relay club before it stopped counting as a club still work
 ALIAS = {}
 for k in pool:
