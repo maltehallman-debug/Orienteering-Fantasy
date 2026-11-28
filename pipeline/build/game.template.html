@@ -2581,6 +2581,30 @@ html.cfg-picking *{cursor:crosshair!important}
   animation:eggBeam 4.2s cubic-bezier(.45,.05,.55,.95) forwards}
 @keyframes eggBeam{0%{transform:translate(-30vw,20vh)}30%{transform:translate(18vw,-6vh)}55%{transform:translate(-8vw,-22vh)}80%{transform:translate(24vw,14vh)}100%{transform:translate(0,4vh)}}
 @media (prefers-reduced-motion:reduce){.egg-night i{animation:none}}
+
+/* ---------- chips as tiles, the same family as the swaps and penalty tiles above them: tint ground, navy icon;
+   the chosen one turns navy with a yellow icon, a used one is struck through, an unavailable one is faded ---------- */
+.coins{gap:6px!important}
+.coin{position:relative;display:grid!important;justify-items:center;align-content:start;gap:3px!important;padding:10px 4px 9px!important;border-radius:var(--ds-r-ctl,14px)!important;
+  background:var(--ds-tint,rgba(0,60,104,.06))!important;box-shadow:none!important;transition:background .2s ease,transform .12s ease}
+.coin .disc{width:34px!important;height:34px!important;border-radius:10px!important;background:#fff!important;color:var(--ds-navy,#003c68)!important;box-shadow:0 1px 0 rgba(0,40,71,.06),inset 0 0 0 1px rgba(0,60,104,.12)!important;transform:none!important;margin-bottom:3px}
+.coin .disc svg{width:19px!important;height:19px!important}
+.coin b{font:800 11.5px/1.15 var(--font)!important;color:var(--ds-ink,#0b0f14)!important;margin:0!important}
+.coin small{font:600 9.5px/1.15 var(--font)!important;color:var(--ds-ink-2,#5b6773)!important;white-space:normal!important;overflow:visible!important;text-align:center}
+.chipdesc .btn{white-space:nowrap}
+.coin:active:not(:disabled){transform:scale(.96)}
+@media (hover:hover) and (pointer:fine){.coin:not(:disabled):not(.on):hover{background:var(--ds-tint-2,rgba(0,60,104,.12))!important}.coin:not(:disabled):not(.on):hover .disc{transform:none!important}}
+.coin.on{background:var(--ds-navy,#003c68)!important}
+.coin.on .disc{background:var(--ds-yellow,#ffe74d)!important;color:var(--ds-navy,#003c68)!important;box-shadow:none!important;transform:none!important}
+.coin.on b{color:#fff!important}.coin.on small{color:#cfe0ef!important}
+.coin.on::after{content:"Vald";position:absolute;top:-7px;right:-3px;font:800 8.5px/1 var(--font);letter-spacing:.06em;text-transform:uppercase;background:var(--ds-yellow,#ffe74d);color:#002847;padding:3px 5px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.coin.used{background:none!important;box-shadow:inset 0 0 0 1.5px dashed!important;outline:1.5px dashed var(--ds-line-2,#cdd5de);outline-offset:-1.5px}
+.coin.used .disc{background:none!important;box-shadow:none!important;color:var(--ds-ink-3,#8a96a3)!important}
+.coin.used b{color:var(--ds-ink-3,#8a96a3)!important;text-decoration:line-through}
+.coin:disabled:not(.used){opacity:.45}
+.coin:disabled .disc{filter:none!important}
+@media (max-width:420px){.coins{gap:5px!important}.coin{padding:9px 2px 8px!important}.coin .disc{width:30px!important;height:30px!important}.coin .disc svg{width:17px!important;height:17px!important}.coin b{font-size:10.5px!important}.coin small{font-size:8.5px!important}}
+@media (max-width:360px){.coin small{display:none}}
 </style>
 </head>
 <body>
@@ -3527,7 +3551,7 @@ function teamView(){
   const lead=locked?(frozen?"Låst. Poängen kommer in i takt med resultaten.":"Låst för "+rdThe(rd)+"."):
      (!state.squad.length?"Välj "+D.squad+" löpare för "+fm(state.bank)+", högst "+D.clubMax+" per klubb.":D.freeTransfers+" fria byten den här omgången.");
   const chipsHtml=`<div class="chipset"><div class="coins">${E.CHIPS.map(c=>{const used=state.chips[c],on=plan.chip===c,off=locked||used||rd.skip||(c==="wc"&&!state.squad.length);
-      return `<button class="coin c-${c} ${on?"on":""} ${used?"used":""}" data-chip="${on?"":c}" aria-pressed="${on}" ${off?"disabled":""} title="${esc(CHIPINFO[c][0]+": "+CHIPINFO[c][1])}"><span class="disc">${chipSvg(c)}</span><b>${used?"Använt":CHIPSHORT[c]}</b><small>${CHIPFX[c]}</small></button>`}).join("")}</div>
+      return `<button class="coin c-${c} ${on?"on":""} ${used?"used":""}" data-chip="${on?"":c}" aria-pressed="${on}" ${off?"disabled":""} title="${esc(CHIPINFO[c][0]+": "+CHIPINFO[c][1])}"><span class="disc">${chipSvg(c)}</span><b>${CHIPSHORT[c]}</b><small>${used?"Använt":CHIPFX[c]}</small></button>`}).join("")}</div>
     ${plan.chip?`<div class="chipdesc c-${plan.chip}"><span><b>${esc(CHIPINFO[plan.chip][0])}</b> – ${esc(CHIPINFO[plan.chip][1])}.</span>${locked?"":`<button class="btn more" data-chip="">Ta bort</button>`}</div>`:""}</div>`;
   return `<div class="two"><div class="panel squad-panel">
    <h2 style="margin-top:0">Din trupp</h2>
