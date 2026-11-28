@@ -357,7 +357,7 @@ nav.tabs svg{display:none}
   .tabbar button[aria-selected="true"]{color:var(--text)}
   .tabbar svg{display:block;width:24px;height:24px;transition:transform .3s var(--spring)}
   .tabbar button[aria-selected="true"] svg{color:var(--accent);transform:translateY(-2px) scale(1.08)}
-  #mgr .nm{max-width:8ch;overflow:hidden;text-overflow:ellipsis}
+  #mgr .nm{display:inline-block;max-width:9ch;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
 }
 
 /* ---------- buttons ---------- */
@@ -779,7 +779,7 @@ h2 .idle{width:22px;height:22px;font-size:14px;vertical-align:5px}
 @media (hover:hover) and (pointer:fine){.lc{transition:transform .25s var(--ease-out)}.lc:hover{transform:translateY(-3px)}}
 /* squad cards on the Team tab: the board's FIFA shield with the controls under it */
 .squadwrap .squad.ab{grid-template-columns:repeat(5,minmax(0,1fr));gap:14px 10px}
-@media (max-width:1439px){.squadwrap .squad.ab{grid-template-columns:repeat(6,minmax(0,1fr));gap:14px 10px;max-width:620px}.squadwrap .squad.ab>*{grid-column:span 2}.squadwrap .squad.ab>:nth-child(4){grid-column:2/4}}
+@media (max-width:1439px){.squadwrap .squad.ab{grid-template-columns:repeat(6,minmax(0,1fr));gap:14px 10px;max-width:620px;margin-inline:auto}.squadwrap .squad.ab>*{grid-column:span 2}.squadwrap .squad.ab>:nth-child(4){grid-column:2/4}}
 @media (max-width:620px){.squadwrap .squad.ab{grid-template-columns:repeat(6,minmax(0,1fr));gap:12px 6px}.squadwrap .squad.ab>*{grid-column:span 2}.squadwrap .squad.ab>:nth-child(4){grid-column:2/4}}
 .sqc{position:relative;min-width:0;display:grid;gap:6px;align-content:start;transition:transform .25s var(--ease-out)}
 .sqc-sh{filter:drop-shadow(0 2px 2px var(--cs1)) drop-shadow(0 14px 16px var(--cs2));transition:filter .3s}
@@ -1304,7 +1304,7 @@ nav.tabs .ind.on{opacity:1}
 .sqc{container-type:inline-size}
 .sqc-ctl{min-width:0}
 @container (max-width:200px){.sqc-ctl .boost span{display:none}.sqc-ctl .boost{flex:none;width:30px;height:30px;padding:0}.sqc-ctl{gap:4px}}
-.info-row{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 8px}
+.info-row{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 8px}
 .info{margin-top:14px}.info h3{margin-top:18px}
 /* runner sheet: this week at a glance */
 .entbox{display:flex;gap:12px;align-items:center;margin:12px 0 4px;padding:12px 14px;border-radius:14px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
@@ -1896,7 +1896,7 @@ a.ncard{text-decoration:none}
 .lgl-r .tm{display:flex;gap:12px;align-items:center;min-width:0}
 .lgl-r .tm>span{min-width:0}
 .lgl-r .tm b{display:block;font:700 16px/1.2 var(--font);overflow-wrap:break-word}
-.lgl-r .tm .sub{display:block;font-size:13.5px;margin-top:2px}
+.lgl-r .tm .sub{display:block;font-size:13.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lgl-r .n{font:600 16px/1 var(--font);font-variant-numeric:tabular-nums;white-space:nowrap}
 .lgl-r .n b{font-weight:800}
 .lgl-gap{text-align:center;color:var(--text-3);line-height:1}
@@ -3028,7 +3028,9 @@ const SAVE_GEN=1;
 let state=E.newState(LIVE), plan={squad:[],captain:null,vice:null,chip:null};
 let showAdmin=(()=>{try{return localStorage.getItem("of-admin")==="1"}catch(e){return false}})();
 const adminOn=()=>cloud.admin&&showAdmin;
-let lock=null,tab="home",viewRound=0,sortKey="total",sortDir=-1,q="",clubF="",clsF="",afford=false,entF=false,shown=12,confirmAuto=false,confirmReset=false,confirmMode=false,mgrName="",myTeam="",myAv=null,avBusy=false,avMsg="",dbOk=false,drawn=false,localTs=0,cloudTimer=null,cloudMsg="",leagueRows={},leagueUnsubs={},leagueMsg="",newLeague="",joinCode="";
+/* before the season has any points the list starts sorted by price (all points are 0), until a column is chosen */
+const curSort=()=>sortKey==="total"&&!sortChosen&&lastScoredRound()<LIVE?"price":sortKey;
+let sortChosen=false,lock=null,tab="home",viewRound=0,sortKey="total",sortDir=-1,q="",clubF="",clsF="",afford=false,entF=false,shown=12,confirmAuto=false,confirmReset=false,confirmMode=false,mgrName="",myTeam="",myAv=null,avBusy=false,avMsg="",dbOk=false,drawn=false,localTs=0,cloudTimer=null,cloudMsg="",leagueRows={},leagueUnsubs={},leagueMsg="",newLeague="",joinCode="";
 let cloud={sb:null,uid:null,email:"",canWrite:false,ready:false};
 let myLeagues=[],myLgn={},myOwn={};
 const PJ="orienteering-fantasy-join";
@@ -3346,7 +3348,7 @@ function marketRows(){
     if(entF&&!entOf(i,R()).length)continue;
     rows.push({i,s,p,d:r>0?p-E.price(i,r-1):0,n:nameOf(i),avg:s.perWeek});
   }
-  const v={price:x=>x.p,form:x=>x.s.form,total:x=>x.s.total,avg:x=>x.avg,starts:x=>x.s.starts,name:x=>x.n.toLowerCase()}[sortKey];
+  const v={price:x=>x.p,form:x=>x.s.form,total:x=>x.s.total,avg:x=>x.avg,starts:x=>x.s.starts,name:x=>x.n.toLowerCase()}[curSort()];
   rows.sort((a,b)=>{const x=v(a),y=v(b);return (x<y?-1:x>y?1:0)*sortDir||a.i-b.i});
   return rows;
 }
@@ -3377,7 +3379,7 @@ function growMarket(){
 function refreshMarket(){const rows=marketRows(),b=document.getElementById("mrows"),m=document.getElementById("mmore");if(b)b.innerHTML=marketBody(rows);if(m)m.innerHTML=moreBtn(rows);armReveals();watchMore()}
 function marketHtml(){
   const rows=marketRows();const clubs=[...new Set(D.runners.filter(x=>x.p&&x.c).map(x=>x.c))].sort((a,b)=>a.localeCompare(b,"sv"));
-  const th=(k,l,t)=>`<th class="c-${k}"${t?` title="${t}"`:""}><button data-sort="${k}">${l}${sortKey===k?(sortDir<0?" ↓":" ↑"):""}</button></th>`;
+  const th=(k,l,t)=>`<th class="c-${k}"${t?` title="${t}"`:""}><button data-sort="${k}">${l}${curSort()===k?(sortDir<0?" ↓":" ↑"):""}</button></th>`;
   return `<section class="panel mkt-panel"><h2 id="market">Löpare</h2>
   ${(()=>{const nF=[tierF,clsF,clubF].filter(Boolean).length+(afford?1:0)+(entF?1:0);
     const chip=(attr,v,cur,l)=>`<button type="button" class="mk-chip ${cur===v?"on":""}" ${attr}="${esc(v)}" aria-pressed="${cur===v}">${l}</button>`;
@@ -3391,7 +3393,7 @@ function marketHtml(){
      ${nF?`<button type="button" class="btn more" id="mkClear">Rensa filter</button>`:""}
     </div>`})()}
 
-  <div class="tbl mkt"><table class="mk-s-${sortKey}"><thead><tr><th class="mk-who"><button data-sort="name">Löpare${sortKey==="name"?(sortDir<0?" ↓":" ↑"):""}</button><span aria-hidden="true"> · </span><button data-sort="price">Pris${sortKey==="price"?(sortDir<0?" ↓":" ↑"):""}</button></th><th>Nivå</th>${th("total","Poäng")}<th>Ändring</th>${th("form","Form","Snitt de senaste 3 tävlingsveckorna")}<th title="Poäng de senaste 6 veckorna de tävlade"><span class="th-long">Senaste 6 tävlingsveckorna</span><span class="th-short">Senaste 6</span></th>${th("avg","Per vecka","Snitt de senaste 5 tävlingsveckorna")}${th("starts","Starter")}<th></th></tr></thead><tbody id="mrows">
+  <div class="tbl mkt"><table class="mk-s-${curSort()}"><thead><tr><th class="mk-who"><button data-sort="name">Löpare${sortKey==="name"?(sortDir<0?" ↓":" ↑"):""}</button><span aria-hidden="true"> · </span><button data-sort="price">Pris${curSort()==="price"?(sortDir<0?" ↓":" ↑"):""}</button></th><th>Nivå</th>${th("total","Poäng")}<th>Ändring</th>${th("form","Form","Snitt de senaste 3 tävlingsveckorna")}<th title="Poäng de senaste 6 veckorna de tävlade"><span class="th-long">Senaste 6 tävlingsveckorna</span><span class="th-short">Senaste 6</span></th>${th("avg","Per vecka","Snitt de senaste 5 tävlingsveckorna")}${th("starts","Starter")}<th></th></tr></thead><tbody id="mrows">
   ${marketBody(rows)}
   </tbody></table></div>
   <p id="mmore">${moreBtn(rows)}</p></section>
@@ -3895,7 +3897,7 @@ function profileView(){
   /* weeks without play do not count as rounds played */
   const L=state.log.filter(l=>!D.rounds[l.round].skip),best=L.slice().sort((a,b)=>b.total-a.total)[0];
   const live=isLive();
-  return `<div class="pfhead">${mgrDot(me,1)}<div><h2>${esc(myTeam||me.name)}</h2><div class="sub">${myTeam?esc(me.name)+" · ":""}${esc(cloud.email)}</div></div></div>
+  return `<div class="pfhead">${mgrDot(me,1)}<div><h2>${esc(myTeam||me.name)}</h2><div class="sub">${[myTeam?esc(me.name):"",esc(cloud.email||"")].filter(Boolean).join(" · ")}</div></div></div>
   ${myBadges.length?`<div class="bdg-head"><button class="btn" id="medalsOpen">${medal(myBadges.find(b=>b.featured)||myBadges[0]).replace('class="md','class="md btn-md')}Medaljer</button></div>`:""}
   ${badgeAdmin(cloud.uid)}
   ${cloud.admin?`<label class="admsw"><input type="checkbox" role="switch" id="admSw" ${showAdmin?"checked":""}><span class="trk" aria-hidden="true"></span><span><b>Adminverktyg</b><span class="sub">${showAdmin?"Visas":"Dolda"}</span></span></label>`:""}
@@ -5039,7 +5041,7 @@ document.addEventListener("click",ev=>{
   if(d.moveto){const i=swapSel;buzz("ok");swapSel=null;if(i!==null){if(d.moveto==="A"&&!plan.a.includes(i)&&plan.a.length<AS)plan.a.push(i);else if(d.moveto==="B"&&plan.a.includes(i)&&plan.squad.length-plan.a.length<D.squad-AS)plan.a=plan.a.filter(x=>x!==i);justSwapped=[i];fixLeaders();save()}render();return}
   if(d.boost!==undefined){const i=+d.boost;if(!isLive()&&lock&&lock.round===R())return;if(plan.squad.includes(i)&&plan.captain!==i){buzz("big");plan.captain=i;plan.vice=null;justBoosted=i;save();const [x,y]=centerOf(t);burst(x,y,30)}render();return}
   if(d.chip!==undefined){const c=d.chip||null;if(c!==plan.chip){buzz(c?"big":"tap");plan.chip=c;justChip=c;save()}render();if(c){const dc=document.querySelector(`.coin.c-${c} .disc`);const [x,y]=centerOf(dc||t);burst(x,dc?y-3:y)}return}
-  if(d.sort){if(sortKey===d.sort)sortDir=-sortDir;else{sortKey=d.sort;sortDir=d.sort==="name"?1:-1}render();return}
+  if(d.sort){if(!sortChosen){sortChosen=true;sortKey=curSort()}if(sortKey===d.sort)sortDir=-sortDir;else{sortKey=d.sort;sortDir=d.sort==="name"?1:-1}render();return}
   if(d.round!==undefined){viewRound=+d.round;render();return}
   if(d.lteam){lpTeam=d.lteam;render();if(mgrOpen&&document.querySelector("#modal .sheet"))managerSheet(mgrOpen.code,mgrOpen.id,mgrOpen.view);return}
   if(d.mround!==undefined&&mgrOpen){managerSheet(mgrOpen.code,mgrOpen.id,+d.mround);return}
