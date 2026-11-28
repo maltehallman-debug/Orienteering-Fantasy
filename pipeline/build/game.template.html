@@ -2156,6 +2156,15 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
   .mkt tr.in td:first-child,.mkt tr.in td:last-child{background:color-mix(in srgb,var(--surface,#fff) 90%,#003c68)}
   .mkt .who-wrap>div{max-width:calc(min(52vw,230px) - 44px)!important}
   .mkt .who{max-width:100%!important}
+  /* more room for the stats: a narrower name column, a smaller photo and a slimmer button */
+  .mkt td:first-child,.mkt th:first-child{width:min(40vw,180px)!important;min-width:min(40vw,180px)!important;padding-left:8px!important;padding-right:4px!important}
+  .mkt .who-wrap{gap:6px!important}.mkt .who-wrap>.av{width:24px!important;height:24px!important;font-size:10px!important;flex:none}
+  .mkt .who-wrap>div{max-width:calc(min(40vw,180px) - 34px)!important}
+  .mkt .who{font-size:13px!important}.mkt td .sub{font-size:11px!important}
+  .mkt td:last-child,.mkt th:last-child{padding-left:4px!important;padding-right:6px!important}
+  .mkt td:last-child .btn{padding:6px 9px!important;font-size:12px!important}
+  .mkt th:not(:first-child):not(:last-child),.mkt td:not(:first-child):not(:last-child){padding-left:8px!important;padding-right:8px!important}
+  .mkt .glm{display:none}
 }
 
 /* ===== Home photo: fades into the page itself (a mask, not a white overlay), so the map lines carry on below ===== */
@@ -2165,6 +2174,13 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 @media (min-width:700px){
   .hm-img{-webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.15) 28%,rgba(0,0,0,.7) 48%,#000 66%),linear-gradient(180deg,#000 55%,transparent 100%);-webkit-mask-composite:source-in;
     mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.15) 28%,rgba(0,0,0,.7) 48%,#000 66%),linear-gradient(180deg,#000 55%,transparent 100%);mask-composite:intersect}}
+.th-short{display:none}@media (max-width:899px){.th-long{display:none}.th-short{display:inline}}
+@media (max-width:899px){
+  /* the whole name, over two lines if it must; the level as just its gem, the row's edge already has the colour */
+  .mkt .nm .who{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.2;display:inline!important}
+  .mkt .nm{line-height:1.2}
+  .mkt .tier .tier-l{display:none}.mkt .tier{padding:5px 7px!important;gap:0!important}
+}
 </style>
 </head>
 <body>
@@ -2540,7 +2556,7 @@ const lastWeek=()=>{if(!isLive())return Math.min(R(),E.R)-1;let w=-1;for(let r=0
 /* 0 raced last game week, 1 did not (yellow), 2 no race in the last 10 game weeks (red) */
 function idle(i){const lw=lastWeek();if(lw<0)return 0;if(E.starts[lw][i])return 0;for(let r=Math.max(0,lw-9);r<lw;r++)if(E.starts[r][i])return 1;return 2}
 const idleTag=i=>{const k=idle(i);if(!k)return "";const t=k===2?"Inget lopp de senaste 10 spelveckorna":"Sprang inte förra speltveckan (omgång "+D.rounds[lastWeek()].n+")";return `<span class="idle ${k===2?"r":"y"}" title="${t}" aria-label="${t}" role="img">!</span>`};
-const tierTag=(i,r)=>{const t=tierOf(i,r);return `<span class="tier t-${TIERS[t][0]}">${GEM}${TIERS[t][1]}</span>`};
+const tierTag=(i,r)=>{const t=tierOf(i,r);return `<span class="tier t-${TIERS[t][0]}" title="${TIERS[t][1]}">${GEM}<span class="tier-l">${TIERS[t][1]}</span></span>`};
 /* the A team is plan.a (up to five runners), the rest of plan.squad is the B team; ordered squads put the A team first */
 const ordered=p=>{const a=(p.a||[]).filter(i=>p.squad.includes(i));return [...a,...p.squad.filter(i=>!a.includes(i))]};
 const CHIPINFO={wc:["Vägval","Fria byten den här omgången"],tc:["Spurt","Boostad löpare får tredubbla poäng"],ax:["Elitklass","A-laget får ×2 extra"],bb:["Stafett","B-laget får ×2"],yo:["USM","D/H16-löpare får dubbla poäng"]};
@@ -2808,7 +2824,7 @@ function marketHtml(){
    <select id="clubF" aria-label="Klubb"><option value="">Alla klubbar</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
    <label><input type="checkbox" id="afford" ${afford?"checked":""}> Bara de jag har råd med</label>${Object.keys(ENT).length?`<label><input type="checkbox" id="entF" ${entF?"checked":""}> Anmäld den här veckan</label>`:""}</div>
   <p class="legend"><span class="idle y" aria-hidden="true">!</span> inget lopp förra veckan <span class="idle r" aria-hidden="true">!</span> inget på 10 veckor${Object.keys(ENT).length?` <span class="entered" aria-hidden="true">✓</span> anmäld den här veckan`:""}</p>
-  <div class="tbl mkt"><table><thead><tr><th class="mk-who"><button data-sort="name">Löpare${sortKey==="name"?(sortDir<0?" ↓":" ↑"):""}</button><span aria-hidden="true"> · </span><button data-sort="price">Pris${sortKey==="price"?(sortDir<0?" ↓":" ↑"):""}</button></th><th>Nivå</th><th>Ändring</th>${th("form","Form","Snitt de senaste 3 tävlingsveckorna")}<th title="Poäng de senaste 6 veckorna de tävlade">Senaste 6 tävlingsveckorna</th>${th("avg","Per vecka","Snitt de senaste 5 tävlingsveckorna")}${th("total","Poäng")}${th("starts","Starter")}<th></th></tr></thead><tbody id="mrows">
+  <div class="tbl mkt"><table><thead><tr><th class="mk-who"><button data-sort="name">Löpare${sortKey==="name"?(sortDir<0?" ↓":" ↑"):""}</button><span aria-hidden="true"> · </span><button data-sort="price">Pris${sortKey==="price"?(sortDir<0?" ↓":" ↑"):""}</button></th><th>Nivå</th><th>Ändring</th>${th("form","Form","Snitt de senaste 3 tävlingsveckorna")}<th title="Poäng de senaste 6 veckorna de tävlade"><span class="th-long">Senaste 6 tävlingsveckorna</span><span class="th-short">Senaste 6</span></th>${th("avg","Per vecka","Snitt de senaste 5 tävlingsveckorna")}${th("total","Poäng")}${th("starts","Starter")}<th></th></tr></thead><tbody id="mrows">
   ${marketBody(rows)}
   </tbody></table></div>
   <p id="mmore">${moreBtn(rows)}</p></section>
