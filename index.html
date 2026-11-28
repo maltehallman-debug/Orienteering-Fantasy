@@ -2551,6 +2551,8 @@ html.cfg-picking *{cursor:crosshair!important}
   .rp-top{margin:0 -16px;padding:30px 16px 44px;gap:14px}.rp-top .av.lg{--s:72px}.rp-id h2{font-size:22px!important}
   .rp-kpi>div{padding:11px 9px 10px}.rp-kpi b{font-size:18px}.rp-kpi span{font-size:9px;letter-spacing:.08em}}
 @media (max-width:640px){.sheet[data-key^="prof|"]{padding-top:0!important}}
+
+.lgl-r.shut{cursor:default}
 </style>
 </head>
 <body>
@@ -4024,17 +4026,18 @@ function leagueTable(code,top){
     const me=rows.find(m=>m.id===cloud.uid);rows=rows.slice(0,20);if(me&&!rows.includes(me))rows=rows.concat([me]);
   }
   if(!rows.length)return `<p class="note">Laddar medlemmar…</p>`;
-  if(cur===undefined)return `<p class="note" style="margin:6px 0 10px">Spelet startar med ${rdThe(D.rounds[LIVE])}, som låses ${lockText(LIVE)}. Lag och poäng syns här när den har startat.</p>
-   <div class="lgmembers">${rows.map(m=>`<span class="tag">${mgrDot(m)} <span><b>${esc(m.name)}</b>${m.id===cloud.uid?" (du)":""}${subName(m)}</span></span>`).join("")}</div>`;
+  /* before the first week the table looks the same, everyone on 0, but nobody's squad can be opened until the week
+     has locked: squads stay secret while they can still be copied */
+  const open=cur!==undefined;
   /* placing overall, and in the week in brackets; the week's points, then the total */
-  const live=!isFinal(cur),wk=st.rows.filter(m=>ptsOf(m,cur)!==null).sort((a,b)=>ptsOf(b,cur)-ptsOf(a,cur)),wrank={};
+  const live=open&&!isFinal(cur),wk=st.rows.filter(m=>ptsOf(m,cur)!==null).sort((a,b)=>ptsOf(b,cur)-ptsOf(a,cur)),wrank={};
   wk.forEach((m,k)=>{wrank[m.id]=k>0&&ptsOf(wk[k-1],cur)===ptsOf(m,cur)?wrank[wk[k-1].id]:k+1});
   return `<div class="lgl" role="table" aria-label="Tabell" style="--plw:${plW(rows.map(m=>[m.rank,wrank[m.id]||"–"]))}px">
    <div class="lgl-h" role="row"><span role="columnheader"><span aria-label="Placering">#</span></span><span role="columnheader">Lag</span><span role="columnheader">Vecka${live?' <i class="lgl-live" title="Live"></i>':""}</span><span role="columnheader">Total</span></div>
-   ${rows.map((m,k)=>`${code==="GLOBAL"&&k===20?'<div class="lgl-gap" aria-hidden="true">⋯</div>':""}<div class="lgl-r ${m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="${esc(code)}|${esc(m.id)}" tabindex="0">
+   ${rows.map((m,k)=>`${code==="GLOBAL"&&k===20?'<div class="lgl-gap" aria-hidden="true">⋯</div>':""}<div class="lgl-r ${m.id===cloud.uid?"in":""}${open?"":" shut"}" role="row" style="--i:${k}" ${open?`data-mgr="${esc(code)}|${esc(m.id)}" tabindex="0"`:`title="Lagen syns när ${esc(rdThe(D.rounds[LIVE]))} har låsts"`}>
      <span class="pl" role="cell">${m.rank}${m.move>0?`<i class="mv up" title="Upp ${m.move} plats${m.move>1?"er":""}" aria-label="upp ${m.move}">▲</i>`:m.move<0?`<i class="mv dn" title="Ner ${-m.move} plats${m.move<-1?"er":""}" aria-label="ner ${-m.move}">▼</i>`:""}<small title="Placering den här veckan" aria-label="vecka ${wrank[m.id]||"–"}">${wrank[m.id]||"–"}</small></span>
      <span class="tm" role="cell">${mgrDot(m)}<span><b class="nmb"><span class="nmt">${esc(m.name)}</span>${featTag(m.id)}</b>${m.team&&m.mgr!==m.name?`<span class="sub">${esc(m.mgr)}${m.id===cloud.uid?" · du":""}</span>`:m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span>
-     <span class="n" role="cell">${ptsOf(m,cur)!==null?fp(ptsOf(m,cur))+"p":"–"}</span><span class="n" role="cell"><b>${fp(m.t)}p</b></span></div>`).join("")}
+     <span class="n" role="cell">${open&&ptsOf(m,cur)!==null?fp(ptsOf(m,cur))+"p":"–"}</span><span class="n" role="cell"><b>${fp(m.t)}p</b></span></div>`).join("")}
   </div>`;
 }
 function chipTags(m){const c=m.sim.state.chips,u=E.CHIPS.filter(k=>c[k]);return u.length?u.map(k=>CHIPINFO[k][0]).join(", ")+" använt":"Alla chips kvar"}
