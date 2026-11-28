@@ -36,13 +36,12 @@ function loginScreen(msg = "") {
   app.append(h("div", { class: "login" }, h("div", { class: "login-card" },
     h("div", { class: "brand" }, h("span", { class: "brand-mark" }, "FO"), h("div", {}, h("b", {}, "Fantasy Orientering"), h("span", { class: "muted sm" }, "Adminpanel"))),
     h("h1", {}, "Logga in"), h("p", { class: "muted" }, "Med ditt vanliga konto. Bara administratörer kommer in, och databasen tillåter ändringar bara från dem."),
-    form, note, h("div", { class: "sep" }, "eller"),
-    h("button", { class: "btn block ghost", onclick: () => boot("demo") }, "Utforska i demoläge"),
-    h("p", { class: "muted sm" }, "Demoläget är för att prova: utkast sparas bara i den här webbläsaren och inget kan publiceras."))));
+    form, note)));
   setTimeout(() => email.focus(), 50);
 }
 
 async function boot(mode, user) {
+  if (mode !== "live" || !user) return loginScreen();
   clear(app); app.append(h("div", { class: "loading" }, "Laddar …"));
   try { await start(mode, user); } catch (e) { return loginScreen("Kunde inte läsa inställningarna: " + e.message); }
   shell();
@@ -53,12 +52,12 @@ async function boot(mode, user) {
 function shell() {
   clear(app);
   const nav = h("nav", { class: "side", "aria-label": "Adminmeny" },
-    h("div", { class: "brand" }, h("span", { class: "brand-mark" }, "FO"), h("div", {}, h("b", {}, "Fantasy Orientering"), h("span", { class: "muted sm" }, S.mode === "live" ? "Admin" : "Demoläge"))),
+    h("div", { class: "brand" }, h("span", { class: "brand-mark" }, "FO"), h("div", {}, h("b", {}, "Fantasy Orientering"), h("span", { class: "muted sm" }, "Admin"))),
     h("div", { class: "nav-list" }, VIEWS.map(([k, l, ic]) => h("button", { class: "nav-i", "data-v": k, onclick: () => { go(k); app.classList.remove("nav-open"); } }, icon(ic), h("span", {}, l)))),
     h("div", { class: "nav-foot" },
       h("a", { class: "nav-i", href: PUBLIC_SITE, target: "_blank", rel: "noopener" }, icon("eye"), h("span", {}, "Öppna sajten ↗")),
       h("button", { class: "nav-i", onclick: toggleTheme }, icon("moon"), h("span", {}, "Ljust / mörkt")),
-      h("button", { class: "nav-i", onclick: async () => { if (dirty() && !(await ask("Osparade ändringar", "Du har ändringar som inte är sparade. Logga ut ändå? En kopia finns kvar i webbläsaren.", "Logga ut", true))) return; await api.signOut(); location.hash = ""; loginScreen(); } }, icon("out"), h("span", {}, S.mode === "live" ? "Logga ut" : "Lämna demoläget"))));
+      h("button", { class: "nav-i", onclick: async () => { if (dirty() && !(await ask("Osparade ändringar", "Du har ändringar som inte är sparade. Logga ut ändå? En kopia finns kvar i webbläsaren.", "Logga ut", true))) return; await api.signOut(); location.hash = ""; loginScreen(); } }, icon("out"), h("span", {}, "Logga ut"))));
   const status = h("div", { class: "draft-state" });
   const saveBtn = h("button", { class: "btn sm", onclick: async () => { try { await save(); toast("Utkastet är sparat", "ok"); } catch (e) { toast(e.message, "bad"); } } }, "Spara utkast");
   const pubBtn = h("button", { class: "btn sm primary", onclick: async () => {

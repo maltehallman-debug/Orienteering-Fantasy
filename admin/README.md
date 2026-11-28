@@ -20,7 +20,7 @@ Båda fungerar likadant. Mappen `admin/` publiceras automatiskt med resten av re
   funktioner som kontrollerar `public.is_admin()`. Även om någon ändrar i sidans kod kan de inte läsa utkast eller
   publicera.
 - Inga hemliga nycklar finns i koden. Supabase-nyckeln i `js/config.js` är den publika nyckeln som sajten redan använder.
-- **Demoläge** (utan inloggning) är till för att prova: utkast sparas bara i webbläsaren och inget kan publiceras.
+- Det finns inget läge utan inloggning: utan ett adminkonto syns bara inloggningsrutan.
 
 ## Så fungerar det
 
