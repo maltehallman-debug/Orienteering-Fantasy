@@ -191,7 +191,7 @@ html,body{color-scheme:only light}
 .lv-races{display:flex;flex-wrap:wrap;gap:6px;min-width:0}.lv-c{display:inline-flex;flex-direction:column;padding:4px 9px;border-radius:10px;background:rgba(0,60,104,.07);font-size:12px;line-height:1.25}.lv-c b{font-size:12.5px}.lv-c.neg b{color:var(--bad,#d64545)}.lv-c.wait{background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--text-2)}.lv-p{font-size:20px;font-weight:900;min-width:44px;text-align:right}
 @media (max-width:560px){.lv-r{grid-template-columns:minmax(0,1fr) auto}.lv-races{grid-column:1/-1;order:3}}
 .autofill{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px}.autofill .sub{font-size:13px}
-</style>
+.rmline{margin:18px 0 0;text-align:center}</style>
 <script>/* closed beta: only people with an account get in. Gate from the first paint unless this browser holds a saved login;
    the real check is the session from Supabase (onSession), which opens or closes the gate */
 try{var _sk=Object.keys(localStorage).some(function(k){return /^sb-.*-auth-token$/.test(k)});if(!_sk&&!/access_token|type=recovery/.test(location.href))document.documentElement.classList.add("gated")}catch(e){document.documentElement.classList.add("gated")}</script>
@@ -3668,7 +3668,8 @@ function profile(i){
    <div class="tbl rtab" style="margin-top:12px"><table><thead><tr><th>Lopp</th><th>Plats</th><th>Efter</th><th>Tid</th><th>Poäng</th></tr></thead><tbody>
    ${groups.map(g=>{const tot=g.list.reduce((a,h)=>a+h.pts,0);return `<tr class="wkhead"><td colspan="2"><b>${g.q<0?"Före omgång 1":rdName(D.rounds[g.q])}</b> <span class="sub">${g.q<0?"inte en del av en spelvecka":dshort(D.rounds[g.q].start)+" – "+dshort(D.rounds[g.q].end)+", "+g.list.length+" lopp"}</span></td><td></td><td></td><td class="${tot<0?"neg":"pos"}"><b>${sg(tot)}</b></td></tr>`+g.list.map(h=>{const e=D.events[h.ev];return `<tr><td>${esc(e.name)}<div class="sub">${dshort(e.date)}${e.tier>1?", x"+e.tier:""}</div></td><td>${h.kind?["","DNF","MP","DSQ"][h.kind]:h.rank+" av "+e.n}</td><td>${h.kind?"–":(h.gap/100).toFixed(1)+"%"}</td><td>${h.kind?"–":tm(h.t)}</td><td class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</td></tr>`}).join("")}).join("")||`<tr><td colspan="5" class="note">Inga resultat än.</td></tr>`}
    </tbody></table></div>${!isLive()&&!done()?`<p class="note">Visar lopp före omgång ${D.rounds[R()].n}.</p>`:""}
-   ${photoSection(i)}`);
+   ${photoSection(i)}
+   <p class="note rmline">Är det du och vill du inte vara med i spelet? <button type="button" class="linkish" data-rmfor="${i}">Be om att bli borttagen</button></p>`);
 }
 function photoSection(i){
   if(PHOTOS_OFF)return "";
@@ -4169,6 +4170,8 @@ document.addEventListener("click",ev=>{
   if(d.tab){const nt=d.tab;if(nt!==tab)buzz("tap");if(d.focus)setTimeout(()=>{const f=document.getElementById(d.focus);if(f)f.focus()},700);if(d.round!==undefined)viewRound=+d.round;confirmAuto=confirmReset=confirmMode=false;if(nt!==tab)nav(()=>{tab=nt});else{render();toTop()}return}
   if(d.recapshare){const k=state.log.findIndex(l=>l.round===+d.recapshare);if(k>=0){viewRound=k;shareBoard()}return}
   if(d.rival!==undefined){try{d.rival?localStorage.setItem(RIVK,d.rival):localStorage.removeItem(RIVK)}catch(err){}if(mgrOpen)managerSheet(mgrOpen.code,mgrOpen.id,mgrOpen.view);render();return}
+  /* from a runner card: the contact form, filled in for that runner */
+  if(d.rmfor){const i=+d.rmfor;rmF={kind:"runner",runner:nameOf(i)+", "+clubOf(i)+" ("+D.runners[i].k+")",msg:"",contact:""};rmStat="";infoSheet("contact");return}
   if(d.autofill){const n=autoFill();buzz(n?"ok":"warn");if(n)save();render();return}
   if(d.add!==undefined){const i=+d.add;buzz(canAddReason(i)?"warn":"ok");if(!canAddReason(i)){plan.squad.push(i);if(!Array.isArray(plan.a))plan.a=[];if(plan.a.length<AS)plan.a.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
   if(d.sell!==undefined){const i=+d.sell;buzz("tap");plan.squad=plan.squad.filter(j=>j!==i);plan.a=(plan.a||[]).filter(j=>j!==i);if(swapSel===i)swapSel=null;fixLeaders();save();render();return}
