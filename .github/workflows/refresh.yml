@@ -11,6 +11,10 @@ on:
         description: "1 = live run: only today's races, only from liveresultat"
         required: false
         default: ""
+      redeploy:
+        description: "1 = also call the Vercel deploy hook (only needed if a push did not deploy)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -83,9 +87,11 @@ jobs:
           git commit -m "${{ inputs.live == '1' && 'Live' || 'Daily' }} data refresh $(date -u +%F)"
           git pull --rebase -X theirs origin "$GITHUB_REF_NAME"
           git push
-      # Vercel builds on every push, but may skip commits made by the GitHub bot; its deploy hook makes sure the new
-      # data goes live. Does nothing until the VERCEL_DEPLOY_HOOK secret is set.
+      # Vercel deploys every push to main, the bot's commits included, so the deploy hook would only deploy the same
+      # commit a second time and use up the daily deploy limit (live runs come every 15 minutes on race days). It is
+      # called only when asked for (redeploy: "1"), and never from another branch.
       - name: Redeploy on Vercel
+        if: ${{ inputs.redeploy == '1' && github.ref == 'refs/heads/main' }}
         env:
           VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
