@@ -53,7 +53,9 @@
   ],
   "git": {
     "deploymentEnabled": {
-      "claude/**": false
+      "claude/**": false,
+      "data": false,
+      "data-preview": false
     }
   }
 }

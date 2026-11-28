@@ -77,7 +77,27 @@ jobs:
           ROUND_SYNC_KEY: ${{ secrets.ROUND_SYNC_KEY }}
           # the quarter-hourly runs only ask liveresultat for today's races
           LIVE: ${{ inputs.live == '1' && '1' || '' }}
+          # the site reads the game data from the data branch; test runs on other branches use data-preview
+          DATA_BRANCH: ${{ github.ref == 'refs/heads/main' && 'data' || 'data-preview' }}
         run: bash pipeline/refresh.sh
+      # The game data goes out on its own: game.json on the data branch, which the site downloads from GitHub. New
+      # results then never need a new deploy of the site (Vercel only deploys when the page itself changes). The branch
+      # holds one commit, replaced each time, so the repository does not grow. Before the page is committed, so a page
+      # that reads its data from the branch never goes out ahead of the data.
+      - name: Publish game data
+        env:
+          DATA_BRANCH: ${{ github.ref == 'refs/heads/main' && 'data' || 'data-preview' }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          if [ -f pipeline/data/published_game.json ] && cmp -s pipeline/build/data.json pipeline/data/published_game.json; then echo "Game data unchanged"; exit 0; fi
+          d="$(mktemp -d)"; cp pipeline/build/data.json "$d/game.json"; cd "$d"
+          # Vercel reads its settings from the branch itself: this one is never deployed
+          echo '{"git":{"deploymentEnabled":false}}' > vercel.json
+          git init -q -b "$DATA_BRANCH"; git add game.json vercel.json
+          git -c user.name="github-actions[bot]" -c user.email="41898699+github-actions[bot]@users.noreply.github.com" commit -q -m "Game data $(date -u +%FT%TZ)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/$DATA_BRANCH"
+          echo "Game data published to $DATA_BRANCH ($(wc -c < game.json) bytes)"
       - name: Commit if changed
         run: |
           if git diff --quiet -- index.html; then echo "No change"; exit 0; fi

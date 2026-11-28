@@ -199,6 +199,20 @@ html,body{color-scheme:only light}
 @media (max-width:560px){.lv-r{grid-template-columns:minmax(0,1fr) auto}.lv-races{grid-column:1/-1;order:3}}
 .autofill{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px}.autofill .sub{font-size:13px}
 .rmline{margin:18px 0 0;text-align:center}</style>
+<script>/* the game data is not part of the page: it is published on its own (the "data" branch of the repository, served by
+   GitHub) every time the results change, so new results never need a new deploy of the site. The download starts here,
+   at the top, and the game starts when it is in. jsDelivr serves the same file if GitHub does not answer. Locally the
+   build's own copy is used, and ?data=<path> picks another file on the same site. */
+window.__Dp=(function(){
+  var REPO="maltehallman-debug/Orienteering-Fantasy",v=Math.floor(Date.now()/120000),q=/[?&]data=([^&#]+)/.exec(location.search),own=q&&decodeURIComponent(q[1]);
+  if(own&&(/^[a-z]+:|^\/\//i.test(own)))own=null;
+  if(!own&&/^(localhost|127\.0\.0\.1)$/.test(location.hostname))own="pipeline/build/data.json";
+  var urls=own?[own]:["https://raw.githubusercontent.com/"+REPO+"/data/game.json?v="+v,"https://cdn.jsdelivr.net/gh/"+REPO+"@data/game.json"];
+  function get(k){if(k>=urls.length)return Promise.reject(new Error("no data"));
+    var c=typeof AbortController!=="undefined"?new AbortController():null,t=setTimeout(function(){if(c)c.abort()},12000);
+    return fetch(urls[k],c?{signal:c.signal}:{}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
+      .then(function(d){clearTimeout(t);if(!d||!d.runners||!d.rounds)throw new Error("bad data");return d},function(e){clearTimeout(t);return get(k+1)})}
+  return get(0)})();</script>
 <script>/* closed beta: only people with an account get in. Gate from the first paint unless this browser holds a saved login;
    the real check is the session from Supabase (onSession), which opens or closes the gate */
 try{var _sk=Object.keys(localStorage).some(function(k){return /^sb-.*-auth-token$/.test(k)});if(!_sk&&!/access_token|type=recovery/.test(location.href))document.documentElement.classList.add("gated")}catch(e){document.documentElement.classList.add("gated")}</script>
@@ -2585,8 +2599,8 @@ html.cfg-picking *{cursor:crosshair!important}
 <div id="fx" aria-hidden="true"></div>
 
 <script src="vendor/supabase-2.45.4.min.js"></script>
-<script>
-const D=/*DATA*/null;
+<script type="text/plain" id="app">
+const D=window.__D;
 /* Eventor is paused: no links or mentions of it on the site. Set to true (and "enabled" in pipeline/eventor.json) to turn it back on */
 const EV_LINKS=false;
 /*ENGINE*/
@@ -5349,6 +5363,13 @@ render();launchTick();initCloud();
 /* the deadline reminders are gone: drop the service worker they used */
 try{if("serviceWorker" in navigator)navigator.serviceWorker.getRegistrations().then(l=>l.forEach(x=>x.unregister())).catch(()=>{})}catch(e){}
 if(AUTH_BACK.err){welcomed=true;welcomeSheet("err")}
+</script>
+<script>/* start the game once its data is in: the game script runs as an ordinary script, so it works as before */
+window.__Dp.then(function(d){window.__D=d;var s=document.createElement("script");s.textContent=document.getElementById("app").textContent;document.body.appendChild(s)},
+  function(){var h=document.documentElement;h.classList.remove("gated","reel-pre");
+    var v=document.getElementById("view")||document.body,m=document.createElement("div");m.className="card";m.style.cssText="margin:24px auto;max-width:520px;text-align:center;padding:24px";
+    m.innerHTML='<h3 style="margin:0 0 8px">Spelet kunde inte laddas</h3><p class="note" style="margin:0 0 14px">Kontrollera anslutningen och försök igen.</p><button class="btn on" onclick="location.reload()">Ladda om</button>';
+    v.innerHTML="";v.appendChild(m)});
 </script>
 </body>
 </html>

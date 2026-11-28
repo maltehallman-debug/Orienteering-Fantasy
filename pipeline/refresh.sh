@@ -24,6 +24,12 @@ if [ "${LIVE:-}" != "1" ]; then python3 "$S/scripts/startlists.py" "$S" || echo 
 # birth years and club countries from O-Ringen (not on the quarter-hourly race-day runs)
 if [ "${LIVE:-}" != "1" ]; then python3 "$S/scripts/oringen_ages.py" "$S" || echo "O-Ringen skipped"; fi
 python3 "$S/scripts/build_dataset.py" "$S"
+# the game data as last published (the data branch): finished weeks are locked from it
+rm -f "$S/data/published_game.json"
+for b in "${DATA_BRANCH:-data}" data; do
+  if git -C "$ROOT" fetch -q --depth 1 origin "$b" 2>/dev/null && git -C "$ROOT" show FETCH_HEAD:game.json > "$S/data/published_game.json" 2>/dev/null; then echo "published data from $b"; break; fi
+  rm -f "$S/data/published_game.json"
+done
 python3 "$S/scripts/build_data.py" "$S"
 python3 "$S/scripts/sync_locks.py" "$S"
 (cd "$S" && python3 scripts/assemble.py)

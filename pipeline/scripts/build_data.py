@@ -33,15 +33,19 @@ _upto = next((i for i, r in enumerate(rounds) if r["start"] > _dt.date.today().i
 prices = [[int(round(p[k] * 10)) for k in pool] for p in D["prices"][:max(1, _upto)]]
 # ---- finished game weeks stay as they were ----
 # Points and prices of a game week are locked once it is over (plus FREEZE_DAYS for late results and corrections):
-# they are taken from the last published site (index.html) instead of being worked out again, so later races and
+# they are taken from the last published game data instead of being worked out again, so later races and
 # rating updates never change a finished week. Prices are locked from the moment a week starts.
 # NO_FREEZE=1 works everything out afresh, for an admin fix that has to reach old weeks.
 FREEZE_DAYS = int(os.environ.get("FREEZE_DAYS", "3")); _today = _dt.date.today()
 _prev = None
 if os.environ.get("NO_FREEZE") != "1":
     try:
-        _h = open(f"{S}/../index.html").read(); _i = _h.index("const D=") + 8
-        _prev, _ = json.JSONDecoder().raw_decode(_h.replace("<\\/", "</"), _i)
+        # the published game data (game.json from the data branch, fetched by refresh.sh); older sites had it in the page
+        if os.path.exists(f"{S}/data/published_game.json"):
+            _prev = json.load(open(f"{S}/data/published_game.json"))
+        else:
+            _h = open(f"{S}/../index.html").read(); _i = _h.index("const D=") + 8
+            _prev, _ = json.JSONDecoder().raw_decode(_h.replace("<\\/", "</"), _i)
     except Exception as _e:
         print("no published site to lock finished weeks from:", _e)
 if _prev:
