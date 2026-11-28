@@ -3380,7 +3380,7 @@ function seasonDashes(){
 /* news on the start page, newest first. Add a line here to post something new. */
 const NEWS=[
   ["2026-11-02","Betan är igång","Den slutna betan har börjat. Välj tio löpare, dubbla ditt A-lag och se hur de står sig när helgens resultat kommer in.","img/hem-kontroll"],
-  ["2026-11-02","Medaljer på profilen","Alla betatestare har fått kompassmedaljen. Välj under Profil → Medaljer om den ska synas bredvid ditt namn i ligorna."],
+  ["2026-11-02","Medaljer på profilen","Alla betatestare har fått betamedaljen. Välj under Profil → Medaljer om den ska synas bredvid ditt namn i ligorna."],
   ["2026-11-02","Bjud in en kompis","Spelet är i sluten beta. Vill du att någon ska vara med? Hör av dig så skickar vi en inbjudningskod."],
   ["2026-11-01","SM-finalerna räknas","A- och B-finaler från SM räknas nu som ett lopp, med B-finalen placerad efter A-finalen."]];
 /* news: kept in the database so admins can publish from the site; the list above is only the fallback until it loads */
@@ -3913,14 +3913,12 @@ const BDG_ICON={
 /* the beta badge is the compass medal: navy medal with a compass rose and needle, "BETA", on a yellow ribbon.
    mini = the small one next to a name in the league tables */
 function compassMedal(mini){
-  /* flat, in the site's own look: a navy disc with a thin yellow edge, the compass O from the logo (white ring, red and
-     white needle at 35 degrees) and "BETA" on a yellow pill. The mini (next to a name) is just the disc and compass */
-  const disc=`<circle cy="-4" r="31" fill="#003c68" stroke="#ffe74d" stroke-width="2.5"/><circle cy="-4" r="19" fill="none" stroke="#fff" stroke-width="5"/>
-   <g transform="translate(0 -4) rotate(35)"><path d="M0-14 4.2 0H-4.2Z" fill="#e5484d"/><path d="M0 14 4.2 0H-4.2Z" fill="#fff"/></g>`;
-  if(mini)return `<svg class="tk-mini cm-mini" viewBox="-34 -38 68 68" aria-hidden="true">${disc}</svg>`;
-  return `<svg class="md md-c" viewBox="-40 -42 80 94" aria-hidden="true">${disc}
-   <rect x="-21" y="21" width="42" height="15" rx="7.5" fill="#ffe74d" stroke="#003c68" stroke-width="2"/>
-   <text y="31.6" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="8.6" letter-spacing="1.6" fill="#003c68">BETA</text></svg>`}
+  /* the beta tester medal: three contour lines like a small hill on the map with a red dot on the top, only lines so
+     the page shows through the middle, and "BETA" on a yellow pill. The mini (next to a name) is two lines and the dot */
+  const N="#003c68",R="#e5484d";
+  if(mini)return `<svg class="tk-mini cm-mini" viewBox="-32 -32 64 64" aria-hidden="true"><g fill="none" stroke="${N}" stroke-linejoin="round"><path d="M-26 5C-29-9-19-24-3-26 11-29 26-19 27-4 29 10 19 24 3 26-12 29-24 19-26 5Z" stroke-width="5.5"/><path d="M-11 2C-12-5-6-11 1-11 8-11 12-5 11 2 10 8 5 11-1 11-7 11-11 8-11 2Z" stroke-width="4.5" transform="translate(5 -3) rotate(12)"/></g><circle cx="6" cy="-4" r="4" fill="${R}"/></svg>`;
+  return `<svg class="md md-c" viewBox="-40 -44 80 92" aria-hidden="true"><g transform="translate(0 -6)" fill="none" stroke="${N}" stroke-linejoin="round"><path d="M-30 6C-33-10-22-27-4-30 12-33 30-22 31-5 33 12 22 27 4 30-14 33-27 22-30 6Z" stroke-width="3"/><path d="M-19 4C-21-8-13-19-1-20 12-21 22-12 21 0 20 11 11 18 0 19-11 20-18 14-19 4Z" stroke-width="2.2" opacity=".75" transform="translate(3 -2) rotate(-8)"/><path d="M-9 2C-10-4-5-10 1-10 7-10 11-5 10 1 9 7 4 10-1 10-6 10-9 7-9 2Z" stroke-width="1.6" opacity=".6" transform="translate(6 -4) rotate(14)"/><circle cx="7" cy="-5" r="3.2" fill="${R}" stroke="none"/></g>
+   <rect x="-21" y="27" width="42" height="15" rx="7.5" fill="#ffe74d"/><text y="37.6" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="8.6" letter-spacing="1.6" fill="${N}">BETA</text></svg>`}
 function badgeMini(b){if(b.icon==="beta")return compassMedal(true);const t=BDG_TIER[b.tier]||BDG_TIER.navy;return `<svg class="tk-mini md-mini" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="${t[1]}"/>${(BDG_ICON[b.icon]||BDG_ICON.star)(t[2])}</svg>`}
 const featB={};
 const featTag=id=>{const b=featB[id];return b?`<span class="fbdg" title="${esc(b.name)}">${badgeMini(b)}</span>`:""};
