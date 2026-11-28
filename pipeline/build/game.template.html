@@ -2436,6 +2436,14 @@ body{font-family:var(--font);font-size:var(--ds-fs-body);color:var(--ds-ink)}
 .lag-cd{display:inline-flex;align-items:baseline;gap:6px;background:var(--ds-navy);color:#fff;border-radius:var(--ds-r-pill);padding:9px 16px;font:600 12px/1 var(--font)}
 .lag-cd b{font:800 15px/1 var(--font)}
 #hero:has(.lag-hero)~#facts{margin-top:4px!important}
+/* the small bar that drops down when the number tiles scroll away: the same white tiles, label small, number navy */
+.factsmini{gap:6px!important;padding:6px max(12px,env(safe-area-inset-left)) 0!important}
+.factsmini>div{background:rgba(255,255,255,.96)!important;color:var(--ds-ink)!important;border-radius:var(--ds-r-ctl)!important;box-shadow:inset 0 0 0 1px var(--ds-line),0 8px 20px -12px rgba(0,30,60,.35)!important;padding:7px 10px!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.factsmini>div:first-child,.factsmini>div:last-child{border-radius:var(--ds-r-ctl)!important}
+.factsmini>div+div{box-shadow:inset 0 0 0 1px var(--ds-line),0 8px 20px -12px rgba(0,30,60,.35)!important}
+.factsmini span{font:800 var(--ds-fs-label)/1 var(--font)!important;letter-spacing:.1em!important;color:var(--ds-ink-2)!important;opacity:1!important}
+.factsmini b{font:800 15px/1 var(--font)!important;color:var(--ds-navy)!important}
+.factsmini b.dn{color:var(--ds-bad)!important}
 </style>
 </head>
 <body>
