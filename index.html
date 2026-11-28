@@ -2279,6 +2279,18 @@ th.c-total,th.c-form,th.c-avg,th.c-starts{transition:background-color .15s}
 .mk-sw{display:flex;flex-wrap:wrap;gap:8px 16px}.mk-sw label{display:inline-flex;align-items:center;gap:8px;font:600 13px var(--font)}
 @media (hover:hover) and (pointer:fine){.mk-chip:not(.on):hover{background:color-mix(in srgb,var(--navy,#003c68) 13%,transparent)}.mk-fbtn:not(.on):hover{background:color-mix(in srgb,var(--navy,#003c68) 6%,var(--surface,#fff))}}
 .mk-row select{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box}.mk-panel{min-width:0;overflow:hidden}
+
+/* ===== The box under the team, in the style of the runner list ===== */
+#view .side{background:var(--surface,#fff)!important;background-image:none!important;border-radius:20px!important;box-shadow:inset 0 0 0 1px var(--line,#e5e9ee)!important;padding:14px!important;display:grid;gap:14px}
+#view .side::before{display:none!important}
+.sd-l{display:block;font:800 10px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--text-2,#5b6773);margin-bottom:8px}
+.sd-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.sd-tiles>div{border-radius:14px;background:color-mix(in srgb,var(--navy,#003c68) 6%,transparent);padding:10px 12px;display:grid;gap:4px}
+.sd-tiles span{font:800 10px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--text-2,#5b6773)}
+.sd-tiles b{font:800 20px/1 var(--font);color:var(--navy,#003c68);font-variant-numeric:tabular-nums}
+.sd-tiles .dn b{color:#d23b3b}
+.side .fixtures{display:flex;flex-wrap:wrap;gap:6px}
+.side .chipset{margin:0}
 </style>
 </head>
 <body>
@@ -3070,7 +3082,7 @@ function rowHtml(x){const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x
 /* the runner list grows as you scroll: a marker under it loads the next runners before you reach the end, and each
    new runner rises in on its own. A button stays as a fallback where the browser cannot watch the marker. */
 let mRows=[];
-const moreBtn=rows=>rows.length>shown?(moreIO?`<span id="msent" aria-hidden="true"></span><span class="note mload">${rows.length-shown} löpare till nedanför</span>`:`<button class="btn" id="more">Visa ${Math.min(40,rows.length-shown)} till</button>`):(rows.length>40?`<span class="note mload">Alla ${rows.length} löpare visas</span>`:"");
+const moreBtn=rows=>rows.length>shown?(moreIO?`<span id="msent" aria-hidden="true"></span>`:`<button class="btn" id="more">Visa ${Math.min(40,rows.length-shown)} till</button>`):"";
 const moreIO="IntersectionObserver" in window?new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting))growMarket()},{rootMargin:"0px 0px 600px 0px"}):null;
 function watchMore(){if(!moreIO)return;moreIO.disconnect();const s=document.getElementById("msent");if(s)moreIO.observe(s)}
 let growing=false;
@@ -3377,10 +3389,9 @@ function teamView(){
      (!state.squad.length?"Välj "+D.squad+" löpare för "+fm(D.budget)+", högst "+D.clubMax+" per klubb.":D.freeTransfers+" fria byten den här omgången.");
   const chipsHtml=`<div class="chipset"><div class="coins">${E.CHIPS.map(c=>{const used=state.chips[c],on=plan.chip===c,off=locked||used||rd.skip||(c==="wc"&&!state.squad.length);
       return `<button class="coin c-${c} ${on?"on":""} ${used?"used":""}" data-chip="${on?"":c}" aria-pressed="${on}" ${off?"disabled":""} title="${esc(CHIPINFO[c][0]+": "+CHIPINFO[c][1])}"><span class="disc">${chipSvg(c)}</span><b>${used?"Använt":CHIPSHORT[c]}</b><small>${CHIPFX[c]}</small></button>`}).join("")}</div>
-    <div class="chipdesc ${plan.chip?"c-"+plan.chip:""}">${plan.chip?`<span><b>${esc(CHIPINFO[plan.chip][0])}</b> – ${esc(CHIPINFO[plan.chip][1])}.</span>${locked?"":`<button class="btn quiet" data-chip="">Ta bort</button>`}`:`<span>${rd.skip?"Inga chips en vecka som hoppas över.":locked?"Inget chip den här omgången.":"Inget chip den här omgången. Tryck på ett för att spela det."}</span>`}</div></div>`;
+    ${plan.chip?`<div class="chipdesc c-${plan.chip}"><span><b>${esc(CHIPINFO[plan.chip][0])}</b> – ${esc(CHIPINFO[plan.chip][1])}.</span>${locked?"":`<button class="btn more" data-chip="">Ta bort</button>`}</div>`:""}</div>`;
   return `${hero(r)}<div class="two"><div class="panel squad-panel">
-   <p class="eyebrow pg-k">01 · Bygg ditt lag</p><h2 style="margin-top:0">Din trupp</h2>
-   <p class="lead">${lead}</p>
+   <h2 style="margin-top:0">Din trupp</h2>
    ${!locked&&plan.squad.length<D.squad?`<div class="autofill"><button class="btn go" data-autofill="1">${plan.squad.length?"Fyll resten automatiskt":"Fyll laget automatiskt"}</button></div>`:""}
    <div class="squadwrap">
    <div class="teamhead"><span><b>A-lag</b><span class="x">×2</span></span><span class="sub">${A.length} av ${AS}</span></div>
@@ -3391,10 +3402,10 @@ function teamView(){
    ${justLocked&&locked?'<div class="stamp" aria-hidden="true">LÅST</div>':""}</div>
   </div>
   <aside class="side">
-   <div><span class="eyebrow">Lopp den här omgången</span><div class="fixtures" style="margin-top:10px">${raceTags(r)}</div></div>
-   <dl><dt>Byten</dt><dd>${!state.squad.length?"fria":t.n+" av "+D.freeTransfers+" fria"}</dd><dt>Avdrag</dt><dd class="${pen?"dn":""}">${pen?"-"+fp(pen):"inget"}</dd><dt>Kvar i banken</dt><dd class="${E.bankAfter(state,plan.squad)<0?"dn":""}">${fm(E.bankAfter(state,plan.squad))}</dd></dl>
-   <div><span class="eyebrow">Chips · ett användande var</span><div style="margin-top:10px">${chipsHtml}</div></div>
-   ${errs.length&&!locked?`<ul class="errs">${errs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+   ${(()=>{const c=comps(r);return c.length&&!rd.skip?`<div class="sd-blk"><span class="sd-l">Lopp</span><div class="fixtures">${raceTags(r)}</div></div>`:""})()}
+   <div class="sd-tiles"><div><span>Byten</span><b>${!state.squad.length||rd.skip?"Fria":t.n+"/"+D.freeTransfers}</b></div><div class="${pen?"dn":""}"><span>Avdrag</span><b>${pen?"-"+fp(pen):"0"}</b></div></div>
+   <div class="sd-blk"><span class="sd-l">Chips</span>${chipsHtml}</div>
+   ${errs.length&&!locked&&plan.squad.length===D.squad?`<ul class="errs">${errs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
    ${isLive()?(!saved&&errs.length&&plan.squad.length===D.squad?`<div class="savest warn" id="savest"><i>!</i><span>Inte sparad<small>${esc(errs[0])}${picks[r]||state.squad.length?". Din senast sparade trupp gäller tills du rättat det":""}</small></span></div>`:"")
      :`<button class="btn go" id="play" ${errs.length||hasStarted(r)&&!fin?"disabled":""}>Spela ${rdThe(rd)}</button>`}
    ${isLive()&&syncMsg?`<p class="note" style="margin:0;color:var(--warn)">${esc(syncMsg)}</p>`:""}
@@ -3591,7 +3602,7 @@ function authCard(){
    <div class="row" style="margin-top:6px"><button class="btn light" id="authReset" ${authBusy?"disabled":""}>${authBusy?"Ett ögonblick…":"Skicka länken"}</button><button class="btn quiet" id="authBack">Tillbaka till inloggningen</button></div>
    ${authMsg?`<p class="note" style="margin:12px 0 0;color:${authOk?"var(--good)":"var(--warn)"}">${esc(authMsg)}</p>`:""}</div>`;
   return `<div class="card"><h3>${authMode==="up"?"Skapa ditt konto":"Logga in"}</h3>
-   <p class="note" style="margin:0 0 14px">${authMode==="up"?"En e-postadress och ett lösenord. Din trupp följer med till alla enheter.":"Välkommen tillbaka."}</p>
+   <p class="note" style="margin:0 0 14px">${authMode==="up"?"En e-postadress och ett lösenord.":""}</p>
    ${authMode==="up"?`<label class="agree"><input type="checkbox" id="authAgree" ${authAgree?"checked":""}> <span>Jag är minst 13 år och godkänner <button type="button" class="linkish" data-info="terms">villkoren</button> och <button type="button" class="linkish" data-info="privacy">integritetspolicyn</button>.</span></label>`:""}
    ${authMode==="up"?`<div class="field"><label for="authName">Managernamn</label><input class="name" id="authName" maxlength="24" value="${esc(authName)}" autocomplete="nickname" autocapitalize="words"></div><div class="field"><label for="authTeam">Lagnamn</label><input class="name" id="authTeam" maxlength="30" value="${esc(authTeam)}" placeholder="Syns i ligorna" autocomplete="off" autocapitalize="words"></div>`:""}
    <div class="field"><label for="authEmail">E-post</label><input class="name" id="authEmail" type="email" value="${esc(authEmail)}" autocomplete="email" autocapitalize="none" autocorrect="off" inputmode="email"></div>
@@ -3601,8 +3612,8 @@ function authCard(){
    ${authMsg?`<p class="note" style="margin:12px 0 0;color:${authOk?"var(--good)":"var(--warn)"}">${esc(authMsg)}</p>`:""}</div>`;
 }
 function profileView(){
-  if(!dbOk)return `<p class="eyebrow pg-k">05 · Ditt konto</p><h2 style="margin-top:0">Profil</h2>${inviteBanner()}<div class="grid2">${authCard()}
-   <div class="card"><h3>Varför ett konto</h3><ol class="steps"><li>Din trupp sparas och fungerar på alla enheter.</li><li>Starta en liga eller gå med i en med en kod.</li><li>Se dina kompisars lag och poäng varje omgång.</li><li>Lägg till ett eget foto på ditt löparkort.</li></ol></div></div>
+  if(!dbOk)return `<h2 style="margin-top:0">Profil</h2>${inviteBanner()}<div class="grid2">${authCard()}
+</div>
    ${practiceCard()}${privacyCard()}`;
   const me={id:cloud.uid,name:mgrName||cloud.email.split("@")[0],av:myAv};
   const L=state.log,best=L.slice().sort((a,b)=>b.total-a.total)[0];
@@ -3623,7 +3634,7 @@ function profileView(){
     <p class="note" id="nameMsg" style="margin:6px 0 0;color:var(--warn)">${nameOk(mgrName)&&nameOk(myTeam)?"":"Det namnet är inte tillåtet. Välj ett annat: alla i spelet ser det."}</p>
     <p class="note" id="cloudstat" style="margin:10px 0 0">${esc(cloudMsg||"")}</p>
     <div class="row" style="margin-top:12px"><button class="btn" id="authOut">Logga ut</button></div></div>
-   <div class="card"><h3>Dina ligor</h3>${myLeagues.length?`<div class="lglist">${myLeagues.map(c=>`<button class="lgi" data-lgopen="${esc(c)}"><span>${esc(lgName(c))}${myOwn[c]?'<span class="host">Värd</span>':""}</span><span class="sub">Öppna →</span></button>`).join("")}</div>`:`<p class="note" style="margin:0 0 12px">Du är inte med i någon liga än.</p><button class="btn on" data-tab="leagues">Starta eller gå med i en liga</button>`}</div>
+   <div class="card"><h3>Dina ligor</h3>${myLeagues.length?`<div class="lglist">${myLeagues.map(c=>`<button class="lgi" data-lgopen="${esc(c)}"><span>${esc(lgName(c))}${myOwn[c]?'<span class="host">Värd</span>':""}</span><span class="sub">Öppna →</span></button>`).join("")}</div>`:`<button class="btn on" data-tab="leagues">Starta eller gå med i en liga</button>`}</div>
   </div>
   <div class="card fbcard"><div><h3>Hittat en bugg eller har en idé?</h3></div><button class="btn on" id="fbOpen">Tipsa oss</button></div>
   ${practiceCard()}${privacyCard()}`;
@@ -3646,7 +3657,7 @@ function themeCard(){
 function practiceCard(){
   const live=isLive();
   return `<div class="card" style="margin-top:12px"><h3>Övning</h3>
-   <p class="note" style="margin:0 0 12px">${live?"Spela om säsongen från "+dshort(D.rounds[0].start)+" med riktiga resultat. Det räknas inte i ligor, och dina riktiga trupper sparas.":"Du spelar om tidigare omgångar. De räknas inte i ligor."}</p>
+   <p class="note" style="margin:0 0 12px">${live?"Spela om säsongen med riktiga resultat. Räknas inte i ligor.":"Du spelar om tidigare omgångar."}</p>
    <div class="row"><button class="btn" id="mode">${confirmMode?(live?"Bekräfta: starta en omspelning":"Bekräfta: tillbaka till säsongen"):live?"Starta en övningsomgång":"Tillbaka till säsongen"}</button>
    ${live?"":`<button class="btn quiet" id="reset">${confirmReset?"Bekräfta: börja om":"Börja om"}</button>`}</div></div>`;
 }
@@ -3947,8 +3958,8 @@ function globalCard(){
 }
 function leaguesView(){
   if(dbOk&&lgOpen&&(myLeagues.includes(lgOpen)||lgOpen==="GLOBAL"||lgOpen==="DEMO"&&adminOn()&&leagueRows.DEMO))return leagueDetail(lgOpen);
-  if(!dbOk)return `<p class="eyebrow pg-k">03 · Tävla</p><h2 style="margin-top:0">Ligor</h2>${inviteBanner()}<div class="grid2"><div class="promo"><span class="pimg" style="background:${omapVar("ligor",700,420)}"></span><div class="pbody"><h3>Spela mot dina kompisar</h3><p>Starta en liga, skicka länken och se vem som valde bäst varje vecka. Ligor kräver ett konto.</p><button class="btn" data-tab="profile">Logga in eller skapa ett konto</button></div></div><div class="card"><h3>Så fungerar ligor</h3><ol class="steps"><li>Skapa ett konto och starta en liga.</li><li>Skicka inbjudningslänken. Kompisar registrerar sig och hamnar i din liga.</li><li>Alla låser en trupp före måndag.</li><li>Sedan ser ni varandras lag och poäng.</li></ol></div></div><div class="card global" style="margin-top:12px"><span class="eyebrow">Topp 20 totalt och varje omgång</span><h3 style="margin:2px 0 6px">Årets manager och Veckans manager</h3><p class="note" style="margin:0">Alla spelare rankas, både över hela säsongen och för varje omgång. Logga in för att se listorna och var du ligger.</p></div>`;
-  return `<p class="eyebrow pg-k">03 · Tävla</p><h2 style="margin-top:0">Ligor</h2>${inviteBanner()}
+  if(!dbOk)return `<h2 style="margin-top:0">Ligor</h2>${inviteBanner()}<div class="grid2"><div class="promo"><span class="pimg" style="background:${omapVar("ligor",700,420)}"></span><div class="pbody"><h3>Spela mot dina kompisar</h3><p>Starta en liga och se vem som väljer bäst varje vecka.</p><button class="btn" data-tab="profile">Logga in eller skapa ett konto</button></div></div></div>`;
+  return `<h2 style="margin-top:0">Ligor</h2>${inviteBanner()}
   ${isLive()?"":`<p class="note" style="margin:0 0 12px;color:var(--warn)">Du är i en övningsomgång. Ligor räknar bara säsongen.</p>`}
   ${isLive()?`<section class="rail" aria-label="Topplistor">${weekCard()}${globalCard()}</section>`:""}
   <h3 class="rail-h">Dina ligor</h3>
@@ -3963,7 +3974,7 @@ function leaguesView(){
   ${adminOn()?`<div class="card admin" style="margin-top:12px"><div class="ev" style="border:0;padding:0;align-items:center"><div><span class="eyebrow">Admin</span><h3 style="margin:2px 0 0">Demoliga</h3></div><button class="btn on" data-demo="1">Visa demoliga</button></div></div>`:""}`;
 }
 function rulesView(){
-  return `<p class="eyebrow pg-k">04 · Spelets regler</p><h2 style="margin-top:0">Så funkar det</h2>
+  return `<h2 style="margin-top:0">Så funkar det</h2>
   <div class="grid2"><div class="card"><h3>Ditt lag</h3><ul class="rules">
   <li>Välj ${D.squad} löpare från D och H 16 till 21 för ${fm(D.budget)}, högst ${D.clubMax} från samma klubb.</li>
   <li><b>A-lag</b> (dina första fem) får dubbla poäng, <b>B-lag</b> får vanliga poäng.</li>
@@ -4074,7 +4085,7 @@ function photoSection(i){
   const id=D.runners[i].id,mine=myPhotos.filter(x=>RI.get(x.runner_id)===i);
   const list=mine.map(x=>`<div class="mine"><span>Ditt foto <span class="st ${x.status}">${x.status==="approved"?"visas":x.status==="pending"?"väntar på godkännande":"inte godkänt"}</span></span><button class="btn quiet" data-phdel="${esc(x.id)}">${x.status==="approved"?"Ta bort det":"Dra tillbaka"}</button></div>`).join("");
   if(!dbOk)return `<div class="phbox"><h3>Är det här du?</h3><p class="note" style="margin:0">Logga in för att lägga till ett eget foto${youthCls(i)?", eller så kan en förälder eller vårdnadshavare göra det åt dig":""}. Det syns på ditt kort när det har godkänts.</p><div class="row"><button class="btn" id="phSignIn">Logga in för att lägga till ett foto</button></div></div>`;
-  if(!phForm||phForm.i!==i)return `<div class="phbox"><h3>Är det här du?</h3>${list}<p class="note" style="margin:0">Lägg till ett eget foto${youthCls(i)?". För löpare i D/H 16 och 18 måste en förälder eller vårdnadshavare skicka det":""}. Det syns på kortet när det har godkänts.</p><div class="row"><button class="btn on" data-phopen="${i}">Lägg till ett foto</button></div></div>`;
+  if(!phForm||phForm.i!==i)return `<div class="phbox"><h3>Är det här du?</h3>${list}<p class="note" style="margin:0">Lägg till ett eget foto på kortet.</p><div class="row"><button class="btn on" data-phopen="${i}">Lägg till ett foto</button></div></div>`;
   const f=phForm,youth=/16$/.test(D.runners[i].k),rel=[];
   if(!youth)rel.push(["self",D.runners[i].k.endsWith("18")?"Det här är jag och jag är 18 eller äldre":"Det här är jag"]);
   rel.push(["guardian","Jag är löparens förälder eller vårdnadshavare"]);
