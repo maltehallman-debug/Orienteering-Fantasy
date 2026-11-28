@@ -2473,6 +2473,70 @@ body{font-family:var(--font);font-size:var(--ds-fs-body);color:var(--ds-ink)}
 #cfg-hover{position:fixed;z-index:2147483646;pointer-events:none;display:none;border-radius:4px;box-shadow:0 0 0 2px #3b82f6,0 0 0 4px rgba(59,130,246,.25);transition:all .06s linear}
 #cfg-hover.sel{box-shadow:0 0 0 2px #f59e0b,0 0 0 5px rgba(245,158,11,.3)}
 html.cfg-picking *{cursor:crosshair!important}
+
+/* ---------- the runner profile (a sheet): a dark card with contour lines on top, one row of key numbers, the weeks
+   as bars and the races as a plain list ---------- */
+.sheet[data-key^="prof|"]{padding-top:0!important;overflow-x:hidden;position:relative}
+.sheet[data-key^="prof|"]::before{position:absolute;left:50%;top:8px;margin:0!important;transform:translateX(-50%);background:rgba(255,255,255,.4)!important;z-index:2}
+.rp{display:grid;gap:14px}
+.rp-top{position:relative;display:flex;gap:16px;align-items:center;margin:0 -22px;padding:30px 22px 48px;color:#fff;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='180' viewBox='0 0 360 180'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.09' stroke-width='1.2'%3E%3Cpath d='M-20 140c60-30 90 10 150-20s80-70 150-50 70 40 110 20'/%3E%3Cpath d='M-20 112c50-24 96 8 150-18s84-62 148-44 66 34 112 16'/%3E%3Cpath d='M-20 84c46-20 98 6 146-16s88-52 146-38 64 28 118 12'/%3E%3Cpath d='M210 150c20-26 64-30 84-6s-8 46-40 40-60-8-44-34z'/%3E%3Cpath d='M228 146c12-14 40-16 50-2s-6 26-26 22-34-6-24-20z'/%3E%3Cpath d='M-20 168c70-22 110 6 170-8s100-30 230-12'/%3E%3C/g%3E%3C/svg%3E") right top/360px 180px no-repeat,
+  linear-gradient(150deg,#0a4f86 0%,var(--ds-navy,#003c68) 55%,#022c4d 100%)}
+.rp-top .av.lg{--s:84px;box-shadow:0 0 0 3px rgba(255,255,255,.95),0 10px 24px -10px rgba(0,0,0,.6)}
+.rp-id{display:grid;gap:6px;min-width:0;padding-right:36px}
+.rp-id h2{margin:0;color:#fff;font:800 26px/1.08 var(--display,var(--font))!important;letter-spacing:-.02em;text-wrap:balance}
+.rp-meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font:500 14px/1.3 var(--font);color:#cfe0ef}
+.rp-cls{font:800 12px/1 var(--font);letter-spacing:.04em;background:#fff;color:var(--ds-navy,#003c68);padding:5px 8px 4px;border-radius:999px}
+.rp-tags{display:flex;flex-wrap:wrap;gap:6px}
+.rp-tier,.rp-idle{font:800 10.5px/1 var(--font);letter-spacing:.1em;text-transform:uppercase;padding:5px 9px 4px;border-radius:999px}
+.t-gold .rp-tier{background:#f5c84c;color:#3b2a00}.t-silver .rp-tier{background:#dfe5ec;color:#22303e}.t-bronze .rp-tier{background:#d9a273;color:#3a1f08}
+.rp-idle.y{background:rgba(255,231,77,.18);color:#ffe74d}.rp-idle.r{background:rgba(255,120,110,.2);color:#ffb3ab}
+.rp-x{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;
+  background:rgba(255,255,255,.14);color:#fff;transition:background .15s ease,transform .12s ease}
+.rp-x svg{width:18px;height:18px}.rp-x:active{transform:scale(.94)}
+@media (hover:hover) and (pointer:fine){.rp-x:hover{background:rgba(255,255,255,.26)}}
+.rp-kpi{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--ds-yellow,#ffe74d);border-radius:var(--ds-r-box,20px);margin-top:-46px;overflow:hidden;box-shadow:0 12px 26px -16px rgba(0,30,60,.55)}
+.rp-kpi>div{display:grid;gap:3px;align-content:start;padding:12px 12px 11px;min-width:0}
+.rp-kpi>div+div{box-shadow:inset 1px 0 0 rgba(0,40,71,.14)}
+.rp-kpi span{font:700 10px/1 var(--font);letter-spacing:.1em;text-transform:uppercase;color:#4b4300}
+.rp-kpi b{font:800 22px/1.05 var(--display,var(--font));letter-spacing:-.02em;color:#002847;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rp-kpi small{font:700 11px/1 var(--font);font-variant-numeric:tabular-nums}.rp-kpi small.up{color:#0d7a37}.rp-kpi small.dn{color:#b42318}
+.rp-sub{display:flex;flex-wrap:wrap;gap:6px 16px;font:500 13px/1.3 var(--font);color:var(--ds-ink-2,#5b6773);padding:0 2px}
+.rp-sub b{color:var(--ds-ink,#0b0f14);font-weight:800;font-variant-numeric:tabular-nums}
+.rp-ent{display:flex;gap:12px;align-items:center;padding:11px 14px;border-radius:var(--ds-r-ctl,14px);background:var(--ds-tint,rgba(0,60,104,.06))}
+.rp-ent.on{background:color-mix(in srgb,var(--ds-good,#1a9e4b) 10%,var(--surface,#fff))}
+.rp-dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:none;font:800 13px/1 var(--font);color:#fff;background:var(--ds-ink-3,#8a96a3)}
+.rp-ent.on .rp-dot{background:var(--ds-good,#1a9e4b)}
+.rp-ent div{display:grid;gap:2px;min-width:0}.rp-ent b{font:700 14px/1.25 var(--font)}.rp-ent span{font:500 12.5px/1.35 var(--font);color:var(--ds-ink-2,#5b6773)}
+.rp-later{margin:0;font:500 13px/1.4 var(--font);color:var(--ds-ink-2,#5b6773)}
+.rp-sec{display:grid;gap:10px}
+.rp-sec>h3{margin:4px 2px 0!important;font:800 var(--ds-fs-h3,17px)/1.2 var(--font)!important}
+.rp-bars{display:flex;gap:6px;align-items:flex-end;overflow-x:auto;padding:14px 12px 10px;border-radius:var(--ds-r-box,20px);background:var(--ds-tint,rgba(0,60,104,.06));overscroll-behavior-x:contain;scrollbar-width:none}
+.rp-bars span{display:grid;justify-items:center;gap:4px;min-width:26px;flex:1 1 26px}
+.rp-bars i{display:block;width:72%;max-width:28px;border-radius:6px 6px 2px 2px;background:var(--ds-navy,#003c68)}
+.rp-bars i.neg{background:var(--ds-bad,#d23b3b)}.rp-bars i.none{background:var(--ds-line-2,#cdd5de)}
+.rp-bars b{font:700 10.5px/1 var(--font);color:var(--ds-ink,#0b0f14);min-height:11px;font-variant-numeric:tabular-nums}
+.rp-bars small{font:600 10px/1 var(--font);color:var(--ds-ink-3,#8a96a3)}
+.rp-wk{border-radius:var(--ds-r-box,20px);box-shadow:inset 0 0 0 1px var(--ds-line,#e3e7ec);overflow:hidden}
+.rp-wkh{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:11px 14px;background:var(--ds-tint,rgba(0,60,104,.06))}
+.rp-wkh b{font:800 14px/1.2 var(--font)}.rp-wkh span{grid-row:2;font:500 12px/1.2 var(--font);color:var(--ds-ink-2,#5b6773)}
+.rp-wkh em{grid-row:1/3;grid-column:2;font:800 17px/1 var(--display,var(--font));font-style:normal;font-variant-numeric:tabular-nums}
+.rp-wk ul{list-style:none;margin:0;padding:0}
+.rp-race{display:grid;grid-template-columns:minmax(0,1fr) auto 48px;gap:10px;align-items:center;padding:11px 14px}
+.rp-race+.rp-race{box-shadow:inset 0 1px 0 var(--ds-line,#e3e7ec)}
+.rp-rn{display:grid;gap:3px;min-width:0}.rp-rn b{font:600 14px/1.3 var(--font);overflow-wrap:anywhere}.rp-rn span{font:500 12px/1.3 var(--font);color:var(--ds-ink-3,#8a96a3);font-variant-numeric:tabular-nums}
+.rp-pl{font:800 16px/1 var(--font);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}.rp-pl small{font-weight:600;font-size:11px;color:var(--ds-ink-3,#8a96a3)}
+.rp-pl em{font-style:normal;font-size:12px;color:var(--ds-bad,#d23b3b)}
+.rp-pt{justify-self:end;min-width:44px;text-align:center;font:800 13px/1 var(--font);font-variant-numeric:tabular-nums;padding:6px 8px 5px;border-radius:999px;background:var(--ds-tint,rgba(0,60,104,.06))}
+.rp-pt.pos,.rp-wkh em.pos{color:var(--ds-good,#1a9e4b)}.rp-pt.pos{background:color-mix(in srgb,var(--ds-good,#1a9e4b) 12%,transparent)}
+.rp-pt.neg,.rp-wkh em.neg{color:var(--ds-bad,#d23b3b)}.rp-pt.neg{background:color-mix(in srgb,var(--ds-bad,#d23b3b) 12%,transparent)}
+.rp-empty{display:grid;justify-items:center;text-align:center;gap:6px;padding:24px 18px;border-radius:var(--ds-r-box,20px);background:var(--ds-tint,rgba(0,60,104,.06))}
+.rp-empty svg{width:34px;height:34px;color:var(--ds-navy,#003c68)}.rp-empty b{font:800 15px/1.25 var(--font)}.rp-empty span{font:500 13px/1.4 var(--font);color:var(--ds-ink-2,#5b6773);max-width:30ch}
+.rp .phbox{margin-top:2px;background:var(--ds-tint,rgba(0,60,104,.06))!important;border-radius:var(--ds-r-box,20px)!important}.rp .rmline{margin:2px 0 0}
+@media (max-width:640px){
+  .rp-top{margin:0 -16px;padding:30px 16px 44px;gap:14px}.rp-top .av.lg{--s:72px}.rp-id h2{font-size:22px!important}
+  .rp-kpi>div{padding:11px 9px 10px}.rp-kpi b{font-size:18px}.rp-kpi span{font-size:9px;letter-spacing:.08em}}
+@media (max-width:640px){.sheet[data-key^="prof|"]{padding-top:0!important}}
 </style>
 </head>
 <body>
@@ -3026,7 +3090,7 @@ const GEM=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12l4 6-10 1
 /* the last game week that is over: in the live season the latest round that has ended, in a replay the round before */
 const lastWeek=()=>{if(!isLive())return Math.min(R(),E.R)-1;let w=-1;for(let r=0;r<E.R;r++)if(D.rounds[r].end<TODAY)w=r;return w};
 /* 0 raced last game week, 1 did not (yellow), 2 no race in the last 10 game weeks (red) */
-function idle(i){const lw=lastWeek();if(lw<0)return 0;if(E.starts[lw][i])return 0;for(let r=Math.max(0,lw-9);r<lw;r++)if(E.starts[r][i])return 1;return 2}
+function idle(i){const lw=lastWeek();if(lw<LIVE)return 0;if(E.starts[lw][i])return 0;for(let r=Math.max(0,lw-9);r<lw;r++)if(E.starts[r][i])return 1;return 2}
 const idleTag=i=>{const k=idle(i);if(!k)return "";const t=k===2?"Inget lopp de senaste 10 spelveckorna":"Sprang inte förra speltveckan (omgång "+D.rounds[lastWeek()].n+")";return `<span class="idle ${k===2?"r":"y"}" title="${t}" aria-label="${t}" role="img">!</span>`};
 const tierTag=(i,r)=>{const t=tierOf(i,r);return `<span class="tier t-${TIERS[t][0]}" title="${TIERS[t][1]}">${GEM}<span class="tier-l">${TIERS[t][1]}</span></span>`};
 /* the A team is plan.a (up to five runners), the rest of plan.squad is the B team; ordered squads put the A team first */
@@ -3487,7 +3551,7 @@ function seasonDashes(){
 /* news on the start page, newest first. Add a line here to post something new. */
 const NEWS=[
   ["2026-11-02","Betan är igång","Den slutna betan har börjat. Välj tio löpare, dubbla ditt A-lag och se hur de står sig när helgens resultat kommer in.","img/hem-kontroll"],
-  ["2026-11-02","Medaljer på profilen","Alla betatestare har fått kompassmedaljen. Välj under Profil → Medaljer om den ska synas bredvid ditt namn i ligorna."],
+  ["2026-11-02","Medaljer på profilen","Alla betatestare har fått betamedaljen. Välj under Profil → Medaljer om den ska synas bredvid ditt namn i ligorna."],
   ["2026-11-02","Bjud in en kompis","Spelet är i sluten beta. Vill du att någon ska vara med? Hör av dig så skickar vi en inbjudningskod."],
   ["2026-11-01","SM-finalerna räknas","A- och B-finaler från SM räknas nu som ett lopp, med B-finalen placerad efter A-finalen."]];
 /* news: kept in the database so admins can publish from the site; the list above is only the fallback until it loads */
@@ -4020,14 +4084,12 @@ const BDG_ICON={
 /* the beta badge is the compass medal: navy medal with a compass rose and needle, "BETA", on a yellow ribbon.
    mini = the small one next to a name in the league tables */
 function compassMedal(mini){
-  /* flat, in the site's own look: a navy disc with a thin yellow edge, the compass O from the logo (white ring, red and
-     white needle at 35 degrees) and "BETA" on a yellow pill. The mini (next to a name) is just the disc and compass */
-  const disc=`<circle cy="-4" r="31" fill="#003c68" stroke="#ffe74d" stroke-width="2.5"/><circle cy="-4" r="19" fill="none" stroke="#fff" stroke-width="5"/>
-   <g transform="translate(0 -4) rotate(35)"><path d="M0-14 4.2 0H-4.2Z" fill="#e5484d"/><path d="M0 14 4.2 0H-4.2Z" fill="#fff"/></g>`;
-  if(mini)return `<svg class="tk-mini cm-mini" viewBox="-34 -38 68 68" aria-hidden="true">${disc}</svg>`;
-  return `<svg class="md md-c" viewBox="-40 -42 80 94" aria-hidden="true">${disc}
-   <rect x="-21" y="21" width="42" height="15" rx="7.5" fill="#ffe74d" stroke="#003c68" stroke-width="2"/>
-   <text y="31.6" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="8.6" letter-spacing="1.6" fill="#003c68">BETA</text></svg>`}
+  /* the beta tester medal: three contour lines like a small hill on the map with a red dot on the top, only lines so
+     the page shows through the middle, and "BETA" on a yellow pill. The mini (next to a name) is two lines and the dot */
+  const N="#003c68",R="#e5484d";
+  if(mini)return `<svg class="tk-mini cm-mini" viewBox="-32 -32 64 64" aria-hidden="true"><g fill="none" stroke="${N}" stroke-linejoin="round"><path d="M-26 5C-29-9-19-24-3-26 11-29 26-19 27-4 29 10 19 24 3 26-12 29-24 19-26 5Z" stroke-width="5.5"/><path d="M-11 2C-12-5-6-11 1-11 8-11 12-5 11 2 10 8 5 11-1 11-7 11-11 8-11 2Z" stroke-width="4.5" transform="translate(5 -3) rotate(12)"/></g><circle cx="6" cy="-4" r="4" fill="${R}"/></svg>`;
+  return `<svg class="md md-c" viewBox="-40 -44 80 92" aria-hidden="true"><g transform="translate(0 -6)" fill="none" stroke="${N}" stroke-linejoin="round"><path d="M-30 6C-33-10-22-27-4-30 12-33 30-22 31-5 33 12 22 27 4 30-14 33-27 22-30 6Z" stroke-width="3"/><path d="M-19 4C-21-8-13-19-1-20 12-21 22-12 21 0 20 11 11 18 0 19-11 20-18 14-19 4Z" stroke-width="2.2" opacity=".75" transform="translate(3 -2) rotate(-8)"/><path d="M-9 2C-10-4-5-10 1-10 7-10 11-5 10 1 9 7 4 10-1 10-6 10-9 7-9 2Z" stroke-width="1.6" opacity=".6" transform="translate(6 -4) rotate(14)"/><circle cx="7" cy="-5" r="3.2" fill="${R}" stroke="none"/></g>
+   <rect x="-21" y="27" width="42" height="15" rx="7.5" fill="#ffe74d"/><text y="37.6" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="8.6" letter-spacing="1.6" fill="${N}">BETA</text></svg>`}
 function badgeMini(b){if(b.icon==="beta")return compassMedal(true);const t=BDG_TIER[b.tier]||BDG_TIER.navy;return `<svg class="tk-mini md-mini" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="${t[1]}"/>${(BDG_ICON[b.icon]||BDG_ICON.star)(t[2])}</svg>`}
 const featB={};
 const featTag=id=>{const b=featB[id];return b?`<span class="fbdg" title="${esc(b.name)}">${badgeMini(b)}</span>`:""};
@@ -4268,23 +4330,43 @@ function flip(){
 let profileOpen=null;
 function profile(i){
   profileOpen=i;
-  const vis=E.visible(i,R(),LIVE),s=E.stats(i,R(),LIVE),wk=E.weeks(i,R(),LIVE),first=wk.findIndex(x=>x.races),shownW=first<0?[]:wk.slice(first);
+  const ru=D.runners[i],vis=E.visible(i,R(),LIVE),s=E.stats(i,R(),LIVE),wk=E.weeks(i,R(),LIVE).filter(x=>!D.rounds[x.round].skip),first=wk.findIndex(x=>x.races),shownW=first<0?[]:wk.slice(first);
+  const r=pr(),p=ru.p?E.price(i,r):0,dp=ru.p&&r>LIVE?p-E.price(i,r-1):0,tier=TIERS[tierOf(i)],k=idle(i);
+  const own=(()=>{const d=ownData();return d&&d.n?Math.round(100*d.own[i]/d.n):null})();
+  const ent=(()=>{if(!Object.keys(ENT).length)return null;const q=R();return q<E.R?entOf(i,q):[]})();
   /* points per game week as bars, weeks without a race as a flat mark */
-  const hist=shownW.length?(()=>{const mx=Math.max(...shownW.map(x=>x.pts),10);
-    return `<div class="wkbars" role="img" aria-label="Poäng per spelvecka">${shownW.map(x=>`<span title="${rdName(D.rounds[x.round])}: ${x.races?fp(x.pts)+" poäng, "+x.races+" lopp":"inget lopp"}"><i class="${x.races?(x.pts<0?"neg":""):"none"}" style="height:${x.races?Math.max(3,Math.round(Math.abs(x.pts)/mx*54)):2}px"></i><b>${x.races?fp(x.pts):""}</b><small>${rdNo(D.rounds[x.round])}</small></span>`).join("")}</div>`})():"";
+  const bars=shownW.length?(()=>{const mx=Math.max(...shownW.map(x=>Math.abs(x.pts)),10);
+    return `<section class="rp-sec"><h3>Poäng per spelvecka</h3><div class="rp-bars" role="img" aria-label="Poäng per spelvecka">${shownW.map(x=>`<span title="${rdName(D.rounds[x.round])}: ${x.races?fp(x.pts)+" poäng, "+x.races+" lopp":"inget lopp"}"><b>${x.races?fp(x.pts):""}</b><i class="${x.races?(x.pts<0?"neg":""):"none"}" style="height:${x.races?Math.max(4,Math.round(Math.abs(x.pts)/mx*64)):3}px"></i><small>${rdNo(D.rounds[x.round])}</small></span>`).join("")}</div></section>`})():"";
   const ev2r=new Map();D.rounds.forEach((rd,q)=>rd.ev.forEach(e=>ev2r.set(e,q)));
   const groups=[];vis.slice().reverse().forEach(h=>{const q=ev2r.has(h.ev)?ev2r.get(h.ev):-1;let g=groups[groups.length-1];if(!g||g.q!==q){g={q,list:[]};groups.push(g)}g.list.push(h)});
-  showSheet("prof|"+i,nameOf(i),`
-   <div class="hd"><div style="display:flex;gap:16px;align-items:center;min-width:0">${avatar(i,"lg")}<div style="min-width:0"><h2>${esc(nameOf(i))}${idleTag(i)}</h2><div class="sub">${D.runners[i].k}, ${esc(clubOf(i))}${idle(i)?" · "+(idle(i)===2?"inget lopp på 10 veckor":"sprang inte förra veckan"):""}</div></div></div><button class="btn" data-close="1">Stäng</button></div>
-   <div class="stats"><div><b>${D.runners[i].p?fm(E.price(i,pr())):"–"}</b><span>Pris · ${TIERS[tierOf(i)][1]}</span></div><div><b>${s.starts}</b><span>Starter</span></div><div><b>${fp(s.total)}</b><span>Poäng</span></div><div><b>${fp(s.weeks?s.perWeek:0)}</b><span>Per vecka, senaste 5</span></div>${(()=>{const d=ownData();if(!d||!d.n)return "";return `<div><b>${Math.round(100*d.own[i]/d.n)}%</b><span>Ägs av, ${esc(rdName(D.rounds[d.r]))}</span></div>`})()}${isLive()||done()?`<div><b>${D.runners[i].s}</b><span>Klassbetyg</span></div>`:""}</div>
-   ${(()=>{if(!Object.keys(ENT).length)return "";const r=R(),w=r<E.R?entOf(i,r):[],rd=D.rounds[r];return `<div class="entbox ${w.length?"on":""}"><span class="entered" aria-hidden="true">${w.length?"✓":"–"}</span><div><b>${w.length?"Anmäld den här spelveckan":"Inte anmäld den här spelveckan"}</b><span class="sub">${w.length?w.map(u=>esc(compName(u.name))+" ("+dayName(u.date).slice(0,3)+" "+dshort(u.date)+")").join(", "):rd?rdName(rd)+", "+dshort(rd.start)+" – "+dshort(rd.end):""}</span></div></div>`})()}
-   ${(()=>{const e=(ENT[i]||[]).map(k=>D.upcoming[k]).filter(Boolean);return e.length?`<p class="note entline"><span class="entered" aria-hidden="true">✓</span> Anmäld: ${e.map(u=>`${u.eo&&EV_LINKS?`<a href="https://eventor.orientering.se/Events/Show/${u.eo}" target="_blank" rel="noopener">${esc(compName(u.name))}</a>`:esc(compName(u.name))} (${dshort(u.date)})`).join(", ")}</p>`:""})()}
-   ${hist}
-   <div class="tbl rtab" style="margin-top:12px"><table><thead><tr><th>Lopp</th><th>Plats</th><th>Efter</th><th>Tid</th><th>Poäng</th></tr></thead><tbody>
-   ${groups.map(g=>{const tot=g.list.reduce((a,h)=>a+h.pts,0);return `<tr class="wkhead"><td colspan="2"><b>${g.q<0?"Före omgång 1":rdName(D.rounds[g.q])}</b> <span class="sub">${g.q<0?"inte en del av en spelvecka":dshort(D.rounds[g.q].start)+" – "+dshort(D.rounds[g.q].end)+", "+g.list.length+" lopp"}</span></td><td></td><td></td><td class="${tot<0?"neg":"pos"}"><b>${sg(tot)}</b></td></tr>`+g.list.map(h=>{const e=D.events[h.ev];return `<tr><td>${esc(e.name)}<div class="sub">${dshort(e.date)}${e.tier>1?", x"+e.tier:""}</div></td><td>${h.kind?["","DNF","MP","DSQ"][h.kind]:h.rank+" av "+e.n}</td><td>${h.kind?"–":(h.gap/100).toFixed(1)+"%"}</td><td>${h.kind?"–":tm(h.t)}</td><td class="${h.pts<0?"neg":"pos"}">${sg(h.pts)}</td></tr>`}).join("")}).join("")||`<tr><td colspan="5" class="note">Inga resultat än.</td></tr>`}
-   </tbody></table></div>${!isLive()&&!done()?`<p class="note">Visar lopp före omgång ${D.rounds[R()].n}.</p>`:""}
+  const race=h=>{const e=D.events[h.ev],m=e.name.match(/^(.*?)\s*\(([^()]+)\)\s*$/),nm=m?m[1]:e.name,cl=m?m[2]:"";
+    const meta=[dshort(e.date),cl,e.tier>1?"×"+e.tier:"",h.kind?"":tm(h.t)+(h.gap?" (+"+(h.gap/100).toFixed(1)+"%)":"")].filter(Boolean).join(" · ");
+    return `<li class="rp-race"><div class="rp-rn"><b>${esc(nm)}</b><span>${esc(meta)}</span></div><span class="rp-pl">${h.kind?`<em>${["","DNF","MP","DSQ"][h.kind]}</em>`:`${h.rank}<small>/${e.n}</small>`}</span><span class="rp-pt ${h.pts<0?"neg":h.pts>0?"pos":""}">${sg(h.pts)}</span></li>`};
+  const races=groups.length?`<section class="rp-sec"><h3>Lopp</h3>${groups.map(g=>{const tot=g.list.reduce((a,h)=>a+h.pts,0),rd=g.q<0?null:D.rounds[g.q];
+      return `<div class="rp-wk"><div class="rp-wkh"><b>${rd?esc(rdName(rd)):"Utanför spelveckorna"}</b><span>${rd?dshort(rd.start)+" – "+dshort(rd.end)+" · ":""}${g.list.length} lopp</span><em class="${tot<0?"neg":"pos"}">${sg(tot)}</em></div><ul>${g.list.map(race).join("")}</ul></div>`}).join("")}</section>`
+    :`<div class="rp-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 22V3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6 4h13v11H6z" fill="#fff" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M19 4v11H6z" fill="#f47a20"/></svg><b>Inga lopp den här säsongen än</b><span>Säsongen startar med Sverigepremiären${D.launch&&D.launch.dates?" "+esc(launchDates()):""}. Loppen därifrån visas här.</span></div>`;
+  const entLine=ent===null?"":`<div class="rp-ent ${ent.length?"on":""}"><span class="rp-dot" aria-hidden="true">${ent.length?"✓":"–"}</span><div><b>${ent.length?"Anmäld den här spelveckan":"Inte anmäld den här spelveckan"}</b><span>${ent.length?ent.map(u=>esc(compName(u.name))+" · "+dayName(u.date).slice(0,3)+" "+dshort(u.date)).join(", "):D.rounds[R()]?esc(rdName(D.rounds[R()]))+" · "+dshort(D.rounds[R()].start)+" – "+dshort(D.rounds[R()].end):""}</span></div></div>`;
+  const later=(ENT[i]||[]).map(x=>D.upcoming[x]).filter(Boolean);
+  showSheet("prof|"+i,nameOf(i),`<div class="rp">
+   <header class="rp-top t-${tier[0]}">
+    <button class="rp-x" data-close="1" aria-label="Stäng"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+    ${avatar(i,"lg")}
+    <div class="rp-id"><h2>${esc(nameOf(i))}</h2>
+     <div class="rp-meta"><span class="rp-cls">${esc(ru.k)}</span><span class="rp-club">${esc(clubOf(i))}</span></div>
+     <div class="rp-tags"><span class="rp-tier">${tier[1]}</span>${k?`<span class="rp-idle ${k===2?"r":"y"}">${k===2?"Inget lopp på 10 veckor":"Sprang inte förra veckan"}</span>`:""}</div></div>
+   </header>
+   <div class="rp-kpi">
+    <div><span>Pris</span><b>${ru.p?fm(p):"–"}</b>${dp?`<small class="${dp>0?"up":"dn"}">${dp>0?"▲":"▼"} ${fm(Math.abs(dp))}</small>`:""}</div>
+    <div><span>Poäng</span><b>${fp(s.total)}</b></div>
+    <div><span>Per vecka</span><b>${fp(s.weeks?s.perWeek:0)}</b></div>
+    <div><span>Starter</span><b>${s.starts}</b></div>
+   </div>
+   <div class="rp-sub"><span>Klassbetyg <b>${ru.s}</b></span>${own!==null?`<span>Ägs av <b>${own}%</b></span>`:""}${s.weeks?`<span>Form <b>${fp(s.form)}</b></span>`:""}</div>
+   ${entLine}
+   ${later.length?`<p class="rp-later">Anmäld: ${later.map(u=>`${u.eo&&EV_LINKS?`<a href="https://eventor.orientering.se/Events/Show/${u.eo}" target="_blank" rel="noopener">${esc(compName(u.name))}</a>`:esc(compName(u.name))} (${dshort(u.date)})`).join(", ")}</p>`:""}
+   ${bars}${races}
    ${photoSection(i)}
-   <p class="note rmline">Är det du och vill du inte vara med i spelet? <button type="button" class="linkish" data-rmfor="${i}">Be om att bli borttagen</button></p>`);
+   <p class="note rmline">Är det du och vill du inte vara med i spelet? <button type="button" class="linkish" data-rmfor="${i}">Be om att bli borttagen</button></p></div>`);
 }
 function photoSection(i){
   if(PHOTOS_OFF)return "";
