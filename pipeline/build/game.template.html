@@ -2216,6 +2216,8 @@ th.c-total,th.c-form,th.c-avg,th.c-starts{transition:background-color .15s}
 @media (hover:hover) and (pointer:fine){.btn.more:hover{text-decoration:underline;text-underline-offset:3px}}
 .btn.more:focus-visible{outline:2px solid var(--navy,#003c68);outline-offset:2px;border-radius:4px}
 #view p.note:empty,#view p:empty{display:none}
+@media (max-width:699px){.hm-cta{flex-wrap:nowrap!important;gap:8px}.hm-cta .btn{padding-left:16px!important;padding-right:16px!important;white-space:nowrap;font-size:12px}}
+.hm-txt h2{margin-bottom:18px!important}
 </style>
 </head>
 <body>
@@ -3086,7 +3088,7 @@ function homeView(){
     :saved?`Ditt lag är klart för ${esc(rdThe(rd))}. Det låses ${esc(lockText(r))}, fram till dess kan du byta.`
     :`Ditt lag är fullt men inte sparat än. Det låses ${esc(lockText(r))}.`;
   return `<section class="hm-hero" aria-labelledby="hmT"><picture class="hm-img"><source media="(min-width:700px)" srcset="img/hem-kontroll-2000.jpg"><img src="img/hem-kontroll-1100.jpg" alt="" decoding="async" fetchpriority="high"></picture>
-   <div class="hm-txt"><span class="hm-k">${done()?"Säsong 2026/27":esc(rdName(rd))+" · "+esc(dshort(rd.start))+" – "+esc(dshort(rd.end))}</span><h2 id="hmT">${first?"Hej "+esc(first)+"!":"Välkommen!"}</h2><p class="hm-lead">${status}</p>
+   <div class="hm-txt"><span class="hm-k">${done()||rd.skip?"Säsong 2026/27":esc(rdName(rd))+" · "+esc(dshort(rd.start))+" – "+esc(dshort(rd.end))}</span><h2 id="hmT">${first?"Hej "+esc(first)+"!":"Välkommen!"}</h2>
     <div class="hm-cta"><button class="btn on" data-tab="team">${n<D.squad?(rd.skip?"Förbered din trupp":"Välj din trupp"):"Till ditt lag"}</button><button class="btn" data-tab="rounds">Dina poäng</button></div></div></section>
   ${liveCard()}${recapCard()}
   <div class="card hm-news"><span class="eyebrow">Nytt i spelet</span><h3>Nyheter</h3>${newsList().slice(0,newsAll?8:3).map(([d,t,x])=>`<div class="hm-ni"><span class="hm-d">${dshort(d)}</span><div><b>${esc(t)}</b><p>${esc(x)}</p></div></div>`).join("")}${newsList().length>3?`<button class="btn more" data-newsall="1">${newsAll?"Visa färre":"Fler nyheter →"}</button>`:""}</div>
@@ -3436,7 +3438,8 @@ function showSheet(key,label,inner,wide){
 }
 /* ===== leagues: table, rounds, every manager's team ===== */
 let lgOpen=null,lgSub="table",lgRound=null;
-const startedRounds=()=>{const o=openRound(),a=[];for(let r=LIVE;r<Math.min(o,E.R);r++)a.push(r);return a};
+/* weeks without play (skip) are left out as if they did not exist: the week shown is the last one actually played */
+const startedRounds=()=>{const o=openRound(),a=[];for(let r=LIVE;r<Math.min(o,E.R);r++)if(!D.rounds[r].skip)a.push(r);return a};
 /* The demo league (admins only): eight made-up managers playing the last four weeks that have real results, with the
    game's own rules (budget, three per club, a couple of transfers a week, now and then a chip). You are one of them.
    It lives only in this page; nothing is saved or sent anywhere. */
