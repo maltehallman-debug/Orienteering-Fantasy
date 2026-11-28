@@ -21,6 +21,8 @@ python3 "$S/scripts/race_calendar.py" "$S" || echo "calendar skipped"
 python3 "$S/scripts/race_entries.py" "$S" || echo "entries skipped"
 # start lists for the coming days from liveresultat (who is set to run; also used when Eventor is missing)
 if [ "${LIVE:-}" != "1" ]; then python3 "$S/scripts/startlists.py" "$S" || echo "start lists skipped"; fi
+# birth years and club countries from O-Ringen (not on the quarter-hourly race-day runs)
+if [ "${LIVE:-}" != "1" ]; then python3 "$S/scripts/oringen_ages.py" "$S" || echo "O-Ringen skipped"; fi
 python3 "$S/scripts/build_dataset.py" "$S"
 python3 "$S/scripts/build_data.py" "$S"
 python3 "$S/scripts/sync_locks.py" "$S"

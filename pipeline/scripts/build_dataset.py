@@ -598,12 +598,41 @@ def youth_bound(k):
     return min(b) if b else None
 # Runners under 15 are not in the game, nor anyone an admin has hidden (a runner or parent asked to be left out)
 HIDE = {o["ref"] for o in OVR if o["kind"] == "runner_hide"}
-_under = {k for k in pool if (youth_bound(k) or 99) <= 14}
+# ---- birth years and club countries from O-Ringen (scripts/oringen_ages.py) ----
+# O-Ringen lists every runner's birth year, in every class, and the country of their club. A runner matched there by
+# name and sex (and club, when the name is shared) gets an exact age class; a club O-Ringen knows the country of is
+# Swedish or foreign by that, before the hand-kept list below.
+_OR = _j("oringen_people.json", []) or []
+_or_by = collections.defaultdict(list)
+CLUB_CC = collections.defaultdict(collections.Counter)
+for _p in _OR:
+    _or_by[(_p["n"].strip().lower(), _p["g"])].append(_p)
+    if _p.get("c") and _p.get("cc"): CLUB_CC[nclub(_p["c"])][_p["cc"]] += 1
+def birth_year(k):
+    n, g = k.split("|")[0], k.rsplit("|", 1)[1]
+    cand = _or_by.get((n, g), [])
+    if not cand: return None
+    mine = {nclub(c) for c in clubs[k]} | {k.split("|")[1]}
+    by_club = {p["b"] for p in cand if nclub(p.get("c", "")) in mine}
+    if len(by_club) == 1: return by_club.pop()
+    allb = {p["b"] for p in cand}
+    return allb.pop() if len(allb) == 1 else None
+BIRTH = {k: b for k in pool if (b := birth_year(k))}
+def age_class(k):
+    b = BIRTH.get(k)
+    if not b: return None
+    a = TODAY.year - b; g = k.rsplit("|", 1)[1]
+    return None if a < 15 else g + ("16" if a <= 16 else "18" if a <= 18 else "20" if a <= 20 else "21")
+print("O-Ringen: people", len(_OR), "pool runners with a birth year", len(BIRTH), "of", len(pool), "clubs with a country", len(CLUB_CC))
+_under = {k for k in pool if (youth_bound(k) or 99) <= 14 or (BIRTH.get(k) and TODAY.year - BIRTH[k] < 15)}
 # Runners from clubs outside Sweden are not in the game (their results still count when others beat them): a runner
 # is left out when every club they have raced for is in data/foreign_clubs.json or looks foreign by its name
 _fc = _j("foreign_clubs.json", {"clubs": [], "patterns": []})
 FOREIGN_CLUBS = set(_fc.get("clubs", [])); FOREIGN_PAT = [re.compile(x, re.I) for x in _fc.get("patterns", [])]
-def foreign_club(c): return c in FOREIGN_CLUBS or any(x.search(c) for x in FOREIGN_PAT)
+def foreign_club(c):
+    cc = CLUB_CC.get(nclub(c))
+    if cc: return cc.most_common(1)[0][0] != "SWE"   # O-Ringen knows the club's country
+    return c in FOREIGN_CLUBS or any(x.search(c) for x in FOREIGN_PAT)
 def foreign_runner(k):
     cs = [c for c in clubs[k] if c and not JOINT.search(c) and not re.search(r"\bOF$|Orienteringsförbund", c)] or [k.split("|")[1]]
     return all(foreign_club(c) for c in cs)
@@ -632,6 +661,8 @@ for _en in _j("eventor_entries.json", []) or []:
     _entcls[_k][_c[0] + {"15": "16", "17": "18", "19": "20"}.get(_c[1:3], _c[1:3])] += 1
 def class_of(k):
     g = k.rsplit("|", 1)[1]
+    ac = age_class(k)
+    if ac: return ac   # an exact age from O-Ringen decides
     if youth_bound(k) is not None: return g + "16"
     cc = clsy[k].get(TODAY.year) or _entcls.get(k) or clsc[k]; tot = sum(cc.values())
     for a in AGES:
@@ -639,7 +670,7 @@ def class_of(k):
         if x >= 2 or (x and x * 3 >= tot): return g + a
     return cc.most_common(1)[0][0]
 CLS = {k: class_of(k) for k in pool}
-print("class from this year: raced", sum(1 for k in pool if clsy[k].get(TODAY.year)), "entered only", sum(1 for k in pool if not clsy[k].get(TODAY.year) and _entcls.get(k)), "last year", sum(1 for k in pool if not clsy[k].get(TODAY.year) and not _entcls.get(k)))
+print("class from O-Ringen birth year", sum(1 for k in pool if age_class(k)), "| class from this year: raced", sum(1 for k in pool if clsy[k].get(TODAY.year)), "entered only", sum(1 for k in pool if not clsy[k].get(TODAY.year) and _entcls.get(k)), "last year", sum(1 for k in pool if not clsy[k].get(TODAY.year) and not _entcls.get(k)))
 # saved squads name runners by key; keys made from a joint relay club before it stopped counting as a club still work
 ALIAS = {}
 for k in pool:

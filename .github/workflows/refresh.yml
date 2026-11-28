@@ -56,6 +56,14 @@ jobs:
           path: pipeline/data/eventor
           key: eventor-${{ github.run_id }}
           restore-keys: eventor-
+      # O-Ringen's birth years and club countries: finished years never change, so they are fetched once and kept here
+      # (in the Actions cache, never in the repository: birth years are personal data)
+      - name: Restore O-Ringen cache
+        uses: actions/cache@v4
+        with:
+          path: pipeline/data/oringen
+          key: oringen-${{ github.run_id }}
+          restore-keys: oringen-
       - name: Build
         env:
           TZ: Europe/Stockholm
