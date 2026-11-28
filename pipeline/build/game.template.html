@@ -2195,6 +2195,27 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
   .mkt td .sub.mk-club{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-2)}
   .mkt td:last-child,.mkt th:last-child{padding-right:max(12px,env(safe-area-inset-right))!important}
 }
+
+/* ===== Runner list: one-line names, tight stat columns, the sorted column in its own colour ===== */
+.mkt .nm{display:flex!important;align-items:center;gap:3px;min-width:0;flex-wrap:nowrap}
+.mkt .nm .who{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;display:block!important;min-width:0;flex:0 1 auto}
+.mkt .nm .idle,.mkt .nm .entered{flex:none}
+.mk-s-total .c-total,.mk-s-form .c-form,.mk-s-avg .c-avg,.mk-s-starts .c-starts{background:color-mix(in srgb,var(--navy,#003c68) 9%,transparent)!important;font-weight:800}
+th.c-total,th.c-form,th.c-avg,th.c-starts{transition:background-color .15s}
+.mk-s-total th.c-total,.mk-s-form th.c-form,.mk-s-avg th.c-avg,.mk-s-starts th.c-starts{background:var(--navy,#003c68)!important}
+.mk-s-total th.c-total button,.mk-s-form th.c-form button,.mk-s-avg th.c-avg button,.mk-s-starts th.c-starts button{color:#fff!important}
+@media (max-width:899px){
+  .mkt th:not(:first-child):not(:last-child),.mkt td:not(:first-child):not(:last-child){padding-left:5px!important;padding-right:5px!important;min-width:0}
+  .mkt th{font-size:9.5px!important;letter-spacing:.03em!important}
+}
+.mk-act{display:inline-flex;align-items:center;gap:4px;justify-content:flex-end}
+.mk-mark{display:inline-flex;gap:2px}.mk-mark:empty{display:none}
+.mk-mark .idle,.mk-mark .entered{width:12px!important;height:12px!important;font-size:8px!important;line-height:12px!important;margin:0!important;vertical-align:middle}
+/* "Hela tabellen →" and the like: a small text link, not a big button */
+.btn.more{all:unset;cursor:pointer;display:inline-flex!important;align-items:center;gap:4px;font:700 13px/1.2 var(--font)!important;color:var(--navy,#003c68)!important;text-transform:none!important;letter-spacing:0!important;padding:6px 0!important;background:none!important;box-shadow:none!important;border:0!important;min-height:0!important}
+@media (hover:hover) and (pointer:fine){.btn.more:hover{text-decoration:underline;text-underline-offset:3px}}
+.btn.more:focus-visible{outline:2px solid var(--navy,#003c68);outline-offset:2px;border-radius:4px}
+#view p.note:empty,#view p:empty{display:none}
 </style>
 </head>
 <body>
@@ -2236,7 +2257,7 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 <div class="course" id="course"></div>
 <main id="view"></main>
 <nav class="bigpills" aria-label="Genvägar"><button type="button" data-tab="rules">Regler <i>↗</i></button><button type="button" data-tab="leagues">Ligor <i>↗</i></button></nav>
-<p class="fanline">Fantasy Orientering är ett fristående, ideellt fanprojekt och har ingen koppling till Svenska Orienteringsförbundet. Resultaten kommer från liveresultat.orientering.se. Kartbilderna: © Attunda OK.<br><button type="button" class="linkish" data-tab="rules">Regler</button> · <button type="button" class="linkish" data-info="terms">Villkor</button> · <button type="button" class="linkish" data-info="privacy">Integritet</button> · <button type="button" class="linkish" data-info="contact">Kontakt och anmälan</button></p>
+<p class="fanline"><button type="button" class="linkish" data-tab="rules">Regler</button> · <button type="button" class="linkish" data-info="terms">Villkor</button> · <button type="button" class="linkish" data-info="privacy">Integritet</button> · <button type="button" class="linkish" data-info="contact">Kontakt och anmälan</button></p>
 </div>
 <nav class="tabbar" id="tabbar" aria-label="Sektioner"></nav>
 <div id="modal"></div>
@@ -2807,8 +2828,8 @@ function marketBody(rows){mRows=rows;
   return (rows.slice(0,shown).map(rowHtml).join("")||`<tr><td colspan="10" class="note">Inga löpare matchar. Rensa sökningen eller ett filter.</td></tr>`);
 }
 function rowHtml(x){const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
-   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><i class="glm" aria-hidden="true"></i><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub"><b class="mk-p">${fm(x.p)}</b> · ${D.runners[x.i].k}${(()=>{const o=ownPct(x.i);return o?` · ägs av ${o}%`:""})()}</div><div class="sub mk-club">${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
-   <td>${inS?`<button class="btn" data-sell="${x.i}">Sälj</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Köp</button>`}</td></tr>`}
+   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><i class="glm" aria-hidden="true"></i><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button></div><div class="sub"><b class="mk-p">${fm(x.p)}</b> · ${D.runners[x.i].k}${(()=>{const o=ownPct(x.i);return o?` · ägs av ${o}%`:""})()}</div><div class="sub mk-club">${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td class="c-form">${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td class="c-avg">${x.s.weeks?fp(x.avg):"–"}</td><td class="c-total">${fp(x.s.total)}</td><td class="c-starts">${x.s.starts}</td>
+   <td><span class="mk-act"><span class="mk-mark">${idleTag(x.i)}${entTag(x.i)}</span>${inS?`<button class="btn" data-sell="${x.i}">Sälj</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Köp</button>`}</span></td></tr>`}
 /* the runner list grows as you scroll: a marker under it loads the next runners before you reach the end, and each
    new runner rises in on its own. A button stays as a fallback where the browser cannot watch the marker. */
 let mRows=[];
@@ -2830,15 +2851,15 @@ function growMarket(){
 function refreshMarket(){const rows=marketRows(),b=document.getElementById("mrows"),m=document.getElementById("mmore");if(b)b.innerHTML=marketBody(rows);if(m)m.innerHTML=moreBtn(rows);armReveals();watchMore()}
 function marketHtml(){
   const rows=marketRows();const clubs=[...new Set(D.runners.filter(x=>x.p&&x.c).map(x=>x.c))].sort((a,b)=>a.localeCompare(b,"sv"));
-  const th=(k,l,t)=>`<th${t?` title="${t}"`:""}><button data-sort="${k}">${l}${sortKey===k?(sortDir<0?" ↓":" ↑"):""}</button></th>`;
+  const th=(k,l,t)=>`<th class="c-${k}"${t?` title="${t}"`:""}><button data-sort="${k}">${l}${sortKey===k?(sortDir<0?" ↓":" ↑"):""}</button></th>`;
   return `<section class="panel mkt-panel"><h2 id="market">Löpare</h2>
   <div class="filters"><input type="search" id="q" placeholder="Sök löpare eller klubb" value="${esc(qRaw)}" aria-label="Sök löpare" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
    <select id="tierF" aria-label="Nivå"><option value="">Alla nivåer</option>${TIERS.map(([k,l])=>`<option value="${k}" ${k===tierF?"selected":""}>${l}</option>`).join("")}</select>
    <select id="clsF" aria-label="Klass"><option value="">Alla klasser</option>${["H","D","H16","H18","H20","H21","D16","D18","D20","D21"].map(c=>`<option value="${c}" ${c===clsF?"selected":""}>${c==="H"?"Alla herrar (H)":c==="D"?"Alla damer (D)":c}</option>`).join("")}</select>
    <select id="clubF" aria-label="Klubb"><option value="">Alla klubbar</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
    <label><input type="checkbox" id="afford" ${afford?"checked":""}> Bara de jag har råd med</label>${Object.keys(ENT).length?`<label><input type="checkbox" id="entF" ${entF?"checked":""}> Anmäld den här veckan</label>`:""}</div>
-  <p class="legend"><span class="idle y" aria-hidden="true">!</span> inget lopp förra veckan <span class="idle r" aria-hidden="true">!</span> inget på 10 veckor${Object.keys(ENT).length?` <span class="entered" aria-hidden="true">✓</span> anmäld den här veckan`:""}</p>
-  <div class="tbl mkt"><table><thead><tr><th class="mk-who"><button data-sort="name">Löpare${sortKey==="name"?(sortDir<0?" ↓":" ↑"):""}</button><span aria-hidden="true"> · </span><button data-sort="price">Pris${sortKey==="price"?(sortDir<0?" ↓":" ↑"):""}</button></th><th>Nivå</th><th>Ändring</th>${th("form","Form","Snitt de senaste 3 tävlingsveckorna")}<th title="Poäng de senaste 6 veckorna de tävlade"><span class="th-long">Senaste 6 tävlingsveckorna</span><span class="th-short">Senaste 6</span></th>${th("avg","Per vecka","Snitt de senaste 5 tävlingsveckorna")}${th("total","Poäng")}${th("starts","Starter")}<th></th></tr></thead><tbody id="mrows">
+
+  <div class="tbl mkt"><table class="mk-s-${sortKey}"><thead><tr><th class="mk-who"><button data-sort="name">Löpare${sortKey==="name"?(sortDir<0?" ↓":" ↑"):""}</button><span aria-hidden="true"> · </span><button data-sort="price">Pris${sortKey==="price"?(sortDir<0?" ↓":" ↑"):""}</button></th><th>Nivå</th><th>Ändring</th>${th("form","Form","Snitt de senaste 3 tävlingsveckorna")}<th title="Poäng de senaste 6 veckorna de tävlade"><span class="th-long">Senaste 6 tävlingsveckorna</span><span class="th-short">Senaste 6</span></th>${th("avg","Per vecka","Snitt de senaste 5 tävlingsveckorna")}${th("total","Poäng")}${th("starts","Starter")}<th></th></tr></thead><tbody id="mrows">
   ${marketBody(rows)}
   </tbody></table></div>
   <p id="mmore">${moreBtn(rows)}</p></section>
@@ -3114,7 +3135,7 @@ function teamView(){
   return `${hero(r)}${liveNow()}<div class="two"><div class="panel squad-panel">
    <p class="eyebrow pg-k">01 · Bygg ditt lag</p><h2 style="margin-top:0">Din trupp</h2>
    <p class="lead">${lead}</p>
-   ${!locked&&plan.squad.length<D.squad?`<div class="autofill"><button class="btn go" data-autofill="1">${plan.squad.length?"Fyll resten automatiskt":"Fyll laget automatiskt"}</button><span class="sub">Väljer löpare i form inom budgeten. Du kan byta efteråt.</span></div>`:""}
+   ${!locked&&plan.squad.length<D.squad?`<div class="autofill"><button class="btn go" data-autofill="1">${plan.squad.length?"Fyll resten automatiskt":"Fyll laget automatiskt"}</button></div>`:""}
    <div class="squadwrap">
    <div class="teamhead"><span><b>A-lag</b><span class="x">×2</span></span><span class="sub">${A.length} av ${AS}</span></div>
    <div class="squad ab">${teamRows(A,AS,"A",0)}</div>
@@ -3353,16 +3374,16 @@ function profileView(){
     <div class="field"><label for="teamName">Lagnamn</label><input class="name" id="teamName" maxlength="30" value="${esc(myTeam)}" placeholder="Syns i dina ligor" autocapitalize="words" enterkeyhint="done"></div>
     <div class="field"><label for="mgrName">Managernamn</label><input class="name" id="mgrName" maxlength="24" value="${esc(mgrName)}" autocapitalize="words" enterkeyhint="done"></div>
     <p class="note" id="nameMsg" style="margin:6px 0 0;color:var(--warn)">${nameOk(mgrName)&&nameOk(myTeam)?"":"Det namnet är inte tillåtet. Välj ett annat: alla i spelet ser det."}</p>
-    <p class="note" id="cloudstat" style="margin:10px 0 0">${esc(cloudMsg||"Sparas automatiskt på ditt konto.")}</p>
+    <p class="note" id="cloudstat" style="margin:10px 0 0">${esc(cloudMsg||"")}</p>
     <div class="row" style="margin-top:12px"><button class="btn" id="authOut">Logga ut</button></div></div>
    <div class="card"><h3>Dina ligor</h3>${myLeagues.length?`<div class="lglist">${myLeagues.map(c=>`<button class="lgi" data-lgopen="${esc(c)}"><span>${esc(lgName(c))}${myOwn[c]?'<span class="host">Värd</span>':""}</span><span class="sub">Öppna →</span></button>`).join("")}</div>`:`<p class="note" style="margin:0 0 12px">Du är inte med i någon liga än.</p><button class="btn on" data-tab="leagues">Starta eller gå med i en liga</button>`}</div>
   </div>
-  <div class="card fbcard"><div><h3>Hittat en bugg eller har en idé?</h3><p class="note" style="margin:0">Spelet är i beta. Allt du märker hjälper oss att göra det bättre.</p></div><button class="btn on" id="fbOpen">Tipsa oss</button></div>
+  <div class="card fbcard"><div><h3>Hittat en bugg eller har en idé?</h3></div><button class="btn on" id="fbOpen">Tipsa oss</button></div>
   ${practiceCard()}${privacyCard()}`;
 }
 /* privacy, leaving a runner out, and deleting your account */
 function privacyCard(){
-  return `<div class="card" style="margin-top:12px"><h3>Integritet</h3><p class="note" style="margin:0 0 12px">Vad spelet visar om löpare och sparar om dig, och hur en löpare kan tas bort.</p>
+  return `<div class="card" style="margin-top:12px"><h3>Integritet</h3>
    <div class="row"><button class="btn" data-info="privacy">Integritet och borttagning</button>${dbOk&&!delAsk?`<button class="btn quiet" id="delAcc">Radera mitt konto</button>`:""}</div>
    ${dbOk&&delAsk?`<div class="delbox"><p style="margin:0 0 10px"><b>Radera ditt konto för gott?</b> Dina trupper, poäng, ligor du startat och din bild raderas. Det går inte att ångra.</p>
      <div class="row"><button class="btn danger" id="delYes" ${delBusy?"disabled":""}>${delBusy?"Raderar…":"Radera för gott"}</button><button class="btn" id="delNo" ${delBusy?"disabled":""}>Behåll det</button></div></div>`:""}
@@ -3690,7 +3711,7 @@ function leaguesView(){
   ${adminOn()?`<div class="card admin" style="margin-top:12px"><div class="ev" style="border:0;padding:0;align-items:center"><div><span class="eyebrow">Admin</span><h3 style="margin:2px 0 0">Demoliga</h3><div class="sub">Så ser en liga ut mitt i en spelvecka, med påhittade managers och riktiga resultat.</div></div><button class="btn on" data-demo="1">Visa demoliga</button></div></div>`:""}
   ${isLive()?weekCard()+globalCard():""}
   ${myLeagues.length?myLeagues.map(c=>`<div class="card" style="margin-top:12px"><div class="lg-card-head"><h3>${esc(lgName(c))}</h3>${myOwn[c]?`<span class="host">Du är värd</span>`:""}</div>
-    <div class="lg-actions"><button class="btn on" data-lgopen="${esc(c)}">Öppna ligan</button><button class="btn" data-sharesheet="${esc(c)}">Dela</button><button class="btn quiet" data-leave="${esc(c)}">Lämna</button></div>${leagueTable(c,5)}</div>`).join(""):`<div class="card" style="margin-top:12px"><h3>Inga ligor än</h3><p class="note" style="margin:0">Starta en ovan och skicka inbjudningslänken till dina kompisar.</p></div>`}`;
+    <div class="lg-actions"><button class="btn on" data-lgopen="${esc(c)}">Öppna ligan</button><button class="btn" data-sharesheet="${esc(c)}">Dela</button><button class="btn quiet" data-leave="${esc(c)}">Lämna</button></div>${leagueTable(c,5)}</div>`).join(""):`<div class="card" style="margin-top:12px"><h3>Inga ligor än</h3><p class="note" style="margin:0"></p></div>`}`;
 }
 function rulesView(){
   return `<p class="eyebrow pg-k">04 · Spelets regler</p><h2 style="margin-top:0">Så funkar det</h2>
