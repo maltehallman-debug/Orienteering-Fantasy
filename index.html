@@ -2255,6 +2255,30 @@ th.c-total,th.c-form,th.c-avg,th.c-starts{transition:background-color .15s}
 /* wide screens: the rails become a grid, nothing to swipe */
 @media (min-width:1000px){.rail{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));overflow:visible;margin:12px 0 0;padding:0}.rail>.card{flex:none}}
 .lgl-r .pl .mv{font-style:normal;font-size:9px;line-height:1;margin-left:-2px}.lgl-r .pl .mv.up{color:#1a9e4b}.lgl-r .pl .mv.dn{color:#d23b3b}
+
+/* ===== Runner search: one wide search field and a filter button; the filters fold out under them ===== */
+.mk-search{display:flex;gap:8px;align-items:stretch;margin:4px 0 10px}
+.mk-q{flex:1;display:flex;align-items:center;gap:8px;min-width:0;background:var(--surface,#fff);border-radius:14px;box-shadow:inset 0 0 0 1.5px var(--line-2,#d6dde5);padding:0 14px;height:44px;transition:box-shadow .15s ease}
+.mk-q:focus-within{box-shadow:inset 0 0 0 2px var(--navy,#003c68)}
+.mk-q svg{width:18px;height:18px;flex:none;fill:none;stroke:var(--text-2,#5b6773);stroke-width:2.2;stroke-linecap:round}
+.mk-q input{flex:1;min-width:0;border:0!important;background:transparent!important;box-shadow:none!important;outline:none;padding:0!important;font:500 16px/1 var(--font);color:var(--text,#0b0f14)}
+.mk-q input::placeholder{color:var(--text-3,#8a96a3)}
+.mk-fbtn{position:relative;flex:none;width:44px;height:44px;border-radius:14px;border:0;display:grid;place-items:center;cursor:pointer;background:var(--surface,#fff);box-shadow:inset 0 0 0 1.5px var(--line-2,#d6dde5);color:var(--navy,#003c68);transition:background-color .15s ease,color .15s ease,transform .12s ease}
+.mk-fbtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
+.mk-fbtn.on{background:var(--navy,#003c68);color:#fff;box-shadow:none}
+.mk-fbtn:active{transform:scale(.96)}
+.mk-fbtn b{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--gul,#ffe74d);color:#003c68;font:800 11px/18px var(--font);text-align:center;padding:0 4px}
+.mk-panel{display:grid;gap:12px;background:var(--surface,#fff);border-radius:16px;box-shadow:inset 0 0 0 1px var(--line,#e5e9ee);padding:14px;margin:0 0 12px}
+.mk-panel[hidden]{display:none}
+.mk-row{display:grid;gap:6px}
+.mk-l{font:800 10px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--text-2,#5b6773)}
+.mk-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.mk-chips::-webkit-scrollbar{display:none}
+.mk-chip{flex:none;border:0;cursor:pointer;border-radius:999px;padding:7px 12px;font:700 12px/1 var(--font);background:color-mix(in srgb,var(--navy,#003c68) 7%,transparent);color:var(--navy,#003c68);transition:background-color .15s ease,color .15s ease}
+.mk-chip.on{background:var(--navy,#003c68);color:#fff}
+.mk-row select{height:40px;border-radius:12px;border:0;box-shadow:inset 0 0 0 1.5px var(--line-2,#d6dde5);padding:0 12px;font:500 16px var(--font);background:var(--surface,#fff);color:var(--text,#0b0f14)}
+.mk-sw{display:flex;flex-wrap:wrap;gap:8px 16px}.mk-sw label{display:inline-flex;align-items:center;gap:8px;font:600 13px var(--font)}
+@media (hover:hover) and (pointer:fine){.mk-chip:not(.on):hover{background:color-mix(in srgb,var(--navy,#003c68) 13%,transparent)}.mk-fbtn:not(.on):hover{background:color-mix(in srgb,var(--navy,#003c68) 6%,var(--surface,#fff))}}
+.mk-row select{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box}.mk-panel{min-width:0;overflow:hidden}
 </style>
 </head>
 <body>
@@ -3020,7 +3044,7 @@ function canAddReason(i){
 /* search ignores case and accents (öberg finds Öberg, oberg too) and keeps exactly what was typed in the box */
 const fold=x=>String(x).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim();
 const HAY=D.runners.map(r=>fold(r.n+" "+r.c));
-let qRaw="",tierF="";
+let qRaw="",tierF="",mkOpen=false;
 function marketRows(){
   const r=pr();let rows=[];const qq=fold(qRaw),terms=qq?qq.split(" "):[];
   for(let i=0;i<E.N;i++){if(!D.runners[i].p)continue;
@@ -3066,11 +3090,17 @@ function marketHtml(){
   const rows=marketRows();const clubs=[...new Set(D.runners.filter(x=>x.p&&x.c).map(x=>x.c))].sort((a,b)=>a.localeCompare(b,"sv"));
   const th=(k,l,t)=>`<th class="c-${k}"${t?` title="${t}"`:""}><button data-sort="${k}">${l}${sortKey===k?(sortDir<0?" ↓":" ↑"):""}</button></th>`;
   return `<section class="panel mkt-panel"><h2 id="market">Löpare</h2>
-  <div class="filters"><input type="search" id="q" placeholder="Sök löpare eller klubb" value="${esc(qRaw)}" aria-label="Sök löpare" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
-   <select id="tierF" aria-label="Nivå"><option value="">Alla nivåer</option>${TIERS.map(([k,l])=>`<option value="${k}" ${k===tierF?"selected":""}>${l}</option>`).join("")}</select>
-   <select id="clsF" aria-label="Klass"><option value="">Alla klasser</option>${["H","D","H16","H18","H20","H21","D16","D18","D20","D21"].map(c=>`<option value="${c}" ${c===clsF?"selected":""}>${c==="H"?"Alla herrar (H)":c==="D"?"Alla damer (D)":c}</option>`).join("")}</select>
-   <select id="clubF" aria-label="Klubb"><option value="">Alla klubbar</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
-   <label><input type="checkbox" id="afford" ${afford?"checked":""}> Bara de jag har råd med</label>${Object.keys(ENT).length?`<label><input type="checkbox" id="entF" ${entF?"checked":""}> Anmäld den här veckan</label>`:""}</div>
+  ${(()=>{const nF=[tierF,clsF,clubF].filter(Boolean).length+(afford?1:0)+(entF?1:0);
+    const chip=(attr,v,cur,l)=>`<button type="button" class="mk-chip ${cur===v?"on":""}" ${attr}="${esc(v)}" aria-pressed="${cur===v}">${l}</button>`;
+    return `<div class="mk-search"><label class="mk-q"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg><input type="search" id="q" placeholder="Sök löpare eller klubb" value="${esc(qRaw)}" aria-label="Sök löpare" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search"></label>
+    <button type="button" class="mk-fbtn ${mkOpen||nF?"on":""}" id="mkFilter" aria-expanded="${mkOpen}" aria-controls="mkPanel" aria-label="Filtrera${nF?", "+nF+" aktiva":""}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>${nF?`<b>${nF}</b>`:""}</button></div>
+    <div class="mk-panel" id="mkPanel" ${mkOpen?"":"hidden"}>
+     <div class="mk-row"><span class="mk-l">Nivå</span><div class="mk-chips">${chip("data-ftier","",tierF,"Alla")}${TIERS.map(([k,l])=>chip("data-ftier",k,tierF,l)).join("")}</div></div>
+     <div class="mk-row"><span class="mk-l">Klass</span><div class="mk-chips">${chip("data-fcls","",clsF,"Alla")}${["D","H","D16","D18","D20","D21","H16","H18","H20","H21"].map(c=>chip("data-fcls",c,clsF,c==="D"?"Damer":c==="H"?"Herrar":c)).join("")}</div></div>
+     <div class="mk-row"><span class="mk-l">Klubb</span><select id="clubF" aria-label="Klubb"><option value="">Alla klubbar</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select></div>
+     <div class="mk-row mk-sw"><label><input type="checkbox" id="afford" ${afford?"checked":""}> Bara de jag har råd med</label>${Object.keys(ENT).length?`<label><input type="checkbox" id="entF" ${entF?"checked":""}> Anmälda den här veckan</label>`:""}</div>
+     ${nF?`<button type="button" class="btn more" id="mkClear">Rensa filter</button>`:""}
+    </div>`})()}
 
   <div class="tbl mkt"><table class="mk-s-${sortKey}"><thead><tr><th class="mk-who"><button data-sort="name">Löpare${sortKey==="name"?(sortDir<0?" ↓":" ↑"):""}</button><span aria-hidden="true"> · </span><button data-sort="price">Pris${sortKey==="price"?(sortDir<0?" ↓":" ↑"):""}</button></th><th>Nivå</th>${th("total","Poäng")}<th>Ändring</th>${th("form","Form","Snitt de senaste 3 tävlingsveckorna")}<th title="Poäng de senaste 6 veckorna de tävlade"><span class="th-long">Senaste 6 tävlingsveckorna</span><span class="th-short">Senaste 6</span></th>${th("avg","Per vecka","Snitt de senaste 5 tävlingsveckorna")}${th("starts","Starter")}<th></th></tr></thead><tbody id="mrows">
   ${marketBody(rows)}
@@ -4542,6 +4572,10 @@ document.addEventListener("click",ev=>{
   /* from a runner card: the contact form, filled in for that runner */
   if(d.rmfor){const i=+d.rmfor;rmF={kind:"runner",runner:nameOf(i)+", "+clubOf(i)+" ("+D.runners[i].k+")",msg:"",contact:""};rmStat="";infoSheet("contact");return}
   if(d.newsall){newsAll=!newsAll;render();return}
+  if(t.id==="mkFilter"){mkOpen=!mkOpen;render();return}
+  if(t.id==="mkClear"){tierF="";clsF="";clubF="";afford=false;entF=false;shown=12;render();return}
+  if(d.ftier!==undefined){tierF=d.ftier;shown=12;render();return}
+  if(d.fcls!==undefined){clsF=d.fcls;shown=12;render();return}
   if(d.autofill){const n=autoFill();buzz(n?"ok":"warn");if(n)save();render();return}
   if(d.add!==undefined){const i=+d.add;buzz(canAddReason(i)?"warn":"ok");if(!canAddReason(i)){plan.squad.push(i);if(!Array.isArray(plan.a))plan.a=[];if(plan.a.length<AS)plan.a.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
   if(d.sell!==undefined){const i=+d.sell;buzz("tap");plan.squad=plan.squad.filter(j=>j!==i);plan.a=(plan.a||[]).filter(j=>j!==i);if(swapSel===i)swapSel=null;fixLeaders();save();render();return}
