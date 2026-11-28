@@ -2444,6 +2444,13 @@ body{font-family:var(--font);font-size:var(--ds-fs-body);color:var(--ds-ink)}
 .factsmini span{font:800 var(--ds-fs-label)/1 var(--font)!important;letter-spacing:.1em!important;color:var(--ds-ink-2)!important;opacity:1!important}
 .factsmini b{font:800 15px/1 var(--font)!important;color:var(--ds-navy)!important}
 .factsmini b.dn{color:var(--ds-bad)!important}
+/* the runner list sits inside the Löpare box under the search field, the whole list scaled down a little so it keeps its
+   own proportions (same margins, same columns, the name and the button still stay put while the stats scroll) */
+@media (max-width:899px){
+  .tbl.mkt{width:auto!important;max-width:none!important;margin:0!important;border-radius:var(--ds-r-ctl)!important;box-shadow:inset 0 0 0 1px var(--ds-line)!important;zoom:.86}
+  .mkt td:first-child,.mkt th:first-child{padding-left:12px!important}
+  .mkt td:last-child,.mkt th:last-child{padding-right:10px!important}
+}
 </style>
 </head>
 <body>
