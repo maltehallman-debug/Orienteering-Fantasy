@@ -95,9 +95,21 @@ import math as _m, bisect as _bs
 PRICE_UP, PRICE_MIN = 10, 25   # tenths of a thousand
 P_TAU, P_BETA, P_SHRINK, IDLE_FREE = 316, 0.875, 2, 3
 _wp = [dict() for _ in out_rounds]   # round -> runner index -> points (whole points)
+# Points from a younger class than the one a runner is in now count for less in the price: a runner who moves up to 18
+# meets stronger fields, so points taken in 16 are worth 70 % and points taken in 18 by a runner now in 20 or 21 are
+# worth 85 % (20 to 21 scores about the same). Only the price uses this; the points shown and scored are untouched.
+_AGE = lambda c: (lambda a: 16 if a <= 16 else 18 if a <= 18 else 20 if a <= 20 else 21)(int(re.match(r"[DH](\d+)", c).group(1))) if c and re.match(r"[DH]\d+", c) else None
+_STEP = {(16, 18): .7, (16, 20): .7, (16, 21): .7, (18, 20): .85, (18, 21): .85}
+_now_age = [_AGE(D["cls"][k]) for k in pool]
+_disc = 0
 for rn, r in enumerate(out_rounds):
     for ei in r["ev"]:
-        for row in res[ei]: _wp[rn][row[0]] = _wp[rn].get(row[0], 0) + row[5] / 10
+        ea = _AGE(out_events[ei].get("c", ""))
+        for row in res[ei]:
+            v = row[5] / 10; f = _STEP.get((ea, _now_age[row[0]]), 1) if v > 0 else 1
+            if f < 1: _disc += 1
+            _wp[rn][row[0]] = _wp[rn].get(row[0], 0) + v * f
+print("price: results from a younger class counted down", _disc)
 def _idle_mult(idle):
     if idle <= IDLE_FREE: return 1.0
     if idle <= 10: return 1 - 0.4 * (idle - IDLE_FREE) / (10 - IDLE_FREE)
