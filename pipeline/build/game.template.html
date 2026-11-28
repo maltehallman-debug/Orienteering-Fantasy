@@ -2139,6 +2139,32 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 [data-theme="dark"] .mdot.t0{background:#1d3550;color:#cfe0f2}[data-theme="dark"] .mdot.t1{background:#4a4210;color:#fff2a8}[data-theme="dark"] .mdot.t2{background:#4a1d38;color:#f5cfe3}[data-theme="dark"] .mdot.t3{background:#2c343d;color:#d9dee3}
 .lgl-h,.lgl-r{grid-template-columns:calc(var(--plw,52px) + 12px) minmax(0,1fr) 46px 54px!important;gap:8px!important}
 @media (max-width:430px){.lgl-h,.lgl-r{grid-template-columns:calc(var(--plw,52px) + 8px) minmax(0,1fr) 42px 48px!important;gap:6px!important}}
+
+/* ===== Runner list: smaller names with the price under them; the stats swipe sideways while the name and the
+   buy/sell button stay put ===== */
+.mkt .who{font-size:14px!important;font-weight:700}
+.mkt td .sub{font-size:12px}.mkt td .sub .mk-p{font-weight:800;color:var(--text,#0b0f14)}
+.mkt th.mk-who{white-space:nowrap}.mkt th.mk-who button{display:inline!important;white-space:nowrap!important}
+@media (max-width:899px){
+  .tbl.mkt{overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+  .mkt table{table-layout:auto!important;width:max-content!important;min-width:100%!important}
+  .mkt th,.mkt td{display:table-cell!important;width:auto!important;white-space:nowrap}
+  .mkt th:not(:first-child):not(:last-child),.mkt td:not(:first-child):not(:last-child){padding-left:10px!important;padding-right:10px!important;text-align:center}
+  .mkt td:first-child,.mkt th:first-child{position:sticky;left:0;z-index:2;background:var(--surface,#fff);max-width:none!important;width:min(52vw,230px)!important;min-width:min(52vw,230px)}
+  .mkt td:last-child,.mkt th:last-child{position:sticky;right:0;z-index:2;background:var(--surface,#fff)}
+  .mkt td:first-child{box-shadow:6px 0 8px -8px rgba(0,30,60,.35)}.mkt td:last-child{box-shadow:-6px 0 8px -8px rgba(0,30,60,.35)}
+  .mkt tr.in td:first-child,.mkt tr.in td:last-child{background:color-mix(in srgb,var(--surface,#fff) 90%,#003c68)}
+  .mkt .who-wrap>div{max-width:calc(min(52vw,230px) - 44px)!important}
+  .mkt .who{max-width:100%!important}
+}
+
+/* ===== Home photo: fades into the page itself (a mask, not a white overlay), so the map lines carry on below ===== */
+.hm-hero{background:transparent!important}
+.hm-img::after{display:none!important}
+.hm-img{-webkit-mask-image:linear-gradient(180deg,#000 45%,rgba(0,0,0,.55) 72%,transparent 100%);mask-image:linear-gradient(180deg,#000 45%,rgba(0,0,0,.55) 72%,transparent 100%)}
+@media (min-width:700px){
+  .hm-img{-webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.15) 28%,rgba(0,0,0,.7) 48%,#000 66%),linear-gradient(180deg,#000 55%,transparent 100%);-webkit-mask-composite:source-in;
+    mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.15) 28%,rgba(0,0,0,.7) 48%,#000 66%),linear-gradient(180deg,#000 55%,transparent 100%);mask-composite:intersect}}
 </style>
 </head>
 <body>
@@ -2751,7 +2777,7 @@ function marketBody(rows){mRows=rows;
   return (rows.slice(0,shown).map(rowHtml).join("")||`<tr><td colspan="10" class="note">Inga löpare matchar. Rensa sökningen eller ett filter.</td></tr>`);
 }
 function rowHtml(x){const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
-   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><i class="glm" aria-hidden="true"></i><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}${(()=>{const o=ownPct(x.i);return o?` · ägs av ${o}%`:""})()}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
+   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><i class="glm" aria-hidden="true"></i><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub"><b class="mk-p">${fm(x.p)}</b> · ${D.runners[x.i].k} · ${esc(clubOf(x.i))}${(()=>{const o=ownPct(x.i);return o?` · ägs av ${o}%`:""})()}</div></div></div></td><td>${tierTag(x.i)}</td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
    <td>${inS?`<button class="btn" data-sell="${x.i}">Sälj</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Köp</button>`}</td></tr>`}
 /* the runner list grows as you scroll: a marker under it loads the next runners before you reach the end, and each
    new runner rises in on its own. A button stays as a fallback where the browser cannot watch the marker. */
@@ -2782,7 +2808,7 @@ function marketHtml(){
    <select id="clubF" aria-label="Klubb"><option value="">Alla klubbar</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
    <label><input type="checkbox" id="afford" ${afford?"checked":""}> Bara de jag har råd med</label>${Object.keys(ENT).length?`<label><input type="checkbox" id="entF" ${entF?"checked":""}> Anmäld den här veckan</label>`:""}</div>
   <p class="legend"><span class="idle y" aria-hidden="true">!</span> inget lopp förra veckan <span class="idle r" aria-hidden="true">!</span> inget på 10 veckor${Object.keys(ENT).length?` <span class="entered" aria-hidden="true">✓</span> anmäld den här veckan`:""}</p>
-  <div class="tbl mkt"><table><thead><tr>${th("name","Löpare")}<th>Nivå</th>${th("price","Pris")}<th>Ändring</th>${th("form","Form","Snitt de senaste 3 tävlingsveckorna")}<th title="Poäng de senaste 6 veckorna de tävlade">Senaste 6 tävlingsveckorna</th>${th("avg","Per vecka","Snitt de senaste 5 tävlingsveckorna")}${th("total","Poäng")}${th("starts","Starter")}<th></th></tr></thead><tbody id="mrows">
+  <div class="tbl mkt"><table><thead><tr><th class="mk-who"><button data-sort="name">Löpare${sortKey==="name"?(sortDir<0?" ↓":" ↑"):""}</button><span aria-hidden="true"> · </span><button data-sort="price">Pris${sortKey==="price"?(sortDir<0?" ↓":" ↑"):""}</button></th><th>Nivå</th><th>Ändring</th>${th("form","Form","Snitt de senaste 3 tävlingsveckorna")}<th title="Poäng de senaste 6 veckorna de tävlade">Senaste 6 tävlingsveckorna</th>${th("avg","Per vecka","Snitt de senaste 5 tävlingsveckorna")}${th("total","Poäng")}${th("starts","Starter")}<th></th></tr></thead><tbody id="mrows">
   ${marketBody(rows)}
   </tbody></table></div>
   <p id="mmore">${moreBtn(rows)}</p></section>
@@ -2963,6 +2989,31 @@ const NEWS=[
   ["2026-11-02","Medaljer på profilen","Alla betatestare har fått kompassmedaljen. Välj under Profil → Medaljer om den ska synas bredvid ditt namn i ligorna."],
   ["2026-11-02","Bjud in en kompis","Spelet är i sluten beta. Vill du att någon ska vara med? Hör av dig så skickar vi en inbjudningskod."],
   ["2026-11-01","SM-finalerna räknas","A- och B-finaler från SM räknas nu som ett lopp, med B-finalen placerad efter A-finalen."]];
+/* news: kept in the database so admins can publish from the site; the list above is only the fallback until it loads */
+let newsDb=null,newsF={title:"",body:"",day:""},newsBusy=false,newsMsg="";
+const newsList=()=>newsDb?newsDb.map(n=>[n.day,n.title,n.body,null,n.id]):NEWS;
+async function loadNews(){if(!cloud.sb)return;try{const q=await cloud.sb.from("news").select("id,day,title,body").order("day",{ascending:false}).order("id",{ascending:false}).limit(30);if(!q.error){newsDb=q.data||[];if(tab==="home"||tab==="profile")render()}}catch(e){}}
+async function publishNews(){
+  if(newsBusy)return;const f={title:newsF.title.trim(),body:newsF.body.trim(),day:newsF.day||D.asof||new Date().toISOString().slice(0,10)};
+  if(f.title.length<2){newsMsg="Skriv en rubrik.";render();return}
+  newsBusy=true;newsMsg="Publicerar…";render();
+  const q=await cloud.sb.from("news").insert(f);newsBusy=false;
+  if(q.error){newsMsg="Kunde inte publicera. Försök igen."}else{newsF={title:"",body:"",day:""};newsMsg="Publicerad. Den syns på startsidan direkt.";await loadNews()}
+  render();
+}
+async function deleteNews(id){const q=await cloud.sb.from("news").delete().eq("id",id);newsMsg=q.error?"Kunde inte ta bort nyheten.":"Nyheten är borttagen.";await loadNews();render()}
+function adminNewsCard(){
+  const today=new Date().toISOString().slice(0,10);
+  return `<div class="card admin"><h3>Admin · nyheter</h3>
+   <p class="note" style="margin:0 0 12px">Publiceras direkt på startsidan för alla. Ingen datauppdatering behövs.</p>
+   <div class="field"><label for="nwTitle">Rubrik</label><input class="name" id="nwTitle" maxlength="80" value="${esc(newsF.title)}" autocomplete="off"></div>
+   <div class="field"><label for="nwBody">Text</label><textarea class="name" id="nwBody" maxlength="600" rows="3">${esc(newsF.body)}</textarea></div>
+   <div class="field"><label for="nwDay">Datum</label><input class="name" type="date" id="nwDay" value="${esc(newsF.day||today)}"></div>
+   <div class="row" style="margin-top:8px"><button class="btn on" id="nwSend" ${newsBusy?"disabled":""}>Publicera</button>${newsMsg?`<span class="note">${esc(newsMsg)}</span>`:""}</div>
+   <h4>Publicerade</h4><div class="adm-list">${(newsDb||[]).map(n=>`<div class="adm-row"><div><b>${esc(n.title)}</b> <span class="sub">${esc(dshort(n.day))}</span></div><button class="btn quiet" data-newsdel="${n.id}">Ta bort</button></div>`).join("")||'<p class="note">Inga nyheter än.</p>'}</div></div>`;
+}
+document.addEventListener("input",e=>{const t=e.target;if(t.id==="nwTitle")newsF.title=t.value;else if(t.id==="nwBody")newsF.body=t.value;else if(t.id==="nwDay")newsF.day=t.value});
+document.addEventListener("click",e=>{const t=e.target.closest("#nwSend,[data-newsdel]");if(!t||!adminOn())return;if(t.id==="nwSend")publishNews();else deleteNews(+t.dataset.newsdel)});
 /* the latest game week with any results */
 function lastScoredRound(){for(let r=E.R-1;r>=0;r--){let any=false;for(let i=0;i<E.N&&!any;i++)if(E.starts[r][i])any=true;if(any)return r}return -1}
 function seasonTop(k){const last=lastScoredRound();if(last<LIVE)return [];const tot=new Float64Array(E.N);for(let r=LIVE;r<=last;r++)for(let i=0;i<E.N;i++)tot[i]+=E.pts[r][i];
@@ -2986,7 +3037,9 @@ function homeView(){
   return `<section class="hm-hero" aria-labelledby="hmT"><picture class="hm-img"><source media="(min-width:700px)" srcset="img/hem-kontroll-2000.jpg"><img src="img/hem-kontroll-1100.jpg" alt="" decoding="async" fetchpriority="high"></picture>
    <div class="hm-txt"><span class="hm-k">${done()?"Säsong 2026/27":esc(rdName(rd))+" · "+esc(dshort(rd.start))+" – "+esc(dshort(rd.end))}</span><h2 id="hmT">${first?"Hej "+esc(first)+"!":"Välkommen!"}</h2><p class="hm-lead">${status}</p>
     <div class="hm-cta"><button class="btn on" data-tab="team">${n<D.squad?(rd.skip?"Förbered din trupp":"Välj din trupp"):"Till ditt lag"}</button><button class="btn" data-tab="rounds">Dina poäng</button></div></div></section>
-  ${liveCard()}${recapCard()}${rivalCard()}
+  ${liveCard()}${recapCard()}
+  <div class="card hm-news"><span class="eyebrow">Nytt i spelet</span><h3>Nyheter</h3>${newsList().slice(0,newsAll?8:3).map(([d,t,x])=>`<div class="hm-ni"><span class="hm-d">${dshort(d)}</span><div><b>${esc(t)}</b><p>${esc(x)}</p></div></div>`).join("")}${newsList().length>3?`<button class="btn more" data-newsall="1">${newsAll?"Visa färre":"Fler nyheter →"}</button>`:""}</div>
+  ${rivalCard()}
   ${done()?"":raceCards(r)}
   <div class="card hm-lg"><div class="ev" style="border:0;padding:0 0 10px;align-items:center"><div><span class="eyebrow">Topp 5</span><h3 style="margin:2px 0 0">Årets manager</h3></div><button class="btn more" data-lgopen="GLOBAL">Hela tabellen →</button></div>
    ${top.length?`<div class="lgl" role="table" aria-label="Årets manager, topp 5">${top.map((m,k)=>`<div class="lgl-r ${m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="GLOBAL|${esc(m.id)}" tabindex="0"><span class="pl" role="cell">${m.rank}</span><span class="tm" role="cell">${mgrDot(m)}<span><b class="nmb"><span class="nmt">${esc(m.name)}</span>${featTag(m.id)}</b>${m.team&&m.mgr!==m.name?`<span class="sub">${esc(m.mgr)}${m.id===cloud.uid?" · du":""}</span>`:m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span><span class="n" role="cell"><b>${fp(m.t)}p</b></span></div>`).join("")}</div>`:`<p class="note" style="margin:0">Tabellen fylls på när den första omgången är spelad.</p>`}</div>
@@ -2998,7 +3051,7 @@ function homeView(){
     return `<div class="hm-card"><span class="eyebrow">${esc(rdName(D.rounds[d.r]))} · ${d.n} lag</span><h3>Mest valda löpare</h3>${li(top(d.own,5))}</div>
       <div class="hm-card"><span class="eyebrow">${esc(rdName(D.rounds[d.r]))} · ${d.n} lag</span><h3>Mest boostade</h3>${li(top(d.boost,5))}</div>`})()}
   </section>
-  <div class="card hm-news"><span class="eyebrow">Nytt i spelet</span><h3>Nyheter</h3>${NEWS.slice(0,newsAll?8:3).map(([d,t,x])=>`<div class="hm-ni"><span class="hm-d">${dshort(d)}</span><div><b>${esc(t)}</b><p>${esc(x)}</p></div></div>`).join("")}${NEWS.length>3?`<button class="btn more" data-newsall="1">${newsAll?"Visa färre":"Fler nyheter →"}</button>`:""}</div>`;
+`;
 }
 let newsAll=false;
 function hero(r){
@@ -3908,7 +3961,7 @@ function adminGameCard(){
    <h4>Lägg till en tävling</h4>
    <div class="row"><input class="name" id="ovrAdd" placeholder="Tävlingslänk eller tävlings-id" value="${esc(ovrAdd)}" inputmode="url" autocomplete="off"><button class="btn on" id="ovrAddBtn" ${ovrBusy?"disabled":""}>Lägg till</button></div>
    ${added.length?`<div class="adm-list">${added.map(o=>`<div class="adm-row"><div><b>${esc(o.label||"Tävling "+o.ref)}</b> <span class="sub">Tillagd · räknas som stor</span></div><button class="btn" data-rcadd="${esc(o.ref)}">Ta bort</button></div>`).join("")}</div>`:""}
-   ${ovrMsg?`<p class="note" style="margin:10px 0 0">${esc(ovrMsg)}</p>`:""}</div>${adminModCard()}`;
+   ${ovrMsg?`<p class="note" style="margin:10px 0 0">${esc(ovrMsg)}</p>`:""}</div>${adminNewsCard()}${adminModCard()}`;
 }
 /* admin: requests to leave a runner out, hidden runners, and managers' names */
 function adminModCard(){
@@ -4557,7 +4610,7 @@ async function initCloud(){
     const tabLock=(name,timeout,fn)=>{const r=lockQ.then(()=>fn());lockQ=r.catch(()=>{});return r};
     cloud.sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,lock:tabLock}});
     cloud.sb.auth.onAuthStateChange((ev,session)=>{setTimeout(()=>onSession(session),0);if(ev==="PASSWORD_RECOVERY"&&!pwOpen){welcomed=true;setTimeout(pwSheet,0)}});
-    loadPhotos();
+    loadPhotos();loadNews();
   }catch(e){}
 }
 /* closed-beta gate: sign in only, no new accounts */
