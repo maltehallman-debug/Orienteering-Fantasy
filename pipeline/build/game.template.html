@@ -3005,7 +3005,8 @@ const tierTag=(i,r)=>{const t=tierOf(i,r);return `<span class="tier t-${TIERS[t]
 const ordered=p=>{const a=(p.a||[]).filter(i=>p.squad.includes(i));return [...a,...p.squad.filter(i=>!a.includes(i))]};
 const CHIPINFO={wc:["Vägval","Fria byten den här omgången"],tc:["Spurt","Boostad löpare får tredubbla poäng"],ax:["Elitklass","A-laget får ×2 extra"],bb:["Stafett","B-laget får ×2"],yo:["USM","D/H16-löpare får dubbla poäng"]};
 /* orienteering marks: a route choice that forks, a sprint, the elite podium, a relay baton, a championship medal */
-const CHIPICON={wc:'<path d="M12 21v-7M12 14 6.5 4M12 14l5.5-10M4.5 6 6.5 4l2 2M15.5 6l2-2 2 2"/>',tc:'<path d="M5 6l6 6-6 6M13 6l6 6-6 6"/>',ax:'<path d="M3 20h18M5 20v-5h4v5M10 20V9h4v11M15 20v-3h4v3"/>',bb:'<path d="M6.5 17.5 17.5 6.5M15 4.5l4.5 4.5M4.5 15 9 19.5"/>',yo:'<path d="M8.5 3 12 9l3.5-6"/><circle cx="12" cy="15" r="5.5"/><path d="M12 12.5v5"/>'};
+/* simple line icons, one idea each: the route splits, a bolt, a star, a handover, a medal */
+const CHIPICON={wc:'<path d="M12 21v-8M12 13 6.5 4.5M12 13l5.5-8.5"/>',tc:'<path d="M13.5 3 6 13.5h5.5L10.5 21 18 10.5h-5.5z"/>',ax:'<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>',bb:'<path d="M4 9h14M14 5l4 4-4 4M20 15H6M10 11l-4 4 4 4"/>',yo:'<path d="M8.5 3 12 9.5 15.5 3"/><circle cx="12" cy="15.5" r="5"/>'};
 const CHIPFX={wc:"Fria byten",tc:"×3 boost",ax:"A-lag ×2",bb:"B-lag ×2",yo:"D/H16 ×2"};
 const CHIPSHORT={wc:"Vägval",tc:"Spurt",ax:"Elitklass",bb:"Stafett",yo:"USM"};
 const chipSvg=c=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CHIPICON[c]||""}</svg>`;
