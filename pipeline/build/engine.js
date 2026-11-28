@@ -6,15 +6,17 @@ function makeEngine(D) {
   const hist = Array.from({ length: N }, () => []);
   D.res.forEach((rows, ei) => rows.forEach(row => hist[row[0]].push({ ev: ei, kind: row[1], rank: row[2], t: row[3], gap: row[4], pts: row[5] })));
   const cutoff = r => (r >= R ? "9999-12-31" : D.rounds[r].start);
-  const visible = (i, r) => hist[i].filter(h => D.events[h.ev].date < cutoff(r));
+  // from: the first round to count (the season start), so results from before it stay out of what players see
+  const floor = f => (f > 0 && f < R ? D.rounds[f].start : "");
+  const visible = (i, r, f = 0) => hist[i].filter(h => D.events[h.ev].date < cutoff(r) && D.events[h.ev].date >= floor(f));
   // a runner's points per game week (round) before round r: what they would have scored for you that week
-  function weeks(i, r) {
+  function weeks(i, r, f = 0) {
     const out = [];
-    for (let q = 0; q < Math.min(r, R); q++) out.push({ round: q, pts: pts[q][i], races: starts[q][i] });
+    for (let q = f; q < Math.min(r, R); q++) out.push({ round: q, pts: pts[q][i], races: starts[q][i] });
     return out;
   }
-  function stats(i, r) {
-    const h = visible(i, r), w = weeks(i, r).filter(x => x.races > 0);
+  function stats(i, r, f = 0) {
+    const h = visible(i, r, f), w = weeks(i, r, f).filter(x => x.races > 0);
     const total = h.reduce((a, x) => a + x.pts, 0);
     // form: average of the last 3 weeks they raced; perWeek: average of the last 5 weeks they raced (recent form matters)
     const avg = l => l.length ? l.reduce((a, x) => a + x.pts, 0) / l.length : 0;

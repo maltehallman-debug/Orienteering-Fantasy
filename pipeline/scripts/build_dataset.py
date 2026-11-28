@@ -507,6 +507,9 @@ if NO_EVENTOR:
 BETA_WEEK = "2026-11-02"
 LAUNCH = _j("eventor/launch.json", None) or {"name": "Sverigepremiären", "dates": ["2027-03-05", "2027-03-06", "2027-03-07"], "guess": True}
 LAUNCH_WEEK = monday(dt.date.fromisoformat(LAUNCH["dates"][0])).isoformat()
+# the year the coming season is played: classes and ages are for then (a D16 runner who turns 17 that year is in D18
+# from the premiere, and a 14-year-old who turns 15 comes into the game)
+SY = max(TODAY.year, int(LAUNCH["dates"][0][:4])) if str(TODAY) < LAUNCH["dates"][0] else TODAY.year
 print("launch week", LAUNCH_WEEK, LAUNCH["dates"], "(not yet confirmed by Eventor)" if LAUNCH.get("guess") else "(from Eventor)")
 # Each live week locks the evening before its first big race, at 20:00 Swedish time (the first race of any kind when
 # the week has no big one known yet; Monday 00:00 when nothing is known). Only races after the lock count for the
@@ -584,7 +587,7 @@ _young = collections.defaultdict(dict)
 for p in glob.glob(f"{S}/data/results/*.json"):
     j = json.load(open(p)); cn = norm(j.get("className", ""))
     if not YOUNG.match(cn): continue
-    yr = int((comps.get(j.get("id"), {}).get("date") or str(TODAY.year))[:4]); bound = int(cn[1:]) + TODAY.year - yr
+    yr = int((comps.get(j.get("id"), {}).get("date") or str(TODAY.year))[:4]); bound = int(cn[1:]) + SY - yr
     for r in j.get("rows", []):
         if r.get("name") and started(r):   # raced (an entry alone is not enough: some camps list everyone in any class)
             c = nclub(r.get("club")); d = _young[(r["name"].strip().lower(), cn[0])]
@@ -621,10 +624,10 @@ BIRTH = {k: b for k in pool if (b := birth_year(k))}
 def age_class(k):
     b = BIRTH.get(k)
     if not b: return None
-    a = TODAY.year - b; g = k.rsplit("|", 1)[1]
+    a = SY - b; g = k.rsplit("|", 1)[1]
     return None if a < 15 else g + ("16" if a <= 16 else "18" if a <= 18 else "20" if a <= 20 else "21")
 print("O-Ringen: people", len(_OR), "pool runners with a birth year", len(BIRTH), "of", len(pool), "clubs with a country", len(CLUB_CC))
-_under = {k for k in pool if (youth_bound(k) or 99) <= 14 or (BIRTH.get(k) and TODAY.year - BIRTH[k] < 15)}
+_under = {k for k in pool if (youth_bound(k) or 99) <= 14 or (BIRTH.get(k) and SY - BIRTH[k] < 15)}
 # Runners from clubs outside Sweden are not in the game (their results still count when others beat them): a runner
 # is left out when every club they have raced for is in data/foreign_clubs.json or looks foreign by its name
 _fc = _j("foreign_clubs.json", {"clubs": [], "patterns": []})
@@ -649,7 +652,7 @@ _entcls = collections.defaultdict(collections.Counter)
 _bynm = collections.defaultdict(list)
 for _k in pool: _bynm[(_k.split("|")[0], _k.rsplit("|", 1)[1])].append(_k)
 for _en in _j("eventor_entries.json", []) or []:
-    if not str(_evdate.get(_en.get("eid"), "")).startswith(str(TODAY.year)): continue
+    if not str(_evdate.get(_en.get("eid"), "")).startswith(str(SY)): continue
     _c = norm(_en.get("cls", ""))
     if not re.match(r"^[DH](15|16|17|18|19|20|21)", _c): continue
     try: _k = rkey({"name": _en["name"], "club": _en.get("club", "")}, {"g": _c[0], "cls": _c, "rawcls": _c})
@@ -663,14 +666,15 @@ def class_of(k):
     g = k.rsplit("|", 1)[1]
     ac = age_class(k)
     if ac: return ac   # an exact age from O-Ringen decides
-    if youth_bound(k) is not None: return g + "16"
-    cc = clsy[k].get(TODAY.year) or _entcls.get(k) or clsc[k]; tot = sum(cc.values())
+    yb = youth_bound(k)
+    if yb is not None and yb <= 16: return g + "16"   # seen in a youth class recently enough to be at most 16
+    cc = clsy[k].get(SY) or _entcls.get(k) or clsy[k].get(SY - 1) or clsc[k]; tot = sum(cc.values())
     for a in AGES:
         x = cc.get(g + a, 0)
         if x >= 2 or (x and x * 3 >= tot): return g + a
     return cc.most_common(1)[0][0]
 CLS = {k: class_of(k) for k in pool}
-print("class from O-Ringen birth year", sum(1 for k in pool if age_class(k)), "| class from this year: raced", sum(1 for k in pool if clsy[k].get(TODAY.year)), "entered only", sum(1 for k in pool if not clsy[k].get(TODAY.year) and _entcls.get(k)), "last year", sum(1 for k in pool if not clsy[k].get(TODAY.year) and not _entcls.get(k)))
+print("season year", SY, "class from O-Ringen birth year", sum(1 for k in pool if age_class(k)), "| class from the season year: raced", sum(1 for k in pool if clsy[k].get(SY)), "entered only", sum(1 for k in pool if not clsy[k].get(SY) and _entcls.get(k)), "the year before or earlier", sum(1 for k in pool if not clsy[k].get(SY) and not _entcls.get(k)))
 # saved squads name runners by key; keys made from a joint relay club before it stopped counting as a club still work
 ALIAS = {}
 for k in pool:

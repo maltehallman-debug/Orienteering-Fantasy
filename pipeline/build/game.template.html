@@ -2769,7 +2769,9 @@ const packSt=st=>Object.assign(mapIds(st,rk),{log:st.log.map(l=>Object.assign(ma
 const unpackSt=st=>Object.assign(mapIds(st,ri),{log:st.log.map(l=>Object.assign(mapIds(l,ri),{capLive:ri(l.capLive),in:(l.in||[]).map(ri).filter(x=>x!==null),out:(l.out||[]).map(ri).filter(x=>x!==null)}))});
 const packPl=p=>p&&mapIds(p,rk), unpackPl=p=>p&&mapIds(p,ri);
 const TODAY=(()=>{try{return new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Stockholm"})}catch(e){return D.asof}})();
-const LIVE=D.liveStart;
+/* the season starts at Sverigepremiären: everyone starts there with the full budget, and the beta round, the practice
+   weeks and every result before it stay out of sight (they still set the prices) */
+const LIVE=(()=>{const k=D.rounds.findIndex(x=>x.launch);return k>=0?k:D.liveStart})();
 let state=E.newState(LIVE), plan={squad:[],captain:null,vice:null,chip:null};
 let showAdmin=(()=>{try{return localStorage.getItem("of-admin")==="1"}catch(e){return false}})();
 const adminOn=()=>cloud.admin&&showAdmin;
@@ -2794,7 +2796,7 @@ function unpackPicks(o){const out={};Object.keys(o||{}).forEach(r=>{const p=o[r]
   if(sq.length===D.squad&&!sq.includes(null)&&+r>=0&&+r<E.R){const c=ri(p.captain);out[+r]={squad:sq,captain:sq.includes(c)?c:sq[0],chip:E.CHIPS.includes(p.chip)?p.chip:null}}});return out}
 /* a v4 save (six runners) cannot be played under the new rules: keep only the account, name and leagues */
 try{if(!localStorage.getItem(KEY)){const o=JSON.parse(localStorage.getItem("orienteering-fantasy-v4")||"null");if(o){localUid=o.uid||null;mgrName=o.name||"";myLeagues=o.leagues||[];myLgn=o.lgn||{}}}}catch(e){}
-try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.state&&s.state.round<=E.R){localUid=s.uid||null;picks=unpackPicks(s.picks);state=unpackSt(s.state);plan=unpackPl(s.plan);lock=unpackPl(s.lock||null);mgrName=s.name||"";myTeam=s.team||"";localTs=s.ts||0;myLeagues=s.leagues||[];myLgn=s.lgn||{};viewRound=Math.max(0,state.round-1)}}catch(e){}
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.state&&s.state.round<=E.R){localUid=s.uid||null;picks=unpackPicks(s.picks);state=unpackSt(s.state);plan=unpackPl(s.plan);lock=unpackPl(s.lock||null);mgrName=s.name||"";myTeam=s.team||"";localTs=s.ts||0;myLeagues=s.leagues||[];myLgn=s.lgn||{};viewRound=Math.max(0,state.round-1);if(state.start!==LIVE){state=E.newState(LIVE);viewRound=0}}}catch(e){}
 const blob=()=>({ver:5,uid:cloud.uid||localUid,picks:packPicks(),state:packSt(state),plan:packPl(plan),lock:packPl(lock),name:mgrName,team:myTeam,ts:localTs,leagues:myLeagues,lgn:myLgn});
 function resetLocal(){state=E.newState(LIVE);plan={squad:[],a:[],captain:null,vice:null,chip:null};lock=null;picks={};liveRounds=[];syncMsg="";mgrName="";myTeam="";myAv=null;avMsg="";myLeagues=[];myLgn={};myOwn={};leagueRows={};localTs=0;viewRound=0}
 const save=()=>{autoSave();localTs=Date.now();try{localStorage.setItem(KEY,JSON.stringify(blob()))}catch(e){}queueCloud()};
@@ -2991,11 +2993,13 @@ function renderFacts(){
   if(tab!=="team"||done()){setHTML($("#facts"),"");return}
   const r=R(),bank=done()?state.bank:E.bankAfter(state,plan.squad);
   const where=done()?"Säsongen är slut":rdName(D.rounds[r])+": "+dshort(D.rounds[r].start)+" till "+dshort(D.rounds[r].end);
-  const sv=plan.squad.reduce((a,i)=>a+E.price(i,pr()),0);
+  /* the budget is what the last squad is worth after this week's price changes plus the bank: everyone starts with
+     the same at Sverigepremiären, and from then on it grows or shrinks with the runners' prices */
+  const budget=state.bank+state.squad.reduce((a,i)=>a+E.price(i,pr()),0);
   setHTML($("#facts"),`<div><span>Poäng</span><b>${fp(state.total)}</b></div>
+   <div><span>Budget</span><b>${fm(budget)}</b></div>
    <div><span>Banken</span><b class="${bank<0?"dn":""}">${fm(bank)}</b></div>
-   <div><span>Trupp ${plan.squad.length}/${D.squad}</span><b>${plan.squad.length?fm(sv):"–"}</b></div>
-   <div><span>Chips</span><b>${E.CHIPS.filter(c=>!state.chips[c]).length} av ${E.CHIPS.length}</b></div>`);
+   <div><span>Trupp</span><b>${plan.squad.length}/${D.squad}</b></div>`);
   setHTML($("#factsMini"),`<div><span>Poäng</span><b>${fp(state.total)}</b></div><div><span>Banken</span><b class="${bank<0?"dn":""}">${fm(bank)}</b></div><div><span>Trupp</span><b>${plan.squad.length}/${D.squad}</b></div>`);
   miniFacts();
 }
@@ -3023,7 +3027,7 @@ const SWAP=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-wi
 /* which runners a chip changes: they get the effect animation and a glowing edge */
 function chipHits(i,team,show){const c=show.chip;return c==="wc"||(c==="tc"&&show.captain===i)||(c==="ax"&&team==="A")||(c==="bb"&&team==="B")||(c==="yo"&&E.youth(i))}
 function squadCard(i,k,show,locked,team){
-  const r=pr(),s=E.stats(i,r),on=show.captain===i,m=show.chip==="tc"?3:2;
+  const r=pr(),s=E.stats(i,r,LIVE),on=show.captain===i,m=show.chip==="tc"?3:2;
   const sq=ordered(show),mult=multOf(i,sq,show.chip,show.captain),hit=chipHits(i,team,show),other=swapSel!==null&&swapSel!==i&&plan.a.includes(swapSel)!==(team==="A");
   /* the same FIFA card as the week board: class and multiplier up top, price och poäng per week big at the bottom */
   return `<div class="sqc ${on?"boosted":""} ${justAdded===i?"pop":""} ${justBoosted===i?"zap":""} ${swapSel===i?"sel":""} ${hit&&show.chip?"chipped":""} ${hit&&justChip?"hit":""}" style="--i:${k}" data-card="${i}">
@@ -3084,7 +3088,7 @@ function marketRows(){
     if(tierF&&TIERS[tierOf(i,r)][0]!==tierF)continue;
     if(clubF&&clubOf(i)!==clubF)continue;
     if(clsF&&(clsF.length===1?D.runners[i].k[0]!==clsF:D.runners[i].k!==clsF))continue;
-    const s=E.stats(i,r),p=E.price(i,r);
+    const s=E.stats(i,r,LIVE),p=E.price(i,r);
     if(afford&&!plan.squad.includes(i)&&E.bankAfter(state,[...plan.squad,i])<0)continue;
     if(entF&&!entOf(i,R()).length)continue;
     rows.push({i,s,p,d:r>0?p-E.price(i,r-1):0,n:nameOf(i),avg:s.perWeek});
@@ -3406,7 +3410,7 @@ function teamView(){
   const fin=isFinal(r);
   const saved=isLive()&&isSaved(),cd=dshort(rd.start);
   const lead=locked?(frozen?"Låst. Poängen kommer in i takt med resultaten.":"Låst för "+rdThe(rd)+"."):
-     (!state.squad.length?"Välj "+D.squad+" löpare för "+fm(D.budget)+", högst "+D.clubMax+" per klubb.":D.freeTransfers+" fria byten den här omgången.");
+     (!state.squad.length?"Välj "+D.squad+" löpare för "+fm(state.bank)+", högst "+D.clubMax+" per klubb.":D.freeTransfers+" fria byten den här omgången.");
   const chipsHtml=`<div class="chipset"><div class="coins">${E.CHIPS.map(c=>{const used=state.chips[c],on=plan.chip===c,off=locked||used||rd.skip||(c==="wc"&&!state.squad.length);
       return `<button class="coin c-${c} ${on?"on":""} ${used?"used":""}" data-chip="${on?"":c}" aria-pressed="${on}" ${off?"disabled":""} title="${esc(CHIPINFO[c][0]+": "+CHIPINFO[c][1])}"><span class="disc">${chipSvg(c)}</span><b>${used?"Använt":CHIPSHORT[c]}</b><small>${CHIPFX[c]}</small></button>`}).join("")}</div>
     ${plan.chip?`<div class="chipdesc c-${plan.chip}"><span><b>${esc(CHIPINFO[plan.chip][0])}</b> – ${esc(CHIPINFO[plan.chip][1])}.</span>${locked?"":`<button class="btn more" data-chip="">Ta bort</button>`}</div>`:""}</div>`;
@@ -3461,7 +3465,7 @@ function boardData(src){
   const when=isFinal(r)?"Slutade söndag "+dshort(rd.end):hasStarted(r)?"Slutar söndag "+dshort(rd.end):"Låses "+lockText(r);
   const team=sq.length===D.squad?(lpTeam==="B"?sq.slice(AS):sq.slice(0,AS)):[];
   const cards=team.map(i=>{
-    const m=multOf(i,sq,chip,cap),played=!!x,st=E.stats(i,pr()),races=played?E.hist[i].filter(h=>rd.ev.includes(h.ev)):[];
+    const m=multOf(i,sq,chip,cap),played=!!x,st=E.stats(i,pr(),LIVE),races=played?E.hist[i].filter(h=>rd.ev.includes(h.ev)):[];
     const ph=runnerPhoto(i);
     return {i,m,boost:i===cap&&(!x||E.starts[r][i]>0),boostX:chip==="tc"?3:2,tier:TIERS[tierOf(i,r)][0],cls:D.runners[i].k,club:clubOf(i),name:surname(nameOf(i)),full:nameOf(i),
       pts:played?(E.starts[r][i]?fp(E.pts[r][i]*m):"0"):"–",price:fm(E.price(i,Math.min(r,E.R-1))),nraces:played?String(races.length):"–",form:fp(st.form),avg:fp(st.perWeek),
@@ -3675,6 +3679,7 @@ function themeCard(){
   return `<div class="card" style="margin-top:12px"><h3>Tema</h3><div class="themes">${THEMES.map(([k,l,,c])=>`<button data-theme="${k}" aria-pressed="${curTheme()===k}"><span class="sw" style="background:${c[0]}"><i style="left:14px;top:12px;width:40px;height:40px;border:3px solid ${c[1]}"></i><i style="left:24px;top:22px;width:20px;height:20px;border:3px solid ${c[1]}"></i><i style="right:16px;top:16px;width:28px;height:28px;border:3.5px solid ${c[2]}"></i><i style="right:54px;bottom:8px;width:14px;height:14px;background:${c[3]};opacity:.85"></i></span><b>${l}</b></button>`).join("")}</div></div>`;
 }
 function practiceCard(){
+  return "";
   const live=isLive();
   return `<div class="card" style="margin-top:12px"><h3>Övning</h3>
    <p class="note" style="margin:0 0 12px">${live?"Spela om säsongen med riktiga resultat. Räknas inte i ligor.":"Du spelar om tidigare omgångar."}</p>
@@ -3999,6 +4004,7 @@ function rulesView(){
   return `<h2 style="margin-top:0">Så funkar det</h2>
   <div class="grid2"><div class="card"><h3>Ditt lag</h3><ul class="rules">
   <li>Välj ${D.squad} löpare från D och H 16 till 21 för ${fm(D.budget)}, högst ${D.clubMax} från samma klubb.</li>
+  <li>Alla börjar med ${fm(D.budget)} vid Sverigepremiären. Sedan är budgeten vad ditt lag är värt efter veckans prisändringar, plus det som finns kvar i banken. Stiger dina löpare i pris får du mer att handla för, sjunker de får du mindre.</li>
   <li><b>A-lag</b> (dina första fem) får dubbla poäng, <b>B-lag</b> får vanliga poäng.</li>
   <li><b>Boost</b> en löpare per omgång för att dubbla poängen igen.</li>
   <li>${D.freeTransfers} fria byten per omgång. Varje extra byte kostar ${D.penalty/10} poäng.</li>
@@ -4090,7 +4096,7 @@ function flip(){
 let profileOpen=null;
 function profile(i){
   profileOpen=i;
-  const vis=E.visible(i,R()),s=E.stats(i,R()),wk=E.weeks(i,R()),first=wk.findIndex(x=>x.races),shownW=first<0?[]:wk.slice(first);
+  const vis=E.visible(i,R(),LIVE),s=E.stats(i,R(),LIVE),wk=E.weeks(i,R(),LIVE),first=wk.findIndex(x=>x.races),shownW=first<0?[]:wk.slice(first);
   /* points per game week as bars, weeks without a race as a flat mark */
   const hist=shownW.length?(()=>{const mx=Math.max(...shownW.map(x=>x.pts),10);
     return `<div class="wkbars" role="img" aria-label="Poäng per spelvecka">${shownW.map(x=>`<span title="${rdName(D.rounds[x.round])}: ${x.races?fp(x.pts)+" poäng, "+x.races+" lopp":"inget lopp"}"><i class="${x.races?(x.pts<0?"neg":""):"none"}" style="height:${x.races?Math.max(3,Math.round(Math.abs(x.pts)/mx*54)):2}px"></i><b>${x.races?fp(x.pts):""}</b><small>${rdNo(D.rounds[x.round])}</small></span>`).join("")}</div>`})():"";
@@ -4420,7 +4426,7 @@ async function igCards(r,story){
   txt("Veckans lag",56,oy+212,800,100,"#fff","left",-2);
   txt(`${rdName(rd)} · ${dshort(rd.start)} – ${dshort(rd.end)}`.toUpperCase(),60,oy+266,700,28,YEL,"left",3);
   /* the five cards, each worth twice its week (the A-lag) */
-  const cards=A.map((x,k)=>{const i=x.i,st=E.stats(i,Math.min(r+1,E.R)),bo=k===0;return {i,m:bo?4:2,boost:bo,boostX:2,tier:TIERS[tierOf(i,r)][0],cls:D.runners[i].k,club:clubOf(i),name:surname(nameOf(i)),full:nameOf(i),
+  const cards=A.map((x,k)=>{const i=x.i,st=E.stats(i,Math.min(r+1,E.R),LIVE),bo=k===0;return {i,m:bo?4:2,boost:bo,boostX:2,tier:TIERS[tierOf(i,r)][0],cls:D.runners[i].k,club:clubOf(i),name:surname(nameOf(i)),full:nameOf(i),
     pts:fp(x.p*(bo?4:2)),price:fm(E.price(i,Math.min(r,E.R-1))),avg:fp(st.perWeek),ph:runnerPhoto(i),
     ini:nameOf(i).split(/\s+/).filter(Boolean).map(w=>w[0]).filter((ch,k,a)=>k===0||k===a.length-1).join("").toUpperCase(),hue:hsh(D.runners[i].c)%360}});
   const gap=story?16:16,cw=story?300:292,ch=Math.round(cw/.72),y0=oy+(story?316:300),x0=(W-(3*cw+2*gap))/2,col=k=>x0+k*(cw+gap);
@@ -5057,7 +5063,7 @@ async function onSession(session){
     /* the account's save wins over a game played signed out; between two copies of the same account's game, the newer one wins */
     if(v&&v.ver!==5){mgrName=v.name||mgrName;(v.leagues||[]).forEach(c=>{if(!myLeagues.includes(c))myLeagues.push(c)});Object.assign(myLgn,v.lgn||{})}
     if(v&&v.ver===5&&v.state&&v.state.round<=E.R&&(!mine||(v.ts||0)>localTs)){
-      state=unpackSt(JSON.parse(JSON.stringify(v.state)));plan=unpackPl(JSON.parse(JSON.stringify(v.plan||packPl(plan))));lock=unpackPl(v.lock||null);mgrName=v.name||mgrName;picks=unpackPicks(v.picks||{});
+      state=unpackSt(JSON.parse(JSON.stringify(v.state)));if(state.start!==LIVE)state=E.newState(LIVE);plan=unpackPl(JSON.parse(JSON.stringify(v.plan||packPl(plan))));lock=unpackPl(v.lock||null);mgrName=v.name||mgrName;picks=unpackPicks(v.picks||{});
       myLeagues=v.leagues||[];myLgn=v.lgn||{};localTs=v.ts;viewRound=Math.max(0,state.log.length-1);
       if(state.squad.length&&!plan.squad.length)startRound();fixLeaders();if(lock)lock.vice=null;
     }
