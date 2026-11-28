@@ -2605,6 +2605,12 @@ html.cfg-picking *{cursor:crosshair!important}
 .coin:disabled .disc{filter:none!important}
 @media (max-width:420px){.coins{gap:5px!important}.coin{padding:9px 2px 8px!important}.coin .disc{width:30px!important;height:30px!important}.coin .disc svg{width:17px!important;height:17px!important}.coin b{font-size:10.5px!important}.coin small{font-size:8.5px!important}}
 @media (max-width:360px){.coin small{display:none}}
+
+.sd-lrow{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}.sd-lrow .sd-l{margin:0}
+.sd-n{font:600 11.5px/1.2 var(--font);color:var(--ds-ink-3,#8a96a3);text-align:right}
+.coin{min-height:96px}
+.coin.on{transform:translateY(-2px);box-shadow:0 10px 20px -12px rgba(0,30,60,.7)!important}
+@media (max-width:420px){.coin{min-height:86px}}
 </style>
 </head>
 <body>
@@ -3551,8 +3557,8 @@ function teamView(){
   const lead=locked?(frozen?"Låst. Poängen kommer in i takt med resultaten.":"Låst för "+rdThe(rd)+"."):
      (!state.squad.length?"Välj "+D.squad+" löpare för "+fm(state.bank)+", högst "+D.clubMax+" per klubb.":D.freeTransfers+" fria byten den här omgången.");
   const chipsHtml=`<div class="chipset"><div class="coins">${E.CHIPS.map(c=>{const used=state.chips[c],on=plan.chip===c,off=locked||used||rd.skip||(c==="wc"&&!state.squad.length);
-      return `<button class="coin c-${c} ${on?"on":""} ${used?"used":""}" data-chip="${on?"":c}" aria-pressed="${on}" ${off?"disabled":""} title="${esc(CHIPINFO[c][0]+": "+CHIPINFO[c][1])}"><span class="disc">${chipSvg(c)}</span><b>${CHIPSHORT[c]}</b><small>${used?"Använt":CHIPFX[c]}</small></button>`}).join("")}</div>
-    ${plan.chip?`<div class="chipdesc c-${plan.chip}"><span><b>${esc(CHIPINFO[plan.chip][0])}</b> – ${esc(CHIPINFO[plan.chip][1])}.</span>${locked?"":`<button class="btn more" data-chip="">Ta bort</button>`}</div>`:""}</div>`;
+      return `<button class="coin c-${c} ${on?"on":""} ${used?"used":""}" data-chip="${on?"":c}" aria-pressed="${on}" ${off?"disabled":""} title="${esc(CHIPINFO[c][0]+": "+CHIPINFO[c][1]+(on&&!locked?". Tryck igen för att ta bort":""))}" aria-label="${esc(CHIPINFO[c][0]+", "+CHIPINFO[c][1]+(used?", använt":on?", valt":""))}"><span class="disc">${chipSvg(c)}</span><b>${CHIPSHORT[c]}</b><small>${used?"Använt":CHIPFX[c]}</small></button>`}).join("")}</div>
+    </div>`;
   return `<div class="two"><div class="panel squad-panel">
    <h2 style="margin-top:0">Din trupp</h2>
    ${!locked&&plan.squad.length<D.squad?`<div class="autofill"><button class="btn go" data-autofill="1">${plan.squad.length?"Fyll resten automatiskt":"Fyll laget automatiskt"}</button></div>`:""}
@@ -3567,7 +3573,7 @@ function teamView(){
   <aside class="side">
    ${(()=>{const c=comps(r);return c.length&&!rd.skip?`<div class="sd-blk"><span class="sd-l">Lopp</span><div class="fixtures">${raceTags(r)}</div></div>`:""})()}
    <div class="sd-tiles"><div><span>Byten</span><b>${!state.squad.length||rd.skip?"Fria":t.n+"/"+D.freeTransfers}</b></div><div class="${pen?"dn":""}"><span>Avdrag</span><b>${pen?"-"+fp(pen):"0"}</b></div></div>
-   <div class="sd-blk"><span class="sd-l">Chips</span>${chipsHtml}</div>
+   <div class="sd-blk"><div class="sd-lrow"><span class="sd-l">Chips</span><span class="sd-n">${plan.chip&&!locked?"Tryck igen för att ta bort":E.CHIPS.filter(c=>!state.chips[c]).length+" av "+E.CHIPS.length+" kvar · ett per omgång"}</span></div>${chipsHtml}</div>
    ${(()=>{/* the first problem shows in the save box below when there is one, so the list holds only the rest */
      const box=isLive()&&!saved&&errs.length&&plan.squad.length===D.squad,rest=box?errs.slice(1):errs;
      return rest.length&&!locked&&plan.squad.length===D.squad?`<ul class="errs">${rest.map(x=>`<li>${esc(errTxt(x))}</li>`).join("")}</ul>`:""})()}
