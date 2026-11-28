@@ -2451,6 +2451,9 @@ body{font-family:var(--font);font-size:var(--ds-fs-body);color:var(--ds-ink)}
   .mkt td:first-child,.mkt th:first-child{padding-left:12px!important}
   .mkt td:last-child,.mkt th:last-child{padding-right:10px!important}
 }
+/* your own row in the league tables: the navy mark sits a little to the left of the row, clear of the placing */
+.lgl-r.in{position:relative;box-shadow:none!important;overflow:visible}
+.lgl-r.in::before{content:"";position:absolute;left:-7px;top:7px;bottom:7px;width:3px;border-radius:3px;background:var(--ds-navy)}
 </style>
 </head>
 <body>
