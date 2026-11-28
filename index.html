@@ -2,6 +2,13 @@
 <html lang="sv" data-theme="light">
 <head>
 <meta charset="utf-8">
+<script>/* admin dashboard preview: ?sandbox=1 runs the site on a throwaway in-memory storage (no saved game, no login), so
+   nothing a test in the dashboard does can touch a real account or the game saved in this browser */
+(function(){if(!/[?&]sandbox=1/.test(location.search))return;var m={};
+  var s={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null},get length(){return Object.keys(m).length}};
+  try{Object.defineProperty(window,"localStorage",{value:s,configurable:true});Object.defineProperty(window,"sessionStorage",{value:s,configurable:true})}catch(e){}
+  window.__SANDBOX=true})();
+</script>
 <script>/* the game has moved to Vercel. The old GitHub Pages address sends everyone on, invite links and login links
    included; a player's game saved in this browser (team, squads, settings, never the login) travels along in the
    address's #fragment, which is not sent to any server, and is put back on the new site if it has none there */
@@ -216,7 +223,7 @@ html.gated #gate{display:grid;position:fixed;inset:0;z-index:1000;place-items:ce
 #gate .g-foot{margin-top:18px;font:500 12px/1.4 Montserrat,sans-serif;color:#9fb7cc}
 </style>
 <script>/* the opening plays on a blue screen: show the blue from the first paint so the page never flashes before it */
-try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&!/access_token|error=|join=/.test(location.href))document.documentElement.classList.add("reel-pre")}catch(e){}</script>
+try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&!/access_token|error=|join=|sandbox=1|edit=1/.test(location.href))document.documentElement.classList.add("reel-pre")}catch(e){}</script>
 <style>html.reel-pre::after{content:"";position:fixed;inset:0;z-index:99;background:#003c68}</style>
 <script>/* apply the saved theme before first paint, so the page never flashes the wrong colours */
 document.documentElement.dataset.theme="light";try{localStorage.removeItem("of-theme")}catch(e){}
@@ -2458,6 +2465,14 @@ body{font-family:var(--font);font-size:var(--ds-fs-body);color:var(--ds-ink)}
    a little further down */
 .hm-hero{background:linear-gradient(180deg,#fff 0%,#fff 78%,rgba(255,255,255,0) 100%)!important;padding-bottom:44px!important;margin-bottom:-30px!important}
 @media (min-width:700px){.hm-hero{padding-bottom:60px!important;margin-bottom:-40px!important}}
+.fbdg svg.cm-mini{width:17px;height:17px;filter:none}
+
+/* site configuration from the admin dashboard: the banner, extra sections, and the picker's outline inside the editor */
+.cfg-banner{position:relative;z-index:5;margin:8px max(16px,env(safe-area-inset-left)) 0;padding:12px 16px;border-radius:var(--ds-r-ctl);font:700 13px/1.4 var(--font);background:var(--ds-navy);color:#fff}
+.cfg-banner.warn{background:var(--ds-yellow);color:var(--ds-ink)}
+#cfg-hover{position:fixed;z-index:2147483646;pointer-events:none;display:none;border-radius:4px;box-shadow:0 0 0 2px #3b82f6,0 0 0 4px rgba(59,130,246,.25);transition:all .06s linear}
+#cfg-hover.sel{box-shadow:0 0 0 2px #f59e0b,0 0 0 5px rgba(245,158,11,.3)}
+html.cfg-picking *{cursor:crosshair!important}
 </style>
 </head>
 <body>
@@ -2771,7 +2786,7 @@ let reelEnd=0;
    into the compass O of "Orientering" in the header while the blue closes in around it. 1.9 s; any tap or key skips it */
 (function reel(){
   const unc=()=>document.documentElement.classList.remove("reel-pre");
-  if(RM||/access_token|error=|join=/.test(location.href)){unc();return}
+  if(RM||/access_token|error=|join=|sandbox=1|edit=1/.test(location.href)){unc();return}
   const cv=document.createElement("canvas");cv.id="reel";cv.setAttribute("aria-hidden","true");
   const g=cv.getContext("2d");if(!g){unc();return}
   let W=innerWidth,H=innerHeight;const dpr=Math.min(2,devicePixelRatio||1);
@@ -3821,7 +3836,8 @@ function privacyCard(){
    ${delMsg?`<p class="note" style="margin:10px 0 0;color:${dbOk?"var(--warn)":"var(--good)"}">${esc(delMsg)}</p>`:""}</div>`;
 }
 function seasonBars(){
-  const L=state.log,mx=Math.max(100,...L.map(l=>l.total));
+  /* weeks without play are not rounds: they are left out of the bars */
+  const L=state.log.filter(l=>!D.rounds[l.round].skip);if(!L.length)return "";const mx=Math.max(100,...L.map(l=>l.total));
   return `<div class="card"><span class="eyebrow">Poäng per omgång</span><div class="sbars">${L.map(l=>`<button data-tab="rounds" data-round="${state.log.indexOf(l)}" title="${rdName(D.rounds[l.round])}: ${fp(l.total)}"><span class="v">${Math.round(l.total/10)}</span><i style="--k:${state.log.indexOf(l)};height:${Math.max(2,Math.round(Math.max(0,l.total)/mx*90))}px"></i><span>${rdNo(D.rounds[l.round])}</span></button>`).join("")}</div></div>`;
 }
 function themeCard(){
@@ -3995,13 +4011,15 @@ const BDG_ICON={
   compass:c=>`<circle cx="32" cy="32" r="12" fill="none" stroke="${c}" stroke-width="3"/><path d="m36.5 27.5-3 6-6 3 3-6z" fill="${c}"/>`};
 /* the beta badge is the compass medal: navy medal with a compass rose and needle, "BETA", on a yellow ribbon.
    mini = the small one next to a name in the league tables */
-function compassMedal(mini){const g="cm"+Math.random().toString(36).slice(2,7);
-  const ticks=mini?"":[0,1,2,3,4,5,6,7].map(k=>{const a=k*Math.PI/4;return `<line x1="${(24*Math.cos(a)).toFixed(1)}" y1="${(-4+24*Math.sin(a)).toFixed(1)}" x2="${(27*Math.cos(a)).toFixed(1)}" y2="${(-4+27*Math.sin(a)).toFixed(1)}" stroke="#ffe74d" stroke-width="${k%2?1:2}"/>`}).join("");
-  return `<svg class="${mini?"tk-mini cm-mini":"md md-c"}" viewBox="-40 -42 80 94" aria-hidden="true"><defs><radialGradient id="${g}" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#1f6aa5"/><stop offset="1" stop-color="#002a4a"/></radialGradient></defs>
-   <path d="M-22 18-32 48-20 43-14 50-4 22zM22 18 32 48 20 43 14 50 4 22z" fill="#ffe74d" stroke="#c9a400" stroke-width=".8"/><path d="M-26 30-29 39M26 30 29 39" stroke="#003c68" stroke-width="3"/>
-   <circle cy="-4" r="34" fill="#ffe74d"/><circle cy="-4" r="30" fill="url(#${g})"/>${ticks}
-   <g transform="translate(0 -4) rotate(35)"><path d="M0-19 5 0H-5Z" fill="#e5484d"/><path d="M0 19 5 0H-5Z" fill="#fff"/></g><circle cy="-4" r="2.5" fill="#ffe74d"/>
-   ${mini?"":`<text y="18" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="7" letter-spacing="1.5" fill="#ffe74d">BETA</text>`}</svg>`}
+function compassMedal(mini){
+  /* flat, in the site's own look: a navy disc with a thin yellow edge, the compass O from the logo (white ring, red and
+     white needle at 35 degrees) and "BETA" on a yellow pill. The mini (next to a name) is just the disc and compass */
+  const disc=`<circle cy="-4" r="31" fill="#003c68" stroke="#ffe74d" stroke-width="2.5"/><circle cy="-4" r="19" fill="none" stroke="#fff" stroke-width="5"/>
+   <g transform="translate(0 -4) rotate(35)"><path d="M0-14 4.2 0H-4.2Z" fill="#e5484d"/><path d="M0 14 4.2 0H-4.2Z" fill="#fff"/></g>`;
+  if(mini)return `<svg class="tk-mini cm-mini" viewBox="-34 -38 68 68" aria-hidden="true">${disc}</svg>`;
+  return `<svg class="md md-c" viewBox="-40 -42 80 94" aria-hidden="true">${disc}
+   <rect x="-21" y="21" width="42" height="15" rx="7.5" fill="#ffe74d" stroke="#003c68" stroke-width="2"/>
+   <text y="31.6" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="8.6" letter-spacing="1.6" fill="#003c68">BETA</text></svg>`}
 function badgeMini(b){if(b.icon==="beta")return compassMedal(true);const t=BDG_TIER[b.tier]||BDG_TIER.navy;return `<svg class="tk-mini md-mini" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="${t[1]}"/>${(BDG_ICON[b.icon]||BDG_ICON.star)(t[2])}</svg>`}
 const featB={};
 const featTag=id=>{const b=featB[id];return b?`<span class="fbdg" title="${esc(b.name)}">${badgeMini(b)}</span>`:""};
@@ -4717,6 +4735,132 @@ function render(){
   freshPaint=false;justAdded=null;justBoosted=null;justLocked=false;justChip=null;countUp();flip();
   armReveals();watchMore();
 }
+/* ===================================================================================================================
+   SITE CONFIGURATION, set from the admin dashboard (admin/). The published configuration is read from the database
+   (get_site_config, readable by anyone, writable only by admins) and applied over the page after every render:
+     tokens  CSS variables (colours, corners …)          styles  CSS per element (selector → properties)
+     texts   replacement text per element                 attrs   link targets, image sources, which tab a button opens
+     hidden  elements not shown                           moves   an element placed before another
+     blocks  extra sections (heading, text, image, button) flags   whole sections on or off
+     banner  a message across the top of the page
+   Inside the dashboard (?edit=1 in a frame) the editor sends the configuration itself and a bridge lets it pick
+   elements, switch roles and pages, and run tests. ?sandbox=1 (see the top of the page) keeps all of that off the real
+   accounts. Text is always set as text (never as HTML), links only to http(s) or a page of the game.
+   =================================================================================================================== */
+const CFG_KEY="of-site-cfg",CFG_EDIT=/[?&]edit=1/.test(location.search)&&window.parent!==window,CFG_SANDBOX=!!window.__SANDBOX;
+const CFG_ORIGINS=["https://maltehallman-debug.github.io","https://www.fantasyorientering.se","https://fantasyorientering.se","https://fantasyorientering.vercel.app",location.origin];
+const CFG_TABS=["home","team","rounds","leagues","rules","profile"];
+/* sections that can be switched off as a whole (the dashboard shows the same list) */
+const CFG_FLAGS={"hem.nyheter":".hm-news","hem.arets_manager":".hm-lg","hem.topplistor":".hm-rail","hem.live":".livecard","hem.sammanfattning":".recap","hem.rival":"#view .card.rival",
+  "lag.autofyll":".autofill","lag.lopp":".side .fixtures","lag.foton":".phbox","ligor.topplistor":"body[data-tab=\"leagues\"] .rail:first-of-type","sidfot.knappar":".bigpills","topp.nedrakning":".topbar"};
+let siteCfg=(()=>{if(CFG_EDIT||CFG_SANDBOX)return {};try{return JSON.parse(localStorage.getItem(CFG_KEY)||"null")||{}}catch(e){return {}}})();
+const cfgSafeUrl=u=>typeof u==="string"&&(/^https?:\/\//i.test(u)||/^(img|icons|maps)\//.test(u)||/^#[a-z]+$/.test(u))?u:"";
+const cfgCss=v=>String(v).replace(/[<>{};]/g,"");
+function cfgStyleSheet(c){
+  const out=[];const t=c.tokens||{};const tk=Object.keys(t).filter(k=>/^--[a-z0-9-]+$/i.test(k));
+  if(tk.length)out.push(":root,:root[data-theme]{"+tk.map(k=>k+":"+cfgCss(t[k])+"!important").join(";")+"}");
+  const st=c.styles||{};for(const sel in st){const p=st[sel]||{},decl=Object.keys(p).filter(k=>/^[a-z-]+$/.test(k)&&p[k]!==""&&p[k]!=null).map(k=>k+":"+cfgCss(p[k])+"!important");if(decl.length)out.push(cfgCss(sel)+"{"+decl.join(";")+"}")}
+  const hid=(c.hidden||[]).slice();const fl=c.flags||{};for(const k in CFG_FLAGS)if(fl[k]===false)hid.push(CFG_FLAGS[k]);
+  if(hid.length)out.push(hid.map(cfgCss).join(",")+"{display:none!important}");
+  return out.join("\n");
+}
+function cfgApply(){
+  const c=siteCfg||{};let el=document.getElementById("cfg-style");if(!el){el=document.createElement("style");el.id="cfg-style";document.head.appendChild(el)}
+  const css=cfgStyleSheet(c);if(el.textContent!==css)el.textContent=css;
+  cfgAfterRender();
+}
+function cfgAfterRender(){
+  const c=siteCfg||{};document.body.dataset.tab=tab;
+  const q=sel=>{try{return [...document.querySelectorAll(sel)]}catch(e){return []}};
+  const tx=c.texts||{};for(const sel in tx)q(sel).forEach(e=>{if(e.children.length===0||e.dataset.cfgText){if(e.textContent!==tx[sel])e.textContent=tx[sel];e.dataset.cfgText="1"}});
+  const at=c.attrs||{};for(const sel in at)q(sel).forEach(e=>{const a=at[sel]||{};
+    if(a.href!=null&&e.tagName==="A"){const u=cfgSafeUrl(a.href);if(u)e.setAttribute("href",u)}
+    if(a.src!=null&&e.tagName==="IMG"){const u=cfgSafeUrl(a.src);if(u)e.setAttribute("src",u)}
+    if(a.tab!=null&&CFG_TABS.includes(a.tab)){e.dataset.tab=a.tab;e.removeAttribute("data-info")}});
+  (c.moves||[]).forEach(m=>{const a=q(m.sel)[0],b=q(m.before)[0];if(a&&b&&a!==b&&b.parentElement&&a.nextElementSibling!==b&&!a.contains(b))b.parentElement.insertBefore(a,b)});
+  document.querySelectorAll("[data-cfg-block]").forEach(e=>{if(!(c.blocks||[]).some(b=>b.id===e.dataset.cfgBlock))e.remove()});
+  (c.blocks||[]).forEach(b=>{if(b.tab&&b.tab!=="all"&&b.tab!==tab)return;const anchor=q(b.after)[0];if(!anchor)return;
+    let n=document.querySelector(`[data-cfg-block="${CSS.escape(b.id)}"]`);const key=JSON.stringify(b);if(n&&n.dataset.k===key&&n.previousElementSibling===anchor)return;if(n)n.remove();
+    n=document.createElement("div");n.className="card cfg-block";n.dataset.cfgBlock=b.id;n.dataset.k=key;
+    if(b.heading){const h=document.createElement("h3");h.textContent=b.heading;n.appendChild(h)}
+    if(b.body){const p=document.createElement("p");p.className="note";p.textContent=b.body;n.appendChild(p)}
+    const src=cfgSafeUrl(b.img);if(src){const im=document.createElement("img");im.src=src;im.alt=b.alt||"";im.style.cssText="width:100%;border-radius:14px;margin-top:10px";n.appendChild(im)}
+    if(b.label){const u=cfgSafeUrl(b.href);const a=document.createElement(u&&!u.startsWith("#")?"a":"button");a.className="btn on";a.textContent=b.label;a.style.marginTop="12px";
+      if(u.startsWith("#")){a.type="button";a.dataset.tab=u.slice(1)}else if(u){a.href=u;a.target="_blank";a.rel="noopener"}n.appendChild(a)}
+    anchor.insertAdjacentElement("afterend",n)});
+  const bn=c.banner||{};let bar=document.getElementById("cfg-banner");
+  if(bn.on&&bn.text){if(!bar){bar=document.createElement("div");bar.id="cfg-banner";const v=document.getElementById("view");v.parentElement.insertBefore(bar,v)}
+    bar.className="cfg-banner "+(bn.tone==="warn"?"warn":"info");if(bar.textContent!==bn.text)bar.textContent=bn.text}else if(bar)bar.remove();
+}
+async function loadSiteCfg(){if(CFG_EDIT||CFG_SANDBOX||!cloud.sb)return;try{const r=await cloud.sb.rpc("get_site_config");if(!r.error&&r.data&&typeof r.data==="object"){siteCfg=r.data;try{localStorage.setItem(CFG_KEY,JSON.stringify(siteCfg))}catch(e){}cfgApply()}}catch(e){}}
+{const _r=render;render=function(){_r();try{cfgAfterRender()}catch(e){}}}
+try{cfgApply()}catch(e){}
+
+/* ---------- the bridge to the dashboard (only inside its frame) ---------- */
+if(CFG_EDIT){
+  let peer=null,picking=false,hov=null;
+  const post=m=>{if(peer)window.parent.postMessage(Object.assign({src:"of-site"},m),peer)};
+  const box=document.createElement("div");box.id="cfg-hover";document.body.appendChild(box);
+  const selOf=el=>{
+    if(el.id&&!/^(view|hero|facts|course)$/.test(el.id)&&document.querySelectorAll("#"+CSS.escape(el.id)).length===1)return "#"+CSS.escape(el.id);
+    const parts=[];let e=el;
+    while(e&&e!==document.body&&e.nodeType===1){
+      if(e.id&&parts.length){parts.unshift("#"+CSS.escape(e.id));break}
+      let p=e.tagName.toLowerCase();const cls=[...e.classList].filter(c=>!/^(rv|rv-in|rv-up|settled|on|in|pop|show|enter|navx|still)$/.test(c)&&!/^cfg-/.test(c)).slice(0,2);
+      if(cls.length)p+="."+cls.map(c=>CSS.escape(c)).join(".");
+      const da=["data-tab","data-info","data-sort","data-lgopen","data-mgr"].find(a=>e.hasAttribute(a));if(da)p+=`[${da}="${CSS.escape(e.getAttribute(da))}"]`;
+      const par=e.parentElement;if(par){const same=[...par.children].filter(x=>{try{return x.matches(p)}catch(er){return false}});if(same.length>1)p+=`:nth-child(${[...par.children].indexOf(e)+1})`}
+      parts.unshift(p);if(e.id==="view")break;e=e.parentElement}
+    let s=parts.join(">");if(el.closest("#view"))s=`body[data-tab="${tab}"] `+s;return s};
+  const info=el=>{const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+    return {sel:selOf(el),tag:el.tagName.toLowerCase(),text:(el.textContent||"").trim().slice(0,300),textEditable:el.children.length===0||!!el.dataset.cfgText,
+      href:el.tagName==="A"?el.getAttribute("href"):null,src:el.tagName==="IMG"?el.getAttribute("src"):null,dataTab:el.dataset.tab||null,isButton:el.tagName==="BUTTON"||el.classList.contains("btn"),
+      styles:{"font-size":cs.fontSize,"font-weight":cs.fontWeight,"font-family":cs.fontFamily,color:cs.color,"background-color":cs.backgroundColor,"text-align":cs.textAlign,
+        "margin-top":cs.marginTop,"margin-right":cs.marginRight,"margin-bottom":cs.marginBottom,"margin-left":cs.marginLeft,"padding-top":cs.paddingTop,"padding-right":cs.paddingRight,"padding-bottom":cs.paddingBottom,"padding-left":cs.paddingLeft,
+        width:cs.width,height:cs.height,"border-radius":cs.borderTopLeftRadius,display:cs.display},
+      rect:{x:r.left,y:r.top,w:r.width,h:r.height},tab}};
+  const place=(el,cls)=>{if(!el){box.style.display="none";return}const r=el.getBoundingClientRect();box.className=cls||"";Object.assign(box.style,{display:"block",left:r.left+"px",top:r.top+"px",width:r.width+"px",height:r.height+"px"})};
+  addEventListener("mousemove",e=>{if(!picking)return;const t=e.target;if(t===box)return;hov=t;place(t,"hover")},true);
+  ["click","pointerdown","pointerup","mousedown","mouseup"].forEach(ev=>addEventListener(ev,e=>{if(!picking)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+    if(ev==="click"){const t=e.target===box?hov:e.target;if(t){place(t,"sel");post({t:"select",info:info(t)})}}},true));
+  addEventListener("scroll",()=>{if(!picking)box.style.display="none"},{passive:true});
+  addEventListener("error",e=>post({t:"error",msg:String(e.message||e.error||"Fel"),where:(e.filename||"").split("/").pop()+":"+(e.lineno||"")}));
+  addEventListener("unhandledrejection",e=>post({t:"error",msg:"Avvisat löfte: "+String(e.reason&&e.reason.message||e.reason)}));
+  /* roles, only in the sandbox: built on this page alone, nothing is saved or sent */
+  const setRole=role=>{if(!CFG_SANDBOX)return false;
+    const gate=document.documentElement;clearInterval(setRole.t);
+    if(role==="gate"){dbOk=false;cloud.uid=null;cloud.admin=false;gate.classList.add("gated")}
+    else{gate.classList.remove("gated");setRole.t=setInterval(()=>gate.classList.remove("gated"),400);
+      if(role==="guest"){dbOk=false;cloud.uid=null;cloud.email="";cloud.admin=false;showAdmin=false;mgrName="";myTeam=""}
+      else{dbOk=true;cloud.uid="demo-user";cloud.email="demo@exempel.se";mgrName="Demo";myTeam="Demolaget";cloud.admin=role==="admin";showAdmin=role==="admin";cloud.ready=false;
+        if(plan.squad.length<D.squad)try{autoFill()}catch(e){}}}
+    render();return true};
+  const tests=async()=>{const res=[],errs=[];const onE=e=>errs.push(String(e.message||e));addEventListener("error",onE);
+    const step=async(name,fn)=>{const n=errs.length;let ok=true,detail="";try{const d=await fn();if(d)detail=d}catch(e){ok=false;detail=String(e.message||e)}
+      if(errs.length>n){ok=false;detail=(detail?detail+" · ":"")+errs.slice(n).join("; ")}res.push({name,ok,detail})};
+    const wait=ms=>new Promise(r=>setTimeout(r,ms));
+    for(const t of CFG_TABS)await step("Sidan "+t+" ritas",async()=>{tab=t;render();await wait(250);const v=document.getElementById("view");if(!v||!v.children.length)throw new Error("sidan är tom");return v.querySelectorAll("button").length+" knappar"});
+    await step("Knappar har text eller etikett",async()=>{const bad=[...document.querySelectorAll("button")].filter(b=>b.offsetParent&&!(b.textContent.trim()||b.getAttribute("aria-label")||b.title));if(bad.length)throw new Error(bad.length+" knappar utan text");return "ok"});
+    await step("Länkar har mål",async()=>{const a=[...document.querySelectorAll("a")].filter(x=>x.offsetParent);const bad=a.filter(x=>!x.getAttribute("href"));if(bad.length)throw new Error(bad.length+" länkar utan mål");return a.length+" länkar"});
+    await step("Meny: Regler och villkor",async()=>{infoMenu();await wait(300);if(!document.querySelector("#modal .im-list"))throw new Error("menyn öppnades inte");closeModal();return "öppnas och stängs"});
+    await step("Kontaktformuläret öppnas",async()=>{infoSheet("contact");await wait(300);if(!document.getElementById("rmSend"))throw new Error("formuläret saknas");closeModal();return "ok"});
+    await step("Fyll laget automatiskt",async()=>{tab="team";render();await wait(150);const before=plan.squad.length;if(before<D.squad){autoFill();render()}const n=plan.squad.length;if(n<D.squad)throw new Error("bara "+n+" löpare");return n+" löpare, "+fm(E.bankAfter(state,plan.squad))+" kvar"});
+    await step("Sök i löparlistan",async()=>{qRaw="ok";refreshMarket();await wait(150);const n=document.querySelectorAll("#mrows tr").length;qRaw="";refreshMarket();if(!n)throw new Error("inga träffar");return n+" träffar på \"ok\""});
+    await step("Löparkort öppnas",async()=>{profile(0);await wait(300);const ok=!!document.querySelector("#modal .sheet");closeModal();if(!ok)throw new Error("kortet öppnades inte");return "ok"});
+    removeEventListener("error",onE);tab="home";render();return res};
+  addEventListener("message",async e=>{if(!CFG_ORIGINS.includes(e.origin))return;const m=e.data||{};if(m.src!=="of-admin")return;peer=e.origin;
+    if(m.t==="hello")post({t:"ready",tab,tabs:CFG_TABS,sandbox:CFG_SANDBOX,flags:Object.keys(CFG_FLAGS),version:document.querySelector('meta[name="build"]')?.content||""});
+    else if(m.t==="cfg"){siteCfg=m.cfg||{};cfgApply()}
+    else if(m.t==="pick"){picking=!!m.on;if(!picking)box.style.display="none";document.documentElement.classList.toggle("cfg-picking",picking)}
+    else if(m.t==="tab"&&CFG_TABS.includes(m.tab)){closeModal&&closeModal();tab=m.tab;render();scrollTo(0,0);post({t:"tab",tab})}
+    else if(m.t==="role"){const ok=setRole(m.role);post({t:"role",role:m.role,ok})}
+    else if(m.t==="highlight"){let el=null;try{el=document.querySelector(m.sel)}catch(er){}if(el){el.scrollIntoView({block:"center"});setTimeout(()=>place(el,"sel"),250)}else box.style.display="none"}
+    else if(m.t==="test"){const r=await tests();post({t:"test",results:r})}
+    else if(m.t==="info"){post({t:"info",data:{tab,url:location.href,sandbox:CFG_SANDBOX,ua:navigator.userAgent,viewport:innerWidth+"×"+innerHeight,runners:E.N,rounds:D.rounds.length,asof:D.asof,squad:plan.squad.length,loggedIn:!!cloud.uid}})}});
+  /* tabs changed inside the page show up in the dashboard */
+  {const _r2=render;let last=tab;render=function(){_r2();if(tab!==last){last=tab;post({t:"tab",tab})}}}
+}
+
 function doPlay(chip){
   const o=E.play(state,{squad:ordered(plan),captain:plan.captain,vice:null,chip:chip});
   state=o.state;plan={squad:state.squad.slice(),a:state.squad.slice(0,AS),captain:state.captain,vice:null,chip:null};save();
@@ -5116,7 +5260,7 @@ async function initCloud(){
     const tabLock=(name,timeout,fn)=>{const r=lockQ.then(()=>fn());lockQ=r.catch(()=>{});return r};
     cloud.sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,lock:tabLock}});
     cloud.sb.auth.onAuthStateChange((ev,session)=>{setTimeout(()=>onSession(session),0);if(ev==="PASSWORD_RECOVERY"&&!pwOpen){welcomed=true;setTimeout(pwSheet,0)}});
-    loadPhotos();loadNews();
+    loadPhotos();loadNews();loadSiteCfg();
   }catch(e){}
 }
 /* closed-beta gate: sign in only, no new accounts */
