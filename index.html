@@ -2101,6 +2101,70 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
 /* Hem: the grey boxes look like the rest of the game's boxes, square with the navy corner triangle */
 #view .hm-grid>.card,#view .hm-lg,#view .hm-news{border-radius:0!important;position:relative;overflow:hidden}
 #view .hm-grid>.card::before,#view .hm-lg::before,#view .hm-news::before{content:""!important;position:absolute;right:0;top:0;left:auto;bottom:auto;width:34px;height:34px;background:linear-gradient(225deg,var(--navy) 50%,transparent 50%)!important;pointer-events:none;opacity:1!important;transform:none!important;z-index:1}
+
+/* ===== Polish 2026-11: one heading style, one "more" button, calm initials, compact league rows ===== */
+/* 1: card headings read like the page headings: bold sentence case, not thin capitals */
+.card h3,.side .eyebrow:first-child,.hm-card h3{font:800 19px/1.2 var(--font)!important;text-transform:none!important;letter-spacing:-.015em!important;color:var(--text,#0b0f14)!important;margin:2px 0 12px}
+.ev .card h3,.card .ev h3{margin:2px 0 0}
+.card .eyebrow+h3{margin-top:4px}
+/* 2: the one "see more" button */
+.btn.more{background:transparent!important;color:var(--navy,#003c68)!important;box-shadow:inset 0 0 0 1.5px currentColor!important;padding:9px 16px;font-size:12px}
+@media (hover:hover) and (pointer:fine){.btn.more:hover{background:color-mix(in srgb,var(--navy,#003c68) 7%,transparent)!important}}
+.hm-news .btn.more{margin-top:12px}
+/* 4: the lists on the home page in one rail: side by side on wide screens, swiped through on phones */
+.hm-rail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0 0}
+.hm-card{background:var(--surface,#fff);border-radius:20px;box-shadow:inset 0 0 0 1px var(--line);padding:18px 20px;min-width:0}
+.hm-card .hm-top li{padding:7px 0}
+@media (max-width:699px){
+  .hm-rail{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;margin:16px calc(-1 * max(16px,env(safe-area-inset-left))) 0;padding:0 max(16px,env(safe-area-inset-left)) 6px;scrollbar-width:none;overscroll-behavior-x:contain}
+  .hm-rail::-webkit-scrollbar{display:none}
+  .hm-card{flex:0 0 86%;scroll-snap-align:start;padding:16px 16px 10px}}
+/* 7: the corner and the map lines only on the card that matters most here, the manager table */
+#view .hm-news{background-image:none!important;border-radius:20px!important}
+#view .hm-news::before{display:none!important}
+/* 5: phones: a lower photo, so the greeting and the button come up the screen */
+@media (max-width:699px){.hm-img{height:clamp(190px,52vw,250px)}.hm-img img{object-position:72% 88%;transform:scale(1.15);transform-origin:72% 88%}.hm-txt{margin-top:-18px}}
+/* 8 + 11: league rows as a compact list with hairlines; your own row with a quiet tint and a navy edge */
+.lgl{gap:0!important}
+.lgl-r{background:transparent!important;border-radius:0!important;box-shadow:none!important;border-bottom:1px solid var(--line);padding:9px 6px!important}
+.lgl-r:last-child{border-bottom:0}
+@media (hover:hover) and (pointer:fine){.lgl-r:hover{background:color-mix(in srgb,var(--navy,#003c68) 5%,transparent)!important}}
+.lgl-r.in{background:color-mix(in srgb,var(--navy,#003c68) 7%,transparent)!important;box-shadow:inset 3px 0 0 var(--navy,#003c68)!important;border-radius:6px!important}
+.lgl-h{padding:0 6px 6px;border-bottom:1px solid var(--line)}
+/* 9: the week placing beside the overall one, as a small labelled pill */
+.lgl-r .pl{display:flex;align-items:center;gap:5px}
+.lgl-r .pl small{font:700 10.5px/1 var(--font)!important;color:var(--text-2)!important;background:color-mix(in srgb,var(--navy,#003c68) 8%,transparent);padding:3px 5px;border-radius:6px;margin:0!important;letter-spacing:.02em}
+/* 10: initials in four calm brand tones */
+.mdot.t0{background:#dfe8f1;color:#003c68}.mdot.t1{background:#fff2a8;color:#5c4b00}.mdot.t2{background:#f5dcea;color:#8a0059}.mdot.t3{background:#e4e8ec;color:#36424e}
+[data-theme="dark"] .mdot.t0{background:#1d3550;color:#cfe0f2}[data-theme="dark"] .mdot.t1{background:#4a4210;color:#fff2a8}[data-theme="dark"] .mdot.t2{background:#4a1d38;color:#f5cfe3}[data-theme="dark"] .mdot.t3{background:#2c343d;color:#d9dee3}
+.lgl-h,.lgl-r{grid-template-columns:calc(var(--plw,52px) + 12px) minmax(0,1fr) 46px 54px!important;gap:8px!important}
+@media (max-width:430px){.lgl-h,.lgl-r{grid-template-columns:calc(var(--plw,52px) + 8px) minmax(0,1fr) 42px 48px!important;gap:6px!important}}
+
+/* ===== Runner list: smaller names with the price under them; the stats swipe sideways while the name and the
+   buy/sell button stay put ===== */
+.mkt .who{font-size:14px!important;font-weight:700}
+.mkt td .sub{font-size:12px}.mkt td .sub .mk-p{font-weight:800;color:var(--text,#0b0f14)}
+.mkt th.mk-who{white-space:nowrap}.mkt th.mk-who button{display:inline!important;white-space:nowrap!important}
+@media (max-width:899px){
+  .tbl.mkt{overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+  .mkt table{table-layout:auto!important;width:max-content!important;min-width:100%!important}
+  .mkt th,.mkt td{display:table-cell!important;width:auto!important;white-space:nowrap}
+  .mkt th:not(:first-child):not(:last-child),.mkt td:not(:first-child):not(:last-child){padding-left:10px!important;padding-right:10px!important;text-align:center}
+  .mkt td:first-child,.mkt th:first-child{position:sticky;left:0;z-index:2;background:var(--surface,#fff);max-width:none!important;width:min(52vw,230px)!important;min-width:min(52vw,230px)}
+  .mkt td:last-child,.mkt th:last-child{position:sticky;right:0;z-index:2;background:var(--surface,#fff)}
+  .mkt td:first-child{box-shadow:6px 0 8px -8px rgba(0,30,60,.35)}.mkt td:last-child{box-shadow:-6px 0 8px -8px rgba(0,30,60,.35)}
+  .mkt tr.in td:first-child,.mkt tr.in td:last-child{background:color-mix(in srgb,var(--surface,#fff) 90%,#003c68)}
+  .mkt .who-wrap>div{max-width:calc(min(52vw,230px) - 44px)!important}
+  .mkt .who{max-width:100%!important}
+}
+
+/* ===== Home photo: fades into the page itself (a mask, not a white overlay), so the map lines carry on below ===== */
+.hm-hero{background:transparent!important}
+.hm-img::after{display:none!important}
+.hm-img{-webkit-mask-image:linear-gradient(180deg,#000 45%,rgba(0,0,0,.55) 72%,transparent 100%);mask-image:linear-gradient(180deg,#000 45%,rgba(0,0,0,.55) 72%,transparent 100%)}
+@media (min-width:700px){
+  .hm-img{-webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.15) 28%,rgba(0,0,0,.7) 48%,#000 66%),linear-gradient(180deg,#000 55%,transparent 100%);-webkit-mask-composite:source-in;
+    mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.15) 28%,rgba(0,0,0,.7) 48%,#000 66%),linear-gradient(180deg,#000 55%,transparent 100%);mask-composite:intersect}}
 </style>
 </head>
 <body>
@@ -2126,7 +2190,7 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
  <p class="g-foot">Fristående ideellt projekt · ingen koppling till Svensk Orientering (SOFT)</p>
 </div></div>
 <div class="terrain" aria-hidden="true"><div class="par" id="par"><svg id="terrain" preserveAspectRatio="xMidYMid slice"></svg></div></div>
-<header class="nav"><div class="topbar"><div class="container"><span class="sect">Fantasy Orientering</span><span class="tb-r"><span class="tb-season">Säsong 2026/27 · D/H 16–21</span><span class="hclock" id="hclock" role="timer" aria-live="off" title="Tid kvar tills lagen låses" hidden></span></span></div></div><div class="container nav-inner">
+<header class="nav"><div class="topbar"><div class="container"><span class="sect" id="tbLabel">Laget låses om</span><span class="tb-r"><span class="tb-season">Säsong 2026/27 · D/H 16–21</span><span class="hclock" id="hclock" role="timer" aria-live="off" title="Tid kvar tills lagen låses" hidden></span></span></div></div><div class="container nav-inner">
   <button class="logo" type="button" data-tab="home" aria-label="Fantasy Orientering, beta, till startsidan">
     <svg class="mark" width="44" height="35" viewBox="2.6 2.6 29.6 23.5" aria-hidden="true"><g transform="translate(-.4 -.9) scale(.0322)"><path d="M540 120l18 37 41 6-30 29 7 41-36-19-36 19 7-41-30-29 41-6z" fill="#fff"/><g transform="translate(540 240)"><path d="M-210 0H210C210 220 120 350 0 370C-120 350-210 220-210 0Z" fill="#ffe74d"/><path d="M-205 50C-320 50-330 190-205 235M205 50C320 50 330 190 205 235" fill="none" stroke="#ffe74d" stroke-width="40" stroke-linecap="round"/><rect x="-30" y="360" width="60" height="110" fill="#ffe74d"/><path d="M-140 580H140L112 470H-112Z" fill="#ffe74d"/><circle cx="0" cy="145" r="88" fill="none" stroke="#003c68" stroke-width="34"/></g><path d="M150 610L120 690H230ZM930 610L960 690H850Z" fill="#c9d3dc"/><path d="M95 560H230V700H95L140 630ZM985 560H850V700H985L940 630Z" fill="#e8edf2"/><rect x="190" y="530" width="700" height="150" rx="8" fill="#fff"/><text x="540" y="652" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="112" letter-spacing="6" fill="#003c68" text-anchor="middle">FANTASY</text></g></svg>
     <b><span class="w1">Fantasy</span> <span class="w2"><span class="ocw" aria-hidden="true"><svg class="oc" viewBox="0 0 88 84"><ellipse cx="44.0" cy="42.0" rx="39.2" ry="37.2" fill="none" stroke="currentColor" stroke-width="9.6"/><g class="ocn"><g transform="rotate(35 44.0 42.0)"><path d="M44.0 14.6L52.2 42.0L44.0 42.0Z" fill="#e5484d"/><path d="M44.0 14.6L35.8 42.0L44.0 42.0Z" fill="#e5484d" opacity=".75"/><path d="M44.0 69.4L52.2 42.0L44.0 42.0Z" fill="#fff"/><path d="M44.0 69.4L35.8 42.0L44.0 42.0Z" fill="#fff" opacity=".75"/></g></g></svg></span><span class="ocr">O</span>rientering</span></b><i class="beta" title="Spelet är under utveckling">Beta</i></button>
@@ -2882,7 +2946,7 @@ function marketBody(rows){mRows=rows;
   return (rows.slice(0,shown).map(rowHtml).join("")||`<tr><td colspan="10" class="note">Inga löpare matchar. Rensa sökningen eller ett filter.</td></tr>`);
 }
 function rowHtml(x){const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
-   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><i class="glm" aria-hidden="true"></i><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub">${D.runners[x.i].k}, ${esc(clubOf(x.i))}${(()=>{const o=ownPct(x.i);return o?` · ägs av ${o}%`:""})()}</div></div></div></td><td>${tierTag(x.i)}</td><td><b>${fm(x.p)}</b></td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
+   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><i class="glm" aria-hidden="true"></i><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub"><b class="mk-p">${fm(x.p)}</b> · ${D.runners[x.i].k} · ${esc(clubOf(x.i))}${(()=>{const o=ownPct(x.i);return o?` · ägs av ${o}%`:""})()}</div></div></div></td><td>${tierTag(x.i)}</td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
    <td>${inS?`<button class="btn" data-sell="${x.i}">Sälj</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Köp</button>`}</td></tr>`}
 /* the runner list grows as you scroll: a marker under it loads the next runners before you reach the end, and each
    new runner rises in on its own. A button stays as a fallback where the browser cannot watch the marker. */
@@ -2913,7 +2977,7 @@ function marketHtml(){
    <select id="clubF" aria-label="Klubb"><option value="">Alla klubbar</option>${clubs.map(c=>`<option value="${esc(c)}" ${c===clubF?"selected":""}>${esc(c)}</option>`).join("")}</select>
    <label><input type="checkbox" id="afford" ${afford?"checked":""}> Bara de jag har råd med</label>${Object.keys(ENT).length?`<label><input type="checkbox" id="entF" ${entF?"checked":""}> Anmäld den här veckan</label>`:""}</div>
   <p class="legend"><span class="idle y" aria-hidden="true">!</span> inget lopp förra veckan <span class="idle r" aria-hidden="true">!</span> inget på 10 veckor${Object.keys(ENT).length?` <span class="entered" aria-hidden="true">✓</span> anmäld den här veckan`:""}</p>
-  <div class="tbl mkt"><table><thead><tr>${th("name","Löpare")}<th>Nivå</th>${th("price","Pris")}<th>Ändring</th>${th("form","Form","Snitt de senaste 3 tävlingsveckorna")}<th title="Poäng de senaste 6 veckorna de tävlade">Senaste 6 tävlingsveckorna</th>${th("avg","Per vecka","Snitt de senaste 5 tävlingsveckorna")}${th("total","Poäng")}${th("starts","Starter")}<th></th></tr></thead><tbody id="mrows">
+  <div class="tbl mkt"><table><thead><tr><th class="mk-who"><button data-sort="name">Löpare${sortKey==="name"?(sortDir<0?" ↓":" ↑"):""}</button><span aria-hidden="true"> · </span><button data-sort="price">Pris${sortKey==="price"?(sortDir<0?" ↓":" ↑"):""}</button></th><th>Nivå</th><th>Ändring</th>${th("form","Form","Snitt de senaste 3 tävlingsveckorna")}<th title="Poäng de senaste 6 veckorna de tävlade">Senaste 6 tävlingsveckorna</th>${th("avg","Per vecka","Snitt de senaste 5 tävlingsveckorna")}${th("total","Poäng")}${th("starts","Starter")}<th></th></tr></thead><tbody id="mrows">
   ${marketBody(rows)}
   </tbody></table></div>
   <p id="mmore">${moreBtn(rows)}</p></section>
@@ -2945,8 +3009,11 @@ function launchTick(){
      bar (6d 02:37:37); the hours only when there is less than a day left */
   const el=document.getElementById("hclock");if(!el)return;
   const now=Date.now();let ms=0;
-  for(let i=0;i<D.rounds.length;i++){const rd=D.rounds[i];if(rd.skip||rd.wait)continue;const at=lockAt(i);if(at>now){ms=at-now;break}}
-  if(ms<=0){el.hidden=true;return}
+  let nr=-1;for(let i=0;i<D.rounds.length;i++){const rd=D.rounds[i];if(rd.skip||rd.wait)continue;const at=lockAt(i);if(at>now){ms=at-now;nr=i;break}}
+  const lb=document.getElementById("tbLabel");
+  if(ms<=0){el.hidden=true;if(lb)lb.textContent="Fantasy Orientering";return}
+  /* the label says what the clock counts to: the season's first round, or the next round's lock */
+  if(lb){const played=nr>LIVE&&D.rounds.slice(LIVE,nr).some(x=>!x.skip&&!x.wait&&!x.beta);const t=nr>=LIVE&&!played?"Säsongen startar om":"Laget låses om";if(lb.textContent!==t)lb.textContent=t}
   const d=Math.floor(ms/864e5),p=n=>String(n).padStart(2,"0"),hms=`${p(Math.floor(ms/36e5)%24)}:${p(Math.floor(ms/6e4)%60)}:${p(Math.floor(ms/1e3)%60)}`,txt=d?`${d}d ${hms}`:hms;
   if(!el.firstChild)el.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5" fill="currentColor"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg><span></span>';
   const s=el.querySelector("span");if(s.textContent!==txt)s.textContent=txt;
@@ -3091,11 +3158,37 @@ const NEWS=[
   ["2026-11-02","Medaljer på profilen","Alla betatestare har fått kompassmedaljen. Välj under Profil → Medaljer om den ska synas bredvid ditt namn i ligorna."],
   ["2026-11-02","Bjud in en kompis","Spelet är i sluten beta. Vill du att någon ska vara med? Hör av dig så skickar vi en inbjudningskod."],
   ["2026-11-01","SM-finalerna räknas","A- och B-finaler från SM räknas nu som ett lopp, med B-finalen placerad efter A-finalen."]];
+/* news: kept in the database so admins can publish from the site; the list above is only the fallback until it loads */
+let newsDb=null,newsF={title:"",body:"",day:""},newsBusy=false,newsMsg="";
+const newsList=()=>newsDb?newsDb.map(n=>[n.day,n.title,n.body,null,n.id]):NEWS;
+async function loadNews(){if(!cloud.sb)return;try{const q=await cloud.sb.from("news").select("id,day,title,body").order("day",{ascending:false}).order("id",{ascending:false}).limit(30);if(!q.error){newsDb=q.data||[];if(tab==="home"||tab==="profile")render()}}catch(e){}}
+async function publishNews(){
+  if(newsBusy)return;const f={title:newsF.title.trim(),body:newsF.body.trim(),day:newsF.day||D.asof||new Date().toISOString().slice(0,10)};
+  if(f.title.length<2){newsMsg="Skriv en rubrik.";render();return}
+  newsBusy=true;newsMsg="Publicerar…";render();
+  const q=await cloud.sb.from("news").insert(f);newsBusy=false;
+  if(q.error){newsMsg="Kunde inte publicera. Försök igen."}else{newsF={title:"",body:"",day:""};newsMsg="Publicerad. Den syns på startsidan direkt.";await loadNews()}
+  render();
+}
+async function deleteNews(id){const q=await cloud.sb.from("news").delete().eq("id",id);newsMsg=q.error?"Kunde inte ta bort nyheten.":"Nyheten är borttagen.";await loadNews();render()}
+function adminNewsCard(){
+  const today=new Date().toISOString().slice(0,10);
+  return `<div class="card admin"><h3>Admin · nyheter</h3>
+   <p class="note" style="margin:0 0 12px">Publiceras direkt på startsidan för alla. Ingen datauppdatering behövs.</p>
+   <div class="field"><label for="nwTitle">Rubrik</label><input class="name" id="nwTitle" maxlength="80" value="${esc(newsF.title)}" autocomplete="off"></div>
+   <div class="field"><label for="nwBody">Text</label><textarea class="name" id="nwBody" maxlength="600" rows="3">${esc(newsF.body)}</textarea></div>
+   <div class="field"><label for="nwDay">Datum</label><input class="name" type="date" id="nwDay" value="${esc(newsF.day||today)}"></div>
+   <div class="row" style="margin-top:8px"><button class="btn on" id="nwSend" ${newsBusy?"disabled":""}>Publicera</button>${newsMsg?`<span class="note">${esc(newsMsg)}</span>`:""}</div>
+   <h4>Publicerade</h4><div class="adm-list">${(newsDb||[]).map(n=>`<div class="adm-row"><div><b>${esc(n.title)}</b> <span class="sub">${esc(dshort(n.day))}</span></div><button class="btn quiet" data-newsdel="${n.id}">Ta bort</button></div>`).join("")||'<p class="note">Inga nyheter än.</p>'}</div></div>`;
+}
+document.addEventListener("input",e=>{const t=e.target;if(t.id==="nwTitle")newsF.title=t.value;else if(t.id==="nwBody")newsF.body=t.value;else if(t.id==="nwDay")newsF.day=t.value});
+document.addEventListener("click",e=>{const t=e.target.closest("#nwSend,[data-newsdel]");if(!t||!adminOn())return;if(t.id==="nwSend")publishNews();else deleteNews(+t.dataset.newsdel)});
 /* the latest game week with any results */
 function lastScoredRound(){for(let r=E.R-1;r>=0;r--){let any=false;for(let i=0;i<E.N&&!any;i++)if(E.starts[r][i])any=true;if(any)return r}return -1}
 function seasonTop(k){const last=lastScoredRound();if(last<LIVE)return [];const tot=new Float64Array(E.N);for(let r=LIVE;r<=last;r++)for(let i=0;i<E.N;i++)tot[i]+=E.pts[r][i];
   const a=[];for(let i=0;i<E.N;i++)if(tot[i]>0)a.push([i,tot[i]]);return a.sort((x,y)=>y[1]-x[1]).slice(0,k)}
 function topList(L,empty){return L.length?`<ol class="hm-top">${L.map(([i,p],k)=>`<li><span class="hm-n">${k+1}</span>${avatar(i,"sm")}<span class="hm-who"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button><span class="sub">${esc(clubOf(i))} · ${esc(D.runners[i].k||"")}</span></span><b class="hm-p">${fp(p)}<small>p</small></b></li>`).join("")}</ol>`:`<p class="note" style="margin:0">${empty}</p>`}
+function nextPlayed(r){for(let q=r+1;q<D.rounds.length;q++){const x=D.rounds[q];if(!x.skip&&!x.wait)return q}return -1}
 function homeView(){
   const r=R(),last=lastScoredRound(),wk=last>=0?E.roundBest(last,5):[],yr=seasonTop(5);
   if(cloud.uid&&!leagueRows.GLOBAL&&!homeView.asked){homeView.asked=true;fetchGlobal().then(()=>{if(tab==="home")render()})}
@@ -3103,28 +3196,33 @@ function homeView(){
   const greet=dbOk&&mgrName?`Hej ${esc(mgrName.split(" ")[0])}!`:"Hem";
   const longDate=d=>{const x=new Date(d+"T12:00:00");return x.getDate()+" "+["januari","februari","mars","april","maj","juni","juli","augusti","september","oktober","november","december"][x.getMonth()]+" "+x.getFullYear()};
   const first=(mgrName||"").trim().split(/\s+/)[0],rd=D.rounds[r],n=plan.squad.length,saved=lock&&lock.round===r;
+  const nx=nextPlayed(r);
   const status=done()?"Säsongen är slut. Tack för att du spelade!"
+    :rd.skip?(nx>=0?`Ingen spelvecka just nu. ${esc(rdName(D.rounds[nx]))} låses ${esc(lockText(nx))}, och fram till dess kan du byta fritt.`:"Ingen spelvecka just nu.")
     :hasStarted(r)?`${esc(rdName(rd))} pågår. Följ hur dina löpare går under Poäng.`
     :n<D.squad?`Du har valt ${n} av ${D.squad} löpare till ${esc(rdThe(rd))}. Truppen låses ${esc(lockText(r))}.`
     :saved?`Ditt lag är klart för ${esc(rdThe(rd))}. Det låses ${esc(lockText(r))}, fram till dess kan du byta.`
     :`Ditt lag är fullt men inte sparat än. Det låses ${esc(lockText(r))}.`;
   return `<section class="hm-hero" aria-labelledby="hmT"><picture class="hm-img"><source media="(min-width:700px)" srcset="img/hem-kontroll-2000.jpg"><img src="img/hem-kontroll-1100.jpg" alt="" decoding="async" fetchpriority="high"></picture>
    <div class="hm-txt"><span class="hm-k">${done()?"Säsong 2026/27":esc(rdName(rd))+" · "+esc(dshort(rd.start))+" – "+esc(dshort(rd.end))}</span><h2 id="hmT">${first?"Hej "+esc(first)+"!":"Välkommen!"}</h2><p class="hm-lead">${status}</p>
-    <div class="hm-cta"><button class="btn on" data-tab="team">${n<D.squad?"Välj din trupp":"Till ditt lag"}</button><button class="btn" data-tab="rounds">Dina poäng</button></div></div></section>
-  ${liveCard()}${recapCard()}${rivalCard()}
+    <div class="hm-cta"><button class="btn on" data-tab="team">${n<D.squad?(rd.skip?"Förbered din trupp":"Välj din trupp"):"Till ditt lag"}</button><button class="btn" data-tab="rounds">Dina poäng</button></div></div></section>
+  ${liveCard()}${recapCard()}
+  <div class="card hm-news"><span class="eyebrow">Nytt i spelet</span><h3>Nyheter</h3>${newsList().slice(0,newsAll?8:3).map(([d,t,x])=>`<div class="hm-ni"><span class="hm-d">${dshort(d)}</span><div><b>${esc(t)}</b><p>${esc(x)}</p></div></div>`).join("")}${newsList().length>3?`<button class="btn more" data-newsall="1">${newsAll?"Visa färre":"Fler nyheter →"}</button>`:""}</div>
+  ${rivalCard()}
   ${done()?"":raceCards(r)}
-  <div class="grid2 hm-grid">
-   <div class="card"><span class="eyebrow">${last>=0?esc(rdName(D.rounds[last])):"Veckans poäng"}</span><h3 style="margin:2px 0 12px">Veckans högsta poäng</h3>${topList(wk,"Inga resultat än den här veckan.")}</div>
-   <div class="card"><span class="eyebrow">Säsongen 2026/27</span><h3 style="margin:2px 0 12px">Årets högsta poäng</h3>${topList(yr,"Säsongens första poäng kommer efter första spelveckan.")}</div>
-  </div>
-  <div class="card hm-lg"><div class="ev" style="border:0;padding:0 0 10px;align-items:center"><div><span class="eyebrow">Topp 5</span><h3 style="margin:2px 0 0">Årets manager</h3></div><button class="btn" data-lgopen="GLOBAL">Hela tabellen →</button></div>
+  <div class="card hm-lg"><div class="ev" style="border:0;padding:0 0 10px;align-items:center"><div><span class="eyebrow">Topp 5</span><h3 style="margin:2px 0 0">Årets manager</h3></div><button class="btn more" data-lgopen="GLOBAL">Hela tabellen →</button></div>
    ${top.length?`<div class="lgl" role="table" aria-label="Årets manager, topp 5">${top.map((m,k)=>`<div class="lgl-r ${m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="GLOBAL|${esc(m.id)}" tabindex="0"><span class="pl" role="cell">${m.rank}</span><span class="tm" role="cell">${mgrDot(m)}<span><b class="nmb"><span class="nmt">${esc(m.name)}</span>${featTag(m.id)}</b>${m.team&&m.mgr!==m.name?`<span class="sub">${esc(m.mgr)}${m.id===cloud.uid?" · du":""}</span>`:m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span><span class="n" role="cell"><b>${fp(m.t)}p</b></span></div>`).join("")}</div>`:`<p class="note" style="margin:0">Tabellen fylls på när den första omgången är spelad.</p>`}</div>
+  <section class="hm-rail" aria-label="Topplistor">
+   <div class="hm-card"><span class="eyebrow">${last>=0?esc(rdName(D.rounds[last])):"Veckans poäng"}</span><h3>Veckans högsta poäng</h3>${topList(wk,"Inga resultat än den här veckan.")}</div>
+   <div class="hm-card"><span class="eyebrow">Säsongen 2026/27</span><h3>Årets högsta poäng</h3>${topList(yr,"Säsongens första poäng kommer efter första spelveckan.")}</div>
   ${(()=>{const d=ownData();if(!d||d.n<3)return "";const top=(arr,n)=>Array.from(arr,(v,i)=>[i,v]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]||a[0]-b[0]).slice(0,n);
     const li=L=>`<ol class="hm-top">${L.map(([i,v],k)=>`<li><span class="hm-n">${k+1}</span>${avatar(i,"sm")}<span class="hm-who"><button class="who" data-prof="${i}">${esc(nameOf(i))}</button><span class="sub">${esc(clubOf(i))} · ${esc(D.runners[i].k||"")}</span></span><b class="hm-p">${Math.round(100*v/d.n)}<small>%</small></b></li>`).join("")}</ol>`;
-    return `<div class="grid2 hm-grid"><div class="card"><span class="eyebrow">${esc(rdName(D.rounds[d.r]))} · ${d.n} lag</span><h3 style="margin:2px 0 12px">Mest valda löpare</h3>${li(top(d.own,5))}</div>
-      <div class="card"><span class="eyebrow">${esc(rdName(D.rounds[d.r]))} · ${d.n} lag</span><h3 style="margin:2px 0 12px">Mest boostade</h3>${li(top(d.boost,5))}</div></div>`})()}
-  <div class="card hm-news"><span class="eyebrow">Nytt i spelet</span><h3 style="margin:2px 0 6px">Nyheter</h3>${NEWS.slice(0,5).map(([d,t,x])=>`<div class="hm-ni"><span class="hm-d">${dshort(d)}</span><div><b>${esc(t)}</b><p>${esc(x)}</p></div></div>`).join("")}</div>`;
+    return `<div class="hm-card"><span class="eyebrow">${esc(rdName(D.rounds[d.r]))} · ${d.n} lag</span><h3>Mest valda löpare</h3>${li(top(d.own,5))}</div>
+      <div class="hm-card"><span class="eyebrow">${esc(rdName(D.rounds[d.r]))} · ${d.n} lag</span><h3>Mest boostade</h3>${li(top(d.boost,5))}</div>`})()}
+  </section>
+`;
 }
+let newsAll=false;
 function hero(r){
   const rd=D.rounds[r],ms=lockAt(r)-Date.now(),d=Math.ceil(ms/864e5),u=comps(r),first=u[0];
   const title=first?esc(first.n.replace(/:.*/,"").replace(/,.*/,"")):"Week of "+dshort(rd.start);
@@ -3483,7 +3581,7 @@ function buildDemo(){
   return true;
 }
 const mgrHue=id=>hsh(String(id))%360;
-const mgrDot=(m,big)=>m.av?`<span class="mdot ph${big?" big":""}" aria-hidden="true"><img src="${esc(avPublic(m.av))}" alt="" loading="lazy" decoding="async"></span>`:`<span class="mdot${big?" big":""}" style="--h:${mgrHue(m.id)}" aria-hidden="true">${esc((m.name||"M").slice(0,1).toUpperCase())}</span>`;
+const mgrDot=(m,big)=>m.av?`<span class="mdot ph${big?" big":""}" aria-hidden="true"><img src="${esc(avPublic(m.av))}" alt="" loading="lazy" decoding="async"></span>`:`<span class="mdot t${mgrHue(m.id)%4}${big?" big":""}" aria-hidden="true">${esc((m.name||"M").slice(0,1).toUpperCase())}</span>`;
 const plW=list=>Math.ceil(Math.max(...list.map(([a,b])=>String(a).length*10.2+(b===undefined?0:String(b).length*8.2+10.5)))+3);
 /* the manager's own name on its own line under a team name (nothing when the manager has inget lag name) */
 const subName=m=>m.team&&m.mgr?`<span class="mgrline">${esc(m.mgr)}</span>`:"";
@@ -3515,7 +3613,7 @@ function leagueTable(code,top){
   return `<div class="lgl" role="table" aria-label="Tabell" style="--plw:${plW(rows.map(m=>[m.rank,wrank[m.id]||"–"]))}px">
    <div class="lgl-h" role="row"><span role="columnheader"><span aria-label="Placering">#</span></span><span role="columnheader">Lag</span><span role="columnheader">Vecka${live?' <i class="lgl-live" title="Live"></i>':""}</span><span role="columnheader">Total</span></div>
    ${rows.map((m,k)=>`${code==="GLOBAL"&&k===20?'<div class="lgl-gap" aria-hidden="true">⋯</div>':""}<div class="lgl-r ${m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="${esc(code)}|${esc(m.id)}" tabindex="0">
-     <span class="pl" role="cell">${m.rank}<small>(${wrank[m.id]||"–"})</small></span>
+     <span class="pl" role="cell">${m.rank}<small title="Placering den här veckan" aria-label="vecka ${wrank[m.id]||"–"}">v${wrank[m.id]||"–"}</small></span>
      <span class="tm" role="cell">${mgrDot(m)}<span><b class="nmb"><span class="nmt">${esc(m.name)}</span>${featTag(m.id)}</b>${m.team&&m.mgr!==m.name?`<span class="sub">${esc(m.mgr)}${m.id===cloud.uid?" · du":""}</span>`:m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span>
      <span class="n" role="cell">${ptsOf(m,cur)!==null?fp(ptsOf(m,cur))+"p":"–"}</span><span class="n" role="cell"><b>${fp(m.t)}p</b></span></div>`).join("")}
   </div>`;
@@ -3713,11 +3811,11 @@ function weekCard(){
       <span class="pl" role="cell">${x.rank}</span>
       <span class="tm" role="cell">${mgrDot(x.m)}<span><b class="nmb"><span class="nmt">${esc(x.m.name)}</span>${featTag(x.m.id)}</b>${x.m.team&&x.m.mgr!==x.m.name?`<span class="sub">${esc(x.m.mgr)}${x.m.id===cloud.uid?" · du":""}</span>`:x.m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span>
       <span class="n" role="cell"><b>${fp(x.p)}p</b></span><span class="n" role="cell">${fp(st.rows.find(y=>y.id===x.m.id).t)}p</span></div>`).join("")}
-    </div>${all.length>5?`<div class="lg-actions" style="margin-top:10px"><button class="btn" data-wmall="1">${wmAll?"Visa topp 5":"Visa topp 20"}</button></div>`:""}`:`<p class="note" style="margin:6px 0 0">Ingen hade en trupp den här omgången.</p>`}</div>`;
+    </div>${all.length>5?`<div class="lg-actions" style="margin-top:10px"><button class="btn more" data-wmall="1">${wmAll?"Visa topp 5":"Visa topp 20 →"}</button></div>`:""}`:`<p class="note" style="margin:6px 0 0">Ingen hade en trupp den här omgången.</p>`}</div>`;
 }
 function globalCard(){
   const rows=leagueRows.GLOBAL||[],st=standings("GLOBAL"),me=st.rows.find(m=>m.id===cloud.uid);
-  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><span class="eyebrow">Topp 5 totalt</span><h3 style="margin:2px 0 0">Årets manager</h3>${me&&st.cur!==undefined?`<div class="sub">Du är #${me.rank} av ${rows.length}</div>`:""}</div>${st.cur!==undefined&&rows.length?`<button class="btn on" data-lgopen="GLOBAL">Öppna topplistan</button>`:""}</div>${leagueRows.GLOBAL&&st.cur!==undefined&&rows.length?leagueTable("GLOBAL",5):leagueTable("GLOBAL")}</div>`;
+  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><span class="eyebrow">Topp 5 totalt</span><h3 style="margin:2px 0 0">Årets manager</h3>${me&&st.cur!==undefined?`<div class="sub">Du är #${me.rank} av ${rows.length}</div>`:""}</div>${st.cur!==undefined&&rows.length?`<button class="btn more" data-lgopen="GLOBAL">Hela tabellen →</button>`:""}</div>${leagueRows.GLOBAL&&st.cur!==undefined&&rows.length?leagueTable("GLOBAL",5):leagueTable("GLOBAL")}</div>`;
 }
 function leaguesView(){
   if(dbOk&&lgOpen&&(myLeagues.includes(lgOpen)||lgOpen==="GLOBAL"||lgOpen==="DEMO"&&adminOn()&&leagueRows.DEMO))return leagueDetail(lgOpen);
@@ -4032,7 +4130,7 @@ function adminGameCard(){
    <h4>Lägg till en tävling</h4>
    <div class="row"><input class="name" id="ovrAdd" placeholder="Tävlingslänk eller tävlings-id" value="${esc(ovrAdd)}" inputmode="url" autocomplete="off"><button class="btn on" id="ovrAddBtn" ${ovrBusy?"disabled":""}>Lägg till</button></div>
    ${added.length?`<div class="adm-list">${added.map(o=>`<div class="adm-row"><div><b>${esc(o.label||"Tävling "+o.ref)}</b> <span class="sub">Tillagd · räknas som stor</span></div><button class="btn" data-rcadd="${esc(o.ref)}">Ta bort</button></div>`).join("")}</div>`:""}
-   ${ovrMsg?`<p class="note" style="margin:10px 0 0">${esc(ovrMsg)}</p>`:""}</div>${adminModCard()}`;
+   ${ovrMsg?`<p class="note" style="margin:10px 0 0">${esc(ovrMsg)}</p>`:""}</div>${adminNewsCard()}${adminModCard()}`;
 }
 /* admin: requests to leave a runner out, hidden runners, and managers' names */
 function adminModCard(){
@@ -4341,6 +4439,7 @@ document.addEventListener("click",ev=>{
   if(d.rival!==undefined){try{d.rival?localStorage.setItem(RIVK,d.rival):localStorage.removeItem(RIVK)}catch(err){}if(mgrOpen)managerSheet(mgrOpen.code,mgrOpen.id,mgrOpen.view);render();return}
   /* from a runner card: the contact form, filled in for that runner */
   if(d.rmfor){const i=+d.rmfor;rmF={kind:"runner",runner:nameOf(i)+", "+clubOf(i)+" ("+D.runners[i].k+")",msg:"",contact:""};rmStat="";infoSheet("contact");return}
+  if(d.newsall){newsAll=!newsAll;render();return}
   if(d.autofill){const n=autoFill();buzz(n?"ok":"warn");if(n)save();render();return}
   if(d.add!==undefined){const i=+d.add;buzz(canAddReason(i)?"warn":"ok");if(!canAddReason(i)){plan.squad.push(i);if(!Array.isArray(plan.a))plan.a=[];if(plan.a.length<AS)plan.a.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
   if(d.sell!==undefined){const i=+d.sell;buzz("tap");plan.squad=plan.squad.filter(j=>j!==i);plan.a=(plan.a||[]).filter(j=>j!==i);if(swapSel===i)swapSel=null;fixLeaders();save();render();return}
@@ -4680,7 +4779,7 @@ async function initCloud(){
     const tabLock=(name,timeout,fn)=>{const r=lockQ.then(()=>fn());lockQ=r.catch(()=>{});return r};
     cloud.sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,lock:tabLock}});
     cloud.sb.auth.onAuthStateChange((ev,session)=>{setTimeout(()=>onSession(session),0);if(ev==="PASSWORD_RECOVERY"&&!pwOpen){welcomed=true;setTimeout(pwSheet,0)}});
-    loadPhotos();
+    loadPhotos();loadNews();
   }catch(e){}
 }
 /* closed-beta gate: sign in only, no new accounts */
