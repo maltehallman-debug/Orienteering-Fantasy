@@ -2402,9 +2402,11 @@ body{font-family:var(--font);font-size:var(--ds-fs-body);color:var(--ds-ink)}
 /* ---------- colour accents ---------- */
 .up,.pos{color:var(--ds-good)!important}.dn,.neg{color:var(--ds-bad)!important}
 .livedot,.livedot::before{color:var(--ds-bad)}
-/* home on phones: the greeting is shorter so Veckans manager sits in the middle of the first screen */
-.hm-week-mgr:empty{display:none}.hm-week-mgr>.card{margin-top:0!important}
-@media (max-width:699px){.hm-img{height:clamp(96px,28vw,120px)!important}.hm-txt{margin-top:-14px!important;padding-bottom:12px!important}.hm-txt h2{font-size:32px!important;margin-bottom:12px!important}.hm-k{margin-bottom:6px!important}}
+/* home lists on phones: each card centred on the screen (not pushed to the left), the next one peeking on both sides */
+@media (max-width:699px){
+  .hm-rail{margin-left:calc(50% - 50vw)!important;margin-right:calc(50% - 50vw)!important;padding:0 16px 6px!important;scroll-padding:0 16px;gap:10px!important}
+  .hm-rail>.hm-card{flex:0 0 calc(100vw - 32px)!important;scroll-snap-align:center!important}
+}
 </style>
 </head>
 <body>
@@ -3457,7 +3459,6 @@ function homeView(){
   return `<section class="hm-hero" aria-labelledby="hmT"><picture class="hm-img"><source media="(min-width:700px)" srcset="img/hem-kontroll-2000.jpg"><img src="img/hem-kontroll-1100.jpg" alt="" decoding="async" fetchpriority="high"></picture>
    <div class="hm-txt"><span class="hm-k">${done()||rd.skip?"Säsong 2026/27":esc(rdName(rd))+" · "+esc(dshort(rd.start))+" – "+esc(dshort(rd.end))}</span><h2 id="hmT">${first?"Hej "+esc(first)+"!":"Välkommen!"}</h2>
     <div class="hm-cta"><button class="btn on" data-tab="team">${n<D.squad?(rd.skip?"Förbered din trupp":"Välj din trupp"):"Till ditt lag"}</button><button class="btn" data-tab="rounds">Dina poäng</button></div></div></section>
-  <div class="hm-week-mgr">${isLive()?weekCard(3):""}</div>
   ${liveCard()}${recapCard()}
   <div class="card hm-news"><span class="eyebrow">Nytt i spelet</span><h3>Nyheter</h3>${newsList().slice(0,newsAll?8:3).map(([d,t,x])=>`<div class="hm-ni"><span class="hm-d">${dshort(d)}</span><div><b>${esc(t)}</b><p>${esc(x)}</p></div></div>`).join("")}${newsList().length>3?`<button class="btn more" data-newsall="1">${newsAll?"Visa färre":"Fler nyheter →"}</button>`:""}</div>
   ${rivalCard()}
@@ -4051,15 +4052,15 @@ function inviteBanner(){
 /* Veckans manager: everyone's points in one round, the top 20 (and you, if you are further down). Arrows step
    back through the rounds that have been played. */
 let wmR=null,wmAll=false;
-function weekCard(nTop){const N=nTop||5;
+function weekCard(){
   const st=standings("GLOBAL"),rs=st.rs;
   /* before any round has been played the card is still there, saying when it fills */
   if(!leagueRows.GLOBAL||st.cur===undefined)return `<div class="card global" style="margin-top:12px"><span class="eyebrow">Topp 20 i omgången</span><h3 style="margin:2px 0 6px">Veckans manager</h3><p class="note" style="margin:0">${!leagueRows.GLOBAL?"Laddar topplistan…":`De 20 managers som tar flest poäng i omgången. Listan fylls när ${rdThe(D.rounds[LIVE])} låses ${lockText(LIVE)}.`}</p></div>`;
   const r=st.cur,live=!isFinal(r);
   const all=st.rows.filter(m=>ptsOf(m,r)!==null).map(m=>({m,p:ptsOf(m,r)})).sort((a,b)=>b.p-a.p||a.m.name.localeCompare(b.m.name,"sv"));
   all.forEach((x,k)=>{x.rank=k>0&&all[k-1].p===x.p?all[k-1].rank:k+1});
-  const me=all.find(x=>x.m.id===cloud.uid);let rows=all.slice(0,wmAll?20:N);if(wmAll&&me&&!rows.includes(me))rows=rows.concat([me]);
-  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><span class="eyebrow">Topp ${wmAll?20:N} · ${esc(rdName(D.rounds[r]))}</span><h3 style="margin:2px 0 0">Veckans manager</h3></div>${all.length>N?`<button class="btn more" data-wmall="1">${wmAll?"Topp "+N:"Topp 20 →"}</button>`:""}</div>
+  const me=all.find(x=>x.m.id===cloud.uid);let rows=all.slice(0,wmAll?20:5);if(wmAll&&me&&!rows.includes(me))rows=rows.concat([me]);
+  return `<div class="card global" style="margin-top:12px"><div class="ev" style="border:0;padding:0"><div><span class="eyebrow">Topp ${wmAll?20:5} · ${esc(rdName(D.rounds[r]))}</span><h3 style="margin:2px 0 0">Veckans manager</h3></div>${all.length>5?`<button class="btn more" data-wmall="1">${wmAll?"Topp 5":"Topp 20 →"}</button>`:""}</div>
     ${all.length?`<div class="lgl" role="table" aria-label="Veckans manager" style="--plw:${plW(rows.map(x=>[x.rank]))}px"><div class="lgl-h" role="row"><span role="columnheader"><span aria-label="Placering">#</span></span><span role="columnheader">Lag</span><span role="columnheader">Vecka${live?' <i class="lgl-live" title="Live"></i>':""}</span><span role="columnheader">Total</span></div>
     ${rows.map((x,k)=>`${k===20?'<div class="lgl-gap" aria-hidden="true">⋯</div>':""}<div class="lgl-r ${x.m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="GLOBAL|${esc(x.m.id)}" tabindex="0">
       <span class="pl" role="cell">${x.rank}</span>
