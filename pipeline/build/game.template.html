@@ -2458,6 +2458,7 @@ body{font-family:var(--font);font-size:var(--ds-fs-body);color:var(--ds-ink)}
    a little further down */
 .hm-hero{background:linear-gradient(180deg,#fff 0%,#fff 78%,rgba(255,255,255,0) 100%)!important;padding-bottom:44px!important;margin-bottom:-30px!important}
 @media (min-width:700px){.hm-hero{padding-bottom:60px!important;margin-bottom:-40px!important}}
+.fbdg svg.cm-mini{width:17px;height:17px;filter:none}
 </style>
 </head>
 <body>
@@ -3826,13 +3827,15 @@ const BDG_ICON={
   compass:c=>`<circle cx="32" cy="32" r="12" fill="none" stroke="${c}" stroke-width="3"/><path d="m36.5 27.5-3 6-6 3 3-6z" fill="${c}"/>`};
 /* the beta badge is the compass medal: navy medal with a compass rose and needle, "BETA", on a yellow ribbon.
    mini = the small one next to a name in the league tables */
-function compassMedal(mini){const g="cm"+Math.random().toString(36).slice(2,7);
-  const ticks=mini?"":[0,1,2,3,4,5,6,7].map(k=>{const a=k*Math.PI/4;return `<line x1="${(24*Math.cos(a)).toFixed(1)}" y1="${(-4+24*Math.sin(a)).toFixed(1)}" x2="${(27*Math.cos(a)).toFixed(1)}" y2="${(-4+27*Math.sin(a)).toFixed(1)}" stroke="#ffe74d" stroke-width="${k%2?1:2}"/>`}).join("");
-  return `<svg class="${mini?"tk-mini cm-mini":"md md-c"}" viewBox="-40 -42 80 94" aria-hidden="true"><defs><radialGradient id="${g}" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#1f6aa5"/><stop offset="1" stop-color="#002a4a"/></radialGradient></defs>
-   <path d="M-22 18-32 48-20 43-14 50-4 22zM22 18 32 48 20 43 14 50 4 22z" fill="#ffe74d" stroke="#c9a400" stroke-width=".8"/><path d="M-26 30-29 39M26 30 29 39" stroke="#003c68" stroke-width="3"/>
-   <circle cy="-4" r="34" fill="#ffe74d"/><circle cy="-4" r="30" fill="url(#${g})"/>${ticks}
-   <g transform="translate(0 -4) rotate(35)"><path d="M0-19 5 0H-5Z" fill="#e5484d"/><path d="M0 19 5 0H-5Z" fill="#fff"/></g><circle cy="-4" r="2.5" fill="#ffe74d"/>
-   ${mini?"":`<text y="18" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="7" letter-spacing="1.5" fill="#ffe74d">BETA</text>`}</svg>`}
+function compassMedal(mini){
+  /* flat, in the site's own look: a navy disc with a thin yellow edge, the compass O from the logo (white ring, red and
+     white needle at 35 degrees) and "BETA" on a yellow pill. The mini (next to a name) is just the disc and compass */
+  const disc=`<circle cy="-4" r="31" fill="#003c68" stroke="#ffe74d" stroke-width="2.5"/><circle cy="-4" r="19" fill="none" stroke="#fff" stroke-width="5"/>
+   <g transform="translate(0 -4) rotate(35)"><path d="M0-14 4.2 0H-4.2Z" fill="#e5484d"/><path d="M0 14 4.2 0H-4.2Z" fill="#fff"/></g>`;
+  if(mini)return `<svg class="tk-mini cm-mini" viewBox="-34 -38 68 68" aria-hidden="true">${disc}</svg>`;
+  return `<svg class="md md-c" viewBox="-40 -42 80 94" aria-hidden="true">${disc}
+   <rect x="-21" y="21" width="42" height="15" rx="7.5" fill="#ffe74d" stroke="#003c68" stroke-width="2"/>
+   <text y="31.6" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="900" font-size="8.6" letter-spacing="1.6" fill="#003c68">BETA</text></svg>`}
 function badgeMini(b){if(b.icon==="beta")return compassMedal(true);const t=BDG_TIER[b.tier]||BDG_TIER.navy;return `<svg class="tk-mini md-mini" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="${t[1]}"/>${(BDG_ICON[b.icon]||BDG_ICON.star)(t[2])}</svg>`}
 const featB={};
 const featTag=id=>{const b=featB[id];return b?`<span class="fbdg" title="${esc(b.name)}">${badgeMini(b)}</span>`:""};
