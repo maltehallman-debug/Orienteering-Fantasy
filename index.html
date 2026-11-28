@@ -2563,6 +2563,25 @@ html.cfg-picking *{cursor:crosshair!important}
   .sqc-ctl{gap:2px!important}.sqc-ctl .boost,.sqc-ctl .sw,.sqc-ctl .rm{width:24px!important;height:24px!important;min-width:0!important;flex:none!important;padding:0!important}
   .sqc-ctl svg{width:12px!important;height:12px!important}
 }
+
+/* ---------- orienteering easter eggs ---------- */
+.egg-toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);opacity:0;z-index:9999;pointer-events:none;
+  background:#003c68;color:#fff;font:700 14px/1.3 var(--font);padding:11px 16px;border-radius:14px;box-shadow:0 14px 30px -12px rgba(0,30,60,.55);max-width:min(92vw,420px);text-align:center;
+  transition:opacity .25s ease,transform .3s cubic-bezier(.23,1,.32,1)}
+.egg-toast.on{opacity:1;transform:translate(-50%,0)}.egg-toast small{display:block;font-weight:500;font-size:12.5px;color:#cfe0ef;margin-top:2px}
+@media (min-width:900px){.egg-toast{bottom:28px}}
+/* the needle normally drifts (ocSpin); oriented, it swings round once and settles on north (the needle is drawn at 35°) */
+.logo.north .ocn{animation:ocNorth 1.6s cubic-bezier(.34,1.56,.64,1) forwards!important}
+@keyframes ocNorth{from{transform:rotate(0)}to{transform:rotate(-395deg)}}
+@media (prefers-reduced-motion:reduce){.logo.north .ocn{animation:none!important;transform:rotate(-35deg)}}
+.egg-night{position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:0;transition:opacity .6s ease;
+  background:radial-gradient(circle at var(--x,50%) var(--y,40%),rgba(255,248,214,.10) 0,rgba(255,248,214,.04) 70px,rgba(2,10,20,.92) 150px,rgba(2,10,20,.96) 100%)}
+.egg-night.on{opacity:1}
+.egg-ctl{display:flex;align-items:center;gap:6px;margin:6px auto 18px;padding:6px 10px;border:0;background:none;color:var(--ds-ink-3,#8a96a3);font:700 11px/1 var(--font);letter-spacing:.06em;cursor:pointer;opacity:.55;border-radius:10px;-webkit-tap-highlight-color:transparent}
+.egg-ctl svg{width:20px;height:20px}
+.egg-ctl.punch{animation:eggPunch .45s cubic-bezier(.23,1,.32,1)}
+@keyframes eggPunch{0%{transform:scale(1)}30%{transform:scale(.86)}100%{transform:scale(1)}}
+@media (hover:hover) and (pointer:fine){.egg-ctl:hover{opacity:1}}
 </style>
 </head>
 <body>
@@ -2604,6 +2623,7 @@ html.cfg-picking *{cursor:crosshair!important}
 <div class="course" id="course"></div>
 <main id="view"></main>
 <nav class="bigpills" aria-label="Regler, villkor och kontakt"><button type="button" data-infomenu="1">Regler och villkor <i>↗</i></button><button type="button" data-info="contact">Kontakt <i>↗</i></button><button type="button" class="bp-wide" data-tab="leagues">Ligor <i>↗</i></button></nav>
+<button type="button" class="egg-ctl" data-eggctl="1" aria-label="Kontroll 31"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 22V3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6 4h13v11H6z" fill="#fff" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M19 4v11H6z" fill="#f47a20"/></svg><span>31</span></button>
 
 </div>
 <nav class="tabbar" id="tabbar" aria-label="Sektioner"></nav>
@@ -5005,6 +5025,31 @@ const buzz=(()=>{
     if(canVib){try{navigator.vibrate(p.length>1?p:p[0])}catch(e){}return}
     tick();if(p.length>1)setTimeout(tick,p[0]+p[1])}
 })();
+
+/* ---------- orienteering easter eggs: nothing shows until someone finds them ---------- */
+const egg=(()=>{let el=null,t=null,ac=null;
+  const toast=(msg,sub)=>{if(!el){el=document.createElement("div");el.className="egg-toast";el.setAttribute("role","status");document.body.appendChild(el)}
+    el.innerHTML=esc(msg)+(sub?`<small>${esc(sub)}</small>`:"");el.classList.add("on");clearTimeout(t);t=setTimeout(()=>el.classList.remove("on"),3200)};
+  /* the SI unit's beep: two short high tones */
+  const pip=()=>{try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const now=ac.currentTime;
+    [0,.12].forEach(d=>{const o=ac.createOscillator(),g=ac.createGain();o.type="square";o.frequency.value=2730;g.gain.setValueAtTime(0,now+d);g.gain.linearRampToValueAtTime(.05,now+d+.005);g.gain.setValueAtTime(.05,now+d+.07);g.gain.linearRampToValueAtTime(0,now+d+.08);o.connect(g).connect(ac.destination);o.start(now+d);o.stop(now+d+.09)})}catch(e){}};
+  /* 1: tap the compass O in the logo five times and the map is oriented: the needle swings to north */
+  let taps=[];
+  document.addEventListener("click",e=>{const o=e.target.closest&&e.target.closest(".logo .ocw");if(!o)return;const now=Date.now();taps=taps.filter(x=>now-x<2500);taps.push(now);
+    if(taps.length>=5){taps=[];const lg=o.closest(".logo");lg.classList.remove("north");void lg.offsetWidth;lg.classList.add("north");toast("Kartan är orienterad","Norr är uppåt. Nu kan du börja springa.");setTimeout(()=>lg.classList.remove("north"),6000)}},true);
+  /* 2: search for "pannlampa" or "natt" and it is a night race: the page goes dark and a head torch follows you */
+  let nightOn=false;
+  const night=()=>{if(nightOn)return;nightOn=true;const n=document.createElement("div");n.className="egg-night";document.body.appendChild(n);
+    const mv=e=>{const p=e.touches?e.touches[0]:e;n.style.setProperty("--x",p.clientX+"px");n.style.setProperty("--y",p.clientY+"px")};
+    addEventListener("pointermove",mv,{passive:true});addEventListener("touchmove",mv,{passive:true});
+    requestAnimationFrame(()=>n.classList.add("on"));toast("Nattorientering","Pannlampan är tänd. Följ ljuset.");
+    setTimeout(()=>{n.classList.remove("on");setTimeout(()=>{n.remove();removeEventListener("pointermove",mv);removeEventListener("touchmove",mv);nightOn=false},700)},9000)};
+  /* 3: the control at the bottom of every page: punch it */
+  let punched=0;
+  document.addEventListener("click",e=>{const c=e.target.closest&&e.target.closest("[data-eggctl]");if(!c)return;pip();c.classList.remove("punch");void c.offsetWidth;c.classList.add("punch");punched++;
+    toast(punched===1?"Kontroll 31 stämplad":"Redan stämplad",punched===1?"Bra vägval. Nu är det bara att springa i mål.":"Två stämplar på samma kontroll ger inga extra poäng.")});
+  return {toast,night};
+})();
 const toTop=()=>{if(leaving)return;try{window.scrollTo(0,0)}catch(e){}};
 document.addEventListener("click",ev=>{
   const g=ev.target.closest("[data-ctrl]");
@@ -5119,7 +5164,7 @@ document.addEventListener("keydown",ev=>{
   if((ev.key==="Enter"||ev.key===" ")&&ev.target.matches&&ev.target.matches("[data-ctrl]")){ev.preventDefault();ev.target.dispatchEvent(new MouseEvent("click",{bubbles:true}))}
 });
 document.addEventListener("input",ev=>{const t=ev.target;
-  if(t.id==="q"){if(ev.isComposing)return;qRaw=t.value;shown=12;refreshMarket()}
+  if(t.id==="q"){if(ev.isComposing)return;qRaw=t.value;shown=12;refreshMarket();if(/^\s*(pannlampa|natt|nattorientering)\s*$/i.test(qRaw))egg.night()}
   if(t.id==="mgrName"){mgrName=t.value.slice(0,24);nameNote();save()}
   if(t.id==="teamName"){myTeam=t.value.slice(0,30);nameNote();save()}
   if(t.id==="rmRunner")rmF.runner=t.value.slice(0,120);
