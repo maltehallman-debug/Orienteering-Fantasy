@@ -2774,13 +2774,18 @@ let reelEnd=0;
   if(RM||/access_token|error=|join=/.test(location.href)){unc();return}
   const cv=document.createElement("canvas");cv.id="reel";cv.setAttribute("aria-hidden","true");
   const g=cv.getContext("2d");if(!g){unc();return}
-  let W=innerWidth,H=innerHeight;const dpr=Math.min(2,devicePixelRatio||1);cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  let W=innerWidth,H=innerHeight;const dpr=Math.min(2,devicePixelRatio||1);
   document.body.appendChild(cv);document.body.classList.add("reel-hold");document.documentElement.classList.remove("reel-pre");
   const T=document.getElementById("terrain"),vb=(T&&T.getAttribute("viewBox")||"0 0 1600 1000").split(" ").map(Number);
   const TP=T?[...T.querySelectorAll("path")].filter(p=>!/veg|lake/.test(p.getAttribute("class")||"")).map(p=>({p:new Path2D(p.getAttribute("d")),ix:/ix/.test(p.getAttribute("class")||"")})):[];
   const NAVY="#003c68",YEL="#ffe74d",DUR=2100,EX=1450;
   const cl=(a,b,t)=>Math.max(0,Math.min(1,(t-a)/(b-a))),eo=t=>1-Math.pow(1-t,3),eio=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-  const U=Math.min(W,H)/1080,PORT=H>W,CX=W/2,R0=150*U,CY0=H/2-(PORT?150:120)*U;
+  /* the drawing follows the canvas's real size on screen: Safari on a phone can report a window height that differs
+     from the box the canvas fills (the address bar), and a mismatch stretches everything. Measured again if it changes */
+  let U,PORT,CX,R0,CY0;
+  const fit=()=>{const r=cv.getBoundingClientRect();W=Math.max(1,r.width||innerWidth);H=Math.max(1,r.height||innerHeight);
+    cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);U=Math.min(W,H)/1080;PORT=H>W;CX=W/2;R0=150*U;CY0=H/2-(PORT?150:120)*U};
+  fit();
   const FONT='"Montserrat",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif';
   /* the logo's trophy, drawn in the mark's own 34-unit box. Its O (the ring in the cup) sits at OX,OY with radius OR:
      the compass is drawn there, so the trophy is placed and sized from the compass */
@@ -2807,6 +2812,7 @@ let reelEnd=0;
     return {x:r.left+r.width*44/88,y:r.top+r.height*42/84,R:r.width*38.2/88,lw:r.width*9.6/88}};
   let t0=0,gone=false,released=false,raf=0;
   const frame=now=>{if(gone)return;if(!t0)t0=now;const t=(now-t0)/1000;
+    if(Math.abs(cv.clientWidth-W)>1||Math.abs(cv.clientHeight-H)>1)fit();
     if(!released&&t*1000>=EX){released=true;document.body.classList.remove("reel-hold")}
     const O=oAt(),ex=eio(cl(EX/1000,DUR/1000,t));
     /* the compass flies straight into the O: the header's own compass, already drawn the same way */
