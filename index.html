@@ -3395,8 +3395,7 @@ function teamView(){
    <dl><dt>Byten</dt><dd>${!state.squad.length?"fria":t.n+" av "+D.freeTransfers+" fria"}</dd><dt>Avdrag</dt><dd class="${pen?"dn":""}">${pen?"-"+fp(pen):"inget"}</dd><dt>Kvar i banken</dt><dd class="${E.bankAfter(state,plan.squad)<0?"dn":""}">${fm(E.bankAfter(state,plan.squad))}</dd></dl>
    <div><span class="eyebrow">Chips · ett användande var</span><div style="margin-top:10px">${chipsHtml}</div></div>
    ${errs.length&&!locked?`<ul class="errs">${errs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
-   ${isLive()?(saved?`<div class="savest" id="savest"><i>✓</i><span>Sparad för ${rdThe(rd)}<small>Låses automatiskt ${lockText(r)}</small></span></div>`
-       :`<div class="savest warn" id="savest"><i>!</i><span>${plan.squad.length?"Inte sparad än":"Ingen trupp än"}<small>${errs.length&&plan.squad.length===D.squad?esc(errs[0])+(picks[r]||state.squad.length?". Din senast sparade trupp gäller tills du rättat det":""):picks[r]||state.squad.length?"Din senast sparade trupp gäller tills dess":"Sparas när alla "+D.squad+" är valda"}</small></span></div>`)
+   ${isLive()?(!saved&&errs.length&&plan.squad.length===D.squad?`<div class="savest warn" id="savest"><i>!</i><span>Inte sparad<small>${esc(errs[0])}${picks[r]||state.squad.length?". Din senast sparade trupp gäller tills du rättat det":""}</small></span></div>`:"")
      :`<button class="btn go" id="play" ${errs.length||hasStarted(r)&&!fin?"disabled":""}>Spela ${rdThe(rd)}</button>`}
    ${isLive()&&syncMsg?`<p class="note" style="margin:0;color:var(--warn)">${esc(syncMsg)}</p>`:""}
    ${fin&&state.squad.length&&!errs.length?`<button class="btn quiet" id="auto">${confirmAuto?"Bekräfta: spela alla färdiga omgångar":"Spela färdiga omgångar automatiskt med den här truppen"}</button>`:""}
