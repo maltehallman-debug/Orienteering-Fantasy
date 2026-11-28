@@ -2181,6 +2181,20 @@ select.name{appearance:none;-webkit-appearance:none;width:100%;border:1.5px soli
   .mkt .nm{line-height:1.2}
   .mkt .tier .tier-l{display:none}.mkt .tier{padding:5px 7px!important;gap:0!important}
 }
+@media (max-width:899px){
+  /* the list uses the whole width of the screen */
+  .tbl.mkt{width:100vw!important;max-width:100vw!important;margin-left:calc(50% - 50vw)!important;margin-right:0!important;border-radius:0!important;box-shadow:none!important}
+  .mkt-panel{overflow:visible!important}
+  /* the name column and the button stay put while the stats scroll */
+  .mkt td:first-child,.mkt th:first-child{position:sticky!important;left:0!important}
+  .mkt td:last-child,.mkt th:last-child{position:sticky!important;right:0!important}
+  .mkt td:first-child,.mkt th:first-child{width:min(38vw,170px)!important;min-width:min(38vw,170px)!important;padding-left:max(12px,env(safe-area-inset-left))!important}
+  .mkt .who-wrap>div{max-width:calc(min(38vw,170px) - 30px)!important}
+  .mkt .who{font-size:12.5px!important}
+  .mkt td .sub{font-size:10.5px!important;line-height:1.3}
+  .mkt td .sub.mk-club{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-2)}
+  .mkt td:last-child,.mkt th:last-child{padding-right:max(12px,env(safe-area-inset-right))!important}
+}
 </style>
 </head>
 <body>
@@ -2962,7 +2976,7 @@ function marketBody(rows){mRows=rows;
   return (rows.slice(0,shown).map(rowHtml).join("")||`<tr><td colspan="10" class="note">Inga löpare matchar. Rensa sökningen eller ett filter.</td></tr>`);
 }
 function rowHtml(x){const inS=plan.squad.includes(x.i),why=inS?"":canAddReason(x.i);
-   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><i class="glm" aria-hidden="true"></i><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub"><b class="mk-p">${fm(x.p)}</b> · ${D.runners[x.i].k} · ${esc(clubOf(x.i))}${(()=>{const o=ownPct(x.i);return o?` · ägs av ${o}%`:""})()}</div></div></div></td><td>${tierTag(x.i)}</td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
+   return `<tr class="tr-${TIERS[tierOf(x.i)][0]} ${inS?"in":""} ${justAdded===x.i?"pop":""}"><td><i class="glm" aria-hidden="true"></i><div class="who-wrap">${avatar(x.i,"sm")}<div><div class="nm"><button class="who" data-prof="${x.i}">${esc(x.n)}</button>${idleTag(x.i)}${entTag(x.i)}</div><div class="sub"><b class="mk-p">${fm(x.p)}</b> · ${D.runners[x.i].k}${(()=>{const o=ownPct(x.i);return o?` · ägs av ${o}%`:""})()}</div><div class="sub mk-club">${esc(clubOf(x.i))}</div></div></div></td><td>${tierTag(x.i)}</td><td class="${x.d>0?"up":x.d<0?"dn":""}">${x.d?fmd(x.d):"–"}</td><td>${fp(x.s.form)}</td><td>${spark(x.i,pr())}</td><td>${x.s.weeks?fp(x.avg):"–"}</td><td>${fp(x.s.total)}</td><td>${x.s.starts}</td>
    <td>${inS?`<button class="btn" data-sell="${x.i}">Sälj</button>`:`<button class="btn" data-add="${x.i}" ${why?"disabled":""} title="${esc(why)}">Köp</button>`}</td></tr>`}
 /* the runner list grows as you scroll: a marker under it loads the next runners before you reach the end, and each
    new runner rises in on its own. A button stays as a fallback where the browser cannot watch the marker. */
