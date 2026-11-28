@@ -2291,6 +2291,17 @@ th.c-total,th.c-form,th.c-avg,th.c-starts{transition:background-color .15s}
 .sd-tiles .dn b{color:#d23b3b}
 .side .fixtures{display:flex;flex-wrap:wrap;gap:6px}
 .side .chipset{margin:0}
+
+/* ===== Bottom menu: rules and terms in one list ===== */
+.im-list{display:grid;margin-top:8px}
+.im-i{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 4px;border-bottom:1px solid var(--line,#e5e9ee)}
+.im-i:last-child{border-bottom:0}
+.im-i b{font:700 15px/1.2 var(--font);color:var(--text,#0b0f14)}
+.im-i i{font-style:normal;font-size:22px;line-height:1;color:var(--navy,#003c68)}
+@media (hover:hover) and (pointer:fine){.im-i:hover b{color:var(--navy,#003c68)}}
+.im-i:focus-visible{outline:2px solid var(--navy,#003c68);outline-offset:2px;border-radius:6px}
+/* the third bottom button (Ligor) only where three fit in a row */
+@media (max-width:640px){.bigpills .bp-wide{display:none!important}}
 </style>
 </head>
 <body>
@@ -2331,8 +2342,8 @@ th.c-total,th.c-form,th.c-avg,th.c-starts{transition:background-color .15s}
 <div class="facts" id="facts" aria-live="polite"></div>
 <div class="course" id="course"></div>
 <main id="view"></main>
-<nav class="bigpills" aria-label="Genvägar"><button type="button" data-tab="rules">Regler <i>↗</i></button><button type="button" data-tab="leagues">Ligor <i>↗</i></button></nav>
-<p class="fanline"><button type="button" class="linkish" data-tab="rules">Regler</button> · <button type="button" class="linkish" data-info="terms">Villkor</button> · <button type="button" class="linkish" data-info="privacy">Integritet</button> · <button type="button" class="linkish" data-info="contact">Kontakt och anmälan</button></p>
+<nav class="bigpills" aria-label="Regler, villkor och kontakt"><button type="button" data-infomenu="1">Regler och villkor <i>↗</i></button><button type="button" data-info="contact">Kontakt <i>↗</i></button><button type="button" class="bp-wide" data-tab="leagues">Ligor <i>↗</i></button></nav>
+
 </div>
 <nav class="tabbar" id="tabbar" aria-label="Sektioner"></nav>
 <div id="modal"></div>
@@ -3819,6 +3830,12 @@ function rulesView(){
   <div class="info-row"><button class="btn" data-info="points">Så räknas poängen</button><button class="btn" data-info="more">Chips, nivåer och ligor</button><button class="btn" data-info="data">Om datan</button><button class="btn" data-info="privacy">Integritet</button><button class="btn" data-info="terms">Villkor</button><button class="btn" data-info="contact">Kontakt och anmälan</button></div>`;
 }
 /* the details live in small sheets so the rules page stays short */
+/* the bottom button: everything about the rules, the terms and the data in one small menu */
+function infoMenu(){
+  const it=(attr,l,sub)=>`<button type="button" class="im-i" ${attr}><span><b>${l}</b>${sub?`<small>${sub}</small>`:""}</span><i aria-hidden="true">›</i></button>`;
+  showSheet("infomenu","Regler och villkor",`<div class="hd"><div><h2 style="margin:0">Regler och villkor</h2></div><button class="btn" data-close="1">Stäng</button></div>
+   <div class="im-list">${it('data-gorules="1"',"Spelets regler")}${it('data-info="points"',"Så räknas poängen")}${it('data-info="more"',"Chips, nivåer och ligor")}${it('data-info="data"',"Om datan")}${it('data-info="terms"',"Användarvillkor")}${it('data-info="privacy"',"Integritetspolicy")}${it('data-info="contact"',"Kontakt och anmälan")}</div>`);
+}
 function infoSheet(k){
   const hd=(t,e)=>`<div class="hd"><div><span class="eyebrow">${e}</span><h2 style="margin:4px 0 0">${t}</h2></div><button class="btn" data-close="1">Stäng</button></div>`;
   const body={points:()=>hd("Så räknas poängen","Poäng")+`<div class="info"><ul class="rules"><li><b>2</b> för en godkänd målgång.</li>
@@ -4417,6 +4434,8 @@ document.addEventListener("click",ev=>{
   if(t.id==="mkClear"){tierF="";clsF="";clubF="";afford=false;entF=false;shown=12;render();return}
   if(d.ftier!==undefined){tierF=d.ftier;shown=12;render();return}
   if(d.fcls!==undefined){clsF=d.fcls;shown=12;render();return}
+  if(d.infomenu){infoMenu();return}
+  if(d.gorules){closeModal();if(tab!=="rules")nav(()=>{tab="rules"});else render();return}
   if(d.autofill){const n=autoFill();buzz(n?"ok":"warn");if(n)save();render();return}
   if(d.add!==undefined){const i=+d.add;buzz(canAddReason(i)?"warn":"ok");if(!canAddReason(i)){plan.squad.push(i);if(!Array.isArray(plan.a))plan.a=[];if(plan.a.length<AS)plan.a.push(i);fixLeaders();justAdded=i;save();const [x,y]=centerOf(t);burst(x,y,14)}render();return}
   if(d.sell!==undefined){const i=+d.sell;buzz("tap");plan.squad=plan.squad.filter(j=>j!==i);plan.a=(plan.a||[]).filter(j=>j!==i);if(swapSel===i)swapSel=null;fixLeaders();save();render();return}
