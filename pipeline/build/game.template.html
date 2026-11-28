@@ -2552,6 +2552,17 @@ html.cfg-picking *{cursor:crosshair!important}
   .rp-kpi>div{padding:11px 9px 10px}.rp-kpi b{font-size:18px}.rp-kpi span{font-size:9px;letter-spacing:.08em}}
 @media (max-width:640px){.sheet[data-key^="prof|"]{padding-top:0!important}}
 
+
+/* ---------- small phones (320–380 px): nothing wider than the screen ---------- */
+@media (max-width:380px){
+  #mgr .nm{display:none!important}#mgr{padding:5px!important;gap:0!important}
+  .topbar{font-size:10px!important;letter-spacing:.03em!important}.topbar .sect{padding:0 10px!important;white-space:nowrap}.topbar .tb-r{white-space:nowrap;gap:8px!important}
+  .lag-hero .hm-txt h2{font-size:30px!important;overflow-wrap:anywhere}
+  .facts{gap:5px!important}.facts>div{padding-left:6px!important;padding-right:6px!important}
+  #view .grid2{grid-template-columns:minmax(0,1fr)!important}#view .grid2>*{min-width:0}
+  .sqc-ctl{gap:2px!important}.sqc-ctl .boost,.sqc-ctl .sw,.sqc-ctl .rm{width:24px!important;height:24px!important;min-width:0!important;flex:none!important;padding:0!important}
+  .sqc-ctl svg{width:12px!important;height:12px!important}
+}
 </style>
 </head>
 <body>
@@ -3155,6 +3166,7 @@ function autoFill(){
   if(!plan.squad.includes(plan.captain))plan.captain=byV[0];
   fixLeaders();return added;
 }
+const errTxt=x=>x==="Över budget"?"Över budget med "+fm(-E.bankAfter(state,plan.squad)):x;
 function canAddReason(i){
   if(plan.squad.length>=D.squad)return "Truppen är full";
   if(clubCount(plan.squad,i)>=D.clubMax)return "Max "+D.clubMax+" från en klubb";
@@ -3373,7 +3385,7 @@ let weekR=null;
 function weekSheet(r){
   if(r===undefined||r===null)r=R();r=Math.max(0,Math.min(E.R-1,r));weekR=r;
   const rd=D.rounds[r],n=comps(r).length;
-  showSheet("week","Lopp i "+rdThe(rd),`<div class="hd"><div><span class="eyebrow">${rdName(rd)}</span><h2 style="margin:4px 0 0">${n} lopp</h2><div class="sub">${dshort(rd.start)} – ${dshort(rd.end)}</div></div><button class="btn" data-close="1">Stäng</button></div>
+  showSheet("week","Lopp i "+rdThe(rd),`<div class="hd"><div><span class="eyebrow">${rdName(rd)}</span><h2 style="margin:4px 0 0">${n?n+" lopp":rd.launch?"Sverigepremiären":"Inga lopp listade än"}</h2><div class="sub">${n||!rd.launch||!D.launch?dshort(rd.start)+" – "+dshort(rd.end):esc(launchDates())+" · loppen listas när de är inlagda"}</div></div><button class="btn" data-close="1">Stäng</button></div>
    <div class="rnav" style="margin:14px 0"><button class="btn" data-week="${r-1}" ${r<=0?"disabled":""}>Förra veckan</button><b>${r===R()?"Den här omgången":r===R()+1?"Nästa omgång":rdName(rd)}</b><button class="btn" data-week="${r+1}" ${r>=E.R-1?"disabled":""}>Nästa vecka</button></div>
    ${weekList(r)}
 `);
@@ -3514,8 +3526,10 @@ function teamView(){
    ${(()=>{const c=comps(r);return c.length&&!rd.skip?`<div class="sd-blk"><span class="sd-l">Lopp</span><div class="fixtures">${raceTags(r)}</div></div>`:""})()}
    <div class="sd-tiles"><div><span>Byten</span><b>${!state.squad.length||rd.skip?"Fria":t.n+"/"+D.freeTransfers}</b></div><div class="${pen?"dn":""}"><span>Avdrag</span><b>${pen?"-"+fp(pen):"0"}</b></div></div>
    <div class="sd-blk"><span class="sd-l">Chips</span>${chipsHtml}</div>
-   ${errs.length&&!locked&&plan.squad.length===D.squad?`<ul class="errs">${errs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
-   ${isLive()?(!saved&&errs.length&&plan.squad.length===D.squad?`<div class="savest warn" id="savest"><i>!</i><span>Inte sparad<small>${esc(errs[0])}${picks[r]||state.squad.length?". Din senast sparade trupp gäller tills du rättat det":""}</small></span></div>`:"")
+   ${(()=>{/* the first problem shows in the save box below when there is one, so the list holds only the rest */
+     const box=isLive()&&!saved&&errs.length&&plan.squad.length===D.squad,rest=box?errs.slice(1):errs;
+     return rest.length&&!locked&&plan.squad.length===D.squad?`<ul class="errs">${rest.map(x=>`<li>${esc(errTxt(x))}</li>`).join("")}</ul>`:""})()}
+   ${isLive()?(!saved&&errs.length&&plan.squad.length===D.squad?`<div class="savest warn" id="savest"><i>!</i><span>Inte sparad<small>${esc(errTxt(errs[0]))}${picks[r]||state.squad.length?". Din senast sparade trupp gäller tills du rättat det":""}</small></span></div>`:"")
      :`<button class="btn go" id="play" ${errs.length||hasStarted(r)&&!fin?"disabled":""}>Spela ${rdThe(rd)}</button>`}
    ${isLive()&&syncMsg?`<p class="note" style="margin:0;color:var(--warn)">${esc(syncMsg)}</p>`:""}
    ${fin&&state.squad.length&&!errs.length?`<button class="btn quiet" id="auto">${confirmAuto?"Bekräfta: spela alla färdiga omgångar":"Spela färdiga omgångar automatiskt med den här truppen"}</button>`:""}
