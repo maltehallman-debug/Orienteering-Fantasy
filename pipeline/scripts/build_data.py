@@ -76,29 +76,67 @@ if _prev:
             old = {_pid[i]: v for i, v in enumerate(_prev["prices"][rn])}
             prices[rn] = [old.get(k, prices[rn][i]) for i, k in enumerate(pool)]; _fp += 1
     print("locked from the published site:", _fr, "finished weeks,", _fe, "races,", _fp, "weeks of prices;", _fd, "district results added;", _fx, "removed races dropped")
-# ---- how a price may move from one round to the next ----
-# A runner who has not raced since the last round keeps that round's price (others' results never push it down), and
-# a price rises at most PRICE_UP (1.0k) a round, except from the lowest price (2.5k: new or unrated), which is set
-# freely. Falls follow the form. Weeks whose prices are locked keep them; the rule works from them onwards.
+# ---- prices: what a runner scored over the last year, and per week ----
+# A round's price comes from the runner's game points over the 52 weeks before it (played weeks only: weeks without play
+# and the winter break do not count): half from the total over the year, half from the average per week raced (pulled
+# towards the overall average when they have raced only a few weeks). The runners are ranked on that and priced from
+# 22k for the best down to 2.5k (about 20 cost 20k or more, 60 cost 17.5k or more, 370 cost 8k or more).
+# Not racing: up to 3 played weeks without a race does not touch a price; from the 4th week it eases down, to 60 % of
+# the price at 10 weeks and 50 % at 16 or more.
+# From one round to the next a price rises at most PRICE_UP (1.0k), and a runner who has not raced since the last
+# round keeps it (unless they have now been away for more than 3 played weeks). The season starts afresh: every round
+# up to and including Sverigepremiären takes the new prices as they are, without those limits.
+# Weeks whose prices are locked (finished, or started) keep them.
+import math as _m, bisect as _bs
 PRICE_UP, PRICE_MIN = 10, 25   # tenths of a thousand
+P_TAU, P_BETA, P_SHRINK, IDLE_FREE = 316, 0.875, 2, 3
+_wp = [dict() for _ in out_rounds]   # round -> runner index -> points (whole points)
+for rn, r in enumerate(out_rounds):
+    for ei in r["ev"]:
+        for row in res[ei]: _wp[rn][row[0]] = _wp[rn].get(row[0], 0) + row[5] / 10
+def _idle_mult(idle):
+    if idle <= IDLE_FREE: return 1.0
+    if idle <= 10: return 1 - 0.4 * (idle - IDLE_FREE) / (10 - IDLE_FREE)
+    return max(0.5, 0.6 - 0.1 * (idle - 10) / 6)
+def model_prices(rn):
+    cut = _dt.date.fromisoformat(out_rounds[rn]["start"]); lo = (cut - _dt.timedelta(days=365)).isoformat()
+    played = [q for q in range(rn) if not out_rounds[q].get("skip") and out_rounds[q]["start"] >= lo]
+    tot, wk, last = {}, {}, {}
+    for q in played:
+        for i, v in _wp[q].items(): tot[i] = tot.get(i, 0) + v; wk[i] = wk.get(i, 0) + 1; last[i] = q
+    if not tot: return [PRICE_MIN] * len(pool), {}
+    mean = sum(tot.values()) / sum(wk.values())
+    per = {i: (tot[i] + P_SHRINK * mean) / (wk[i] + P_SHRINK) for i in tot}
+    t_ref = sorted(tot.values())[int(len(tot) * .98)] or 1
+    regular = sorted(per[i] for i in tot if wk[i] >= 3) or sorted(per.values()); p_ref = regular[int(len(regular) * .98)] or 1
+    score = {i: .5 * min(1.3, max(0, tot[i]) / t_ref) + .5 * min(1.3, max(0, per[i]) / p_ref) for i in tot}
+    out = [PRICE_MIN] * len(pool); idle_of = {}
+    for rank, i in enumerate(sorted(score, key=lambda i: (-score[i], i))):
+        base = 2.5 + 19.5 * _m.exp(-(rank / P_TAU) ** P_BETA)
+        idle = sum(1 for q in played if q > last[i]); idle_of[i] = idle
+        out[i] = max(PRICE_MIN, int(round((2.5 + (base - 2.5) * _idle_mult(idle)) * 10)))
+    return out, idle_of
 _locked_p = set()
 if _prev:
     _locked_p = {rn for rn, r in enumerate(out_rounds) if rn < len(prices) and r["start"] <= _today.isoformat() and rn < len(_prev.get("prices", []))}
-import bisect as _bs
-_rd = D.get("raceDates", {})
-def _raced(k, a, b): ds = _rd.get(k, []); return _bs.bisect_left(ds, b) > _bs.bisect_left(ds, a)
-_pk = _pu = 0
-for rn in range(1, len(prices)):
+_launch = next((rn for rn, r in enumerate(out_rounds) if r.get("launch")), None)
+_pk = _pu = _pf = 0
+for rn in range(len(prices)):
     if rn in _locked_p: continue
-    a, b = D["rounds"][rn - 1]["start"], D["rounds"][rn]["start"]
-    for i, k in enumerate(pool):
-        prev, raw = prices[rn - 1][i], prices[rn][i]
-        if prev <= PRICE_MIN: continue
-        if not _raced(k, a, b):
-            if raw != prev: _pk += 1
-            prices[rn][i] = prev
-        elif raw > prev + PRICE_UP: prices[rn][i] = prev + PRICE_UP; _pu += 1
-print("price rules: kept (no race since last round)", _pk, "rises capped at 1.0k", _pu)
+    new, idle_of = model_prices(rn)
+    fresh = _launch is not None and rn <= _launch   # the season starts afresh
+    if rn == 0 or fresh: prices[rn] = new; _pf += 1; continue
+    a, b = out_rounds[rn - 1]["start"], out_rounds[rn]["start"]
+    raced = {row[0] for ei in out_rounds[rn - 1]["ev"] for row in res[ei]}
+    for i in range(len(pool)):
+        prev, want = prices[rn - 1][i], new[i]
+        if prev <= PRICE_MIN: prices[rn][i] = want; continue
+        if i not in raced and idle_of.get(i, 99) <= IDLE_FREE and want < prev: prices[rn][i] = prev; _pk += 1; continue
+        if want > prev + PRICE_UP: prices[rn][i] = prev + PRICE_UP; _pu += 1; continue
+        prices[rn][i] = want
+_last = prices[-1]; _cnt = lambda th: sum(1 for v in _last if v >= th)
+print("prices: fresh season rounds", _pf, "kept (short break)", _pk, "rises capped at 1.0k", _pu,
+      "| latest round: 20k+", _cnt(200), "17.5k+", _cnt(175), "10k+", _cnt(100), "8k+", _cnt(80), "max", max(_last), "median", sorted(_last)[len(_last) // 2])
 runners = [{"n": D["names"][k], "c": D["clubs"][k], "p": 1, "s": int(round(D["strength"].get(k, 0.05) * 100)), "k": D["cls"][k], "id": k} for k in pool]
 # runner photos: photos.json maps a runner id ("name|H" or "name|D") to a file in data/photos, embedded so the page stays one file
 import base64

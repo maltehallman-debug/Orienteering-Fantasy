@@ -356,6 +356,7 @@ for e in events:
 names = collections.defaultdict(collections.Counter)
 clubs = collections.defaultdict(collections.Counter)
 clsc = collections.defaultdict(collections.Counter)
+clsy = collections.defaultdict(lambda: collections.defaultdict(collections.Counter))   # key -> year -> class counts
 series = collections.defaultdict(list)   # key -> [(date, pts)]
 for e in events:
     for r in e["rows"]:
@@ -364,6 +365,7 @@ for e in events:
         names[k][r["name"].strip()] += 1
         clubs[k][(r["club"] or "").strip()] += 1
         clsc[k][e["cls"]] += 1
+        clsy[k][int(e["date"][:4])][e["cls"]] += 1
 for e in events:
     for k, s in e["scores"].items(): series[k].append((e["date"], s["pts"]))
 def pick_club(cn):
@@ -597,12 +599,22 @@ def youth_bound(k):
 # Runners under 15 are not in the game, nor anyone an admin has hidden (a runner or parent asked to be left out)
 HIDE = {o["ref"] for o in OVR if o["kind"] == "runner_hide"}
 _under = {k for k in pool if (youth_bound(k) or 99) <= 14}
-pool = [k for k in pool if k not in _under and k not in HIDE]
-print("left out: under 15", len(_under), sorted(names[k].most_common(1)[0][0] for k in _under)[:15], "hidden by an admin", len(HIDE))
+# Runners from clubs outside Sweden are not in the game (their results still count when others beat them): a runner
+# is left out when every club they have raced for is in data/foreign_clubs.json or looks foreign by its name
+_fc = _j("foreign_clubs.json", {"clubs": [], "patterns": []})
+FOREIGN_CLUBS = set(_fc.get("clubs", [])); FOREIGN_PAT = [re.compile(x, re.I) for x in _fc.get("patterns", [])]
+def foreign_club(c): return c in FOREIGN_CLUBS or any(x.search(c) for x in FOREIGN_PAT)
+def foreign_runner(k):
+    cs = [c for c in clubs[k] if c and not JOINT.search(c) and not re.search(r"\bOF$|Orienteringsförbund", c)] or [k.split("|")[1]]
+    return all(foreign_club(c) for c in cs)
+_foreign = {k for k in pool if foreign_runner(k)}
+pool = [k for k in pool if k not in _under and k not in HIDE and k not in _foreign]
+print("left out: under 15", len(_under), sorted(names[k].most_common(1)[0][0] for k in _under)[:15], "hidden by an admin", len(HIDE),
+      "foreign clubs", len(_foreign), collections.Counter(pick_club(clubs[k]) for k in _foreign).most_common(8))
 def class_of(k):
     g = k.rsplit("|", 1)[1]
     if youth_bound(k) is not None: return g + "16"
-    cc = clsc[k]; tot = sum(cc.values())
+    cc = clsy[k].get(TODAY.year) or clsc[k]; tot = sum(cc.values())
     for a in AGES:
         x = cc.get(g + a, 0)
         if x >= 2 or (x and x * 3 >= tot): return g + a
