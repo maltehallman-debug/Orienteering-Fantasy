@@ -2254,6 +2254,7 @@ th.c-total,th.c-form,th.c-avg,th.c-starts{transition:background-color .15s}
 }
 /* wide screens: the rails become a grid, nothing to swipe */
 @media (min-width:1000px){.rail{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));overflow:visible;margin:12px 0 0;padding:0}.rail>.card{flex:none}}
+.lgl-r .pl .mv{font-style:normal;font-size:9px;line-height:1;margin-left:-2px}.lgl-r .pl .mv.up{color:#1a9e4b}.lgl-r .pl .mv.dn{color:#d23b3b}
 </style>
 </head>
 <body>
@@ -3151,7 +3152,9 @@ function hero(r){
     `<div class="lk" title="Låses ${esc(lockText(r))}"><b>${ms<864e5?Math.max(1,Math.ceil(ms/36e5))+" tim":d+" dagar"}</b><span>till låsning</span></div>`;
   const card=(cls,head,link,sd)=>`<div class="next wkc ${cls}"><div class="next-main"><span class="next-k">${rdName(rd)} · ${when}</span><b>${head}</b></div>${link}<div class="next-side">${sd}</div></div>${seasonDashes()}`;
   if(rd.pending&&!rd.skip&&(rd.big||0)<2&&!hasStarted(r))return card("",title,`<button class="sub wklink long" data-week="${r}">Kan hoppas över: ${rd.big||0} stor${rd.big===1?"":"a"} tävling${rd.big===1?"":"ar"} hittills →</button>`,side);
-  if(rd.skip)return card("skip","Ingen spelvecka",`<button class="sub wklink long" data-week="${r}">${rd.wait?"Uppehåll till lanseringen":"Färre än två stora tävlingar"} →</button>`,`<div class="lk"><b>Fria byten</b><span>nästa: omgång ${(D.rounds.slice(r+1).find(x=>!x.skip)||rd).n}</span></div>`);
+  /* a break runs until the next week that is played: the card says how long, and the dates of the whole break */
+  if(rd.skip){const nx=nextPlayed(r),nrd=nx>=0?D.rounds[nx]:null,dd=nx>=0?Math.max(1,Math.floor((lockAt(nx)-Date.now())/864e5)):0;
+    return `<div class="next wkc skip"><div class="next-main"><span class="next-k">Uppehåll${nrd?" · till "+dshort(nrd.start):""}</span><b>Ingen spelvecka</b></div><button class="sub wklink long" data-week="${r}">Fria byten fram till dess →</button><div class="next-side">${nrd?`<div class="lk"><b>${dd} dagar</b><span>till ${esc(rdName(nrd).toLowerCase())}</span></div>`:`<div class="lk"><b>Fria byten</b></div>`}</div></div>${seasonDashes()}`}
   return card("",title,`<button class="sub wklink more" data-week="${r}">${u.length>1?`och ${u.length-1} lopp till`:"Veckokalender"} →</button>`,side);
 }
 function teamView(){
@@ -3170,7 +3173,7 @@ function teamView(){
   const chipsHtml=`<div class="chipset"><div class="coins">${E.CHIPS.map(c=>{const used=state.chips[c],on=plan.chip===c,off=locked||used||rd.skip||(c==="wc"&&!state.squad.length);
       return `<button class="coin c-${c} ${on?"on":""} ${used?"used":""}" data-chip="${on?"":c}" aria-pressed="${on}" ${off?"disabled":""} title="${esc(CHIPINFO[c][0]+": "+CHIPINFO[c][1])}"><span class="disc">${chipSvg(c)}</span><b>${used?"Använt":CHIPSHORT[c]}</b><small>${CHIPFX[c]}</small></button>`}).join("")}</div>
     <div class="chipdesc ${plan.chip?"c-"+plan.chip:""}">${plan.chip?`<span><b>${esc(CHIPINFO[plan.chip][0])}</b> – ${esc(CHIPINFO[plan.chip][1])}.</span>${locked?"":`<button class="btn quiet" data-chip="">Ta bort</button>`}`:`<span>${rd.skip?"Inga chips en vecka som hoppas över.":locked?"Inget chip den här omgången.":"Inget chip den här omgången. Tryck på ett för att spela det."}</span>`}</div></div>`;
-  return `${hero(r)}${liveNow()}<div class="two"><div class="panel squad-panel">
+  return `${hero(r)}<div class="two"><div class="panel squad-panel">
    <p class="eyebrow pg-k">01 · Bygg ditt lag</p><h2 style="margin-top:0">Din trupp</h2>
    <p class="lead">${lead}</p>
    ${!locked&&plan.squad.length<D.squad?`<div class="autofill"><button class="btn go" data-autofill="1">${plan.squad.length?"Fyll resten automatiskt":"Fyll laget automatiskt"}</button></div>`:""}
@@ -3534,7 +3537,7 @@ function leagueTable(code,top){
   return `<div class="lgl" role="table" aria-label="Tabell" style="--plw:${plW(rows.map(m=>[m.rank,wrank[m.id]||"–"]))}px">
    <div class="lgl-h" role="row"><span role="columnheader"><span aria-label="Placering">#</span></span><span role="columnheader">Lag</span><span role="columnheader">Vecka${live?' <i class="lgl-live" title="Live"></i>':""}</span><span role="columnheader">Total</span></div>
    ${rows.map((m,k)=>`${code==="GLOBAL"&&k===20?'<div class="lgl-gap" aria-hidden="true">⋯</div>':""}<div class="lgl-r ${m.id===cloud.uid?"in":""}" role="row" style="--i:${k}" data-mgr="${esc(code)}|${esc(m.id)}" tabindex="0">
-     <span class="pl" role="cell">${m.rank}<small title="Placering den här veckan" aria-label="vecka ${wrank[m.id]||"–"}">v${wrank[m.id]||"–"}</small></span>
+     <span class="pl" role="cell">${m.rank}${m.move>0?`<i class="mv up" title="Upp ${m.move} plats${m.move>1?"er":""}" aria-label="upp ${m.move}">▲</i>`:m.move<0?`<i class="mv dn" title="Ner ${-m.move} plats${m.move<-1?"er":""}" aria-label="ner ${-m.move}">▼</i>`:""}<small title="Placering den här veckan" aria-label="vecka ${wrank[m.id]||"–"}">v${wrank[m.id]||"–"}</small></span>
      <span class="tm" role="cell">${mgrDot(m)}<span><b class="nmb"><span class="nmt">${esc(m.name)}</span>${featTag(m.id)}</b>${m.team&&m.mgr!==m.name?`<span class="sub">${esc(m.mgr)}${m.id===cloud.uid?" · du":""}</span>`:m.id===cloud.uid?'<span class="sub">du</span>':""}</span></span>
      <span class="n" role="cell">${ptsOf(m,cur)!==null?fp(ptsOf(m,cur))+"p":"–"}</span><span class="n" role="cell"><b>${fp(m.t)}p</b></span></div>`).join("")}
   </div>`;
