@@ -2882,7 +2882,8 @@ function courseSvg(){
   const fin=`<circle class="fin" cx="${fx}" cy="${fy}" r="${cr-3}"/><circle class="fin" cx="${fx}" cy="${fy}" r="${cr+4}"/>`;
   return `<svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Säsongens bana, ${rdThe(D.rounds[w0])} till ${rdThe(D.rounds[w1-1])}">${legs}${start}${c}${fin}</svg>`;
 }
-function renderCourse(){setHTML($("#course"),tab==="rounds"&&state.log.length?courseSvg():"")}
+/* the course line over the points page is switched off */
+function renderCourse(){setHTML($("#course"),"")}
 
 /* ---------- chrome ---------- */
 /* the tab indicator: one bar (desktop) or pill (phone) that glides to the selected tab, transform only */
@@ -3421,6 +3422,7 @@ function fifaCard(c,k){
 function weekBoard(src){
   const b=boardData(src);if(!b)return "";const {w,weeks,prevW,nextW,x,r,rd}=b,arr=b.own?"data-round":"data-mround";
   return `<section class="board" aria-label="${rdName(rd)}">
+   <div class="bd-head"><span class="bd-brand">Fantasy<em>Orientering</em></span></div>
    <div class="bd-top"><div class="bd-gauge"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="g0" cx="100" cy="100" r="80" pathLength="100"/>${b.frac>0?`<circle class="g1" cx="100" cy="100" r="80" pathLength="100" style="--f:${(b.frac*75).toFixed(2)}"/>`:""}</svg>
     <div class="bd-score"><b class="score" data-count="${b.score/10}" data-key="board${r}">${x?fp(b.score):"–"}</b><span>${x?(isFinal(r)?"poäng":"hittills"):"inte spelad"}</span></div></div>
    <div class="bd-stats"><div><span>Byten</span><b>${b.tr}</b></div><div><span>Totalt</span><b>${fp(b.total)}</b></div><div><span>Spelare</span><b>${b.players||"–"}</b></div><div><span>Högsta</span><b>${b.best!==null?fp(b.best):"–"}</b></div></div></div>
