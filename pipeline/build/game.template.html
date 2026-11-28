@@ -3598,7 +3598,8 @@ function profileView(){
 </div>
    ${practiceCard()}${privacyCard()}`;
   const me={id:cloud.uid,name:mgrName||cloud.email.split("@")[0],av:myAv};
-  const L=state.log,best=L.slice().sort((a,b)=>b.total-a.total)[0];
+  /* weeks without play do not count as rounds played */
+  const L=state.log.filter(l=>!D.rounds[l.round].skip),best=L.slice().sort((a,b)=>b.total-a.total)[0];
   const live=isLive();
   return `<div class="pfhead">${mgrDot(me,1)}<div><h2>${esc(myTeam||me.name)}</h2><div class="sub">${myTeam?esc(me.name)+" · ":""}${esc(cloud.email)}</div></div></div>
   ${myBadges.length?`<div class="bdg-head"><button class="btn" id="medalsOpen">${medal(myBadges.find(b=>b.featured)||myBadges[0]).replace('class="md','class="md btn-md')}Medaljer</button></div>`:""}
